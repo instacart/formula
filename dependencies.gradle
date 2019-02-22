@@ -1,0 +1,58 @@
+ext {
+
+    arrowVersion = '0.8.2'
+    androidXVersion = '1.0.0'
+    androidTestVersion = "1.1.0"
+    androidJUnitVersion = "1.1.0"
+    lifecycleVersion = '2.0.0'
+
+    espressoVersion = "3.1.1"
+    junitVersion = "4.12"
+    mockitoKotlinVersion = "1.6.0"
+    okhttpVersion = "3.13.1"
+    robolectricVersion = "4.1"
+    truthVersion = "0.42"
+
+
+    libraries = [
+            androidx             : [
+                    annotation      : "androidx.annotation:annotation:$androidXVersion",
+                    appcompat       : "androidx.appcompat:appcompat:1.0.2",
+                    browser         : "androidx.browser:browser:$androidXVersion",
+                    core            : [
+                            ktx: "androidx.core:core-ktx:1.0.1"
+                    ],
+                    collection      : [
+                            ktx: "androidx.collection:collection-ktx:$androidXVersion"
+                    ],
+                    lifecycle       : [
+                            compiler: "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion",
+                            runtime : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion"
+                    ],
+                    recyclerview    : "androidx.recyclerview:recyclerview:$androidXVersion",
+                    fragment        : [
+                            ktx: "androidx.fragment:fragment-ktx:$androidXVersion"
+                    ],
+                    test            : [
+                            core    : "androidx.test:core:$androidTestVersion",
+                            espresso: [
+                                    core   : "androidx.test.espresso:espresso-core:$espressoVersion",
+                                    contrib: "androidx.test.espresso:espresso-contrib:$espressoVersion",
+                                    intents: "androidx.test.espresso:espresso-intents:$espressoVersion"
+                            ],
+                            ext     : [
+                                    junit: "androidx.test.ext:junit:$androidJUnitVersion"
+                            ],
+                            rules   : "androidx.test:rules:$androidTestVersion",
+                            runner  : "androidx.test:runner:$androidTestVersion"
+                    ]
+            ],
+            arrow                : [
+                "core"  : "io.arrow-kt:arrow-core:$arrowVersion"
+            ],
+            robolectric          : "org.robolectric:robolectric:$robolectricVersion",
+            rxjava               : "io.reactivex.rxjava2:rxjava:2.2.5",
+            rxandroid            : "io.reactivex.rxjava2:rxandroid:2.1.0",
+            rxrelays             : "com.jakewharton.rxrelay2:rxrelay:2.1.0"
+    ]
+}

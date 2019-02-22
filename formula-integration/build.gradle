@@ -1,0 +1,34 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+androidExtensions {
+    experimental = true
+    features = ['parcelize']
+}
+
+android {
+    compileSdkVersion compileSdk
+
+    defaultConfig {
+        minSdkVersion minSdk
+        targetSdkVersion targetSdk
+    }
+}
+
+dependencies {
+    implementation project(':formula')
+
+    implementation libraries.androidx.annotation
+    implementation libraries.androidx.appcompat
+
+    api libraries.arrow.core
+    api libraries.rxandroid
+    api libraries.rxrelays
+
+    testImplementation libraries.androidx.test.rules
+    testImplementation libraries.androidx.test.runner
+    testImplementation libraries.androidx.test.espresso.core
+    testImplementation libraries.robolectric
+}
