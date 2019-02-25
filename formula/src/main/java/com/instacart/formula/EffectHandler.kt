@@ -1,4 +1,4 @@
-package com.instacart.mvi
+package com.instacart.formula
 
 /**
  * Handles effects

@@ -1,13 +1,13 @@
-package com.instacart.mvi.integration
+package com.instacart.formula.integration
 
-import com.instacart.client.mvi.ICViewModel
+import com.instacart.formula.Formula
 import io.reactivex.Flowable
 
 /**
- * Defines how an [ICMviFragmentContract] is bound to a [ICViewModel]
+ * Defines how an [ICMviFragmentContract] is bound to a [Formula]
  */
 interface Integration<Contract, Input, RenderModel> : (Contract) -> Flowable<RenderModel> {
-    fun createViewModel(contract: Contract): ICViewModel<Input, RenderModel>
+    fun createViewModel(contract: Contract): Formula<Input, RenderModel>
 
     fun input(contract: Contract): Input
 

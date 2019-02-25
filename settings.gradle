@@ -1,3 +1,4 @@
 include ':formula'
+include ':formula-compiler'
 include ':formula-integration'
 include ':sample'

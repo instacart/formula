@@ -1,7 +1,7 @@
 package com.instacart.client.mvi.state
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.client.core.func.Reducer
+import com.instacart.formula.Reducer
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import org.junit.Test

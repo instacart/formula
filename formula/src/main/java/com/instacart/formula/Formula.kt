@@ -1,16 +1,16 @@
-package com.instacart.client.mvi
+package com.instacart.formula
 
 import io.reactivex.Flowable
 
 /**
- * The ICViewModel interface defines a protocol for render model management.
+ * The Formula interface defines a protocol for render model management.
  *
  * @param Input - data + callbacks passed by parent to the view model to help construct the RenderModel stream
  * @param RenderModel - is data class that defines how a particular view component should be rendered
  *
  * Ex:
  * ```
- * class MyFeatureViewModel @Inject constructor(val someUseCase: SomeUseCase) : ICViewModel<MyFeatureViewModel.Input, MyFeatureRenderModel> {
+ * class MyFeatureFormula @Inject constructor(val someUseCase: SomeUseCase) : Formula<MyFeatureFormula.Input, MyFeatureRenderModel> {
  *   data class Input(val id: String, val onSomeActionTaken: (Action) -> Unit)
  *
  *   fun state(input: Input): Flowable<MyFeatureRenderModel> {
@@ -21,7 +21,7 @@ import io.reactivex.Flowable
  * }
  * ```
  */
-interface ICViewModel<Input, RenderModel> {
+interface Formula<Input, RenderModel> {
 
     fun state(input: Input): Flowable<RenderModel>
 }

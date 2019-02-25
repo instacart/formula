@@ -1,6 +1,6 @@
 package com.instacart.client.mvi.backstack
 
-import com.instacart.client.core.func.Reducer
+import com.instacart.formula.Reducer
 import com.instacart.client.mvi.ICActiveMviKeys
 import com.instacart.client.mvi.ICMviLifecycleEvent
 import io.reactivex.BackpressureStrategy

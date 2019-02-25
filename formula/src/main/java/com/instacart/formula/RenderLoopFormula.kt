@@ -1,11 +1,13 @@
-package com.instacart.client.mvi
+package com.instacart.formula
 
+import com.instacart.client.mvi.ICRenderLoop
 import io.reactivex.Flowable
 
 /**
  * Defines a factory for [ICRenderLoop]
  */
-interface ICRenderLoopProvider<Input, State, Effect, RenderModel> : ICViewModel<Input, RenderModel> {
+interface RenderLoopFormula<Input, State, Effect, RenderModel> :
+    Formula<Input, RenderModel> {
 
     fun createRenderLoop(input: Input): ICRenderLoop<State, Effect, RenderModel>
 

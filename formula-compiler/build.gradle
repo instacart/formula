@@ -1,0 +1,36 @@
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        testSourceDirs += file('build/generated/source/kapt/test')
+        generatedSourceDirs += file('build/generated/source/kapt/test')
+    }
+}
+
+dependencies {
+    implementation project(':formula')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation 'me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0'
+
+    implementation 'com.squareup:kotlinpoet:1.0.1'
+    implementation libraries.arrow.core
+    implementation libraries.rxrelays
+
+    def autoServiceVersion = '1.0-rc4'
+    implementation "com.google.auto.service:auto-service:$autoServiceVersion"
+    kapt "com.google.auto.service:auto-service:$autoServiceVersion"
+
+    kaptTest files('build/libs/formula-compiler.jar')
+
+    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "junit:junit:$junitVersion"
+}

@@ -1,6 +1,6 @@
 package com.instacart.client.mvi
 
-import com.instacart.client.core.func.Reducer
+import com.instacart.formula.Reducer
 import com.instacart.client.core.rx.mapNotNull
 import com.instacart.client.mvi.utils.reduce
 import com.jakewharton.rxrelay2.BehaviorRelay
