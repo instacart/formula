@@ -31,4 +31,8 @@ dependencies {
     testImplementation libraries.androidx.test.runner
     testImplementation libraries.androidx.test.espresso.core
     testImplementation libraries.robolectric
+
+    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
+    testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
 }

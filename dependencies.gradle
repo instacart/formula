@@ -8,6 +8,7 @@ ext {
 
     espressoVersion = "3.1.1"
     junitVersion = "4.12"
+    mockitoVersion = "2.22.0"
     mockitoKotlinVersion = "1.6.0"
     okhttpVersion = "3.13.1"
     robolectricVersion = "4.1"
