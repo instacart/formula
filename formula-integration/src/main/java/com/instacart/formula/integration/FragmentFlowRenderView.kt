@@ -9,17 +9,22 @@ import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
+import com.instacart.formula.fragment.FragmentLifecycle
+import io.reactivex.disposables.CompositeDisposable
 
 /**
  * Renders [FragmentFlowState] and provides back button handling.
  */
 class FragmentFlowRenderView(
-    private val activity: FragmentActivity
+    private val activity: FragmentActivity,
+    private val onLifecycleEvent: (LifecycleEvent<FragmentContract<*>>) -> Unit
 ) : RenderView<FragmentFlowState> {
     private var currentFragmentRenderModel: Any? = null
 
     private var lastFragment: FormulaFragment<*>? = null
     private var pendingUpdate: KeyState<FragmentContract<*>, *>? = null
+
+    private val disposables = CompositeDisposable()
 
     init {
         activity.supportFragmentManager.addOnBackStackChangedListener {
@@ -27,6 +32,8 @@ class FragmentFlowRenderView(
                 applyState(it)
             }
         }
+
+        disposables.add(FragmentLifecycle.lifecycleEvents(activity).subscribe(onLifecycleEvent))
     }
 
     private val updateRenderer = Renderer.create<Option<KeyState<FragmentContract<*>, *>>> {
@@ -53,6 +60,13 @@ class FragmentFlowRenderView(
         }
 
         return false
+    }
+
+    /**
+     * This method must be invoked in [android.app.Activity.onDestroy]
+     */
+    fun dispose() {
+        disposables.dispose()
     }
 
     private fun applyState(state: KeyState<FragmentContract<*>, *>) {
