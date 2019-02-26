@@ -20,11 +20,11 @@ class FlowReducersTest {
         val firstEntry = TestKey("first")
         val secondEntry = TestKey("second")
 
-        val initialStack = ActiveKeys(listOf(firstEntry, secondEntry))
-        val backstackEvent = ActiveKeys(listOf(firstEntry))
+        val initialStack = BackStack(listOf(firstEntry, secondEntry))
+        val backstackEvent = BackStack(listOf(firstEntry))
         val newState = reducers.onBackstackChange(backstackEvent).invoke(
             FlowState(
-                activeKeys = initialStack,
+                backStack = initialStack,
                 contracts = mapOf(
                     firstEntry to KeyState(firstEntry, "state"),
                     secondEntry to KeyState(secondEntry, "second state")

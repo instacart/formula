@@ -2,10 +2,10 @@ package com.instacart.formula.integration
 
 import io.reactivex.Flowable
 
-private fun <Key> toLifecycleEffect(): (ActiveKeys<Key>) -> Flowable<LifecycleEvent<Key>> {
-    var lastState: ActiveKeys<Key>? = null
+private fun <Key> toLifecycleEffect(): (BackStack<Key>) -> Flowable<LifecycleEvent<Key>> {
+    var lastState: BackStack<Key>? = null
     return { state ->
-        val effects = ActiveKeys.findLifecycleEffects(
+        val effects = BackStack.findLifecycleEffects(
             lastState = lastState,
             currentState = state
         )
@@ -15,7 +15,7 @@ private fun <Key> toLifecycleEffect(): (ActiveKeys<Key>) -> Flowable<LifecycleEv
     }
 }
 
-private fun <Key> Flowable<ActiveKeys<Key>>.lifecycleEffects(): Flowable<LifecycleEvent<Key>> {
+private fun <Key> Flowable<BackStack<Key>>.lifecycleEffects(): Flowable<LifecycleEvent<Key>> {
     return this
         .distinctUntilChanged()
         .flatMap(toLifecycleEffect())
@@ -25,7 +25,7 @@ private fun <Key> Flowable<ActiveKeys<Key>>.lifecycleEffects(): Flowable<Lifecyc
  * Creates mvi updates stream for a specified contract type.
  * It takes a type and a state stream factory.
  */
-fun <Key, State> Flowable<ActiveKeys<Key>>.createStateUpdates(
+fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
     type: Class<Key>, init: (Key) -> Flowable<State>
 ): Flowable<KeyState<Key, State>> {
     return this

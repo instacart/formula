@@ -12,30 +12,30 @@ import io.reactivex.subjects.BehaviorSubject
  * your view model would delegate to this class.
  *
  */
-class BackstackStore<Key>(initial: List<Key>) {
+class BackStackStore<Key>(initial: List<Key>) {
     companion object {
-        operator fun <Key> invoke(): BackstackStore<Key> {
-            return BackstackStore(emptyList())
+        operator fun <Key> invoke(): BackStackStore<Key> {
+            return BackStackStore(emptyList())
         }
 
-        operator fun <Key> invoke(initial: Key): BackstackStore<Key> {
-            return BackstackStore(listOf(initial))
+        operator fun <Key> invoke(initial: Key): BackStackStore<Key> {
+            return BackStackStore(listOf(initial))
         }
     }
 
-    private val activeKeysRelay = BehaviorSubject.createDefault(ActiveKeys(initial))
+    private val backStackStateRelay = BehaviorSubject.createDefault(BackStack(initial))
 
-    fun stateChanges(): Flowable<ActiveKeys<Key>> {
-        return activeKeysRelay.toFlowable(BackpressureStrategy.BUFFER).distinctUntilChanged()
+    fun stateChanges(): Flowable<BackStack<Key>> {
+        return backStackStateRelay.toFlowable(BackpressureStrategy.BUFFER).distinctUntilChanged()
     }
 
     fun navigateBack() {
         updateState {
-            val keys = it.activeKeys
+            val keys = it.keys
             if (keys.isEmpty()) {
                 it
             } else {
-                ActiveKeys(keys.dropLast(1))
+                BackStack(keys.dropLast(1))
             }
         }
     }
@@ -58,7 +58,7 @@ class BackstackStore<Key>(initial: List<Key>) {
         }
     }
 
-    private inline fun updateState(modify: Reducer<ActiveKeys<Key>>) {
-        activeKeysRelay.onNext(modify(activeKeysRelay.value!!))
+    private inline fun updateState(modify: Reducer<BackStack<Key>>) {
+        backStackStateRelay.onNext(modify(backStackStateRelay.value!!))
     }
 }

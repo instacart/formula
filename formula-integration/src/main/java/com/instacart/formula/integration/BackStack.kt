@@ -5,23 +5,23 @@ package com.instacart.formula.integration
  *
  * Null value indicates that store hasn't been initialized.
  */
-data class ActiveKeys<Key>(val activeKeys: List<Key>) {
+data class BackStack<Key>(val keys: List<Key>) {
     companion object {
-        val EMPTY = ActiveKeys<Nothing>(emptyList())
+        val EMPTY = BackStack<Nothing>(emptyList())
 
-        fun <Key> empty(): ActiveKeys<Key> =
-            ActiveKeys(emptyList())
+        fun <Key> empty(): BackStack<Key> =
+            BackStack(emptyList())
 
         /**
          * Takes last and current active contract state,
          * and calculates attach and detach effects
          */
         fun <Key> findLifecycleEffects(
-            lastState: ActiveKeys<Key>?,
-            currentState: ActiveKeys<Key>
+            lastState: BackStack<Key>?,
+            currentState: BackStack<Key>
         ): Set<LifecycleEvent<Key>> {
-            val lastActive = lastState?.activeKeys.orEmpty()
-            val currentlyActive = currentState.activeKeys
+            val lastActive = lastState?.keys.orEmpty()
+            val currentlyActive = currentState.keys
 
             val attachedEffects = findAttachedKeys(
                 lastActive,
@@ -49,25 +49,25 @@ data class ActiveKeys<Key>(val activeKeys: List<Key>) {
         }
     }
 
-    fun update(event: LifecycleEvent<Key>): ActiveKeys<Key> {
+    fun update(event: LifecycleEvent<Key>): BackStack<Key> {
         return when (event) {
             is LifecycleEvent.Attach -> add(event.key)
             is LifecycleEvent.Detach -> remove(event.key)
         }
     }
 
-    fun add(key: Key): ActiveKeys<Key> {
+    fun add(key: Key): BackStack<Key> {
         // Only add a contract if it isn't already added.
-        return if (activeKeys.contains(key)) {
+        return if (keys.contains(key)) {
             this
         } else {
-            ActiveKeys(activeKeys.plus(key))
+            BackStack(keys.plus(key))
         }
     }
 
-    fun remove(key: Key): ActiveKeys<Key> {
-        return if (activeKeys.contains(key)) {
-            return ActiveKeys(activeKeys.minus(key))
+    fun remove(key: Key): BackStack<Key> {
+        return if (keys.contains(key)) {
+            return BackStack(keys.minus(key))
         } else {
             this
         }

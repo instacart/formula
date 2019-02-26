@@ -15,7 +15,7 @@ class FlowStoreTest {
         object Detail : Key()
     }
 
-    lateinit var keys: BehaviorRelay<ActiveKeys<Key>>
+    lateinit var keys: BehaviorRelay<BackStack<Key>>
     lateinit var store: FlowStore<Key>
     lateinit var mainScreenState: BehaviorRelay<String>
     lateinit var detailScreenState: BehaviorRelay<String>
@@ -23,7 +23,7 @@ class FlowStoreTest {
 
     @Before
     fun setup() {
-        keys = BehaviorRelay.createDefault(ActiveKeys(emptyList()))
+        keys = BehaviorRelay.createDefault(BackStack(emptyList()))
         mainScreenState = BehaviorRelay.createDefault("main-initial")
         detailScreenState = BehaviorRelay.createDefault("detail-initial")
 
@@ -40,9 +40,9 @@ class FlowStoreTest {
         subscriber = TestSubscriber()
         store.screen().subscribe(subscriber)
 
-        keys.accept(ActiveKeys(listOf(Key.Main)))
+        keys.accept(BackStack(listOf(Key.Main)))
         keys.accept(
-            ActiveKeys(
+            BackStack(
                 listOf(
                     Key.Main,
                     Key.Detail

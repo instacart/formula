@@ -9,12 +9,12 @@ import io.reactivex.Flowable
  * mvi contracts and their states.
  */
 class FlowStore<Key : Any> constructor(
-    keyState: Flowable<ActiveKeys<Key>>,
+    keyState: Flowable<BackStack<Key>>,
     private val root: KeyBinding.CompositeBinding<Unit, Key, Unit>
 ) {
     companion object {
         inline fun <Key : Any> init(
-            state: Flowable<ActiveKeys<Key>>,
+            state: Flowable<BackStack<Key>>,
             crossinline init: KeyBinding.Builder<Unit, Unit, Key>.() -> Unit
         ): FlowStore<Key> {
             val root = KeyBinding.Builder<Unit, Unit, Key>(scopeFactory = {
@@ -30,7 +30,7 @@ class FlowStore<Key : Any> constructor(
     private val reducerFactory = FlowReducers(root)
     private val keyState = keyState.replay(1).refCount()
 
-    private fun state(): Flowable<FlowState<Key>> {
+    fun state(): Flowable<FlowState<Key>> {
         val backstackChangeReducer = keyState.map(reducerFactory::onBackstackChange)
         val stateChangeReducers = root.state(Unit, keyState).map(reducerFactory::onScreenStateChanged)
 

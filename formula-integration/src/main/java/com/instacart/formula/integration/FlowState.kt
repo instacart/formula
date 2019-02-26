@@ -7,7 +7,7 @@ import arrow.core.toOption
  * Represents state of multiple mvi contracts.
  */
 data class FlowState<Key>(
-    val activeKeys: ActiveKeys<Key> = ActiveKeys.empty(),
+    val backStack: BackStack<Key> = BackStack.empty(),
     val contracts: Map<Key, KeyState<Key, *>> = emptyMap()
 ) {
 
@@ -16,7 +16,7 @@ data class FlowState<Key>(
     }
 
     fun currentScreenState(): Option<KeyState<Key, *>> {
-        val currentKey = activeKeys.activeKeys.lastOrNull()
+        val currentKey = backStack.keys.lastOrNull()
         return currentKey?.let { contracts[it] }.toOption()
     }
 }

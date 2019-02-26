@@ -4,16 +4,16 @@ class FlowReducers<Key : Any>(
     private val root: KeyBinding.CompositeBinding<Unit, Key, Unit>
 ) {
 
-    fun onBackstackChange(keys: ActiveKeys<Key>): (FlowState<Key>) -> FlowState<Key> {
+    fun onBackstackChange(keys: BackStack<Key>): (FlowState<Key>) -> FlowState<Key> {
         return { state: FlowState<Key> ->
-            val attachedKeys = ActiveKeys.findAttachedKeys(
-                lastActive = state.activeKeys.activeKeys,
-                currentlyActive = keys.activeKeys
+            val attachedKeys = BackStack.findAttachedKeys(
+                lastActive = state.backStack.keys,
+                currentlyActive = keys.keys
             )
 
-            val detached = ActiveKeys.findDetachedKeys(
-                lastActive = state.activeKeys.activeKeys,
-                currentlyActive = keys.activeKeys
+            val detached = BackStack.findDetachedKeys(
+                lastActive = state.backStack.keys,
+                currentlyActive = keys.keys
             )
 
             // We want to emit an empty state update if key is not handled.
@@ -22,7 +22,7 @@ class FlowReducers<Key : Any>(
                 .map { Pair(it, KeyState(it, "missing-registration")) }
 
             state.copy(
-                activeKeys = keys,
+                backStack = keys,
                 contracts = state.contracts.minus(detached).plus(notHandled)
             )
         }

@@ -23,7 +23,7 @@ class ScopedFlowStoreTest {
         object Account: Key()
     }
 
-    lateinit var keys: BehaviorRelay<ActiveKeys<Key>>
+    lateinit var keys: BehaviorRelay<BackStack<Key>>
     lateinit var store: FlowStore<Key>
 
     // State relays
@@ -39,7 +39,7 @@ class ScopedFlowStoreTest {
 
     @Before
     fun setup() {
-        keys = BehaviorRelay.createDefault(ActiveKeys(emptyList()))
+        keys = BehaviorRelay.createDefault(BackStack(emptyList()))
         loginScreenState = BehaviorRelay.createDefault("login-initial")
         registerScreenState = BehaviorRelay.createDefault("register-initial")
         browseScreenState = BehaviorRelay.createDefault("browse-initial")
@@ -95,8 +95,8 @@ class ScopedFlowStoreTest {
 
     @Test
     fun disposeIsTriggered() {
-        keys.accept(ActiveKeys(listOf(Key.Login)))
-        keys.accept(ActiveKeys(listOf(Key.Browse)))
+        keys.accept(BackStack(listOf(Key.Login)))
+        keys.accept(BackStack(listOf(Key.Browse)))
 
         assertThat(disposed).hasSize(1)
         disposed[0].let {
@@ -106,9 +106,9 @@ class ScopedFlowStoreTest {
 
     @Test
     fun allComponentsAreClearedOnDispose() {
-        keys.accept(ActiveKeys(listOf(Key.Login)))
+        keys.accept(BackStack(listOf(Key.Login)))
         keys.accept(
-            ActiveKeys(
+            BackStack(
                 listOf(
                     Key.Login,
                     Key.Browse
