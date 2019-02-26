@@ -2,7 +2,6 @@ package com.instacart.formula.fragment
 
 import arrow.core.Option
 import com.instacart.formula.integration.BackStackStore
-import com.instacart.formula.integration.FlowState
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.KeyBinding
 import com.instacart.formula.integration.KeyState

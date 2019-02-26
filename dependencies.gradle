@@ -1,5 +1,4 @@
 ext {
-
     arrowVersion = '0.8.2'
     androidXVersion = '1.0.0'
     androidTestVersion = "1.1.0"
@@ -13,7 +12,6 @@ ext {
     okhttpVersion = "3.13.1"
     robolectricVersion = "4.1"
     truthVersion = "0.42"
-
 
     libraries = [
             androidx             : [
@@ -51,9 +49,12 @@ ext {
             arrow                : [
                 "core"  : "io.arrow-kt:arrow-core:$arrowVersion"
             ],
+            junit                : "junit:junit:$junitVersion",
+            kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
             rxjava               : "io.reactivex.rxjava2:rxjava:2.2.5",
             rxandroid            : "io.reactivex.rxjava2:rxandroid:2.1.0",
-            rxrelays             : "com.jakewharton.rxrelay2:rxrelay:2.1.0"
+            rxrelays             : "com.jakewharton.rxrelay2:rxrelay:2.1.0",
+            truth                : "com.google.truth:truth:$truthVersion"
     ]
 }

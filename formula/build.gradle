@@ -24,11 +24,11 @@ artifacts {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation libraries.kotlin
 
     api libraries.rxjava
 
-    testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "junit:junit:$junitVersion"
+    testImplementation libraries.truth
+    testImplementation libraries.junit
     testImplementation libraries.rxrelays
 }

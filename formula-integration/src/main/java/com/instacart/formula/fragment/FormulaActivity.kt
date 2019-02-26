@@ -57,7 +57,7 @@ object FormulaActivity {
         return fragmentLifecycleEvents(activity, shouldTrack)
             .mapNotNull { event ->
                 val fragment = event.fragment as? BaseFormulaFragment<*>
-                val contract = fragment?.getMviContract() ?: EmptyFragmentContract(event.fragment.tag.orEmpty())
+                val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(event.fragment.tag.orEmpty())
                 contract.let { it: FragmentContract<*> ->
                     when (event) {
                         is FragmentEvent.Attached -> LifecycleEvent.Attach(it)

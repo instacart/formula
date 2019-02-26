@@ -11,7 +11,7 @@ import io.reactivex.disposables.Disposable
 
 class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel> {
     companion object {
-        private const val ARG_CONTRACT = "mvi fragment contract"
+        private const val ARG_CONTRACT = "formula fragment contract"
 
         @JvmStatic fun <State> newInstance(contract: FragmentContract<State>): FormulaFragment<State> {
             return FormulaFragment<State>().apply {
@@ -101,11 +101,11 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         return stateRelay.value
     }
 
-    override fun getMviContract(): FragmentContract<RenderModel> {
+    override fun getFragmentContract(): FragmentContract<RenderModel> {
         return contract
     }
 
-    fun mviView(): RenderView<RenderModel>? = mviView
+    fun renderView(): RenderView<RenderModel>? = mviView
 
     override fun toString(): String {
         return "${contract.tag} -> $contract"
