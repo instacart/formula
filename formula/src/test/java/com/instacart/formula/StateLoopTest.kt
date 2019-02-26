@@ -54,27 +54,24 @@ class StateLoopTest {
             .toFlowable(BackpressureStrategy.LATEST)
             .map(reducers::onAction)
 
-        val testSubscriber = TestSubscriber<Int>()
         StateLoop(
             initialState = 0,
             reducers = Flowable.merge(actionReducer, clearStateReducer),
             onEffect = {
                 clearStateRelay.accept(it)
             })
-            .createLoop().subscribe(testSubscriber)
-
-        // Increment 3 times to trigger clear state
-        actionRelay.accept(Action.Increment)
-        actionRelay.accept(Action.Increment)
-        actionRelay.accept(Action.Increment)
-
-        // We want to ensure that all updates come in order.
-        val values = testSubscriber.values()
-        assertThat(values[0]).isEqualTo(0)
-        assertThat(values[1]).isEqualTo(1)
-        assertThat(values[2]).isEqualTo(2)
-        assertThat(values[3]).isEqualTo(3)
-        assertThat(values[4]).isEqualTo(0)
+            .createLoop()
+            .test()
+            .apply {
+                // Increment 3 times to trigger clear state
+                actionRelay.accept(Action.Increment)
+                actionRelay.accept(Action.Increment)
+                actionRelay.accept(Action.Increment)
+            }
+            .assertValues(
+                // We want to ensure that all updates come in order.
+                0, 1, 2, 3, 0
+            )
     }
 
     @Test fun `notifies state updates`() {

@@ -36,10 +36,10 @@ fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
             it.switchMap {
                 val contract = it.key as Key
                 when (it) {
-                    is LifecycleEvent.Attach -> init(contract).map { state ->
+                    is LifecycleEvent.Added -> init(contract).map { state ->
                         KeyState(contract, state)
                     }
-                    is LifecycleEvent.Detach -> Flowable.empty()
+                    is LifecycleEvent.Removed -> Flowable.empty()
                 }
             }
         }

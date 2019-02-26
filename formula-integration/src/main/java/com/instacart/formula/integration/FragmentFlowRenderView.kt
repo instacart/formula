@@ -2,14 +2,20 @@ package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
 import arrow.core.Option
+import arrow.core.toOption
+import com.instacart.formula.RenderView
+import com.instacart.formula.Renderer
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.fragment.FragmentFlowState
 
 /**
- * Handles application updates and provides access to back handling
+ * Renders [FragmentFlowState] and provides back button handling.
  */
-class FormulaActivityDelegate(private val activity: FragmentActivity) {
+class FragmentFlowRenderView(
+    private val activity: FragmentActivity
+) : RenderView<FragmentFlowState> {
     private var currentFragmentRenderModel: Any? = null
 
     private var lastFragment: FormulaFragment<*>? = null
@@ -18,24 +24,38 @@ class FormulaActivityDelegate(private val activity: FragmentActivity) {
     init {
         activity.supportFragmentManager.addOnBackStackChangedListener {
             pendingUpdate?.let {
-                applyUpdate(it)
+                applyState(it)
             }
         }
     }
 
-    fun applyUpdate(update: Option<KeyState<FragmentContract<*>, *>>) {
-        val state = update.orNull()
+    private val updateRenderer = Renderer.create<Option<KeyState<FragmentContract<*>, *>>> {
+        val state = it.orNull()
 
         if (state == null) {
             lastFragment = null
         } else {
-            applyUpdate(state)
+            applyState(state)
         }
 
-        currentFragmentRenderModel = update.orNull()?.state
+        currentFragmentRenderModel = state?.renderModel
     }
 
-    private fun applyUpdate(state: KeyState<FragmentContract<*>, *>) {
+    override val renderer: Renderer<FragmentFlowState> = Renderer.create {
+        updateRenderer.render(it.lastEntry().toOption())
+    }
+
+    fun onBackPressed(): Boolean {
+        val state = currentFragmentRenderModel
+        if (state is BackCallback) {
+            state.onBackPressed()
+            return true
+        }
+
+        return false
+    }
+
+    private fun applyState(state: KeyState<FragmentContract<*>, *>) {
         val tag = state.key.tag
         val fragment = lastFragment
             ?.takeIf { it.tag == tag && !it.isRemoving }
@@ -55,20 +75,10 @@ class FormulaActivityDelegate(private val activity: FragmentActivity) {
             pendingUpdate = null
 
             if (fragment is BaseFormulaFragment<*>) {
-                (fragment as BaseFormulaFragment<Any>).setState(state.state!!)
+                (fragment as BaseFormulaFragment<Any>).setState(state.renderModel!!)
             }
 
             lastFragment = fragment as? FormulaFragment<*>
         }
-    }
-
-    fun onBackPressed(): Boolean {
-        val state = currentFragmentRenderModel
-        if (state is BackCallback) {
-            state.onBackPressed()
-            return true
-        }
-
-        return false
     }
 }

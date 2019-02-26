@@ -27,14 +27,14 @@ data class BackStack<Key>(val keys: List<Key>) {
                 lastActive,
                 currentlyActive
             )
-                .map { LifecycleEvent.Attach(it) }
+                .map { LifecycleEvent.Added(it) }
 
             val detachEffects = findDetachedKeys(
                 lastActive,
                 currentlyActive
             )
                 .map {
-                    LifecycleEvent.Detach(it)
+                    LifecycleEvent.Removed(it)
                 }
 
             return attachedEffects.plus(detachEffects).toSet()
@@ -51,8 +51,8 @@ data class BackStack<Key>(val keys: List<Key>) {
 
     fun update(event: LifecycleEvent<Key>): BackStack<Key> {
         return when (event) {
-            is LifecycleEvent.Attach -> add(event.key)
-            is LifecycleEvent.Detach -> remove(event.key)
+            is LifecycleEvent.Added -> add(event.key)
+            is LifecycleEvent.Removed -> remove(event.key)
         }
     }
 

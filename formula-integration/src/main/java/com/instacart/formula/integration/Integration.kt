@@ -4,14 +4,18 @@ import com.instacart.formula.Formula
 import io.reactivex.Flowable
 
 /**
- * Defines how an [ICMviFragmentContract] is bound to a [Formula]
+ * Defines how a [Key] is bounds to a formula.
+ *
+ * [Key] - a backstack entry for this screen.
+ * [Input] - a formula input
+ * [RenderModel] - a render model that the formula produces.
  */
-interface Integration<Contract, Input, RenderModel> : (Contract) -> Flowable<RenderModel> {
-    fun createViewModel(contract: Contract): Formula<Input, RenderModel>
+interface Integration<Key, Input, RenderModel> : (Key) -> Flowable<RenderModel> {
+    fun createViewModel(contract: Key): Formula<Input, RenderModel>
 
-    fun input(contract: Contract): Input
+    fun input(key: Key): Input
 
-    override fun invoke(p1: Contract): Flowable<RenderModel> {
+    override fun invoke(p1: Key): Flowable<RenderModel> {
         return createViewModel(p1).state(input(p1))
     }
 }

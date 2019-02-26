@@ -31,7 +31,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     private var disposable: Disposable? = null
 
     private var lifecycleCallback: FragmentLifecycleCallback? = null
-    private var mviView: RenderView<RenderModel>? = null
+    private var renderView: RenderView<RenderModel>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(contract.layoutId, container, false)
@@ -40,12 +40,12 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val component = contract.createComponent(view)
-        this.mviView = component.mviView
+        this.renderView = component.renderView
         disposable = stateRelay
             .doOnNext {
 //                Timber.d("render / ${this@FormulaFragment}")
             }
-            .subscribe(component.mviView.renderer::render, { error ->
+            .subscribe(component.renderView.renderer::render, { error ->
                 // log error
             })
 
@@ -89,7 +89,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         lifecycleCallback?.onDestroyView()
         lifecycleCallback = null
         super.onDestroyView()
-        mviView = null
+        renderView = null
     }
 
     override fun setState(state: RenderModel) {
@@ -105,7 +105,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         return contract
     }
 
-    fun renderView(): RenderView<RenderModel>? = mviView
+    fun renderView(): RenderView<RenderModel>? = renderView
 
     override fun toString(): String {
         return "${contract.tag} -> $contract"

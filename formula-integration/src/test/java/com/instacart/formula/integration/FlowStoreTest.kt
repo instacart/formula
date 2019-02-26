@@ -19,7 +19,7 @@ class FlowStoreTest {
     lateinit var store: FlowStore<Key>
     lateinit var mainScreenState: BehaviorRelay<String>
     lateinit var detailScreenState: BehaviorRelay<String>
-    lateinit var subscriber: TestSubscriber<Option<KeyState<Key, *>>>
+    lateinit var subscriber: TestSubscriber<FlowState<Key>>
 
     @Before
     fun setup() {
@@ -38,7 +38,7 @@ class FlowStoreTest {
         }
 
         subscriber = TestSubscriber()
-        store.screen().subscribe(subscriber)
+        store.state().subscribe(subscriber)
 
         keys.accept(BackStack(listOf(Key.Main)))
         keys.accept(

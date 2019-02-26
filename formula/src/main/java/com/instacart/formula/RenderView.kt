@@ -1,8 +1,8 @@
 package com.instacart.formula
 
 /**
- * Mvi view provides a renderer that will render the [State]
+ * A [RenderView] is a provider of a [Renderer] that can render specified [RenderModel].
  */
-interface RenderView<in State> {
-    val renderer: Renderer<State>
+interface RenderView<in RenderModel> {
+    val renderer: Renderer<RenderModel>
 }

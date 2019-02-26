@@ -1,12 +1,9 @@
 package com.instacart.formula.integration
 
-import arrow.core.Option
-import com.instacart.formula.internal.mapNotNull
 import io.reactivex.Flowable
 
 /**
- * A simple store that allows you to handle multiple
- * mvi contracts and their states.
+ * A store that manages render model changes for each entry in the [BackStack].
  */
 class FlowStore<Key : Any> constructor(
     keyState: Flowable<BackStack<Key>>,
@@ -41,13 +38,5 @@ class FlowStore<Key : Any> constructor(
                 reducer(state)
             }
             .distinctUntilChanged()
-    }
-
-    fun screen(): Flowable<Option<KeyState<Key, *>>> {
-        return state().map { it.currentScreenState() }.distinctUntilChanged()
-    }
-
-    fun notNullScreen(): Flowable<KeyState<Key, *>> {
-        return screen().mapNotNull { it.orNull() }
     }
 }

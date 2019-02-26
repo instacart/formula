@@ -32,7 +32,7 @@ class ScopedFlowStoreTest {
     lateinit var browseScreenState: BehaviorRelay<String>
     lateinit var accountScreenState: BehaviorRelay<String>
 
-    lateinit var subscriber: TestSubscriber<Option<KeyState<Key, *>>>
+    lateinit var subscriber: TestSubscriber<FlowState<Key>>
 
     lateinit var disposed: MutableList<Any>
 
@@ -85,7 +85,7 @@ class ScopedFlowStoreTest {
         }
 
         subscriber = TestSubscriber()
-        store.screen().subscribe(subscriber)
+        store.state().subscribe(subscriber)
     }
 
     @After
@@ -94,7 +94,7 @@ class ScopedFlowStoreTest {
     }
 
     @Test
-    fun disposeIsTriggered() {
+    fun `dispose is triggered`() {
         keys.accept(BackStack(listOf(Key.Login)))
         keys.accept(BackStack(listOf(Key.Browse)))
 
@@ -105,7 +105,7 @@ class ScopedFlowStoreTest {
     }
 
     @Test
-    fun allComponentsAreClearedOnDispose() {
+    fun `all components are cleared on dispose`() {
         keys.accept(BackStack(listOf(Key.Login)))
         keys.accept(
             BackStack(

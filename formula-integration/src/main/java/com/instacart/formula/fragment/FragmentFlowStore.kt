@@ -1,16 +1,13 @@
 package com.instacart.formula.fragment
 
-import arrow.core.Option
 import com.instacart.formula.integration.BackStackStore
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.KeyBinding
-import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
 /**
- * A simple store that allows you to handle multiple
- * fragment contracts and their states.
+ * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.
  */
 class FragmentFlowStore(
     private val contractStore: BackStackStore<FragmentContract<*>>,
@@ -30,9 +27,5 @@ class FragmentFlowStore(
 
     fun state(): Flowable<FragmentFlowState> {
         return store.state()
-    }
-
-    fun screen(): Flowable<Option<KeyState<FragmentContract<*>, *>>> {
-        return store.screen()
     }
 }

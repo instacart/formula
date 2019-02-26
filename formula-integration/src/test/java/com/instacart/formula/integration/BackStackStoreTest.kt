@@ -10,7 +10,7 @@ class BackStackStoreTest {
             .stateChanges()
             .test()
             .apply {
-                machine.onLifecycleEffect(LifecycleEvent.Attach("my-key"))
+                machine.onLifecycleEffect(LifecycleEvent.Added("my-key"))
             }
             .assertValues(
                 BackStack.empty(),
@@ -24,7 +24,7 @@ class BackStackStoreTest {
             .stateChanges()
             .test()
             .apply {
-                machine.onLifecycleEffect(LifecycleEvent.Detach("my-key"))
+                machine.onLifecycleEffect(LifecycleEvent.Removed("my-key"))
             }
             .assertValues(
                 BackStack(listOf("my-key")),

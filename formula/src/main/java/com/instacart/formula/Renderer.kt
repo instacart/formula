@@ -1,11 +1,10 @@
 package com.instacart.formula
 
 /**
- * Responsible for taking render model
- * and rendering the view using it.
+ * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface.
  */
-class Renderer<in State> private constructor(
-    private val render: (State) -> Unit
+class Renderer<in RenderModel> private constructor(
+    private val render: (RenderModel) -> Unit
 ) {
 
     companion object {
@@ -24,5 +23,5 @@ class Renderer<in State> private constructor(
         }
     }
 
-    fun render(state: State) = render.invoke(state)
+    fun render(state: RenderModel) = render.invoke(state)
 }

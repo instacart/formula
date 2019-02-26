@@ -4,7 +4,9 @@ import arrow.core.Option
 import arrow.core.toOption
 
 /**
- * Represents state of multiple mvi contracts.
+ * Representation of the [BackStack] and the state associated with each of the entries.
+ *
+ * [Key] - type representing the entry in the [BackStack]
  */
 data class FlowState<Key>(
     val backStack: BackStack<Key> = BackStack.empty(),
@@ -13,6 +15,11 @@ data class FlowState<Key>(
 
     fun update(state: KeyState<Key, *>): FlowState<Key> {
         return copy(contracts = contracts.plus(state.key to state))
+    }
+
+    fun lastEntry(): KeyState<Key, *>? {
+        val currentKey = backStack.keys.lastOrNull()
+        return currentKey?.let { contracts[it] }
     }
 
     fun currentScreenState(): Option<KeyState<Key, *>> {
