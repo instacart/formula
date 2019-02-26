@@ -1,0 +1,138 @@
+version: 2.1
+
+references:
+  cache_key: &cache_key jars-v1-{{ checksum "build.gradle" }}-{{ checksum  "formula/build.gradle" }}
+  workspace_dir: &workspace_dir /home/circleci
+
+commands:
+  cache_restore:
+    description: Restore cache
+    steps:
+      - restore_cache:
+          key: *cache_key
+
+  cache_populate:
+    description: Populate cache
+    steps:
+      - run:
+          name: Populate cache
+          command: ./gradlew androidDependencies -DCI=true --max-workers 4
+
+  cache_save:
+    description: Save cache
+    steps:
+      - save_cache:
+          key: *cache_key
+          paths:
+            - ~/.gradle
+            - ~/.m2
+
+  prepare:
+    description: Initial job setup steps
+    steps:
+      - checkout
+      - cache_restore
+      - cache_populate
+      - cache_save
+      - attach_workspace:
+          at: *workspace_dir
+
+  build:
+    description: Build << parameters.variant >>
+    parameters:
+      variant:
+        default: Debug
+        type: string
+    steps:
+      - prepare
+      - run:
+          name: Build << parameters.variant >>
+          command: ./gradlew build<< parameters.variant >> -DCI=true --max-workers 4 --scan
+
+  test_save:
+    description: Save test results and artifacts
+    parameters:
+      suite:
+        type: string
+    steps:
+      - store_test_results:
+          path: ~/<< parameters.suite >>
+      - store_artifacts:
+          path: ~/<< parameters.suite >>
+      - persist_to_workspace:
+          root: *workspace_dir
+          paths: << parameters.suite >>
+
+  test_unit:
+    description: Run unit tests
+    steps:
+      - run:
+          name: Run Tests
+          command: |
+            ./gradlew test --continue -DCI=true -DJACOCO=true --max-workers 4 --scan
+      - run:
+          name: Save test results
+          command: |
+            ./gradlew mergeReports -DCI=true --max-workers 4 --scan
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - test_save:
+          suite: junit
+
+  test_coverage:
+    description: Run tests coverage
+    steps:
+      - run:
+          name: Generate Jacoco Report
+          command: |
+            ./gradlew jacocoTestReportMerged -DCI=true -DJACOCO=true --max-workers 4 --scan
+      - run:
+          name: Save Jacoco Report
+          command: |
+            mkdir -p ~/jacoco/
+            find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
+          when: always
+      - test_save:
+          suite: jacoco
+
+executors:
+  android:
+    docker:
+      - image: circleci/android:api-28
+    resource_class: medium
+    working_directory: ~/code
+    environment:
+      # Java is really greedy, let's minimize how much memory it takes
+      JAVA_TOOL_OPTIONS: '-Xmx512m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1'
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx6g -XX:+HeapDumpOnOutOfMemoryError"'
+      JVM_OPTS: '-Xmx3200m'
+
+jobs:
+  test:
+    executor: android
+    steps:
+      - test_unit
+#      - test_coverage
+
+  check:
+    executor: android
+    steps:
+      - prepare
+      - run: bundle exec danger --verbose
+
+workflows:
+  version: 2
+
+  deploy:
+    jobs:
+      - test
+      - check:
+          requires:
+            - test
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore:
+                - master
