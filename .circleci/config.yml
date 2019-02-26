@@ -34,20 +34,11 @@ commands:
       - cache_restore
       - cache_populate
       - cache_save
+      - run:
+          name: Prepare environment
+          command: ./ci_postclone.sh
       - attach_workspace:
           at: *workspace_dir
-
-  build:
-    description: Build << parameters.variant >>
-    parameters:
-      variant:
-        default: Debug
-        type: string
-    steps:
-      - prepare
-      - run:
-          name: Build << parameters.variant >>
-          command: ./gradlew build<< parameters.variant >> -DCI=true --max-workers 4 --scan
 
   test_save:
     description: Save test results and artifacts
@@ -69,7 +60,7 @@ commands:
       - run:
           name: Run Tests
           command: |
-            ./gradlew test --continue -DCI=true -DJACOCO=true --max-workers 4 --scan
+            ./gradlew jacocoTestReportRelease --continue -DCI=true -DJACOCO=true --max-workers 4 --scan
       - run:
           name: Save test results
           command: |
@@ -113,7 +104,7 @@ jobs:
     executor: android
     steps:
       - test_unit
-#      - test_coverage
+      - test_coverage
 
   check:
     executor: android
