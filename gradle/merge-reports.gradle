@@ -1,0 +1,37 @@
+// make sure this project depends on the evaluation of all sub projects so that
+// it's evaluated last.
+project.evaluationDependsOnChildren()
+
+afterEvaluate {
+    def testTasks = subprojects.findAll { it.name.contains("formula") }.collect { it.tasks.withType(Test) }.flatten()
+    if (testTasks.isEmpty()) {
+        throw IllegalStateException("misconfiguration: no test tasks found")
+    }
+
+    task mergeReports(type: Copy) {
+        from { testTasks*.reports.junitXml.destination }
+        into { file("$buildDir/reports/allTests") }
+
+        doLast {
+            println "reports merged for ${testTasks.size()} test tasks"
+        }
+    }
+}
+
+subprojects {
+    if (!name.contains("formula")) {
+        return
+    }
+
+    afterEvaluate {
+        if (plugins.hasPlugin("com.android.application") || plugins.hasPlugin("com.android.library")) {
+            android {
+                testOptions {
+                    unitTests.all {
+                        reports.html.enabled = false
+                    }
+                }
+            }
+        }
+    }
+}
