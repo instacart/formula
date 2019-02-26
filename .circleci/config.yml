@@ -103,6 +103,7 @@ jobs:
   test:
     executor: android
     steps:
+      - prepare
       - test_unit
       - test_coverage
 
