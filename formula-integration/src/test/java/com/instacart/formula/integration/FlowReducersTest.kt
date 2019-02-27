@@ -25,14 +25,14 @@ class FlowReducersTest {
         val newState = reducers.onBackstackChange(backstackEvent).invoke(
             FlowState(
                 backStack = initialStack,
-                contracts = mapOf(
+                states = mapOf(
                     firstEntry to KeyState(firstEntry, "state"),
                     secondEntry to KeyState(secondEntry, "second state")
                 )
             )
         )
 
-        assertThat(newState.contracts).hasSize(1)
-        assertThat(newState.contracts[firstEntry]).isNotNull()
+        assertThat(newState.states).hasSize(1)
+        assertThat(newState.states[firstEntry]).isNotNull()
     }
 }

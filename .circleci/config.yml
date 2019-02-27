@@ -16,7 +16,7 @@ commands:
     steps:
       - run:
           name: Populate cache
-          command: ./gradlew androidDependencies -DCI=true --max-workers 4
+          command: ./gradlew androidDependencies --max-workers 4
 
   cache_save:
     description: Save cache
@@ -60,11 +60,11 @@ commands:
       - run:
           name: Run Tests
           command: |
-            ./gradlew jacocoTestReportRelease --continue -DCI=true -DJACOCO=true --max-workers 4 --scan
+            ./gradlew jacocoTestReportRelease --continue --max-workers 4
       - run:
           name: Save test results
           command: |
-            ./gradlew mergeReports -DCI=true --max-workers 4 --scan
+            ./gradlew mergeReports -DCI=true --max-workers 4
             mkdir -p ~/junit/
             find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
           when: always
@@ -77,7 +77,7 @@ commands:
       - run:
           name: Generate Jacoco Report
           command: |
-            ./gradlew jacocoTestReportMerged -DCI=true -DJACOCO=true --max-workers 4 --scan
+            ./gradlew jacocoTestReportMerged --max-workers 4
       - run:
           name: Save Jacoco Report
           command: |

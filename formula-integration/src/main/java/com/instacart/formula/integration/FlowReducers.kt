@@ -23,7 +23,7 @@ class FlowReducers<Key : Any>(
 
             state.copy(
                 backStack = keys,
-                contracts = state.contracts.minus(detached).plus(notHandled)
+                states = state.states.minus(detached).plus(notHandled)
             )
         }
     }
