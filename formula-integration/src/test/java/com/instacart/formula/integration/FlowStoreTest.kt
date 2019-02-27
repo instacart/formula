@@ -82,7 +82,6 @@ class FlowStoreTest {
             .last()
             .apply {
                 assertThat(lastEntry()).isEqualTo(KeyState(Key.Detail, "detail-initial"))
-
             }
     }
 
@@ -96,7 +95,7 @@ class FlowStoreTest {
 
     private fun expectedState(vararg states: Pair<Key, *>): FlowState<Key> {
         val asList = states.toList()
-        val keyStates = asList.foldRight(mutableMapOf<Key, KeyState<Key, *>>()) { value, acc ->
+        val keyStates = asList.fold(mutableMapOf<Key, KeyState<Key, *>>()) { acc, value ->
             if (value.second != null) {
                 acc.put(value.first, KeyState(value.first, value.second))
             }
