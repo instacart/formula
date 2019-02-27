@@ -2,38 +2,38 @@ package com.instacart.formula.integration
 
 import org.junit.Test
 
-class BackstackStoreTest {
+class BackStackStoreTest {
 
     @Test fun lifecycleEvent_attach() {
-        val machine = BackstackStore<String>()
+        val machine = BackStackStore<String>()
         machine
             .stateChanges()
             .test()
             .apply {
-                machine.onLifecycleEffect(LifecycleEvent.Attach("my-key"))
+                machine.onLifecycleEffect(LifecycleEvent.Added("my-key"))
             }
             .assertValues(
-                ActiveKeys.empty(),
-                ActiveKeys(listOf("my-key"))
+                BackStack.empty(),
+                BackStack(listOf("my-key"))
             )
     }
 
     @Test fun lifecycleEvent_detach() {
-        val machine = BackstackStore(listOf("my-key"))
+        val machine = BackStackStore(listOf("my-key"))
         machine
             .stateChanges()
             .test()
             .apply {
-                machine.onLifecycleEffect(LifecycleEvent.Detach("my-key"))
+                machine.onLifecycleEffect(LifecycleEvent.Removed("my-key"))
             }
             .assertValues(
-                ActiveKeys(listOf("my-key")),
-                ActiveKeys.empty()
+                BackStack(listOf("my-key")),
+                BackStack.empty()
             )
     }
 
     @Test fun navigateTo_multipleEvents() {
-        val machine = BackstackStore<String>()
+        val machine = BackStackStore<String>()
         machine
             .stateChanges()
             .test()
@@ -42,44 +42,44 @@ class BackstackStoreTest {
                 machine.navigateTo("second-key")
             }
             .assertValues(
-                ActiveKeys.empty(),
-                ActiveKeys(listOf("first-key")),
-                ActiveKeys(listOf("first-key", "second-key"))
+                BackStack.empty(),
+                BackStack(listOf("first-key")),
+                BackStack(listOf("first-key", "second-key"))
             )
     }
 
     @Test fun close() {
-        val machine = BackstackStore(listOf("first-key"))
+        val machine = BackStackStore(listOf("first-key"))
         machine.stateChanges().test()
             .apply {
                 machine.close("first-key")
             }
             .assertValues(
-                ActiveKeys(listOf("first-key")),
-                ActiveKeys.empty()
+                BackStack(listOf("first-key")),
+                BackStack.empty()
             )
     }
 
     @Test fun navigateBack_hasItemsInBackstack() {
-        val machine = BackstackStore("first-key")
+        val machine = BackStackStore("first-key")
         machine.stateChanges().test()
             .apply {
                 machine.navigateBack()
             }
             .assertValues(
-                ActiveKeys(listOf("first-key")),
-                ActiveKeys.empty()
+                BackStack(listOf("first-key")),
+                BackStack.empty()
             )
     }
 
     @Test fun navigateBack_empty() {
-        val machine = BackstackStore<String>()
+        val machine = BackStackStore<String>()
         machine.stateChanges().test()
             .apply {
                 machine.navigateBack()
             }
             .assertValues(
-                ActiveKeys.empty()
+                BackStack.empty()
             )
     }
 }

@@ -7,9 +7,9 @@ import kotlin.reflect.KClass
  * Annotates a state data class for which a fully formed events class is generated from
  * [reducers] class and properties marked with [ExportedProperty].
  *
- * [reducers] - (Optional) A class that extends [com.instacart.client.mvi.state.ICNextReducers]
+ * [reducers] - (Optional) A class that extends [com.instacart.formula.NextReducers]
  * and contains various state transformations. The class will be scanned for functions that
- * have a single input parameter and return a [com.instacart.client.mvi.state.NextReducer].
+ * have a single input parameter and return a [com.instacart.formula.NextReducer].
  * A binding will be generated for each of these methods.
  *
  * Requirements:
@@ -66,9 +66,9 @@ import kotlin.reflect.KClass
  */
 annotation class State(
     /**
-     * (Optional) A class that extends [com.instacart.client.mvi.state.ICNextReducers]
+     * (Optional) A class that extends [com.instacart.formula.NextReducers]
      * and contains various state transformations. The class will be scanned for functions that
-     * have a single input parameter and return a [com.instacart.client.mvi.state.NextReducer].
+     * have a single input parameter and return a [com.instacart.formula.NextReducer].
      * A binding will be generated for each of these methods.
      */
     val reducers: KClass<out NextReducers<*, *>> = NextReducers::class

@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.subscribers.TestSubscriber
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -15,15 +14,15 @@ class FlowStoreTest {
         object Detail : Key()
     }
 
-    lateinit var keys: BehaviorRelay<ActiveKeys<Key>>
+    lateinit var keys: BehaviorRelay<BackStack<Key>>
     lateinit var store: FlowStore<Key>
     lateinit var mainScreenState: BehaviorRelay<String>
     lateinit var detailScreenState: BehaviorRelay<String>
-    lateinit var subscriber: TestSubscriber<Option<KeyState<Key, *>>>
+    lateinit var subscriber: TestSubscriber<FlowState<Key>>
 
     @Before
     fun setup() {
-        keys = BehaviorRelay.createDefault(ActiveKeys(emptyList()))
+        keys = BehaviorRelay.createDefault(BackStack(emptyList()))
         mainScreenState = BehaviorRelay.createDefault("main-initial")
         detailScreenState = BehaviorRelay.createDefault("detail-initial")
 
@@ -37,59 +36,76 @@ class FlowStoreTest {
             })
         }
 
-        subscriber = TestSubscriber()
-        store.screen().subscribe(subscriber)
-
-        keys.accept(ActiveKeys(listOf(Key.Main)))
-        keys.accept(
-            ActiveKeys(
-                listOf(
-                    Key.Main,
-                    Key.Detail
-                )
-            )
-        )
-    }
-
-    @After
-    fun cleanUp() {
-        subscriber.dispose()
+        subscriber = store.state().test()
     }
 
     @Test
-    fun basicStateUpdates() {
-        val values = subscriber.values()
-        assertThat(values).containsExactlyElementsIn(expectedInitialState())
+    fun `single screen update`() {
+        init()
+            .apply {
+                updateBackstack(Key.Main)
+            }
+            .assertValues(
+                expectedState(),
+                expectedState(Key.Main to null),
+                expectedState(Key.Main to "main-initial")
+            )
+    }
+
+    @Test fun `pop backstack updates state`() {
+        init()
+            .apply {
+                updateBackstack(Key.Main)
+                updateBackstack(Key.Main, Key.Detail)
+                updateBackstack(Key.Main)
+            }
+            .assertValues(
+                expectedState(),
+                expectedState(Key.Main to null),
+                expectedState(Key.Main to "main-initial"),
+                expectedState(Key.Main to "main-initial", Key.Detail to null),
+                expectedState(Key.Main to "main-initial", Key.Detail to "detail-initial"),
+                expectedState(Key.Main to "main-initial")
+            )
     }
 
     @Test
-    fun emitOnlyCurrentScreenUpdates() {
-        val expectedInitialState = expectedInitialState()
-        assertThat(subscriber.values()).isEqualTo(expectedInitialState)
+    fun `last entry always points to last backstack entry`() {
+        init()
+            .apply {
+                updateBackstack(Key.Main)
+                updateBackstack(Key.Main, Key.Detail)
 
-        mainScreenState.accept("main-update")
-
-        // Should not have any more emissions
-        assertThat(subscriber.values()).isEqualTo(expectedInitialState)
+                mainScreenState.accept("main-update")
+            }
+            .values()
+            .last()
+            .apply {
+                assertThat(lastEntry()).isEqualTo(KeyState(Key.Detail, "detail-initial"))
+            }
     }
 
-    private fun expectedInitialState(): List<Option<KeyState<out Key, String>>> {
-        return listOf(
-            Option.empty(),
-            Option.just(
-                KeyState(
-                    Key.Main,
-                    "main-initial"
-                )
-            ),
-            Option.empty(),
-            Option.just(
-                KeyState(
-                    Key.Detail,
-                    "detail-initial"
-                )
-            )
+    private fun updateBackstack(vararg entries: Key) {
+        keys.accept(BackStack(entries.toList()))
+    }
 
+    private fun init(): TestSubscriber<FlowState<Key>> {
+        return store.state().test()
+    }
+
+    private fun expectedState(vararg states: Pair<Key, *>): FlowState<Key> {
+        val asList = states.toList()
+        val keyStates = asList.fold(mutableMapOf<Key, KeyState<Key, *>>()) { acc, value ->
+            if (value.second != null) {
+                acc.put(value.first, KeyState(value.first, value.second))
+            }
+
+            acc
+        }
+
+        return FlowState(
+            backStack = BackStack(asList.map { it.first }),
+            states = keyStates
         )
     }
 }

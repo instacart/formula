@@ -1,22 +1,20 @@
 package com.instacart.formula.utils
 
-import com.instacart.formula.Reducer
 import com.instacart.formula.internal.mapNotNull
-import com.instacart.formula.reduce
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 
-class SimpleStore<T> {
+class SharedStateStore<T> {
 
     private val stateRelay = BehaviorRelay.create<T>()
 
-    fun stateChanges(): Flowable<T> {
-        return stateRelay.toFlowable(BackpressureStrategy.LATEST)
-    }
-
     fun update(state: T) {
         stateRelay.accept(state)
+    }
+
+    fun stateChanges(): Flowable<T> {
+        return stateRelay.toFlowable(BackpressureStrategy.LATEST)
     }
 
     /**
@@ -27,12 +25,6 @@ class SimpleStore<T> {
             .toFlowable(BackpressureStrategy.LATEST)
             .mapNotNull(select)
             .distinctUntilChanged()
-    }
-
-    fun observe(initialState: T, reducers: Flowable<Reducer<T>>): Flowable<T> {
-        return reducers
-            .reduce(initialState)
-            .doOnNext(stateRelay)
     }
 
     /**

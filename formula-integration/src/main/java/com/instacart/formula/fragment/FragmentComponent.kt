@@ -4,12 +4,12 @@ import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
 
 /**
- * [FragmentComponent] defines the way the [com.instacart.formula.FormulaFragment] can interact
+ * [FragmentComponent] defines the way the [FormulaFragment] can interact
  * with outside world. This class has a [RenderView] that will handle state rendering
  * and also provides a way to listen to fragment lifecycle events.
  */
 class FragmentComponent<in RenderModel> private constructor(
-    val mviView: RenderView<RenderModel>,
+    val renderView: RenderView<RenderModel>,
     val lifecycleCallbacks: FragmentLifecycleCallback? = null
 ) {
     companion object {
@@ -21,18 +21,18 @@ class FragmentComponent<in RenderModel> private constructor(
 
         fun <T> create(render: (T) -> Unit): FragmentComponent<T> {
             return create(
-                mviView = object : RenderView<T> {
+                renderView = object : RenderView<T> {
                     override val renderer: Renderer<T> = Renderer.create(render)
                 }
             )
         }
 
         fun <T> create(
-            mviView: RenderView<T>,
+            renderView: RenderView<T>,
             lifecycleCallbacks: FragmentLifecycleCallback? = null
         ): FragmentComponent<T> {
             return FragmentComponent(
-                mviView = mviView,
+                renderView = renderView,
                 lifecycleCallbacks = lifecycleCallbacks
             )
         }

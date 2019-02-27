@@ -9,7 +9,7 @@ sealed class KeyBinding<Scope, Key, State> {
      */
     abstract fun binds(key: Any): Boolean
 
-    abstract fun state(scope: Scope, store: Flowable<ActiveKeys<Key>>): Flowable<KeyState<Key, State>>
+    abstract fun state(scope: Scope, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>>
 
     class Binding<Key, Scope, State>(
         val type: Class<Key>,
@@ -18,7 +18,7 @@ sealed class KeyBinding<Scope, Key, State> {
         /**
          * Helper method to select state from active store.
          */
-        override fun state(scope: Scope, store: Flowable<ActiveKeys<Key>>): Flowable<KeyState<Key, State>> {
+        override fun state(scope: Scope, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>> {
             return store.createStateUpdates(type) { key ->
                 init(scope, key)
             }
@@ -41,10 +41,10 @@ sealed class KeyBinding<Scope, Key, State> {
         /**
          * Helper method to select state from active store.
          */
-        override fun state(scope: Scope, store: Flowable<ActiveKeys<Key>>): Flowable<KeyState<Key, Any>> {
+        override fun state(scope: Scope, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, Any>> {
             return store
                 .map {
-                    it.activeKeys.any { key ->
+                    it.keys.any { key ->
                         binds(key)
                     }
                 }
@@ -70,7 +70,7 @@ sealed class KeyBinding<Scope, Key, State> {
         private val bindings: MutableList<KeyBinding<Scope, Key, *>> = mutableListOf()
 
         /**
-         * For specific mvi contract, provide state stream factory.
+         * Binds specific type of key to the render model management.
          */
         fun <T : Key, S> register(type: KClass<T>, init: (T) -> Flowable<S>): Builder<ParentScope, Scope, Key> {
             bindings.add(
@@ -84,7 +84,7 @@ sealed class KeyBinding<Scope, Key, State> {
         }
 
         /**
-         * For specific mvi contract, provide state stream factory.
+         * Binds specific type of key to the render model management.
          */
         fun <T : Key, S> bind(type: KClass<T>, init: (Scope, T) -> Flowable<S>): Builder<ParentScope, Scope, Key> {
             return bind((Binding(

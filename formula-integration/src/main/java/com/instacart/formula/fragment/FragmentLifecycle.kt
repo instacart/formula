@@ -11,11 +11,11 @@ import io.reactivex.Flowable
 import io.reactivex.android.MainThreadDisposable
 
 /**
- * Helps activities track active MVI contracts.
+ * Provides utility method [lifecycleEvents] to track what fragments are added and removed from the backstack.
  */
-object FormulaActivity {
+object FragmentLifecycle {
     /**
-     * returns a [Flowable] that will emit [FragmentEvent]s for non retained, non glide manager fragments
+     * returns a [Flowable] that will emit [FragmentEvent]s for non retained fragments.
      */
     private fun fragmentLifecycleEvents(
         activity: FragmentActivity,
@@ -50,21 +50,21 @@ object FormulaActivity {
      * Must subscribe to the state before calling Activity.super.onCreate(),
      * otherwise you might miss fragment event
      */
-    @JvmStatic fun lifecycleEffects(
+    @JvmStatic fun lifecycleEvents(
         activity: FragmentActivity,
         shouldTrack: (Fragment) -> Boolean = { true }
     ): Flowable<LifecycleEvent<FragmentContract<*>>> {
         return fragmentLifecycleEvents(activity, shouldTrack)
             .mapNotNull { event ->
                 val fragment = event.fragment as? BaseFormulaFragment<*>
-                val contract = fragment?.getMviContract() ?: EmptyFragmentContract(event.fragment.tag.orEmpty())
+                val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(event.fragment.tag.orEmpty())
                 contract.let { it: FragmentContract<*> ->
                     when (event) {
-                        is FragmentEvent.Attached -> LifecycleEvent.Attach(it)
+                        is FragmentEvent.Attached -> LifecycleEvent.Added(it)
                         is FragmentEvent.Detached -> {
                             // Only trigger detach, when fragment is actually being removed from the backstack
                             if (event.fragment.isRemoving) {
-                                LifecycleEvent.Detach(it, fragment?.currentState())
+                                LifecycleEvent.Removed(it, fragment?.currentState())
                             } else {
                                 null
                             }

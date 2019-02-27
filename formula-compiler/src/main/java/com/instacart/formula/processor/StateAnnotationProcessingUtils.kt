@@ -20,7 +20,7 @@ import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 
 /**
- * We generate a reducer class for data class marked with [com.instacart.client.mvi.State]
+ * We generate a reducer class for data class marked with [com.instacart.formula.annotations.State]
  */
 object StateAnnotationProcessingUtils {
     data class GeneratedReducerClass(
