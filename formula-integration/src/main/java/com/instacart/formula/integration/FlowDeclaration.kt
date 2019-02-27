@@ -18,7 +18,8 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
         val flowComponentFactory: (ParentComponent) -> DisposableScope<FlowComponent>,
         val childrenBindings: List<KeyBinding.Binding<FragmentContract<*>, FlowComponent, *>>
     ) {
-        fun asMviBinding(): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
+
+        fun asBinding(): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
             return KeyBinding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(
                 flowComponentFactory
             )
@@ -32,7 +33,7 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     }
 
     /**
-     * Helper function to create an mvi binding
+     * A utility function to create a binding for [FragmentContract] to the render model management.
      */
     protected fun <State, Contract : FragmentContract<State>> bind(
         type: KClass<Contract>,
@@ -47,6 +48,6 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
 
     fun createBinding(input: Input): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
-        return createFlow(input).asMviBinding()
+        return createFlow(input).asBinding()
     }
 }

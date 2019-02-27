@@ -1,9 +1,8 @@
 package com.instacart.formula.integration
 
 /**
- * Stores all active mvi contracts.
- *
- * Null value indicates that store hasn't been initialized.
+ * Represents the current back stack state. It contains a list of
+ * screen keys in order where last key in the list is the current screen.
  */
 data class BackStack<Key>(val keys: List<Key>) {
     companion object {

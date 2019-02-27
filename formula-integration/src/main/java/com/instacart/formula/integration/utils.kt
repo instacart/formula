@@ -22,11 +22,15 @@ private fun <Key> Flowable<BackStack<Key>>.lifecycleEffects(): Flowable<Lifecycl
 }
 
 /**
- * Creates mvi updates stream for a specified contract type.
- * It takes a type and a state stream factory.
+ * Listens for back stack changes and initializes a render loop
+ * when a specified type of key is added to the back stack.
+ *
+ * [type] - key class
+ * [init] - a function that initializes the render model [Flowable]
  */
 fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
-    type: Class<Key>, init: (Key) -> Flowable<State>
+    type: Class<Key>,
+    init: (Key) -> Flowable<State>
 ): Flowable<KeyState<Key, State>> {
     return this
         .lifecycleEffects()

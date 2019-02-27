@@ -70,7 +70,7 @@ sealed class KeyBinding<Scope, Key, State> {
         private val bindings: MutableList<KeyBinding<Scope, Key, *>> = mutableListOf()
 
         /**
-         * For specific mvi contract, provide state stream factory.
+         * Binds specific type of key to the render model management.
          */
         fun <T : Key, S> register(type: KClass<T>, init: (T) -> Flowable<S>): Builder<ParentScope, Scope, Key> {
             bindings.add(
@@ -84,7 +84,7 @@ sealed class KeyBinding<Scope, Key, State> {
         }
 
         /**
-         * For specific mvi contract, provide state stream factory.
+         * Binds specific type of key to the render model management.
          */
         fun <T : Key, S> bind(type: KClass<T>, init: (Scope, T) -> Flowable<S>): Builder<ParentScope, Scope, Key> {
             return bind((Binding(

@@ -11,7 +11,7 @@ import io.reactivex.Flowable
 import io.reactivex.android.MainThreadDisposable
 
 /**
- * Helps activities track active MVI contracts.
+ * Provides utility method [lifecycleEvents] to track what fragments are added and removed from the backstack.
  */
 object FragmentLifecycle {
     /**

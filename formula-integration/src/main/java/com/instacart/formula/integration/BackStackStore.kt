@@ -6,10 +6,10 @@ import io.reactivex.Flowable
 import io.reactivex.subjects.BehaviorSubject
 
 /**
- * Used to manage app backstack.
+ * A [BackStackStore] maintains back stack state and provides useful operations to modify it.
  *
- * Ex: activity would call your view model to set active mvi contracts and
- * your view model would delegate to this class.
+ * This class is used internally to mimic fragment backstack. The activity listens for fragment
+ * lifecycle events and update this store.
  *
  */
 class BackStackStore<Key>(initial: List<Key>) {
