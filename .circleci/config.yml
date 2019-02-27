@@ -58,13 +58,17 @@ commands:
     description: Run unit tests
     steps:
       - run:
+          name: Run Core Tests
+          command: |
+            ./gradlew :formula:test --continue --max-workers 4
+      - run:
           name: Run Tests
           command: |
             ./gradlew jacocoTestReportRelease --continue --max-workers 4
       - run:
           name: Save test results
           command: |
-            ./gradlew mergeReports -DCI=true --max-workers 4
+            ./gradlew mergeReports --max-workers 4
             mkdir -p ~/junit/
             find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
           when: always
