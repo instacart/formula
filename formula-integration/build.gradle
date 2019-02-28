@@ -33,7 +33,7 @@ dependencies {
     testImplementation libraries.androidx.test.espresso.core
     testImplementation libraries.robolectric
 
-    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation libraries.truth
     testImplementation "org.mockito:mockito-inline:$mockitoVersion"
     testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
 }
