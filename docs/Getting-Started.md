@@ -90,7 +90,7 @@ This is continuation on the above section. We want to trigger save user info req
 ```kotlin
 // Let's define the repository abstraction for saving user info
 class SaveUserInfoRepo {
-  fun saveUserInfo(info: UserInfo): Flowable<ICLce<UserInfoResponse>>
+  fun saveUserInfo(info: UserInfo): Flowable<Lce<UserInfoResponse>>
 } 
 
 class MyRenderLoopFormula(
@@ -115,7 +115,7 @@ class MyRenderLoopFormula(
         // How to accomplish that will be shown in a different example.
       }
       
-    return ICRenderLoop(
+    return RenderLoop(
       // Since we only have a single reducer here, we pass it directly.
       reducers = saveUserInfoReducer,
       renderModelGenerator = MyRenderModelGenerator(
@@ -289,7 +289,7 @@ There is a lot of integration logic here that can be reused here. To have a bett
 ```kotlin
 // We only pass the important properties here
 // while removing all the integration noise.
-val loop = ICStateLoop(
+val loop = StateLoop(
   initialState = State(tasks = emptyList()),
   reducers = transformations,
   onEffect = { effect ->
