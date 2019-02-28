@@ -19,6 +19,10 @@ object FragmentLifecycle {
         return !fragment.retainInstance && !FragmentInspector.isHeadless(fragment)
     }
 
+    private fun isKept(fragmentManager: FragmentManager, fragment: Fragment): Boolean {
+        return !fragment.isRemoving
+    }
+
     /**
      * Must subscribe to the state before calling Activity.super.onCreate(),
      * otherwise you might miss fragment event
@@ -34,10 +38,10 @@ object FragmentLifecycle {
                     }
                 }
 
-                override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
-                    super.onFragmentStopped(fm, f)
+                override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
+                    super.onFragmentDetached(fm, f)
                     // Only trigger detach, when fragment is actually being removed from the backstack
-                    if (shouldTrack(f) && f.isRemoving) {
+                    if (shouldTrack(f) && !isKept(fm, f)) {
                         val fragment = f as? BaseFormulaFragment<*>
                         val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(f.tag.orEmpty())
                         emitter.onNext(LifecycleEvent.Removed(contract, fragment?.currentState()))

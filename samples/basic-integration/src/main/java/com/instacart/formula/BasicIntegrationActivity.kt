@@ -19,9 +19,9 @@ class BasicIntegrationActivity : FragmentActivity() {
         setContentView(R.layout.basic_integration_activity)
 
         if (savedInstanceState == null) {
+            val contract = TaskListContract()
             supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, FormulaFragment.newInstance(TaskListContract()))
-                .addToBackStack(null)
+                .add(R.id.activity_content, FormulaFragment.newInstance(contract), contract.tag)
                 .commit()
         }
     }
