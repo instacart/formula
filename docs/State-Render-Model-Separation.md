@@ -4,8 +4,8 @@ This allows us to keep the view very stupid. Let's say we have a state class suc
 
 ```kotlin
 data class State(
-  val userInfo: ICLce<UserInfo>,
-  val saveRequest: ICLce<SaveResponse>? = null
+  val userInfo: Lce<UserInfo>,
+  val saveRequest: Lce<SaveResponse>? = null
 )
 
 // UI layer now has to contain logic to process these properties.
@@ -25,7 +25,7 @@ data class RenderModel(
 The logic where we do this transformation is encapsulated in the RenderModelGenerator.
 
 ```kotlin
-class MyRenderModelGenerator: ICRenderModelGenerator<State, RenderModel> {
+class MyRenderModelGenerator: RenderModelGenerator<State, RenderModel> {
   override fun toRenderModel(state: State): RenderModel {
     return RenderModel(
       isSaveEnabled = state.userInfo.hasData() &&
