@@ -1,12 +1,13 @@
 package com.instacart.formula.integration
 
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import arrow.core.Option
-import arrow.core.toOption
+import androidx.fragment.app.FragmentManager
 import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
 import com.instacart.formula.fragment.BaseFormulaFragment
-import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
@@ -14,42 +15,51 @@ import io.reactivex.disposables.CompositeDisposable
 
 /**
  * Renders [FragmentFlowState] and provides back button handling.
+ *
+ * NOTE: Initialize this class before calling [FragmentActivity.super.onCreate]
  */
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,
     private val onLifecycleEvent: (LifecycleEvent<FragmentContract<*>>) -> Unit
 ) : RenderView<FragmentFlowState> {
-    private var currentFragmentRenderModel: Any? = null
 
-    private var lastFragment: FormulaFragment<*>? = null
-    private var pendingUpdate: KeyState<FragmentContract<*>, *>? = null
+    private var fragmentState: FragmentFlowState? = null
+    private var currentFragmentRenderModel: Any? = null
 
     private val disposables = CompositeDisposable()
 
+    private val visibleFragments: MutableMap<String, Fragment> = mutableMapOf()
+
     init {
-        activity.supportFragmentManager.addOnBackStackChangedListener {
-            pendingUpdate?.let {
-                applyState(it)
+        activity.supportFragmentManager.registerFragmentLifecycleCallbacks(object :
+            FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
+                super.onFragmentViewCreated(fm, f, v, savedInstanceState)
+
+                val tag = f.tag
+                if (tag != null) {
+                    visibleFragments[tag] = f
+                }
+
+                fragmentState?.let {
+                    updateVisibleFragments(it)
+                }
             }
-        }
+
+            override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
+                super.onFragmentViewDestroyed(fm, f)
+                visibleFragments.remove(f.tag)
+            }
+        }, false)
 
         disposables.add(FragmentLifecycle.lifecycleEvents(activity).subscribe(onLifecycleEvent))
     }
 
-    private val updateRenderer = Renderer.create<Option<KeyState<FragmentContract<*>, *>>> {
-        val state = it.orNull()
-
-        if (state == null) {
-            lastFragment = null
-        } else {
-            applyState(state)
-        }
-
-        currentFragmentRenderModel = state?.renderModel
-    }
-
     override val renderer: Renderer<FragmentFlowState> = Renderer.create {
-        updateRenderer.render(it.lastEntry().toOption())
+        updateVisibleFragments(it)
+
+        fragmentState = it
+        currentFragmentRenderModel = it.lastEntry()?.renderModel
     }
 
     fun onBackPressed(): Boolean {
@@ -69,30 +79,12 @@ class FragmentFlowRenderView(
         disposables.dispose()
     }
 
-    private fun applyState(state: KeyState<FragmentContract<*>, *>) {
-        val tag = state.key.tag
-        val fragment = lastFragment
-            ?.takeIf { it.tag == tag && !it.isRemoving }
-            ?: activity.supportFragmentManager.findFragmentByTag(tag)
-
-        // Given the async fragment nature, sometimes state changes arrive
-        // before fragment is ready to consume it. For example, there is
-        // an issue with fragment animations where removed fragment is stuck
-        // until next fragment transaction is executed. This introduce hard
-        // to catch bug where if you navigate again to this fragment it will
-        // send updates to the old one.
-        if (fragment == null || fragment.isRemoving) {
-            // No valid fragment
-            lastFragment = null
-            pendingUpdate = state
-        } else {
-            pendingUpdate = null
-
-            if (fragment is BaseFormulaFragment<*>) {
-                (fragment as BaseFormulaFragment<Any>).setState(state.renderModel!!)
+    private fun updateVisibleFragments(state: FragmentFlowState) {
+        state.states.forEach { entry ->
+            val fragment = visibleFragments.get(entry.key.tag)
+            if (fragment != null && fragment is BaseFormulaFragment<*>) {
+                (fragment as BaseFormulaFragment<Any>).setState(entry.value.renderModel!!)
             }
-
-            lastFragment = fragment as? FormulaFragment<*>
         }
     }
 }

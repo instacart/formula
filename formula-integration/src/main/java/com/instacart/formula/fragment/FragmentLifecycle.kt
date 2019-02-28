@@ -3,35 +3,48 @@ package com.instacart.formula.fragment
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentInspector
 import androidx.fragment.app.FragmentManager
+import com.instacart.formula.fragment.FragmentLifecycle.lifecycleEvents
 import com.instacart.formula.integration.LifecycleEvent
-import com.instacart.formula.internal.mapNotNull
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.android.MainThreadDisposable
 
 /**
  * Provides utility method [lifecycleEvents] to track what fragments are added and removed from the backstack.
  */
 object FragmentLifecycle {
+
+    private fun shouldTrack(fragment: Fragment): Boolean {
+        return !fragment.retainInstance && !FragmentInspector.isHeadless(fragment)
+    }
+
+    private fun isKept(fragmentManager: FragmentManager, fragment: Fragment): Boolean {
+        return !fragment.isRemoving
+    }
+
     /**
-     * returns a [Flowable] that will emit [FragmentEvent]s for non retained fragments.
+     * Must subscribe to the state before calling Activity.super.onCreate(),
+     * otherwise you might miss fragment event
      */
-    private fun fragmentLifecycleEvents(
-        activity: FragmentActivity,
-        shouldTrack: (Fragment) -> Boolean = { true }
-    ): Flowable<FragmentEvent> {
-        return Flowable.create({ emitter ->
+    fun lifecycleEvents(activity: FragmentActivity): Observable<LifecycleEvent<FragmentContract<*>>> {
+        return Observable.create { emitter ->
             val listener = object : FragmentManager.FragmentLifecycleCallbacks() {
                 override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-                    if (!f.retainInstance && shouldTrack(f)) {
-                        emitter.onNext(FragmentEvent.Attached(f))
+                    if (shouldTrack(f)) {
+                        val fragment = f as? BaseFormulaFragment<*>
+                        val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(f.tag.orEmpty())
+                        emitter.onNext(LifecycleEvent.Added(contract))
                     }
                 }
 
                 override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-                    if (!f.retainInstance && shouldTrack(f)) {
-                        emitter.onNext(FragmentEvent.Detached(f))
+                    super.onFragmentDetached(fm, f)
+                    // Only trigger detach, when fragment is actually being removed from the backstack
+                    if (shouldTrack(f) && !isKept(fm, f)) {
+                        val fragment = f as? BaseFormulaFragment<*>
+                        val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(f.tag.orEmpty())
+                        emitter.onNext(LifecycleEvent.Removed(contract, fragment?.currentState()))
                     }
                 }
             }
@@ -43,34 +56,6 @@ object FragmentLifecycle {
                     activity.supportFragmentManager.unregisterFragmentLifecycleCallbacks(listener)
                 }
             })
-        }, BackpressureStrategy.BUFFER)
-    }
-
-    /**
-     * Must subscribe to the state before calling Activity.super.onCreate(),
-     * otherwise you might miss fragment event
-     */
-    @JvmStatic fun lifecycleEvents(
-        activity: FragmentActivity,
-        shouldTrack: (Fragment) -> Boolean = { true }
-    ): Flowable<LifecycleEvent<FragmentContract<*>>> {
-        return fragmentLifecycleEvents(activity, shouldTrack)
-            .mapNotNull { event ->
-                val fragment = event.fragment as? BaseFormulaFragment<*>
-                val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(event.fragment.tag.orEmpty())
-                contract.let { it: FragmentContract<*> ->
-                    when (event) {
-                        is FragmentEvent.Attached -> LifecycleEvent.Added(it)
-                        is FragmentEvent.Detached -> {
-                            // Only trigger detach, when fragment is actually being removed from the backstack
-                            if (event.fragment.isRemoving) {
-                                LifecycleEvent.Removed(it, fragment?.currentState())
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                }
-            }
+        }
     }
 }
