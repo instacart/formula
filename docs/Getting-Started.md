@@ -3,7 +3,42 @@
 
 
 
-## Creating render loop
+## Creating render formula
+```kotlin
+class TodoListRenderFormula() : RenderLoopFormula<Input, TodoListState, TodoListEffect, TodoListRenderModel> {
+
+    class Input(
+        val onTodoSelected: (Todo) -> Unit
+    )
+    
+    override fun createRenderLoop(input: Input): RenderLoop<TodoListState, TodoEffect, TodoListRenderModel> {
+        return RenderLoop(
+            initialState = TodoListState(),
+            reducers = /* define state transformations */,
+            renderModelGenerator = RenderModelGenerator.create { state ->
+              // create render model from state
+              TodoListRenderModel(
+                todoRows = state.todos.map { todo ->
+                  TodoRow(
+                    name = todo.text,
+                    onClicked = {
+                      input.onTodoSelected(todo)
+                    } 
+                  )
+                }
+              )
+            },
+            onEffect = { effect ->
+                // Handle effects.
+                when (effect) {
+                  
+                }
+            }
+        )
+    }
+}
+
+```
 
 
 
