@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import androidx.fragment.app.Fragment
 import androidx.test.rule.ActivityTestRule
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FormulaFragment
 import org.junit.Rule
