@@ -7,13 +7,13 @@ import org.junit.Test
 
 class JustReducerGeneratedCodeTest {
 
-    @com.instacart.formula.annotations.State(reducers = Reducers::class)
+    @com.instacart.formula.annotations.State(reducers = Modifications::class)
     data class State(
         val name: String = "",
         val password: String = ""
     )
 
-    class Reducers : Reducers<State, Unit>() {
+    class Modifications : Reducers<State, Unit>() {
 
         fun onNameChanged(name: String) = withoutEffects {
             it.copy(name = name)
@@ -22,7 +22,7 @@ class JustReducerGeneratedCodeTest {
 
     @Test
     fun simpleTest() {
-        val events = JustReducerGeneratedCodeTestStateEvents(reducers = Reducers())
+        val events = JustReducerGeneratedCodeTestStateEvents(reducers = Modifications())
         val subscriber = TestSubscriber<State>()
         events
             .bind(onNameChanged = Flowable.just("John Doe"))
