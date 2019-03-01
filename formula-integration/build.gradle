@@ -18,6 +18,28 @@ android {
     }
 }
 
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    setArchiveClassifier('sources')
+}
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    setArchiveClassifier('javadoc')
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
 dependencies {
     implementation project(':formula')
 
@@ -31,7 +53,6 @@ dependencies {
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner
     testImplementation libraries.androidx.test.espresso.core
-    testImplementation libraries.robolectric
 
     testImplementation libraries.truth
     testImplementation "org.mockito:mockito-inline:$mockitoVersion"
