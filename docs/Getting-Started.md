@@ -242,9 +242,9 @@ fun deleteTask(taskId: String): (State) -> Next<State, Effect> {
 
 ## Keeping all reducers together
 
-For better testability, we keep all reducers inside of a class that extends NextReducers. This also provides us with utility methods to construct the reducer.
+For better testability, we keep all reducers inside of a class that extends Reducers. This also provides us with utility methods to construct the reducer.
 ```kotlin
-class MyStateReducers : NextReducers<State, Effect> {
+class MyStateReducers : Reducers<State, Effect> {
 
     // We don't have to specify the return type of this method.
     fun deleteTask(taskId: String) = reduce { state ->

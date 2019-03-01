@@ -1,6 +1,6 @@
 package com.instacart.formula.counter
 
-import com.instacart.formula.NextReducers
+import com.instacart.formula.Reducers
 import com.instacart.formula.RenderLoop
 import com.instacart.formula.RenderLoopFormula
 import com.instacart.formula.RenderModelGenerator
@@ -38,7 +38,7 @@ class CounterRenderFormula : RenderLoopFormula<Unit, Int, Unit, CounterRenderMod
         )
     }
 
-    class Modifications : NextReducers<Int, Unit>() {
+    class Modifications : Reducers<Int, Unit>() {
         fun increment() = withoutEffects {
             it + 1
         }

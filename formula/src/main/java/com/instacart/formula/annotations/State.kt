@@ -1,13 +1,13 @@
 package com.instacart.formula.annotations
 
-import com.instacart.formula.NextReducers
+import com.instacart.formula.Reducers
 import kotlin.reflect.KClass
 
 /**
  * Annotates a state data class for which a fully formed events class is generated from
  * [reducers] class and properties marked with [ExportedProperty].
  *
- * [reducers] - (Optional) A class that extends [com.instacart.formula.NextReducers]
+ * [reducers] - (Optional) A class that extends [com.instacart.formula.Reducers]
  * and contains various state transformations. The class will be scanned for functions that
  * have a single input parameter and return a [com.instacart.formula.NextReducer].
  * A binding will be generated for each of these methods.
@@ -66,10 +66,10 @@ import kotlin.reflect.KClass
  */
 annotation class State(
     /**
-     * (Optional) A class that extends [com.instacart.formula.NextReducers]
+     * (Optional) A class that extends [com.instacart.formula.Reducers]
      * and contains various state transformations. The class will be scanned for functions that
      * have a single input parameter and return a [com.instacart.formula.NextReducer].
      * A binding will be generated for each of these methods.
      */
-    val reducers: KClass<out NextReducers<*, *>> = NextReducers::class
+    val reducers: KClass<out Reducers<*, *>> = Reducers::class
 )

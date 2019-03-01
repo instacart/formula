@@ -5,7 +5,7 @@ import arrow.core.Option
 import arrow.core.right
 import arrow.core.toOption
 import com.instacart.formula.Next
-import com.instacart.formula.NextReducers
+import com.instacart.formula.Reducers
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
@@ -38,7 +38,7 @@ object ProcessorUtils {
     }
 
     private fun isNotEmptyReducerClass(element: TypeElement): Boolean {
-        return !element.asType().asTypeName().toString().contains(NextReducers::class.asTypeName().toString())
+        return !element.asType().asTypeName().toString().contains(Reducers::class.asTypeName().toString())
     }
 
     private fun parseEffectType(reduceMethods: ReduceMethods): TypeName {
