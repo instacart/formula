@@ -1,5 +1,5 @@
 include ':formula'
 include ':formula-compiler'
 include ':formula-integration'
-include ':samples:basic-integration'
+include ':formula-integration-tests'
 include ':samples:counter'

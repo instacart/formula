@@ -6,7 +6,7 @@ import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.FragmentFlowRenderView
 
-class BasicIntegrationActivity : FragmentActivity() {
+class TestActivity : FragmentActivity() {
 
     lateinit var fragmentFlowRenderView: FragmentFlowRenderView
 
