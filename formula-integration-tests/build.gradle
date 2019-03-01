@@ -45,8 +45,4 @@ dependencies {
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner
     testImplementation libraries.androidx.test.espresso.core
-    testImplementation libraries.robolectric
-
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 }
