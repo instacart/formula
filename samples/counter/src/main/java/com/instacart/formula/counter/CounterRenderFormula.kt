@@ -2,13 +2,13 @@ package com.instacart.formula.counter
 
 import com.instacart.formula.Reducers
 import com.instacart.formula.RenderLoop
-import com.instacart.formula.RenderLoopFormula
+import com.instacart.formula.RenderFormula
 import com.instacart.formula.RenderModelGenerator
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 
-class CounterRenderFormula : RenderLoopFormula<Unit, Int, Unit, CounterRenderModel> {
+class CounterRenderFormula : RenderFormula<Unit, Int, Unit, CounterRenderModel> {
 
     override fun createRenderLoop(input: Unit): RenderLoop<Int, Unit, CounterRenderModel> {
 
