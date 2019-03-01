@@ -14,10 +14,10 @@ class CounterRenderView(private val root: ViewGroup): RenderView<CounterRenderMo
     override val renderer: Renderer<CounterRenderModel> = Renderer.create { model ->
         countTextView.setText(model.count)
         decrementButton.setOnClickListener {
-            model.onDecrement.invoke()
+            model.onDecrement()
         }
         incrementButton.setOnClickListener {
-            model.onIncrement.invoke()
+            model.onIncrement()
         }
     }
 }
