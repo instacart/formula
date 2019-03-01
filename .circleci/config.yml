@@ -16,7 +16,7 @@ commands:
     steps:
       - run:
           name: Populate cache
-          command: ./gradlew androidDependencies --max-workers 4
+          command: ./gradlew androidDependencies
 
   cache_save:
     description: Save cache
@@ -54,17 +54,25 @@ commands:
           root: *workspace_dir
           paths: << parameters.suite >>
 
-  test_unit:
+  test:
     description: Run unit tests
     steps:
       - run:
           name: Run Core Tests
           command: |
-            ./gradlew :formula:test --continue --max-workers 4
+            ./gradlew :formula:test
       - run:
-          name: Run Tests
+          name: Run Integration Tests
           command: |
-            ./gradlew jacocoTestReportRelease --continue --max-workers 4
+            ./gradlew :formula-integration:testRelease
+      - run:
+          name: Run Integration Android Tests
+          command: |
+            ./gradlew :formula-integration-tests:testRelease
+      - run:
+          name: Run Compiler Tests
+          command: |
+            ./gradlew :formula-compiler:test
       - run:
           name: Save test results
           command: |
@@ -74,14 +82,10 @@ commands:
           when: always
       - test_save:
           suite: junit
-
-  test_coverage:
-    description: Run tests coverage
-    steps:
       - run:
           name: Generate Jacoco Report
           command: |
-            ./gradlew jacocoTestReportMerged --max-workers 4
+            ./gradlew jacocoTestReportMerged
       - run:
           name: Save Jacoco Report
           command: |
@@ -90,6 +94,14 @@ commands:
           when: always
       - test_save:
           suite: jacoco
+
+  assemble_samples:
+    description: Assemble Samples
+    steps:
+      - run:
+          name: Assemple Samples
+          command: |
+            ./gradlew :samples:counter:assemble
 
 executors:
   android:
@@ -108,8 +120,8 @@ jobs:
     executor: android
     steps:
       - prepare
-      - test_unit
-      - test_coverage
+      - test
+      - assemble_samples
 
   check:
     executor: android
