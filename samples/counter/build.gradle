@@ -45,4 +45,5 @@ dependencies {
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner
     testImplementation libraries.androidx.test.espresso.core
+    testImplementation libraries.robolectric
 }
