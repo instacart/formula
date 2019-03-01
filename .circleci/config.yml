@@ -70,6 +70,17 @@ commands:
           command: |
             ./gradlew :formula-integration-tests:testRelease
       - run:
+          name: Generate Jacoco Report
+          command: |
+            ./gradlew jacocoTestReportMerged
+      - run:
+          name: Save Jacoco Report
+          command: |
+            mkdir -p ~/jacoco/
+            find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
+          when: always
+      # We run this test after jacoco to avoid including compiler classes as part of code coverage.
+      - run:
           name: Run Compiler Tests
           command: |
             ./gradlew :formula-compiler:test
@@ -82,16 +93,6 @@ commands:
           when: always
       - test_save:
           suite: junit
-      - run:
-          name: Generate Jacoco Report
-          command: |
-            ./gradlew jacocoTestReportMerged
-      - run:
-          name: Save Jacoco Report
-          command: |
-            mkdir -p ~/jacoco/
-            find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
-          when: always
       - test_save:
           suite: jacoco
 
