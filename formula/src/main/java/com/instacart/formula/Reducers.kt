@@ -8,7 +8,7 @@ package com.instacart.formula
  * [State] - state type which gets transformed
  * [Effect] - type of effects that could be emitted.
  */
-abstract class NextReducers<State, Effect> {
+abstract class Reducers<State, Effect> {
     protected inline fun reduce(crossinline modify: (State) -> Next<State, Effect>): NextReducer<State, Effect> {
         return {
             modify(it)
