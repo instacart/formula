@@ -37,6 +37,7 @@ dependencies {
 
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat
+    implementation libraries.rxrelays
 
     testImplementation libraries.junit
     testImplementation "com.google.truth:truth:$truthVersion"

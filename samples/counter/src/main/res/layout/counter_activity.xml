@@ -11,12 +11,12 @@
         android:layout_width="wrap_content"
         android:layout_gravity="center"
         android:layout_height="wrap_content">
+
         <Button
             android:id="@+id/decrement_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="-" />
-
 
         <TextView
             android:id="@+id/count_text_view"
@@ -32,6 +32,4 @@
             android:layout_height="wrap_content"
             android:text="+" />
     </LinearLayout>
-
-
 </FrameLayout>
