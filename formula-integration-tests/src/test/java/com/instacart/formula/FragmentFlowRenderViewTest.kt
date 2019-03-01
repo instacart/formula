@@ -14,7 +14,7 @@ class FragmentFlowRenderViewTest {
 
     class HeadlessFragment : Fragment()
 
-    @get:Rule val rule = ActivityTestRule(BasicIntegrationActivity::class.java)
+    @get:Rule val rule = ActivityTestRule(TestActivity::class.java)
 
     @Test fun `add fragment lifecycle event`() {
         rule.activity.store.state().test().values().apply {
