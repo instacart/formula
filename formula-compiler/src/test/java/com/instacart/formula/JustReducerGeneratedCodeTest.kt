@@ -13,7 +13,7 @@ class JustReducerGeneratedCodeTest {
         val password: String = ""
     )
 
-    class Reducers : NextReducers<State, Unit>() {
+    class Reducers : Reducers<State, Unit>() {
 
         fun onNameChanged(name: String) = withoutEffects {
             it.copy(name = name)

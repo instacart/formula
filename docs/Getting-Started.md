@@ -5,7 +5,7 @@
 
 ## Creating render formula
 ```kotlin
-class TodoListRenderFormula() : RenderLoopFormula<Input, TodoListState, TodoListEffect, TodoListRenderModel> {
+class TodoListRenderFormula() : RenderFormula<Input, TodoListState, TodoListEffect, TodoListRenderModel> {
 
     class Input(
         val onTodoSelected: (Todo) -> Unit
@@ -92,7 +92,7 @@ class MyRenderModelGenerator(
 
 Now, we need to hook this render model generator to our state management.
 ```kotlin
-class MyRenderLoopFormula : RenderLoopFormula<Input, State, .., RenderModel> {
+class MyRenderFormula : RenderFormula<Input, State, .., RenderModel> {
 
   class Input(
     val showToast: (String) -> Unit
@@ -128,9 +128,9 @@ class SaveUserInfoRepo {
   fun saveUserInfo(info: UserInfo): Flowable<Lce<UserInfoResponse>>
 } 
 
-class MyRenderLoopFormula(
+class MyRenderFormula(
   val repo: SaveUserInfoRepo
-) : RenderLoopFormula<Input, State, .., RenderModel> {
+) : RenderFormula<Input, State, .., RenderModel> {
 
   override fun createRenderLoop(input: Input): RenderLoop<...> {
     // We create a relay here. This allows us to combine callbacks with RxJava.
@@ -242,9 +242,9 @@ fun deleteTask(taskId: String): (State) -> Next<State, Effect> {
 
 ## Keeping all reducers together
 
-For better testability, we keep all reducers inside of a class that extends NextReducers. This also provides us with utility methods to construct the reducer.
+For better testability, we keep all reducers inside of a class that extends Reducers. This also provides us with utility methods to construct the reducer.
 ```kotlin
-class MyStateReducers : NextReducers<State, Effect> {
+class MyStateReducers : Reducers<State, Effect> {
 
     // We don't have to specify the return type of this method.
     fun deleteTask(taskId: String) = reduce { state ->

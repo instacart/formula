@@ -5,7 +5,6 @@ import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Test
 
 class StateLoopTest {
@@ -16,7 +15,7 @@ class StateLoopTest {
 
     object ClearState
 
-    class Reducers : NextReducers<Int, ClearState>() {
+    class Modifications : Reducers<Int, ClearState>() {
 
         fun onAction(it: Action) = reduce { state ->
             val newState = when (it) {
@@ -44,7 +43,7 @@ class StateLoopTest {
         // effect stream is subscribed to.
         val clearStateRelay = PublishRelay.create<ClearState>()
 
-        val reducers = Reducers()
+        val reducers = Modifications()
 
         val clearStateReducer = clearStateRelay
             .toFlowable(BackpressureStrategy.LATEST)

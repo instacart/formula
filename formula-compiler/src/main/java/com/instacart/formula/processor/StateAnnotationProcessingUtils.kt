@@ -6,7 +6,7 @@ import arrow.core.left
 import arrow.core.right
 import com.instacart.formula.annotations.DirectInput
 import com.instacart.formula.annotations.ExportedProperty
-import com.instacart.formula.NextReducers
+import com.instacart.formula.Reducers
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -138,7 +138,7 @@ object StateAnnotationProcessingUtils {
         val generatedReducerClassType = TypeSpec.classBuilder(fileName)
             .addTypeVariable(effectTypeVariable)
             .superclass(
-                NextReducers::class.asTypeName().parameterizedBy(
+                Reducers::class.asTypeName().parameterizedBy(
                     stateClassType,
                     effectTypeVariable
                 )
