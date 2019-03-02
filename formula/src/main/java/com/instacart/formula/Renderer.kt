@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 /**
- * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface. It avoid
+ * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface. It avoids
  * duplicate updates.
  */
 class Renderer<in RenderModel> private constructor(
