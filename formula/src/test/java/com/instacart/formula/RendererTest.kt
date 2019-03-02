@@ -30,4 +30,24 @@ class RendererTest {
 
         assertThat(results).containsExactly("my title", "second title", "my title")
     }
+
+    @Test fun `avoid bad memoization if state update triggers another state update`() {
+        val results = mutableListOf<String>()
+
+        lateinit var reference: Renderer<String>
+        val renderer = Renderer.create<String> { text ->
+            results.add(text)
+
+            if (text == "first") {
+                reference.render("second")
+            }
+        }
+
+        reference = renderer
+
+        renderer.render("first")
+        renderer.render("first")
+
+        assertThat(results).containsExactly("first", "second", "first", "second")
+    }
 }

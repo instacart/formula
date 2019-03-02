@@ -1,10 +1,11 @@
 package com.instacart.formula
 
 /**
- * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface.
+ * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface. It avoids
+ * duplicate updates.
  */
 class Renderer<in RenderModel> private constructor(
-    private val render: (RenderModel) -> Unit
+    private val renderFunction: (RenderModel) -> Unit
 ) {
 
     companion object {
@@ -14,14 +15,36 @@ class Renderer<in RenderModel> private constructor(
          * Creates a basic renderer
          */
         fun <State> create(render: (State) -> Unit): Renderer<State> {
-            /**
-             * memoize prevents unnecessary updates:
-             * it caches last state used and only
-             * triggers an update if that state has changed
-             */
-            return Renderer(render = render.memoize())
+            return Renderer(renderFunction = render)
         }
     }
 
-    fun render(state: RenderModel) = render.invoke(state)
+    private var pending: RenderModel? = null
+    private var inProgress: Boolean = false
+    private var last: RenderModel? = null
+
+    fun render(state: RenderModel) {
+        if (inProgress) {
+            pending = state
+            return
+        }
+
+        inProgress = true
+
+        val local = last
+
+        if (local == null || local != state) {
+            renderFunction(state)
+        }
+
+        last = state
+        inProgress = false
+
+        // Check if there is a pending update and execute it.
+        val localPending = pending
+        pending = null
+        if (localPending != null) {
+            render(localPending)
+        }
+    }
 }
