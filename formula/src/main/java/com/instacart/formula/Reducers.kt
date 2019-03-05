@@ -5,8 +5,25 @@ package com.instacart.formula
 /**
  * Contains utils to help reducing to [Next] class. All reducer classes should extend this class.
  *
- * [State] - state type which gets transformed
- * [Effect] - type of effects that could be emitted.
+ * @param [State] state type which gets transformed
+ * @param [Effect] type of effects that could be emitted.
+ *
+ * Ex:
+ * ```
+ * class Modifications: Reducers<Int, ClearState>() {
+ *  fun onAction(it: Action) = reduce { state ->
+ *      val newState = when (it) {
+ *          is Action.Increment -> state + 1
+ *          is Action.Decrement -> state - 1
+ *      }
+ *      newState.toNextWithOptionalEffect(ClearState.takeIf { newState == 3 })
+ *  }
+ *
+ *  fun onClearState(action: ClearState) = withoutEffects {
+ *      0
+ *  }
+ * }
+ * ```
  */
 abstract class Reducers<State, Effect> {
     protected inline fun reduce(crossinline modify: (State) -> Next<State, Effect>): NextReducer<State, Effect> {

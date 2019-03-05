@@ -3,7 +3,7 @@ package com.instacart.formula.integration
 /**
  * Representation of the [BackStack] and the state associated with each of the entries.
  *
- * [Key] - type representing the entry in the [BackStack]
+ * @param Key type representing the entry in the [BackStack]
  */
 data class FlowState<Key>(
     val backStack: BackStack<Key> = BackStack.empty(),

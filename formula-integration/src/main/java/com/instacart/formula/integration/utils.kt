@@ -25,8 +25,8 @@ private fun <Key> Flowable<BackStack<Key>>.lifecycleEffects(): Flowable<Lifecycl
  * Listens for back stack changes and initializes a render loop
  * when a specified type of key is added to the back stack.
  *
- * [type] - key class
- * [init] - a function that initializes the render model [Flowable]
+ * @param type key class
+ * @param init a function that initializes the render model [Flowable]
  */
 fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
     type: Class<Key>,
