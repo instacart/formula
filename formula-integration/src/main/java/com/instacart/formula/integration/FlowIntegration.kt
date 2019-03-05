@@ -3,7 +3,7 @@ package com.instacart.formula.integration
 /**
  * Defines integration of a flow.
  *
- * [Input] - Input passed to flow declaration to create a binding.
+ * @param Input Input passed to flow declaration to create a binding.
  */
 interface FlowIntegration<Input> {
 

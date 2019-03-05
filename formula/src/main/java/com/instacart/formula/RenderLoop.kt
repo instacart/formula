@@ -5,8 +5,8 @@ import io.reactivex.Flowable
 /**
  * [RenderLoop] combines [StateLoop] and [RenderModelGenerator] to define how [RenderModel] changes over time.
  *
- * [stateLoop] - Defines how state changes over time.
- * [renderModelGenerator] - Responsible for converting state object to a render model object.
+ * @param stateLoop Defines how state changes over time.
+ * @param renderModelGenerator Responsible for converting state object to a render model object.
  */
 class RenderLoop<State, Effect, RenderModel> private constructor(
     val stateLoop: StateLoop<State, Effect>,
@@ -16,12 +16,12 @@ class RenderLoop<State, Effect, RenderModel> private constructor(
         /**
          * Instantiates [RenderLoop]
          *
-         * [initialState] - A starting state object before any transformations are performed.
-         * [reducers] - A stream of reducer functions that transform the state and emit effects.
-         * [renderModelGenerator] - responsible for converting state object to a render model object.
-         * [initialEffects] - Initial effects to be emitted.
-         * [onEffect] - A callback that gets triggered when new effects are produced by the reducers.
-         * [onStateChange] - A callback that gets triggered every time the state changes.
+         * @param initialState A starting state object before any transformations are performed.
+         * @param reducers A stream of reducer functions that transform the state and emit effects.
+         * @param renderModelGenerator responsible for converting state object to a render model object.
+         * @param initialEffects Initial effects to be emitted.
+         * @param onEffect A callback that gets triggered when new effects are produced by the reducers.
+         * @param onStateChange A callback that gets triggered every time the state changes.
          */
         operator fun <State, Effect, RenderModel> invoke(
             initialState: State,

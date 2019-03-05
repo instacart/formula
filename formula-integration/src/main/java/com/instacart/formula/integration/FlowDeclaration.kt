@@ -7,9 +7,9 @@ import kotlin.reflect.KClass
 /**
  * Defines a Flow, which is a sequence of related screens a user may navigate between to perform a task.
  *
- * [Input] - Parent can pass callbacks and initial information when creating a flow.
- * [ParentComponent] - A component associated with the parent. Often this will map to the parent dagger component.
- * [FlowComponent] - A component that is initialized when user enters this flow and is shared between
+ * @param Input Parent can pass callbacks and initial information when creating a flow.
+ * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
+ * @param FlowComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
 abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {

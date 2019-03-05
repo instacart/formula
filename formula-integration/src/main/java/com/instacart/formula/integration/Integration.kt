@@ -6,9 +6,9 @@ import io.reactivex.Flowable
 /**
  * Defines how a [Key] is bounds to a formula.
  *
- * [Key] - a backstack entry for this screen.
- * [Input] - a formula input
- * [RenderModel] - a render model that the formula produces.
+ * @param Key a backstack entry for this screen.
+ * @param Input a formula input
+ * @param RenderModel a render model that the formula produces.
  */
 interface Integration<Key, Input, RenderModel> : (Key) -> Flowable<RenderModel> {
     fun createViewModel(contract: Key): Formula<Input, RenderModel>

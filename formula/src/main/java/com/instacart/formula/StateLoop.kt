@@ -8,11 +8,11 @@ import io.reactivex.disposables.Disposable
  * 1. State changes over time
  * 2. Effect emission.
  *
- * [initialState] - A starting state object before any transformations are performed.
- * [reducers] - A stream of reducer functions that transform the state and emit effects.
- * [initialEffects] - Initial effects to be emitted.
- * [onEffect] - A callback that gets triggered when new effects are produced by the reducers.
- * [onStateChange] - A callback that gets triggered every time the state changes.
+ * @param initialState A starting state object before any transformations are performed.
+ * @param reducers A stream of reducer functions that transform the state and emit effects.
+ * @param initialEffects Initial effects to be emitted.
+ * @param onEffect A callback that gets triggered when new effects are produced by the reducers.
+ * @param onStateChange A callback that gets triggered every time the state changes.
  */
 class StateLoop<State, Effect>(
     val initialState: State,
