@@ -14,7 +14,9 @@ class TaskListFormula(
     private val repo: TaskRepo
 ) : RenderFormula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
 
-    class Input
+    class Input(
+        val showToast: (String) -> Unit
+    )
 
     override fun createRenderLoop(input: Input): RenderLoop<TaskListState, Unit, TaskListRenderModel> {
         val modifications = Modifications()
@@ -32,7 +34,12 @@ class TaskListFormula(
             initialState = TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS),
             reducers = changes.toFlowable(BackpressureStrategy.LATEST),
             renderModelGenerator = RenderModelGenerator.create {
-                val items = createTaskList(it, onTaskCompletedEvent = repo::onTaskCompleted)
+                val items = createTaskList(
+                    it,
+                    onTaskCompletedEvent = repo::onTaskCompleted,
+                    showToast = input.showToast
+                )
+
                 TaskListRenderModel(
                     items = items,
                     filterOptions = TasksFilterType.values().map { type ->
@@ -46,7 +53,8 @@ class TaskListFormula(
 
     private fun createTaskList(
         state: TaskListState,
-        onTaskCompletedEvent: (TaskCompletedEvent) -> Unit
+        onTaskCompletedEvent: (TaskCompletedEvent) -> Unit,
+        showToast: (String) -> Unit
     ): List<TaskItemRenderModel> {
         val tasks = state.taskState.filter {
             when (state.filterType) {
@@ -62,7 +70,7 @@ class TaskListFormula(
                 text = it.title,
                 isSelected = it.isCompleted,
                 onClick = {
-                    // TODO show task detail page.
+                    showToast("Task selected: ${it.title}")
                 },
                 onToggle = {
                     onTaskCompletedEvent(

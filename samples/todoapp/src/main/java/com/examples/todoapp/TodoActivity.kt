@@ -1,6 +1,7 @@
 package com.examples.todoapp
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.examples.todoapp.tasks.TaskListContract
 import com.instacart.formula.fragment.FormulaFragment
@@ -19,6 +20,14 @@ class TodoActivity : FragmentActivity() {
         fragmentRenderView = FragmentFlowRenderView(this, onLifecycleEvent = component::onLifecycleEvent)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.todo_activity)
+
+        disposables.add(component.activityEffects().subscribe {
+            when (it) {
+                is TodoActivityEffect.ShowToast -> {
+                    Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        })
 
         disposables.add(component.state().subscribe(fragmentRenderView.renderer::render))
 
