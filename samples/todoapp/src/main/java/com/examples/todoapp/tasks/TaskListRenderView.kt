@@ -9,6 +9,7 @@ import android.widget.CheckBox
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.examples.todoapp.R
@@ -33,8 +34,9 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
     }
 
     override val renderer: Renderer<TaskListRenderModel> = Renderer.create { model ->
+        val diff = DiffUtil.calculateDiff(TaskDiffCallback(adapter.items, model.items))
         adapter.items = model.items
-        adapter.notifyDataSetChanged()
+        diff.dispatchUpdatesTo(adapter)
 
         filterMenuItem.setOnMenuItemClickListener {
             showFilteringPopUpMenu(model.filterOptions)
@@ -52,6 +54,31 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
                 }
             }
             show()
+        }
+    }
+
+    class TaskDiffCallback(
+        private val oldList: List<TaskItemRenderModel>,
+        private val newList: List<TaskItemRenderModel>
+    ) : DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].id == newList[newItemPosition].id
+        }
+
+        override fun getOldListSize(): Int {
+            return oldList.size
+        }
+
+        override fun getNewListSize(): Int {
+            return newList.size
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+
+        override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+            return Any()
         }
     }
 

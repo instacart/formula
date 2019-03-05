@@ -25,6 +25,7 @@ class TodoComponent {
     val stateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
 
     init {
+        // This subscription should be added to some scope that outlives activity configuration changes.
         store.state().subscribe(stateRelay::accept)
     }
 
