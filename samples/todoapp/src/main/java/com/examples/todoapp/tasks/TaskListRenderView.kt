@@ -20,10 +20,10 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
     private val filterMenuItem: MenuItem
 
     private val recyclerView: RecyclerView = root.findViewById(R.id.task_list_recycler)
-    private val adapter: TaskAdapter
+    private val adapter: TaskListAdapter
 
     init {
-        adapter = TaskAdapter()
+        adapter = TaskListAdapter()
         recyclerView.layoutManager = LinearLayoutManager(root.context, RecyclerView.VERTICAL, false)
         recyclerView.adapter = adapter
 
@@ -55,15 +55,15 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
         }
     }
 
-    class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class TaskItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val title: TextView = itemView.findViewById(R.id.title)
         private val completeCheckBox: CheckBox = itemView.findViewById(R.id.complete)
 
         fun bind(model: TaskItemRenderModel) {
             title.text = model.text
-            completeCheckBox.isChecked = model.isCompleted
+            completeCheckBox.isChecked = model.isSelected
             completeCheckBox.setOnCheckedChangeListener { _, _ ->
-                model.onToggleCompleted()
+                model.onToggle()
             }
 
             itemView.setOnClickListener {
@@ -72,19 +72,19 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
         }
     }
 
-    class TaskAdapter : RecyclerView.Adapter<TaskViewHolder>() {
+    class TaskListAdapter : RecyclerView.Adapter<TaskItemViewHolder>() {
         var items: List<TaskItemRenderModel> = emptyList()
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskItemViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.task_item, parent, false)
-            return TaskViewHolder(view)
+            return TaskItemViewHolder(view)
         }
 
         override fun getItemCount(): Int {
             return items.size
         }
 
-        override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: TaskItemViewHolder, position: Int) {
             holder.bind(items[position])
         }
     }
