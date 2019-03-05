@@ -43,13 +43,19 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         this.renderView = component.renderView
         disposable = stateRelay
             .doOnNext {
-//                Timber.d("render / ${this@FormulaFragment}")
+                // Timber.d("render / ${this@FormulaFragment}")
             }
-            .subscribe(component.renderView.renderer::render, { error ->
+            .subscribe(component.renderView.renderer::render) { error ->
                 // log error
-            })
+            }
 
         this.lifecycleCallback = component.lifecycleCallbacks
+        lifecycleCallback?.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        lifecycleCallback?.onActivityCreated(savedInstanceState)
     }
 
     override fun onStart() {
@@ -93,7 +99,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     }
 
     override fun setState(state: RenderModel) {
-//        Timber.d("setState / $this")
+        // Timber.d("setState / $this")
         stateRelay.accept(state)
     }
 
