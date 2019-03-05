@@ -24,6 +24,7 @@ ext {
                     collection      : [
                             ktx: "androidx.collection:collection-ktx:$androidXVersion"
                     ],
+                    constraintlayout: "androidx.constraintlayout:constraintlayout:1.1.3",
                     lifecycle       : [
                             compiler: "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion",
                             runtime : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion"

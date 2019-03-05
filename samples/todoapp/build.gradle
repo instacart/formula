@@ -36,8 +36,11 @@ dependencies {
     implementation project(":formula")
     implementation project(":formula-integration")
 
-    implementation libraries.kotlin
     implementation libraries.androidx.appcompat
+    implementation libraries.androidx.recyclerview
+    implementation libraries.androidx.constraintlayout
+
+    implementation libraries.kotlin
     implementation libraries.rxrelays
 
     testImplementation libraries.junit
