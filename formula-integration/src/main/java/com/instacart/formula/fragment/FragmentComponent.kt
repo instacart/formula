@@ -16,9 +16,10 @@ class FragmentComponent<in RenderModel> private constructor(
         /**
          * A no-op component which does no rendering
          */
-        fun <T> noOp(): FragmentComponent<T> {
+        fun <T> noOp(lifecycleCallbacks: FragmentLifecycleCallback? = null): FragmentComponent<T> {
             return create(
-                render = {}
+                render = {},
+                lifecycleCallbacks = lifecycleCallbacks
             )
         }
 
@@ -26,11 +27,12 @@ class FragmentComponent<in RenderModel> private constructor(
          * Creates an inline render view with the given render lambda
          * @param render called on each change to the [RenderModel] to render the view
          */
-        fun <T> create(render: (T) -> Unit): FragmentComponent<T> {
+        fun <T> create(render: (T) -> Unit, lifecycleCallbacks: FragmentLifecycleCallback? = null): FragmentComponent<T> {
             return create(
                 renderView = object : RenderView<T> {
                     override val renderer: Renderer<T> = Renderer.create(render)
-                }
+                },
+                lifecycleCallbacks = lifecycleCallbacks
             )
         }
 

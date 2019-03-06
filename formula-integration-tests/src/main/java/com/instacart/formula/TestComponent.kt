@@ -21,6 +21,10 @@ class TestComponent {
         register(TaskDetailContract::class) {
             stateChanges(it)
         }
+
+        register(TestLifecycleContract::class) {
+            stateChanges(it)
+        }
     }
 
     fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
