@@ -16,10 +16,9 @@ class FragmentComponent<in RenderModel> private constructor(
         /**
          * A no-op component which does no rendering
          */
-        fun <T> noOp(lifecycleCallbacks: FragmentLifecycleCallback? = null): FragmentComponent<T> {
+        fun <T> noOp(): FragmentComponent<T> {
             return create(
-                render = {},
-                lifecycleCallbacks = lifecycleCallbacks
+                render = {}
             )
         }
 

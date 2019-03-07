@@ -32,7 +32,7 @@ data class TestLifecycleContract(
     var hasOnDestroyView = false
 
     override fun createComponent(view: View): FragmentComponent<String> {
-        return FragmentComponent.noOp(object : FragmentLifecycleCallback {
+        return FragmentComponent.create({}, object : FragmentLifecycleCallback {
 
             override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
                 hasOnViewCreated = true
