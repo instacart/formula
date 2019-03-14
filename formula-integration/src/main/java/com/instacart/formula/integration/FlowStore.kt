@@ -4,6 +4,16 @@ import io.reactivex.Flowable
 
 /**
  * A store that manages render model changes for each entry in the [BackStack].
+ *
+ * A simple example of how to initialize a store.
+ * ```
+ * val backstack = BackStackStore<Key>()
+ * FlowStore.init(backstack.changes()) {
+ *     register(TaskListIntegration())
+ *     register(TaskDetailIntegration())
+ *     register(SettingsIntegration())
+ * }
+ * ```
  */
 class FlowStore<Key : Any> constructor(
     keyState: Flowable<BackStack<Key>>,

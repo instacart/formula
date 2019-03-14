@@ -69,6 +69,8 @@ sealed class KeyBinding<Scope, Key, State> {
     class Builder<ParentScope, Scope, Key : Any>(private val scopeFactory: (ParentScope) -> DisposableScope<Scope>) {
         private val bindings: MutableList<KeyBinding<Scope, Key, *>> = mutableListOf()
 
+        inline fun <reified T : Key, S> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
+
         /**
          * Binds specific type of key to the render model management.
          */
