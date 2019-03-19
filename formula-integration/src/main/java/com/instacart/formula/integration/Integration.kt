@@ -11,11 +11,11 @@ import io.reactivex.Flowable
  * @param RenderModel a render model that the formula produces.
  */
 interface Integration<Key, Input, RenderModel> : (Key) -> Flowable<RenderModel> {
-    fun createViewModel(contract: Key): Formula<Input, RenderModel>
+    fun createFormula(key: Key): Formula<Input, RenderModel>
 
     fun input(key: Key): Input
 
     override fun invoke(p1: Key): Flowable<RenderModel> {
-        return createViewModel(p1).state(input(p1))
+        return createFormula(p1).state(input(p1))
     }
 }
