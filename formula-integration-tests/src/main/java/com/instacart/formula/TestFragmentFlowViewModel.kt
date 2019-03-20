@@ -31,13 +31,13 @@ class TestFragmentFlowViewModel : ViewModel() {
 
     private val disposables = CompositeDisposable()
 
-    fun onLifecycleEvent(event: FragmentLifecycleEvent) {
-        store.onLifecycleEffect(event)
-    }
-
     // Share state
     val state: Flowable<FragmentFlowState> = store.state().replay(1).apply {
         connect { disposables.add(it) }
+    }
+
+    fun onLifecycleEvent(event: FragmentLifecycleEvent) {
+        store.onLifecycleEffect(event)
     }
 
     fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {
