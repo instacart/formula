@@ -27,7 +27,7 @@ object FragmentLifecycle {
      * Must subscribe to the state before calling Activity.super.onCreate(),
      * otherwise you might miss fragment event
      */
-    fun lifecycleEvents(activity: FragmentActivity): Observable<LifecycleEvent<FragmentContract<*>>> {
+    fun lifecycleEvents(activity: FragmentActivity): Observable<FragmentLifecycleEvent> {
         return Observable.create { emitter ->
             val listener = object : FragmentManager.FragmentLifecycleCallbacks() {
                 override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {

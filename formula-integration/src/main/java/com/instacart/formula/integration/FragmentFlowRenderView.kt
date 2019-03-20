@@ -8,9 +8,9 @@ import androidx.fragment.app.FragmentManager
 import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
 import com.instacart.formula.fragment.BaseFormulaFragment
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
+import com.instacart.formula.fragment.FragmentLifecycleEvent
 import io.reactivex.disposables.CompositeDisposable
 
 /**
@@ -20,7 +20,7 @@ import io.reactivex.disposables.CompositeDisposable
  */
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,
-    private val onLifecycleEvent: (LifecycleEvent<FragmentContract<*>>) -> Unit
+    private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
