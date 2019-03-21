@@ -15,7 +15,7 @@ import io.reactivex.android.MainThreadDisposable
  */
 object FragmentLifecycle {
 
-    private fun shouldTrack(fragment: Fragment): Boolean {
+    fun shouldTrack(fragment: Fragment): Boolean {
         return !fragment.retainInstance && !FragmentInspector.isHeadless(fragment)
     }
 
@@ -42,9 +42,7 @@ object FragmentLifecycle {
                     super.onFragmentDetached(fm, f)
                     // Only trigger detach, when fragment is actually being removed from the backstack
                     if (shouldTrack(f) && !isKept(fm, f)) {
-                        val fragment = f as? BaseFormulaFragment<*>
-                        val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(f.tag.orEmpty())
-                        emitter.onNext(LifecycleEvent.Removed(contract, fragment?.currentState()))
+                        emitter.onNext(createRemovedEvent(f))
                     }
                 }
             }
@@ -57,5 +55,11 @@ object FragmentLifecycle {
                 }
             })
         }
+    }
+
+    internal fun createRemovedEvent(f: Fragment): LifecycleEvent.Removed<FragmentContract<Nothing>> {
+        val fragment = f as? BaseFormulaFragment<*>
+        val contract = fragment?.getFragmentContract() ?: EmptyFragmentContract(f.tag.orEmpty())
+        return LifecycleEvent.Removed(contract, fragment?.currentState())
     }
 }

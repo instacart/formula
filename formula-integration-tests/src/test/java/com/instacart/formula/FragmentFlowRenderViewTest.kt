@@ -19,11 +19,7 @@ class FragmentFlowRenderViewTest {
     @get:Rule val rule = ActivityTestRule(TestActivity::class.java)
 
     @Test fun `add fragment lifecycle event`() {
-        rule.activity.component.state.test().values().apply {
-            assertThat(this.last().backStack.keys).containsExactly(
-                TaskListContract()
-            )
-        }
+        assertThat(currentBackstack()).containsExactly(TaskListContract())
     }
 
     @Test fun `pop backstack lifecycle event`() {
