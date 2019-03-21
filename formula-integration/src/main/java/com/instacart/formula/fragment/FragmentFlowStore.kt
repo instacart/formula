@@ -3,7 +3,6 @@ package com.instacart.formula.fragment
 import com.instacart.formula.integration.BackStackStore
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.KeyBinding
-import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
 /**
@@ -21,7 +20,7 @@ class FragmentFlowStore(
         }
     }
 
-    fun onLifecycleEffect(event: LifecycleEvent<FragmentContract<*>>) {
+    fun onLifecycleEffect(event: FragmentLifecycleEvent) {
         contractStore.onLifecycleEffect(event)
     }
 

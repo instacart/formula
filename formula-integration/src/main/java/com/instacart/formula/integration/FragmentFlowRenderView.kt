@@ -11,6 +11,7 @@ import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
+import com.instacart.formula.fragment.FragmentLifecycleEvent
 import io.reactivex.disposables.CompositeDisposable
 
 /**
@@ -20,7 +21,7 @@ import io.reactivex.disposables.CompositeDisposable
  */
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,
-    private val onLifecycleEvent: (LifecycleEvent<FragmentContract<*>>) -> Unit
+    private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
@@ -30,11 +31,18 @@ class FragmentFlowRenderView(
 
     private val visibleFragments: MutableMap<String, Fragment> = mutableMapOf()
 
+    private var backstackEntries: Int = 0
+    private var backstackPopped: Boolean = false
+    private var removedEarly = mutableListOf<FragmentContract<*>>()
+
     init {
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(object :
             FragmentManager.FragmentLifecycleCallbacks() {
+
             override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
                 super.onFragmentViewCreated(fm, f, v, savedInstanceState)
+
+                recordBackstackChange()
 
                 val tag = f.tag
                 if (tag != null) {
@@ -49,10 +57,27 @@ class FragmentFlowRenderView(
             override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
                 super.onFragmentViewDestroyed(fm, f)
                 visibleFragments.remove(f.tag)
+
+                recordBackstackChange()
+
+                // This means that fragment is removed due to backstack change.
+                if (backstackPopped) {
+                    // Reset
+                    backstackPopped = false
+
+                    val event = FragmentLifecycle.createRemovedEvent(f)
+                    removedEarly.add(event.key)
+                    onLifecycleEvent(event)
+                }
             }
         }, false)
 
-        disposables.add(FragmentLifecycle.lifecycleEvents(activity).subscribe(onLifecycleEvent))
+        disposables.add(FragmentLifecycle.lifecycleEvents(activity).subscribe {
+            val shouldFireEvent = it !is LifecycleEvent.Removed || !removedEarly.remove(it.key)
+            if (shouldFireEvent) {
+                onLifecycleEvent(it)
+            }
+        })
     }
 
     override val renderer: Renderer<FragmentFlowState> = Renderer.create {
@@ -86,5 +111,13 @@ class FragmentFlowRenderView(
                 (fragment as BaseFormulaFragment<Any>).setState(entry.value.renderModel!!)
             }
         }
+    }
+
+    private fun recordBackstackChange() {
+        val newBackstackSize = activity.supportFragmentManager.backStackEntryCount
+        if (backstackEntries > newBackstackSize) {
+            backstackPopped = true
+        }
+        backstackEntries = newBackstackSize
     }
 }

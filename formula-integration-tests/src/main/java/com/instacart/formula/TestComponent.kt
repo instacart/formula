@@ -3,7 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.integration.LifecycleEvent
+import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
@@ -27,7 +27,7 @@ class TestComponent {
         }
     }
 
-    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
+    fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         store.onLifecycleEffect(event)
     }
 
