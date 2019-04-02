@@ -56,8 +56,7 @@ object StateAnnotationProcessingUtils {
 
             val effectType = parsedReducerClass?.effectType ?: Unit::class.asTypeName()
 
-            val prefix =
-                createClassNamePrefix(stateElement)
+            val prefix = createClassNamePrefix(stateElement)
             val generated = exportedStateProperties.ifNotEmpty {
                 generateReducerClass(
                     prefix,
@@ -76,6 +75,7 @@ object StateAnnotationProcessingUtils {
             val eventsClassFile = EventsClassGenerator.createFile(
                 packageName = packageName,
                 prefix = prefix,
+                stateElement = stateElement,
                 generated = generatedNextReducer,
                 passedReduceClass = parsedReducerClass
             )
@@ -96,7 +96,7 @@ object StateAnnotationProcessingUtils {
     private fun asNextReducerClass(
         generatedBaseClass: GeneratedReducerClass,
         effectType: TypeName
-    ): NextReducerClass {
+    ): ReducerClass {
         val reducerType =
             ProcessorUtils.nextReducerType(generatedBaseClass.stateType, effectType)
         val reduceMethods = generatedBaseClass.reduceMethods.map {
@@ -108,7 +108,7 @@ object StateAnnotationProcessingUtils {
             )
         }
 
-        return NextReducerClass(
+        return ReducerClass(
             type = generatedBaseClass.className.parameterizedBy(effectType),
             reduceMethods = reduceMethods,
             effectType = effectType

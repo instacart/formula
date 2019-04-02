@@ -14,19 +14,19 @@ import javax.lang.model.element.TypeElement
 
 object ProcessorUtils {
 
-    fun asReducerClass(reducerClassElement: TypeElement): Either<KnownError, Option<NextReducerClass>> {
+    fun asReducerClass(reducerClassElement: TypeElement): Either<KnownError, Option<ReducerClass>> {
         return if (isNotEmptyReducerClass(reducerClassElement)) {
             ReduceMethodUtils.findReduceMethods(reducerClassElement).map {
                 val effectType = parseEffectType(it)
 
-                NextReducerClass(
+                ReducerClass(
                     type = reducerClassElement.asType().asTypeName(),
                     reduceMethods = it.methods,
                     effectType = effectType
                 ).toOption()
             }
         } else {
-            Option.empty<NextReducerClass>().right()
+            Option.empty<ReducerClass>().right()
         }
     }
 
