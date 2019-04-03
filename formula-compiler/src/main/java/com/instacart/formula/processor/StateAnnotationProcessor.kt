@@ -9,6 +9,7 @@ import me.eugeniomarletti.kotlin.metadata.isDataClass
 import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
 import me.eugeniomarletti.kotlin.processing.KotlinAbstractProcessor
 import java.io.File
+import javax.annotation.processing.Filer
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
@@ -69,7 +70,7 @@ class StateAnnotationProcessor : KotlinAbstractProcessor(), ProcessorEnv {
                     },
                     ifRight = { files ->
                         files.forEach {
-                            it.writeTo(fileDirectory())
+                            it.writeTo(filer)
                         }
                     })
             }

@@ -6,6 +6,7 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import javax.lang.model.element.Element
 
 /**
  * Encapsulates KotlinPoet code that generates MyStateEvents class
@@ -15,8 +16,9 @@ object EventsClassGenerator {
     fun createFile(
         packageName: String,
         prefix: String,
-        generated: NextReducerClass?,
-        passedReduceClass: NextReducerClass?
+        stateElement: Element,
+        generated: ReducerClass?,
+        passedReduceClass: ReducerClass?
     ): FileSpec {
         val fileName = eventClassName(prefix = prefix)
 
@@ -75,6 +77,7 @@ object EventsClassGenerator {
                 TypeSpec
                     .classBuilder(fileName)
                     .addAnnotation(lombok.Generated::class)
+                    .addOriginatingElement(stateElement)
                     .apply {
                         if (passedReduceClass != null) {
                             primaryConstructor(
@@ -137,7 +140,7 @@ object EventsClassGenerator {
 
     private fun createConstructor(
         parameterName: String,
-        reducerClass: NextReducerClass
+        reducerClass: ReducerClass
     ): FunSpec {
         return FunSpec.constructorBuilder()
             .addParameter(parameterName, reducerClass.type)
