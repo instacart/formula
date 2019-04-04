@@ -45,9 +45,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
             .doOnNext {
                 // Timber.d("render / ${this@FormulaFragment}")
             }
-            .subscribe(component.renderView.renderer::render) { error ->
-                // log error
-            }
+            .subscribe(component.renderView.renderer::render)
 
         this.lifecycleCallback = component.lifecycleCallbacks
         lifecycleCallback?.onViewCreated(view, savedInstanceState)
