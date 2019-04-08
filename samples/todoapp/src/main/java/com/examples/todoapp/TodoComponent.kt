@@ -26,7 +26,7 @@ class TodoComponent {
         }
     }
 
-    // Using a relay here to survive configutation changes.
+    // Using a relay here to survive configuration changes.
     val stateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
 
     init {
