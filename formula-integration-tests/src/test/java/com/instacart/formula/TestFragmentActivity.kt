@@ -11,14 +11,14 @@ class TestFragmentActivity : FragmentActivity() {
     private val disposables = CompositeDisposable()
 
     lateinit var fragmentRenderView: FragmentFlowRenderView
-    val component = TestComponent()
+    val component = TestFragmentFlowViewModel()
     lateinit var contract: TestLifecycleContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         fragmentRenderView = FragmentFlowRenderView(this, onLifecycleEvent = component::onLifecycleEvent)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.basic_integration_activity)
+        setContentView(R.layout.test_activity)
 
         disposables.add(component.state.subscribe(fragmentRenderView.renderer::render))
 
