@@ -3,6 +3,8 @@ package com.examples.todoapp.data
 import com.examples.todoapp.tasks.TaskCompletedEvent
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 
 class TaskRepo {
     private val localStore: BehaviorRelay<List<Task>> = BehaviorRelay.createDefault(
@@ -13,7 +15,10 @@ class TaskRepo {
     )
 
     fun tasks(): Observable<List<Task>> {
-        return localStore
+        // Fake initial network request
+        return Observable.timer(5, TimeUnit.SECONDS).observeOn(AndroidSchedulers.mainThread()).flatMap {
+            localStore
+        }
     }
 
     fun onTaskCompleted(event: TaskCompletedEvent) {
