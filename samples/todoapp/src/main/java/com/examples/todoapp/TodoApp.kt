@@ -9,11 +9,4 @@ import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
 class TodoApp : Application() {
-    companion object {
-        fun component(context: Context): TodoComponent {
-            return (context.applicationContext as TodoApp).component
-        }
-    }
-
-    private val component: TodoComponent = TodoComponent()
 }

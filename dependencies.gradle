@@ -26,8 +26,10 @@ ext {
                     ],
                     constraintlayout: "androidx.constraintlayout:constraintlayout:1.1.3",
                     lifecycle       : [
-                            compiler: "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion",
-                            runtime : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion"
+                            compiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion",
+                            runtime   : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion",
+                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion",
+                            viewmodel : "androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion"
                     ],
                     recyclerview    : "androidx.recyclerview:recyclerview:$androidXVersion",
                     fragment        : [
