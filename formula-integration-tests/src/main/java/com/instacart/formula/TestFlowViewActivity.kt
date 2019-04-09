@@ -2,24 +2,26 @@ package com.instacart.formula
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProviders
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.integration.FragmentFlowRenderView
 import io.reactivex.disposables.CompositeDisposable
 
-class TestActivity : FragmentActivity() {
+class TestFlowViewActivity : FragmentActivity() {
     private val disposables = CompositeDisposable()
 
     // Exposed for testing purposes.
     lateinit var fragmentFlowRenderView: FragmentFlowRenderView
-    val component = TestComponent()
+    lateinit var viewModel: TestFragmentFlowViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        fragmentFlowRenderView = FragmentFlowRenderView(this, onLifecycleEvent = component::onLifecycleEvent)
+        viewModel = ViewModelProviders.of(this).get(TestFragmentFlowViewModel::class.java)
+        fragmentFlowRenderView = FragmentFlowRenderView(this, onLifecycleEvent = viewModel::onLifecycleEvent)
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.basic_integration_activity)
+        setContentView(R.layout.test_activity)
 
-        disposables.add(component.state.subscribe(fragmentFlowRenderView.renderer::render))
+        disposables.add(viewModel.state.subscribe(fragmentFlowRenderView.renderer::render))
 
         if (savedInstanceState == null) {
             val contract = TaskListContract()

@@ -1,5 +1,6 @@
 package com.examples.todoapp
 
+import androidx.lifecycle.ViewModel
 import com.examples.todoapp.data.TaskRepo
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
@@ -7,13 +8,13 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.LifecycleEvent
-import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
 
-class TodoComponent {
+class TodoActivityViewModel : ViewModel() {
+    // Should be injected
     private val repo: TaskRepo = TaskRepo()
 
     private val activityEffectRelay: PublishRelay<TodoActivityEffect> = PublishRelay.create()
@@ -26,23 +27,22 @@ class TodoComponent {
         }
     }
 
-    // Using a relay here to survive configuration changes.
-    val stateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
+    private val disposables = CompositeDisposable()
 
-    init {
-        // This subscription should be added to some scope that outlives activity configuration changes.
-        store.state().subscribe(stateRelay::accept)
+    // We use replay + connect so this stream survives configuration changes.
+    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+        connect { disposables.add(it) }
     }
+
+    // We expose effects on the activity.
+    val effects: Observable<TodoActivityEffect> = activityEffectRelay
 
     fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
         store.onLifecycleEffect(event)
     }
 
-    fun state(): Flowable<FragmentFlowState> {
-        return stateRelay.toFlowable(BackpressureStrategy.LATEST)
-    }
-
-    fun activityEffects(): Observable<TodoActivityEffect> {
-        return activityEffectRelay
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
     }
 }

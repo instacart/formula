@@ -16,7 +16,7 @@ class FragmentFlowRenderViewTest {
 
     class HeadlessFragment : Fragment()
 
-    @get:Rule val rule = ActivityTestRule(TestActivity::class.java)
+    @get:Rule val rule = ActivityTestRule(TestFlowViewActivity::class.java)
 
     @Test fun `add fragment lifecycle event`() {
         assertThat(currentBackstack()).containsExactly(TaskListContract())
@@ -49,17 +49,17 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `render model is passed to visible fragment`() {
-        val component = rule.activity.component
-        component.sendStateUpdate(TaskListContract(), "update")
-        assertThat(component.renderCalls).containsExactly(TaskListContract() to "update")
+        val viewModel = viewModel()
+        viewModel.sendStateUpdate(TaskListContract(), "update")
+        assertThat(viewModel.renderCalls).containsExactly(TaskListContract() to "update")
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
         navigateToTaskDetail()
 
-        val component = rule.activity.component
-        component.sendStateUpdate(TaskListContract(), "update")
-        assertThat(component.renderCalls).isEqualTo(emptyList<Any>())
+        val viewModel = viewModel()
+        viewModel.sendStateUpdate(TaskListContract(), "update")
+        assertThat(viewModel.renderCalls).isEqualTo(emptyList<Any>())
     }
 
     @Test fun `visible fragments are updated when navigating`() {
@@ -67,14 +67,14 @@ class FragmentFlowRenderViewTest {
 
         val contract = TaskDetailContract(1)
 
-        val component = rule.activity.component
-        component.sendStateUpdate(contract, "update")
-        assertThat(component.renderCalls).containsExactly(contract to "update")
+        val viewModel = viewModel()
+        viewModel.sendStateUpdate(contract, "update")
+        assertThat(viewModel.renderCalls).containsExactly(contract to "update")
 
         rule.activity.onBackPressed()
 
-        component.sendStateUpdate(contract, "update-two")
-        assertThat(component.renderCalls).containsExactly(contract to "update")
+        viewModel.sendStateUpdate(contract, "update-two")
+        assertThat(viewModel.renderCalls).containsExactly(contract to "update")
     }
 
     @Test fun `delegates back press to current render model`() {
@@ -83,8 +83,8 @@ class FragmentFlowRenderViewTest {
         var backPressed = 0
 
         val contract = TaskDetailContract(1)
-        val component = rule.activity.component
-        component.sendStateUpdate(contract, object : BackCallback {
+        val viewModel = viewModel()
+        viewModel.sendStateUpdate(contract, object : BackCallback {
             override fun onBackPressed() {
                 backPressed += 1
             }
@@ -94,6 +94,10 @@ class FragmentFlowRenderViewTest {
         rule.activity.onBackPressed()
 
         assertThat(backPressed).isEqualTo(2)
+    }
+
+    private fun viewModel(): TestFragmentFlowViewModel {
+        return rule.activity.viewModel
     }
 
     private fun navigateToTaskDetail() {
@@ -106,6 +110,6 @@ class FragmentFlowRenderViewTest {
     }
 
     private fun currentBackstack(): List<FragmentContract<*>> {
-        return rule.activity.component.currentFragmentState().backStack.keys
+        return rule.activity.viewModel.state.test().values().last().backStack.keys
     }
 }
