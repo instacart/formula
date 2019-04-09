@@ -28,8 +28,7 @@ ext {
                     lifecycle       : [
                             compiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion",
                             runtime   : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion",
-                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion",
-                            viewmodel : "androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion"
+                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
                     ],
                     recyclerview    : "androidx.recyclerview:recyclerview:$androidXVersion",
                     fragment        : [
