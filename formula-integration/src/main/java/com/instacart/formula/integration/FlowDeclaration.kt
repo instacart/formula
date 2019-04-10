@@ -40,6 +40,12 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
         return Binding.single(type, init) as Binding<FlowComponent, FragmentContract<*>, *>
     }
 
+    protected inline fun <State, reified Contract : FragmentContract<State>> bind(
+        noinline init: (FlowComponent, Contract) -> Flowable<State>
+    ): Binding<FlowComponent, FragmentContract<*>, *> {
+        return bind(Contract::class, init)
+    }
+
     protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
 
     fun createBinding(input: Input): Binding<ParentComponent, FragmentContract<*>, Any> {
