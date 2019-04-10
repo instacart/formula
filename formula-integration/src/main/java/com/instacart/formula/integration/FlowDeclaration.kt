@@ -44,7 +44,7 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
 
     protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
 
-    fun createBinding(input: Input): CompositeBinding<FragmentContract<*>, ParentComponent, FlowComponent> {
+    fun createBinding(input: Input): Binding<ParentComponent, FragmentContract<*>, Any> {
         return createFlow(input).asBinding()
     }
 }

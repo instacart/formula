@@ -85,6 +85,7 @@ class FlowStoreTest {
             }
     }
 
+
     private fun updateBackstack(vararg entries: Key) {
         keys.accept(BackStack(entries.toList()))
     }

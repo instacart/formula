@@ -50,14 +50,11 @@ abstract class Binding<ParentComponent, Key, State> {
             bind(scoped)
         }
 
-        inline fun <reified T: Key, S> bind(integration: Integration<T, *, S>) = apply {
-            register(T::class, integration)
-            Unit
+        inline fun <reified T: Key> bind(integration: Integration<T, *, *>) = apply {
+            val init: (T) -> Flowable<Any> = integration::init as (T) -> Flowable<Any>
+            register(T::class, init)
         }
-//        fun bind(compositeBinding: CompositeBinding<Key, Component, *>) = apply {
-//            bindings.add(compositeBinding)
-//        }
-//
+
         fun build(): CompositeBinding<Key, ParentComponent, Component> {
             return CompositeBinding(componentFactory, bindings)
         }

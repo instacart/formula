@@ -1,5 +1,6 @@
 package com.instacart.formula.integration
 
+import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Formula
 import io.reactivex.Flowable
 import org.junit.Test
@@ -18,7 +19,7 @@ class IntegrationTest {
         }
     }
 
-    class MyIntegration : Integration<String, MyFormula.Input, String> {
+    class MyIntegration : Integration<String, MyFormula.Input, String>() {
         override fun createFormula(key: String): Formula<MyFormula.Input, String> {
             return MyFormula()
         }
@@ -28,10 +29,21 @@ class IntegrationTest {
         }
     }
 
-
     @Test fun `integration invoke method`() {
-        val state = MyIntegration().invoke("aha")
+        val state = MyIntegration().init("aha")
 
         state.test().assertValues("aha - 0", "aha - 1", "aha - 2")
+    }
+
+    @Test fun `bind integration`() {
+        val backStack = BackStack.empty<String>().add("key")
+        val store = FlowStore.init(state = Flowable.just(backStack)) {
+            bind(MyIntegration())
+        }
+
+        val models = store.state().test().values().mapNotNull {
+            it.lastEntry()?.renderModel
+        }
+        assertThat(models).containsExactly("key - 0", "key - 1", "key - 2")
     }
 }
