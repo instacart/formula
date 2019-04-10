@@ -14,8 +14,8 @@ import io.reactivex.Flowable
  */
 internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
-    private val bindings: List<Binding<ScopedComponent, Key, *>>
-) : Binding<ParentComponent, Key, Any>() {
+    private val bindings: List<Binding<ScopedComponent, Key>>
+) : Binding<ParentComponent, Key>() {
 
     override fun binds(key: Any): Boolean {
         return bindings.any { it.binds(key) }

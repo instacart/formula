@@ -9,7 +9,7 @@ import io.reactivex.Flowable
 internal class SingleBinding<Key, Scope, State : Any>(
     private val type: Class<Key>,
     private val init: (Scope, Key) -> Flowable<State>
-) : Binding<Scope, Key, State>() {
+) : Binding<Scope, Key>() {
     /**
      * Helper method to select state from active backstack.
      */
@@ -40,7 +40,7 @@ internal class SingleBinding<Key, Scope, State : Any>(
             .groupBy { it.key }
             .flatMap {
                 it.switchMap {
-                    val contract = it.key as Key
+                    val contract = it.key
                     when (it) {
                         is LifecycleEvent.Added -> init(contract).map { state ->
                             KeyState(contract, state)

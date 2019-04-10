@@ -8,12 +8,12 @@ import kotlin.reflect.KClass
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<ParentComponent, Key, State> {
+abstract class Binding<ParentComponent, Key> {
     companion object {
         fun <Component, Key : Any, State : Any> single(
             type: KClass<Key>,
             stateInit: (Component, Key) -> Flowable<State>
-        ): Binding<Component, Key, *> {
+        ): Binding<Component, Key> {
             return SingleBinding(type.java, stateInit)
         }
     }
@@ -21,9 +21,9 @@ abstract class Binding<ParentComponent, Key, State> {
     class Builder<ParentComponent, Component, Key : Any>(
         private val componentFactory: ComponentFactory<ParentComponent, Component>
     ) {
-        private val bindings: MutableList<Binding<Component, Key, *>> = mutableListOf()
+        private val bindings: MutableList<Binding<Component, Key>> = mutableListOf()
 
-        fun bind(binding: Binding<Component, Key, *>) = apply {
+        fun bind(binding: Binding<Component, Key>) = apply {
             bindings.add(binding)
         }
 
@@ -33,7 +33,7 @@ abstract class Binding<ParentComponent, Key, State> {
          * Binds specific type of key to the render model management.
          */
         fun <T : Key, S : Any> register(type: KClass<T>, init: (T) -> Flowable<S>) = apply {
-            val initWithScope = { scope: Component, key: T ->
+            val initWithScope = { _: Component, key: T ->
                 init(key)
             }
             bind(type, initWithScope)
@@ -43,7 +43,7 @@ abstract class Binding<ParentComponent, Key, State> {
          * Binds specific type of key to the render model management.
          */
         fun <T : Key, S : Any> bind(type: KClass<T>, init: (Component, T) -> Flowable<S>) = apply {
-            bind(single(type, init) as Binding<Component, Key, S>)
+            bind(single(type, init) as Binding<Component, Key>)
         }
 
         fun <NewComponent> withScope(
@@ -59,7 +59,7 @@ abstract class Binding<ParentComponent, Key, State> {
             register(T::class, init)
         }
 
-        fun build(): Binding<ParentComponent, Key, Any> {
+        fun build(): Binding<ParentComponent, Key> {
             return CompositeBinding(componentFactory, bindings)
         }
     }
