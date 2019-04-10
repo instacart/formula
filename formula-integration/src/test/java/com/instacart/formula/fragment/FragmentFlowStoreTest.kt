@@ -106,10 +106,10 @@ class FragmentFlowStoreTest {
     }
 
     private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): FragmentFlowState {
-        val initial = mutableMapOf<FragmentContract<*>, KeyState<FragmentContract<*>, *>>()
+        val initial = mutableMapOf<FragmentContract<*>, KeyState<FragmentContract<*>>>()
         val keyStates = states.foldRight(initial) { value, acc ->
             if (value.second != null) {
-                acc.put(value.first, KeyState(value.first, value.second))
+                acc.put(value.first, KeyState(value.first, value.second!!))
             }
 
             acc

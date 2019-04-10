@@ -33,14 +33,14 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     /**
      * A utility function to create a binding for [FragmentContract] to the render model management.
      */
-    protected fun <State, Contract : FragmentContract<State>> bind(
+    protected fun <State : Any, Contract : FragmentContract<State>> bind(
         type: KClass<Contract>,
         init: (FlowComponent, Contract) -> Flowable<State>
     ): Binding<FlowComponent, FragmentContract<*>, *> {
         return Binding.single(type, init) as Binding<FlowComponent, FragmentContract<*>, *>
     }
 
-    protected inline fun <State, reified Contract : FragmentContract<State>> bind(
+    protected inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
         noinline init: (FlowComponent, Contract) -> Flowable<State>
     ): Binding<FlowComponent, FragmentContract<*>, *> {
         return bind(Contract::class, init)

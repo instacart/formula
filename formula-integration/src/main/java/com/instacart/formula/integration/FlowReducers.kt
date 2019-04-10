@@ -30,7 +30,7 @@ class FlowReducers<Key : Any>(
         }
     }
 
-    fun onScreenStateChanged(event: KeyState<Key, Any>): (FlowState<Key>) -> FlowState<Key> {
+    fun onScreenStateChanged(event: KeyState<Key>): (FlowState<Key>) -> FlowState<Key> {
         return { state: FlowState<Key> ->
             state.update(event)
         }

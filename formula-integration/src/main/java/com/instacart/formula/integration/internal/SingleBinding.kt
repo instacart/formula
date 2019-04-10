@@ -6,14 +6,14 @@ import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
-internal class SingleBinding<Key, Scope, State>(
+internal class SingleBinding<Key, Scope, State : Any>(
     private val type: Class<Key>,
     private val init: (Scope, Key) -> Flowable<State>
 ) : Binding<Scope, Key, State>() {
     /**
      * Helper method to select state from active backstack.
      */
-    override fun state(component: Scope, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>> {
+    override fun state(component: Scope, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
             init(component, key)
         }
@@ -30,10 +30,10 @@ internal class SingleBinding<Key, Scope, State>(
      * @param type key class
      * @param init a function that initializes the render model [Flowable]
      */
-    private fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
+    private fun <Key, State : Any> Flowable<BackStack<Key>>.createStateUpdates(
         type: Class<Key>,
         init: (Key) -> Flowable<State>
-    ): Flowable<KeyState<Key, State>> {
+    ): Flowable<KeyState<Key>> {
         return this
             .lifecycleEffects()
             .filter { type.isInstance(it.key) }

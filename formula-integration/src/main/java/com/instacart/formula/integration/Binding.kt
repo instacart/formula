@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  */
 abstract class Binding<ParentComponent, Key, State> {
     companion object {
-        fun <Component, Key : Any, State> single(
+        fun <Component, Key : Any, State : Any> single(
             type: KClass<Key>,
             stateInit: (Component, Key) -> Flowable<State>
         ): Binding<Component, Key, *> {
@@ -27,12 +27,12 @@ abstract class Binding<ParentComponent, Key, State> {
             bindings.add(binding)
         }
 
-        inline fun <reified T : Key, S> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
+        inline fun <reified T : Key, S : Any> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
 
         /**
          * Binds specific type of key to the render model management.
          */
-        fun <T : Key, S> register(type: KClass<T>, init: (T) -> Flowable<S>) = apply {
+        fun <T : Key, S : Any> register(type: KClass<T>, init: (T) -> Flowable<S>) = apply {
             val initWithScope = { scope: Component, key: T ->
                 init(key)
             }
@@ -42,7 +42,7 @@ abstract class Binding<ParentComponent, Key, State> {
         /**
          * Binds specific type of key to the render model management.
          */
-        fun <T : Key, S> bind(type: KClass<T>, init: (Component, T) -> Flowable<S>) = apply {
+        fun <T : Key, S : Any> bind(type: KClass<T>, init: (Component, T) -> Flowable<S>) = apply {
             bind(single(type, init) as Binding<Component, Key, S>)
         }
 
@@ -54,7 +54,7 @@ abstract class Binding<ParentComponent, Key, State> {
             bind(scoped)
         }
 
-        inline fun <reified T: Key> bind(integration: Integration<T, *, *>) = apply {
+        inline fun <reified T : Key> bind(integration: Integration<T, *, *>) = apply {
             val init: (T) -> Flowable<Any> = integration::init as (T) -> Flowable<Any>
             register(T::class, init)
         }
@@ -73,5 +73,5 @@ abstract class Binding<ParentComponent, Key, State> {
      * @param component A component associated with the parent. Often this will map to the parent dagger component.
      * @param backstack A stream that emits the current back stack state.
      */
-    abstract fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>>
+    abstract fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>>
 }

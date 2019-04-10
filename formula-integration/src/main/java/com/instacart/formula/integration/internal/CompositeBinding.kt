@@ -21,7 +21,7 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
         return bindings.any { it.binds(key) }
     }
 
-    override fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, Any>> {
+    override fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
         return backstack
             .isInScope()
             .switchMap { enterScope ->
@@ -32,9 +32,9 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
                     }
 
                     Flowable.merge(updates)
-                        .doOnCancel { disposableScope.dispose() } as Flowable<KeyState<Key, Any>>
+                        .doOnCancel { disposableScope.dispose() } as Flowable<KeyState<Key>>
                 } else {
-                    Flowable.empty<KeyState<Key, Any>>()
+                    Flowable.empty<KeyState<Key>>()
                 }
             }
     }
