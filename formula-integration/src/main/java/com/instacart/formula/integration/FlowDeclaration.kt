@@ -1,8 +1,8 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.integration.internal.SingleBinding
 import com.instacart.formula.integration.internal.CompositeBinding
+import com.instacart.formula.integration.internal.SingleBinding
 import io.reactivex.Flowable
 import kotlin.reflect.KClass
 
@@ -21,10 +21,8 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
         val childrenBindings: List<SingleBinding<FragmentContract<*>, FlowComponent, *>>
     ) {
 
-        fun asBinding(): CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
-            return KeyBinding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(
-                flowComponentFactory
-            )
+        fun asBinding(): CompositeBinding<FragmentContract<*>, ParentComponent, FlowComponent> {
+            return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(flowComponentFactory)
                 .apply {
                     childrenBindings.forEach {
                         bind(it)
@@ -41,15 +39,12 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
         type: KClass<Contract>,
         init: (FlowComponent, Contract) -> Flowable<State>
     ): SingleBinding<FragmentContract<*>, FlowComponent, *> {
-        return SingleBinding(
-            type.java,
-            init
-        ) as SingleBinding<FragmentContract<*>, FlowComponent, *>
+        return SingleBinding(type.java, init) as SingleBinding<FragmentContract<*>, FlowComponent, *>
     }
 
-    abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
+    protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
 
-    fun createBinding(input: Input): CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
+    fun createBinding(input: Input): CompositeBinding<FragmentContract<*>, ParentComponent, FlowComponent> {
         return createFlow(input).asBinding()
     }
 }

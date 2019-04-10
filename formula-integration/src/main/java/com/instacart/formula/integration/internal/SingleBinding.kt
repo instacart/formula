@@ -1,7 +1,7 @@
 package com.instacart.formula.integration.internal
 
 import com.instacart.formula.integration.BackStack
-import com.instacart.formula.integration.KeyBinding
+import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
@@ -9,13 +9,13 @@ import io.reactivex.Flowable
 class SingleBinding<Key, Scope, State>(
     val type: Class<Key>,
     val init: (Scope, Key) -> Flowable<State>
-) : KeyBinding<Scope, Key, State>() {
+) : Binding<Scope, Key, State>() {
     /**
      * Helper method to select state from active store.
      */
-    override fun state(scope: Scope, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>> {
+    override fun state(component: Scope, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>> {
         return store.createStateUpdates(type) { key ->
-            init(scope, key)
+            init(component, key)
         }
     }
 

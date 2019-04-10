@@ -18,14 +18,14 @@ import io.reactivex.Flowable
  */
 class FlowStore<Key : Any> constructor(
     keyState: Flowable<BackStack<Key>>,
-    private val root: CompositeBinding<Unit, Key, Unit>
+    private val root: CompositeBinding<Key, Unit, Unit>
 ) {
     companion object {
         inline fun <Key : Any> init(
             state: Flowable<BackStack<Key>>,
-            crossinline init: KeyBinding.Builder<Unit, Unit, Key>.() -> Unit
+            crossinline init: Binding.Builder<Unit, Unit, Key>.() -> Unit
         ): FlowStore<Key> {
-            val root = KeyBinding.Builder<Unit, Unit, Key>(scopeFactory = {
+            val root = Binding.Builder<Unit, Unit, Key>(componentFactory = {
                 DisposableScope(component = Unit, onDispose = {})
             })
                 .apply(init)

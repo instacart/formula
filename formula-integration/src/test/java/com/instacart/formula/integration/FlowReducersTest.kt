@@ -9,7 +9,7 @@ import org.junit.Test
 class FlowReducersTest {
     data class TestKey(val value: String)
 
-    lateinit var root: CompositeBinding<Unit, TestKey, Unit>
+    lateinit var root: CompositeBinding<TestKey, Unit, Unit>
     lateinit var reducers: FlowReducers<TestKey>
 
     @Before fun setup() {
