@@ -6,7 +6,7 @@ import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
-class SingleBinding<Key, Scope, State>(
+internal class SingleBinding<Key, Scope, State>(
     private val type: Class<Key>,
     private val init: (Scope, Key) -> Flowable<State>
 ) : Binding<Scope, Key, State>() {

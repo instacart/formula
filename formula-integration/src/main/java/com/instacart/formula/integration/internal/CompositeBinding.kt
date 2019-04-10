@@ -12,7 +12,7 @@ import io.reactivex.Flowable
  * @param ScopedComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
-class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
+internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
     private val bindings: List<Binding<ScopedComponent, Key, *>>
 ) : Binding<ParentComponent, Key, Any>() {

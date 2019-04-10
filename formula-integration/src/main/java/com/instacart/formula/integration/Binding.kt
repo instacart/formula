@@ -59,7 +59,7 @@ abstract class Binding<ParentComponent, Key, State> {
             register(T::class, init)
         }
 
-        fun build(): CompositeBinding<Key, ParentComponent, Component> {
+        fun build(): Binding<ParentComponent, Key, Any> {
             return CompositeBinding(componentFactory, bindings)
         }
     }
