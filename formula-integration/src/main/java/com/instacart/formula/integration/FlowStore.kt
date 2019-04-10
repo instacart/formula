@@ -1,6 +1,5 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 
 /**
@@ -18,7 +17,7 @@ import io.reactivex.Flowable
  */
 class FlowStore<Key : Any> constructor(
     keyState: Flowable<BackStack<Key>>,
-    private val root: CompositeBinding<Key, Unit, Unit>
+    private val root: Binding<Unit, Key, Any>
 ) {
     companion object {
         inline fun <Key : Any> init(

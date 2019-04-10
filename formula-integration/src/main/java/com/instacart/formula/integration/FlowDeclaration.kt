@@ -1,8 +1,6 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.integration.internal.CompositeBinding
-import com.instacart.formula.integration.internal.SingleBinding
 import io.reactivex.Flowable
 import kotlin.reflect.KClass
 
@@ -17,11 +15,11 @@ import kotlin.reflect.KClass
 abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
 
     data class Flow<ParentComponent, FlowComponent>(
-        val flowComponentFactory: (ParentComponent) -> DisposableScope<FlowComponent>,
-        val childrenBindings: List<SingleBinding<FragmentContract<*>, FlowComponent, *>>
+        val flowComponentFactory: ComponentFactory<ParentComponent, FlowComponent>,
+        val childrenBindings: List<Binding<FlowComponent, FragmentContract<*>, *>>
     ) {
 
-        fun asBinding(): CompositeBinding<FragmentContract<*>, ParentComponent, FlowComponent> {
+        fun asBinding(): Binding<ParentComponent, FragmentContract<*>, Any> {
             return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(flowComponentFactory)
                 .apply {
                     childrenBindings.forEach {
@@ -38,8 +36,8 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     protected fun <State, Contract : FragmentContract<State>> bind(
         type: KClass<Contract>,
         init: (FlowComponent, Contract) -> Flowable<State>
-    ): SingleBinding<FragmentContract<*>, FlowComponent, *> {
-        return SingleBinding(type.java, init) as SingleBinding<FragmentContract<*>, FlowComponent, *>
+    ): Binding<FlowComponent, FragmentContract<*>, *> {
+        return Binding.single(type, init) as Binding<FlowComponent, FragmentContract<*>, *>
     }
 
     protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>

@@ -1,7 +1,6 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.integration.internal.CompositeBinding
 import com.nhaarman.mockito_kotlin.mock
 import org.junit.Before
 import org.junit.Test
@@ -9,7 +8,7 @@ import org.junit.Test
 class FlowReducersTest {
     data class TestKey(val value: String)
 
-    lateinit var root: CompositeBinding<TestKey, Unit, Unit>
+    lateinit var root: Binding<Unit, TestKey, Any>
     lateinit var reducers: FlowReducers<TestKey>
 
     @Before fun setup() {

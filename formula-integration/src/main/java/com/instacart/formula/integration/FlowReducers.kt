@@ -1,9 +1,7 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.integration.internal.CompositeBinding
-
 class FlowReducers<Key : Any>(
-    private val root: CompositeBinding<Key, Unit, Unit>
+    private val root: Binding<Unit, Key, Any>
 ) {
 
     fun onBackstackChange(keys: BackStack<Key>): (FlowState<Key>) -> FlowState<Key> {

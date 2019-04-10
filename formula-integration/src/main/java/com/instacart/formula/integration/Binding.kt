@@ -9,11 +9,24 @@ import kotlin.reflect.KClass
  * Defines how specific keys bind to the state management associated
  */
 abstract class Binding<ParentComponent, Key, State> {
+    companion object {
+
+        fun <Component, Key : Any, State> single(
+            type: KClass<Key>,
+            stateInit: (Component, Key) -> Flowable<State>
+        ): Binding<Component, Key, *> {
+            return SingleBinding(type.java, stateInit)
+        }
+    }
 
     class Builder<ParentComponent, Component, Key : Any>(
         private val componentFactory: ComponentFactory<ParentComponent, Component>
     ) {
         private val bindings: MutableList<Binding<Component, Key, *>> = mutableListOf()
+
+        fun bind(binding: Binding<Component, Key, *>) = apply {
+            bindings.add(binding)
+        }
 
         inline fun <reified T : Key, S> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
 
@@ -24,26 +37,18 @@ abstract class Binding<ParentComponent, Key, State> {
             val initWithScope = { scope: Component, key: T ->
                 init(key)
             }
-            bind(type, init = initWithScope)
+            bind(type, initWithScope)
         }
 
         /**
          * Binds specific type of key to the render model management.
          */
         fun <T : Key, S> bind(type: KClass<T>, init: (Component, T) -> Flowable<S>) = apply {
-            bind(SingleBinding(type.java, init) as SingleBinding<Key, Component, S>)
-        }
-
-        fun bind(binding: SingleBinding<Key, Component, *>) = apply {
-            bindings.add(binding)
-        }
-
-        fun bind(binding: Binding<Component, Key, *>) = apply {
-            bindings.add(binding)
+            bind(single(type, init) as Binding<Component, Key, S>)
         }
 
         fun <NewComponent> withScope(
-            scopeFactory: (Component) -> DisposableScope<NewComponent>,
+            scopeFactory: ComponentFactory<Component, NewComponent>,
             init: Builder<Component, NewComponent, Key>.() -> Unit
         ) = apply {
             val scoped = Builder<Component, NewComponent, Key>(scopeFactory).apply(init).build()
@@ -61,9 +66,13 @@ abstract class Binding<ParentComponent, Key, State> {
     }
 
     /**
-     * Determines if this binding handles the key
+     * Returns true if this binding handles this [key]
      */
     abstract fun binds(key: Any): Boolean
 
-    abstract fun state(component: ParentComponent, store: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>>
+    /**
+     * @param component A component associated with the parent. Often this will map to the parent dagger component.
+     * @param backstack A stream that emits the current back stack state.
+     */
+    abstract fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>>
 }
