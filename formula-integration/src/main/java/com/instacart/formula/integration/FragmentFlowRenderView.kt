@@ -18,6 +18,9 @@ import io.reactivex.disposables.CompositeDisposable
  * Renders [FragmentFlowState] and provides back button handling.
  *
  * NOTE: Initialize this class before calling [FragmentActivity.super.onCreate]
+ *
+ * [activity] - activity within which the [FragmentFlowRenderView] lives.
+ * [onLifecycleEvent] - fragment lifecycle events that should be passed to the [com.instacart.formula.fragment.FragmentFlowStore]
  */
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,

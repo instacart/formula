@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.integration.internal.CompositeBinding
 import com.nhaarman.mockito_kotlin.mock
 import org.junit.Before
 import org.junit.Test
@@ -8,7 +9,7 @@ import org.junit.Test
 class FlowReducersTest {
     data class TestKey(val value: String)
 
-    lateinit var root: KeyBinding.CompositeBinding<Unit, TestKey, Unit>
+    lateinit var root: CompositeBinding<Unit, TestKey, Unit>
     lateinit var reducers: FlowReducers<TestKey>
 
     @Before fun setup() {
@@ -16,7 +17,7 @@ class FlowReducersTest {
         reducers = FlowReducers(root)
     }
 
-    @Test fun onBackstackChange_clearDetachedContracts() {
+    @Test fun `on backstack change we clear detached contracts`() {
         val firstEntry = TestKey("first")
         val secondEntry = TestKey("second")
 

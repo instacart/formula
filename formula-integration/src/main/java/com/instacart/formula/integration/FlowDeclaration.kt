@@ -1,6 +1,8 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.integration.internal.SingleBinding
+import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 import kotlin.reflect.KClass
 
@@ -16,10 +18,10 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
 
     data class Flow<ParentComponent, FlowComponent>(
         val flowComponentFactory: (ParentComponent) -> DisposableScope<FlowComponent>,
-        val childrenBindings: List<KeyBinding.Binding<FragmentContract<*>, FlowComponent, *>>
+        val childrenBindings: List<SingleBinding<FragmentContract<*>, FlowComponent, *>>
     ) {
 
-        fun asBinding(): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
+        fun asBinding(): CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
             return KeyBinding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(
                 flowComponentFactory
             )
@@ -38,16 +40,16 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     protected fun <State, Contract : FragmentContract<State>> bind(
         type: KClass<Contract>,
         init: (FlowComponent, Contract) -> Flowable<State>
-    ): KeyBinding.Binding<FragmentContract<*>, FlowComponent, *> {
-        return KeyBinding.Binding(
+    ): SingleBinding<FragmentContract<*>, FlowComponent, *> {
+        return SingleBinding(
             type.java,
             init
-        ) as KeyBinding.Binding<FragmentContract<*>, FlowComponent, *>
+        ) as SingleBinding<FragmentContract<*>, FlowComponent, *>
     }
 
     abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
 
-    fun createBinding(input: Input): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
+    fun createBinding(input: Input): CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
         return createFlow(input).asBinding()
     }
 }

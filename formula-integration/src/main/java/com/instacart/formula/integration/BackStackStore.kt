@@ -13,15 +13,10 @@ import io.reactivex.subjects.BehaviorSubject
  *
  */
 class BackStackStore<Key>(initial: List<Key>) {
-    companion object {
-        operator fun <Key> invoke(): BackStackStore<Key> {
-            return BackStackStore(emptyList())
-        }
 
-        operator fun <Key> invoke(initial: Key): BackStackStore<Key> {
-            return BackStackStore(listOf(initial))
-        }
-    }
+    constructor(): this(emptyList())
+
+    constructor(initial: Key): this(listOf(initial))
 
     private val backStackStateRelay = BehaviorSubject.createDefault(BackStack(initial))
 
