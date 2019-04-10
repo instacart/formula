@@ -10,7 +10,6 @@ import kotlin.reflect.KClass
  */
 abstract class Binding<ParentComponent, Key, State> {
     companion object {
-
         fun <Component, Key : Any, State> single(
             type: KClass<Key>,
             stateInit: (Component, Key) -> Flowable<State>
