@@ -45,15 +45,15 @@ abstract class Binding<ParentComponent, Key, State> {
         fun <NewComponent> withScope(
             scopeFactory: (Component) -> DisposableScope<NewComponent>,
             init: Builder<Component, NewComponent, Key>.() -> Unit
-        ): Builder<ParentComponent, Component, Key> {
+        ) = apply {
             val scoped = Builder<Component, NewComponent, Key>(scopeFactory).apply(init).build()
-            return bind(scoped)
+            bind(scoped)
         }
 
-        fun bind(compositeBinding: CompositeBinding<Key, Component, *>) = apply {
-            bindings.add(compositeBinding)
-        }
-
+//        fun bind(compositeBinding: CompositeBinding<Key, Component, *>) = apply {
+//            bindings.add(compositeBinding)
+//        }
+//
         fun build(): CompositeBinding<Key, ParentComponent, Component> {
             return CompositeBinding(componentFactory, bindings)
         }
