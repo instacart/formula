@@ -50,6 +50,10 @@ abstract class Binding<ParentComponent, Key, State> {
             bind(scoped)
         }
 
+        inline fun <reified T: Key, S> bind(integration: Integration<T, *, S>) = apply {
+            register(T::class, integration)
+            Unit
+        }
 //        fun bind(compositeBinding: CompositeBinding<Key, Component, *>) = apply {
 //            bindings.add(compositeBinding)
 //        }
