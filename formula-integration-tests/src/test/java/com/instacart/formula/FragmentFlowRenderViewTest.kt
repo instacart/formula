@@ -1,12 +1,14 @@
 package com.instacart.formula
 
 import androidx.fragment.app.Fragment
+import androidx.test.core.app.ActivityScenario
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.ActivityTestRule
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.BackCallback
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +18,12 @@ class FragmentFlowRenderViewTest {
 
     class HeadlessFragment : Fragment()
 
-    @get:Rule val rule = ActivityTestRule(TestFlowViewActivity::class.java)
+    @get:Rule val rule = ActivityScenarioRule(TestFlowViewActivity::class.java)
+    lateinit var scenario: ActivityScenario<TestFlowViewActivity>
+
+    @Before fun setup() {
+        scenario = rule.scenario
+    }
 
     @Test fun `add fragment lifecycle event`() {
         assertThat(currentBackstack()).containsExactly(TaskListContract())
@@ -24,7 +31,7 @@ class FragmentFlowRenderViewTest {
 
     @Test fun `pop backstack lifecycle event`() {
         navigateToTaskDetail()
-        rule.activity.onBackPressed()
+        navigateBack()
 
         assertThat(currentBackstack()).containsExactly(TaskListContract())
     }
@@ -40,10 +47,12 @@ class FragmentFlowRenderViewTest {
 
     @Test fun `ignore headless fragments`() {
         // add headless fragment
-        rule.activity.supportFragmentManager
-            .beginTransaction()
-            .add(HeadlessFragment(), "headless")
-            .commitNow()
+        scenario.onActivity {
+            it.supportFragmentManager
+                .beginTransaction()
+                .add(HeadlessFragment(), "headless")
+                .commitNow()
+        }
 
         assertThat(currentBackstack()).containsExactly(TaskListContract())
     }
@@ -71,7 +80,7 @@ class FragmentFlowRenderViewTest {
         viewModel.sendStateUpdate(contract, "update")
         assertThat(viewModel.renderCalls).containsExactly(contract to "update")
 
-        rule.activity.onBackPressed()
+        navigateBack()
 
         viewModel.sendStateUpdate(contract, "update-two")
         assertThat(viewModel.renderCalls).containsExactly(contract to "update")
@@ -90,26 +99,61 @@ class FragmentFlowRenderViewTest {
             }
         })
 
-        rule.activity.onBackPressed()
-        rule.activity.onBackPressed()
+        navigateBack()
+        navigateBack()
 
         assertThat(backPressed).isEqualTo(2)
     }
 
-    private fun viewModel(): TestFragmentFlowViewModel {
-        return rule.activity.viewModel
+    @Test fun `activity restart`() {
+        navigateToTaskDetail()
+
+        val previous = viewModel()
+
+        scenario.recreate()
+
+        // Verify that view models have changed
+        val new = viewModel()
+        assertThat(previous).isNotEqualTo(new)
+
+        // Only restores the current fragment
+        assertThat(currentBackstack()).containsExactly(TaskDetailContract(1))
+
+        navigateBack()
+
+        assertThat(currentBackstack()).containsExactly(TaskListContract())
+    }
+
+    private fun navigateBack() {
+        scenario.onActivity { it.onBackPressed() }
     }
 
     private fun navigateToTaskDetail() {
         val detail = TaskDetailContract(1)
-        rule.activity.supportFragmentManager.beginTransaction()
-            .remove(rule.activity.supportFragmentManager.findFragmentByTag(TaskListContract().tag)!!)
-            .add(R.id.activity_content, FormulaFragment.newInstance(detail), detail.tag)
-            .addToBackStack(null)
-            .commit()
+        scenario.onActivity {
+            it.supportFragmentManager.beginTransaction()
+                .remove(it.supportFragmentManager.findFragmentByTag(TaskListContract().tag)!!)
+                .add(R.id.activity_content, FormulaFragment.newInstance(detail), detail.tag)
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    private fun viewModel(): TestFragmentFlowViewModel {
+        return get { viewModel }
     }
 
     private fun currentBackstack(): List<FragmentContract<*>> {
-        return rule.activity.viewModel.state.test().values().last().backStack.keys
+        return get {
+            viewModel.state.test().values().last().backStack.keys
+        }
+    }
+
+    private fun <T> get(select: TestFlowViewActivity.() -> T): T {
+        val list: MutableList<T> = mutableListOf()
+        scenario.onActivity {
+            list.add(it.select())
+        }
+        return list.first()
     }
 }
