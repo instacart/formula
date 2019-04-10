@@ -22,7 +22,7 @@ import io.reactivex.Flowable
  * @param Input data + callbacks passed by parent to the view model to help construct the RenderModel stream
  * @param RenderModel is data class that defines how a particular view component should be rendered
  */
-interface Formula<Input, RenderModel> {
+interface Formula<in Input, RenderModel> {
 
     /**
      * Creates the render model stream, using the given input

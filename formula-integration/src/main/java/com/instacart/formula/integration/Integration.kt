@@ -10,7 +10,7 @@ import io.reactivex.Flowable
  * @param Input a formula input
  * @param RenderModel a render model that the formula produces.
  */
-abstract class Integration<Key, Input, RenderModel : Any> {
+abstract class Integration<in Key, Input, RenderModel : Any> {
     protected abstract fun createFormula(key: Key): Formula<Input, RenderModel>
 
     protected abstract fun input(key: Key): Input
