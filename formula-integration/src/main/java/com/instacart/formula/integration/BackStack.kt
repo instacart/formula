@@ -6,46 +6,7 @@ package com.instacart.formula.integration
  */
 data class BackStack<Key>(val keys: List<Key>) {
     companion object {
-        val EMPTY = BackStack<Nothing>(emptyList())
-
-        fun <Key> empty(): BackStack<Key> =
-            BackStack(emptyList())
-
-        /**
-         * Takes last and current active contract state,
-         * and calculates attach and detach effects
-         */
-        fun <Key> findLifecycleEffects(
-            lastState: BackStack<Key>?,
-            currentState: BackStack<Key>
-        ): Set<LifecycleEvent<Key>> {
-            val lastActive = lastState?.keys.orEmpty()
-            val currentlyActive = currentState.keys
-
-            val attachedEffects = findAttachedKeys(
-                lastActive,
-                currentlyActive
-            )
-                .map { LifecycleEvent.Added(it) }
-
-            val detachEffects = findDetachedKeys(
-                lastActive,
-                currentlyActive
-            )
-                .map {
-                    LifecycleEvent.Removed(it)
-                }
-
-            return attachedEffects.plus(detachEffects).toSet()
-        }
-
-        fun <Key> findAttachedKeys(lastActive: List<Key>, currentlyActive: List<Key>): List<Key> {
-            return currentlyActive.filter { !lastActive.contains(it) }
-        }
-
-        fun <Key> findDetachedKeys(lastActive: List<Key>, currentlyActive: List<Key>): List<Key> {
-            return lastActive.filter { !currentlyActive.contains(it) }
-        }
+        fun <Key> empty(): BackStack<Key> = BackStack(emptyList())
     }
 
     fun update(event: LifecycleEvent<Key>): BackStack<Key> {

@@ -10,7 +10,6 @@ import io.reactivex.subjects.BehaviorSubject
  *
  * This class is used internally to mimic fragment backstack. The activity listens for fragment
  * lifecycle events and update this store.
- *
  */
 class BackStackStore<Key>(initial: List<Key>) {
 

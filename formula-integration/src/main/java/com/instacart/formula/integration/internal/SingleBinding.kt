@@ -54,7 +54,7 @@ internal class SingleBinding<Key, Scope, State>(
     private fun <Key> toLifecycleEffect(): (BackStack<Key>) -> Flowable<LifecycleEvent<Key>> {
         var lastState: BackStack<Key>? = null
         return { state ->
-            val effects = BackStack.findLifecycleEffects(
+            val effects = BackStackUtils.findLifecycleEffects(
                 lastState = lastState,
                 currentState = state
             )

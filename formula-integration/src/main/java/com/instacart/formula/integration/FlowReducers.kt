@@ -1,17 +1,19 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.integration.internal.BackStackUtils
+
 class FlowReducers<Key : Any>(
     private val root: Binding<Unit, Key, Any>
 ) {
 
     fun onBackstackChange(keys: BackStack<Key>): (FlowState<Key>) -> FlowState<Key> {
         return { state: FlowState<Key> ->
-            val attachedKeys = BackStack.findAttachedKeys(
+            val attachedKeys = BackStackUtils.findAttachedKeys(
                 lastActive = state.backStack.keys,
                 currentlyActive = keys.keys
             )
 
-            val detached = BackStack.findDetachedKeys(
+            val detached = BackStackUtils.findDetachedKeys(
                 lastActive = state.backStack.keys,
                 currentlyActive = keys.keys
             )
