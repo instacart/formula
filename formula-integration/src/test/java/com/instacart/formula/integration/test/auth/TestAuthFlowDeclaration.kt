@@ -10,15 +10,14 @@ class TestAuthFlowDeclaration : FlowDeclaration<TestAuthFlowDeclaration.Host>() 
     )
 
     override fun createFlow(): Flow<Host> {
-        return Flow(
-            bindings = listOf(
-                bind { _, _: TestLoginFragmentContract ->
-                    Flowable.empty<String>()
-                },
-                bind { _, _: TestSignUpFragmentContract ->
-                    Flowable.empty<String>()
-                }
-            )
-        )
+        return build {
+            bind { _, _: TestLoginFragmentContract ->
+                Flowable.empty<String>()
+            }
+
+            bind { _, _: TestSignUpFragmentContract ->
+                Flowable.empty<String>()
+            }
+        }
     }
 }

@@ -45,6 +45,12 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
         bind(T::class, integration)
     }
 
+    inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
+        noinline init: (Component, Contract) -> Flowable<State>
+    )= apply {
+        bind(Contract::class, init)
+    }
+
     fun bind(flowIntegration: FlowIntegration<Component, *>) = apply {
         bind(flowIntegration.binding())
     }
