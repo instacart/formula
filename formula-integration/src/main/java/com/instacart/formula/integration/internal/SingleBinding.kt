@@ -2,20 +2,24 @@ package com.instacart.formula.integration.internal
 
 import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
+import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
-internal class SingleBinding<Key, Component, State : Any>(
+/**
+ * Defines how a specific key should be bound to it's [Integration],
+ */
+internal class SingleBinding<Component, Key, State : Any>(
     private val type: Class<Key>,
-    private val init: (Component, Key) -> Flowable<State>
+    private val integration: Integration<Component, Key, State>
 ) : Binding<Component, Key>() {
     /**
      * Helper method to select state from active backstack.
      */
     override fun state(component: Component, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            init(component, key)
+            integration.create(component, key)
         }
     }
 

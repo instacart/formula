@@ -16,14 +16,6 @@ abstract class FlowIntegration<in ParentComponent, FlowComponent> {
     abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
 
     fun binding(): Binding<ParentComponent, FragmentContract<*>> {
-        return BindingBuilder<ParentComponent, FlowComponent, FragmentContract<*>>(
-            this::createComponent
-        )
-            .apply {
-                flowDeclaration.createFlow().bindings.forEach {
-                    bind(it)
-                }
-            }
-            .build()
+        return Binding.composite(this::createComponent, flowDeclaration.createFlow().bindings)
     }
 }

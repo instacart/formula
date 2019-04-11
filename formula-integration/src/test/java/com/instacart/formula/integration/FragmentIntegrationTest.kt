@@ -6,7 +6,6 @@ import com.instacart.formula.Formula
 import com.instacart.formula.fragment.FragmentComponent
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.fragment.FragmentLifecycleEvent
 import io.reactivex.Flowable
 import kotlinx.android.parcel.Parcelize
 import org.junit.Test
@@ -21,30 +20,26 @@ class FragmentIntegrationTest {
         override fun createComponent(view: View): FragmentComponent<String> = FragmentComponent.noOp()
     }
 
-    class MyFormula : Formula<MyFormula.Input, String> {
-        class Input(
-            val prefix: String
-        )
-
-        override fun state(input: Input): Flowable<String> {
+    class MyFormula : Formula<String, String> {
+        override fun state(input: String): Flowable<String> {
             return Flowable.just(0, 1, 2).map {
-                "${input.prefix} - $it"
+                "${input} - $it"
             }
         }
     }
 
-    class MyIntegration : Integration<TestContract, MyFormula.Input, String>() {
-        override fun createFormula(key: TestContract): Formula<MyFormula.Input, String> {
+    class MyIntegration : UnscopedFormulaIntegration<TestContract, String, String>() {
+        override fun createFormula(key: TestContract): Formula<String, String> {
             return MyFormula()
         }
 
-        override fun input(key: TestContract): MyFormula.Input {
-            return MyFormula.Input(prefix = key.tag)
+        override fun input(key: TestContract): String {
+            return key.tag
         }
     }
 
     @Test fun `integration invoke method`() {
-        val state = MyIntegration().init(TestContract(tag = "aha"))
+        val state = MyIntegration().create(Unit, TestContract(tag = "aha"))
 
         state.test().assertValues("aha - 0", "aha - 1", "aha - 2")
     }

@@ -9,32 +9,40 @@ import kotlin.reflect.KClass
 /**
  * Used to create a [Binding] for [FragmentContract] keys.
  */
-class FragmentBindingBuilder<ParentComponent, Component>(
-    componentFactory: ComponentFactory<ParentComponent, Component>
-) : BaseBindingBuilder<ParentComponent, Component, FragmentContract<*>>(componentFactory) {
+class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, FragmentContract<*>>() {
+
+    fun <T: FragmentContract<RenderModel>, RenderModel : Any> bind(type : KClass<T>, integration: Integration<Component, T, RenderModel>) = apply {
+        bind(SingleBinding(type.java, integration) as Binding<Component, FragmentContract<*>>)
+    }
 
     fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
         contract: KClass<Contract>,
         stateManagement: (Component, Contract) -> Flowable<RenderModel>
     ) = apply {
-        val binding = SingleBinding(contract.java, stateManagement)
-        bind(binding as Binding<Component, FragmentContract<*>>)
+        val integration = object : Integration<Component, Contract, RenderModel>() {
+            override fun create(component: Component, key: Contract): Flowable<RenderModel> {
+                return stateManagement(component, key)
+            }
+        }
+        bind(contract, integration)
     }
 
     fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
         contract: KClass<Contract>,
         stateManagement: (Contract) -> Flowable<RenderModel>
     ) = apply {
-        val stateManagementCorrected = { scope: Component, key: Contract ->
-            stateManagement(key)
+        val integration = object : Integration<Component, Contract, RenderModel>() {
+            override fun create(component: Component, key: Contract): Flowable<RenderModel> {
+                return stateManagement(key)
+            }
         }
-        val binding = SingleBinding(contract.java, stateManagementCorrected)
-        bind(binding as Binding<Component, FragmentContract<*>>)
+        bind(contract, integration)
     }
 
-    inline fun <reified T: FragmentContract<*>> bind(integration: Integration<T, *, *>) = apply {
-        val init: (T) -> Flowable<Nothing> = integration::init as (T) -> Flowable<Nothing>
-        bind(T::class, init)
+    inline fun <reified T: FragmentContract<RenderModel>, RenderModel : Any> bind(
+        integration: Integration<Component, T, RenderModel>
+    ) = apply {
+        bind(T::class, integration)
     }
 
     fun bind(flowIntegration: FlowIntegration<Component, *>) = apply {

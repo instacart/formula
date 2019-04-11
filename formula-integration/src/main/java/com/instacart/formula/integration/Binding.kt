@@ -1,5 +1,6 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.integration.internal.CompositeBinding
 import com.instacart.formula.integration.internal.SingleBinding
 import io.reactivex.Flowable
 import kotlin.reflect.KClass
@@ -13,7 +14,20 @@ abstract class Binding<in ParentComponent, Key> {
             type: KClass<Key>,
             stateInit: (Component, Key) -> Flowable<State>
         ): Binding<Component, Key> {
-            return SingleBinding(type.java, stateInit)
+            val integration = object : Integration<Component, Key, State>() {
+                override fun create(component: Component, key: Key): Flowable<State> {
+                    return stateInit(component, key)
+                }
+            }
+
+            return SingleBinding(type.java, integration)
+        }
+
+        fun <ParentComponent, Component, Key : Any> composite(
+            scopeFactory: ComponentFactory<ParentComponent, Component>,
+            bindings: List<Binding<Component, Key>>
+        ): Binding<ParentComponent, Key> {
+            return CompositeBinding(scopeFactory, bindings)
         }
     }
 

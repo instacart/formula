@@ -1,12 +1,11 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.integration.internal.BaseBindingBuilder
+import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 import kotlin.reflect.KClass
 
-class BindingBuilder<in ParentComponent, out Component, Key : Any>(
-    componentFactory: ComponentFactory<ParentComponent, Component>
-) : BaseBindingBuilder<ParentComponent, Component, Key>(componentFactory){
+class BindingBuilder<Component, Key : Any> : BaseBindingBuilder<Component, Key>() {
 
     inline fun <reified T : Key, S : Any> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
 
@@ -24,24 +23,20 @@ class BindingBuilder<in ParentComponent, out Component, Key : Any>(
      * Binds specific type of key to the render model management.
      */
     fun <T : Key, S : Any> bind(type: KClass<T>, init: (Component, T) -> Flowable<S>) = apply {
-        bind(
-            Binding.single(
-                type,
-                init
-            ) as Binding<Component, Key>
-        )
+        val binding = Binding.single(type, init) as Binding<Component, Key>
+        bind(binding)
     }
 
     fun <NewComponent> withScope(
-        scopeFactory: ComponentFactory<Component, NewComponent>,
-        init: BindingBuilder<*, NewComponent, Key>.() -> Unit
+        componentFactory: ComponentFactory<Component, NewComponent>,
+        init: BindingBuilder<NewComponent, Key>.() -> Unit
     ) = apply {
-        val scoped = BindingBuilder<Component, NewComponent, Key>(scopeFactory).apply(init).build()
-        bind(scoped)
+        val scoped = BindingBuilder<NewComponent, Key>().apply(init).build()
+        bind(CompositeBinding(componentFactory, scoped))
     }
 
-    inline fun <reified T : Key> bind(integration: Integration<T, *, *>) = apply {
-        val init: (T) -> Flowable<Any> = integration::init as (T) -> Flowable<Any>
-        register(T::class, init)
+    inline fun <reified T : Key> bind(integration: Integration<T, Key, *>) = apply {
+        val init: (Component, T) -> Flowable<Any> = integration::create as (Component, T) -> Flowable<Any>
+        bind(T::class, init)
     }
 }

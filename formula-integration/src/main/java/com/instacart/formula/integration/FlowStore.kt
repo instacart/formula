@@ -1,5 +1,6 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 
 /**
@@ -22,7 +23,7 @@ class FlowStore<Key : Any> constructor(
     companion object {
         inline fun <Key : Any> init(
             state: Flowable<BackStack<Key>>,
-            crossinline init: BindingBuilder<Unit, Unit, Key>.() -> Unit
+            crossinline init: BindingBuilder<Unit, Key>.() -> Unit
         ): FlowStore<Key> {
             return init(Unit, state, init)
         }
@@ -30,19 +31,19 @@ class FlowStore<Key : Any> constructor(
         inline fun <Component, Key : Any> init(
             rootComponent: Component,
             state: Flowable<BackStack<Key>>,
-            crossinline init: BindingBuilder<Unit, Component, Key>.() -> Unit
+            crossinline init: BindingBuilder<Component, Key>.() -> Unit
         ): FlowStore<Key> {
             val factory: (Unit) -> DisposableScope<Component> = {
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val root = BindingBuilder<Unit, Component, Key>(componentFactory = factory)
+            val root = BindingBuilder<Component, Key>()
                 .apply(init)
                 .build()
 
-            return FlowStore(state, root)
+            val rootBinding = Binding.composite(factory, root)
+            return FlowStore(state, rootBinding)
         }
-
     }
 
     private val reducerFactory = FlowReducers(root)
