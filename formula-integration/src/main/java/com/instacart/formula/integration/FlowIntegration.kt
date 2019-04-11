@@ -9,14 +9,16 @@ import com.instacart.formula.fragment.FragmentContract
  * @param FlowComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
-abstract class FlowIntegration<ParentComponent, FlowComponent> {
+abstract class FlowIntegration<in ParentComponent, FlowComponent> {
 
     abstract val flowDeclaration: FlowDeclaration<FlowComponent>
 
     abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
 
     fun binding(): Binding<ParentComponent, FragmentContract<*>> {
-        return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(this::createComponent)
+        return BindingBuilder<ParentComponent, FlowComponent, FragmentContract<*>>(
+            this::createComponent
+        )
             .apply {
                 flowDeclaration.createFlow().bindings.forEach {
                     bind(it)

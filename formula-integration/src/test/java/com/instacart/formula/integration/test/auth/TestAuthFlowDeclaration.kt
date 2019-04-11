@@ -1,5 +1,6 @@
-package com.instacart.formula.integration
+package com.instacart.formula.integration.test.auth
 
+import com.instacart.formula.integration.FlowDeclaration
 import io.reactivex.Flowable
 
 class TestAuthFlowDeclaration : FlowDeclaration<TestAuthFlowDeclaration.Host>() {

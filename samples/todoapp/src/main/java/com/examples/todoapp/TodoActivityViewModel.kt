@@ -20,7 +20,7 @@ class TodoActivityViewModel : ViewModel() {
     private val activityEffectRelay: PublishRelay<TodoActivityEffect> = PublishRelay.create()
 
     private val store: FragmentFlowStore = FragmentFlowStore.init {
-        register(TaskListContract::class) {
+        bind(TaskListContract::class) { scope, key ->
             TaskListFormula(repo).state(TaskListFormula.Input(showToast = { message ->
                 activityEffectRelay.accept(TodoActivityEffect.ShowToast(message))
             }))

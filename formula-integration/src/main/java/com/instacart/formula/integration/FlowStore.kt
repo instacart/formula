@@ -22,7 +22,7 @@ class FlowStore<Key : Any> constructor(
     companion object {
         inline fun <Key : Any> init(
             state: Flowable<BackStack<Key>>,
-            crossinline init: Binding.Builder<Unit, Unit, Key>.() -> Unit
+            crossinline init: BindingBuilder<Unit, Unit, Key>.() -> Unit
         ): FlowStore<Key> {
             return init(Unit, state, init)
         }
@@ -30,13 +30,13 @@ class FlowStore<Key : Any> constructor(
         inline fun <Component, Key : Any> init(
             rootComponent: Component,
             state: Flowable<BackStack<Key>>,
-            crossinline init: Binding.Builder<Unit, Component, Key>.() -> Unit
+            crossinline init: BindingBuilder<Unit, Component, Key>.() -> Unit
         ): FlowStore<Key> {
             val factory: (Unit) -> DisposableScope<Component> = {
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val root = Binding.Builder<Unit, Component, Key>(componentFactory = factory)
+            val root = BindingBuilder<Unit, Component, Key>(componentFactory = factory)
                 .apply(init)
                 .build()
 
