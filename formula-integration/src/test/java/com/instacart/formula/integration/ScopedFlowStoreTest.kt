@@ -9,76 +9,83 @@ import org.junit.Before
 import org.junit.Test
 
 class ScopedFlowStoreTest {
-    class SignUpComponent()
-    class LoggedInComponent()
+    class AppComponent() {
+        val disposed: MutableList<Any> = mutableListOf()
+
+        fun signUpComponent(): DisposableScope<SignUpComponent> {
+            val component = SignUpComponent()
+            return DisposableScope(
+                component = component,
+                onDispose = {
+                    disposed.add(component)
+                }
+            )
+        }
+
+        fun loggedInComponent(): DisposableScope<LoggedInComponent> {
+            val component = LoggedInComponent()
+            return DisposableScope(
+                component = component,
+                onDispose = {
+                    disposed.add(component)
+                }
+            )
+        }
+    }
+
+    class SignUpComponent() {
+        val loginScreenState = BehaviorRelay.createDefault("login-initial")
+        val registerScreenState = BehaviorRelay.createDefault("register-initial")
+    }
+
+    class LoggedInComponent() {
+        val browseScreenState = BehaviorRelay.createDefault("browse-initial")
+        val accountScreenState = BehaviorRelay.createDefault("account-initial")
+    }
 
     sealed class Key {
         // Sign up
-        object Login: Key()
-        object Register: Key()
+        object Login : Key()
+        object Register : Key()
 
         // Logged in
-        object Browse: Key()
-        object Account: Key()
+        object Browse : Key()
+        object Account : Key()
     }
 
     lateinit var keys: BehaviorRelay<BackStack<Key>>
     lateinit var store: FlowStore<Key>
 
-    // State relays
-    lateinit var loginScreenState: BehaviorRelay<String>
-    lateinit var registerScreenState: BehaviorRelay<String>
-    lateinit var browseScreenState: BehaviorRelay<String>
-    lateinit var accountScreenState: BehaviorRelay<String>
-
     lateinit var subscriber: TestSubscriber<FlowState<Key>>
 
-    lateinit var disposed: MutableList<Any>
-
+    lateinit var rootComponent: AppComponent
 
     @Before
     fun setup() {
         keys = BehaviorRelay.createDefault(BackStack(emptyList()))
-        loginScreenState = BehaviorRelay.createDefault("login-initial")
-        registerScreenState = BehaviorRelay.createDefault("register-initial")
-        browseScreenState = BehaviorRelay.createDefault("browse-initial")
-        accountScreenState = BehaviorRelay.createDefault("account-initial")
-        disposed = mutableListOf()
 
-        store = FlowStore.init(keys.toFlowable(BackpressureStrategy.LATEST)) {
-            withScope(scopeFactory = {
-                val component = SignUpComponent()
-                DisposableScope(
-                    component = component,
-                    onDispose = {
-                        disposed.add(component)
-                    }
-                )
-            }) {
-                register(Key.Login::class, init = {
-                    loginScreenState.toFlowable(BackpressureStrategy.LATEST)
+        rootComponent = AppComponent()
+        store = FlowStore.init(
+            rootComponent = rootComponent,
+            state = keys.toFlowable(BackpressureStrategy.LATEST)
+        ) {
+            withScope(AppComponent::signUpComponent) {
+                bind(Key.Login::class, init = { component, key ->
+                    component.loginScreenState.toFlowable(BackpressureStrategy.LATEST)
                 })
 
-                register(Key.Register::class, init = {
-                    registerScreenState.toFlowable(BackpressureStrategy.LATEST)
+                bind(Key.Register::class, init = { component, key ->
+                    component.registerScreenState.toFlowable(BackpressureStrategy.LATEST)
                 })
             }
 
-            withScope(scopeFactory = {
-                val component = LoggedInComponent()
-                DisposableScope(
-                    component = component,
-                    onDispose = {
-                        disposed.add(component)
-                    }
-                )
-            }) {
-                register(Key.Browse::class, init = {
-                    browseScreenState.toFlowable(BackpressureStrategy.LATEST)
+            withScope(AppComponent::loggedInComponent) {
+                bind(Key.Browse::class, init = { component, key ->
+                    component.browseScreenState.toFlowable(BackpressureStrategy.LATEST)
                 })
 
-                register(Key.Account::class, init = {
-                    accountScreenState.toFlowable(BackpressureStrategy.LATEST)
+                bind(Key.Account::class, init = { component, key ->
+                    component.accountScreenState.toFlowable(BackpressureStrategy.LATEST)
                 })
             }
         }
@@ -97,6 +104,7 @@ class ScopedFlowStoreTest {
         keys.accept(BackStack(listOf(Key.Login)))
         keys.accept(BackStack(listOf(Key.Browse)))
 
+        val disposed = rootComponent.disposed
         assertThat(disposed).hasSize(1)
         disposed[0].let {
             assertThat(it).isInstanceOf(SignUpComponent::class.java)
@@ -117,6 +125,7 @@ class ScopedFlowStoreTest {
 
         subscriber.dispose()
 
+        val disposed = rootComponent.disposed
         assertThat(disposed).hasSize(2)
     }
 }

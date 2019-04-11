@@ -14,8 +14,15 @@ class FragmentFlowStore(
 ) {
     companion object {
         inline fun init(crossinline init: Binding.Builder<Unit, Unit, FragmentContract<*>>.() -> Unit): FragmentFlowStore {
+            return init(Unit, init)
+        }
+
+        inline fun <Component> init(
+            component: Component,
+            crossinline init: Binding.Builder<Unit, Component, FragmentContract<*>>.() -> Unit
+        ): FragmentFlowStore {
             val contractStore = BackStackStore<FragmentContract<*>>()
-            val store = FlowStore.init(contractStore.stateChanges(), init)
+            val store = FlowStore.init(component, contractStore.stateChanges(), init)
             return FragmentFlowStore(contractStore, store)
         }
     }

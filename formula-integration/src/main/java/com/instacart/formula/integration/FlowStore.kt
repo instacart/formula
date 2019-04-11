@@ -24,14 +24,25 @@ class FlowStore<Key : Any> constructor(
             state: Flowable<BackStack<Key>>,
             crossinline init: Binding.Builder<Unit, Unit, Key>.() -> Unit
         ): FlowStore<Key> {
-            val root = Binding.Builder<Unit, Unit, Key>(componentFactory = {
-                DisposableScope(component = Unit, onDispose = {})
-            })
+            return init(Unit, state, init)
+        }
+
+        inline fun <Component, Key : Any> init(
+            rootComponent: Component,
+            state: Flowable<BackStack<Key>>,
+            crossinline init: Binding.Builder<Unit, Component, Key>.() -> Unit
+        ): FlowStore<Key> {
+            val factory: (Unit) -> DisposableScope<Component> = {
+                DisposableScope(component = rootComponent, onDispose = {})
+            }
+
+            val root = Binding.Builder<Unit, Component, Key>(componentFactory = factory)
                 .apply(init)
                 .build()
 
             return FlowStore(state, root)
         }
+
     }
 
     private val reducerFactory = FlowReducers(root)
