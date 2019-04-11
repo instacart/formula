@@ -1,6 +1,5 @@
 package com.instacart.formula.integration
 
-import arrow.core.Option
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.BackpressureStrategy

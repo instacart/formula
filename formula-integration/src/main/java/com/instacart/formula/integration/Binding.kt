@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<ParentComponent, Key> {
+abstract class Binding<in ParentComponent, Key> {
     companion object {
         fun <Component, Key : Any, State : Any> single(
             type: KClass<Key>,
@@ -18,7 +18,7 @@ abstract class Binding<ParentComponent, Key> {
         }
     }
 
-    class Builder<ParentComponent, Component, Key : Any>(
+    class Builder<in ParentComponent, out Component, Key : Any>(
         private val componentFactory: ComponentFactory<ParentComponent, Component>
     ) {
         private val bindings: MutableList<Binding<Component, Key>> = mutableListOf()
@@ -48,7 +48,7 @@ abstract class Binding<ParentComponent, Key> {
 
         fun <NewComponent> withScope(
             scopeFactory: ComponentFactory<Component, NewComponent>,
-            init: Builder<Component, NewComponent, Key>.() -> Unit
+            init: Builder<*, NewComponent, Key>.() -> Unit
         ) = apply {
             val scoped = Builder<Component, NewComponent, Key>(scopeFactory).apply(init).build()
             bind(scoped)
@@ -70,6 +70,8 @@ abstract class Binding<ParentComponent, Key> {
     abstract fun binds(key: Any): Boolean
 
     /**
+     * Listens to the back stack changes and returns a stream of [KeyState] updates for keys that it [binds] to.
+     *
      * @param component A component associated with the parent. Often this will map to the parent dagger component.
      * @param backstack A stream that emits the current back stack state.
      */
