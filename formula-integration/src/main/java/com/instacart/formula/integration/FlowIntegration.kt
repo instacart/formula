@@ -1,15 +1,27 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.fragment.FragmentContract
+
 /**
  * Defines integration of a flow.
  *
- * @param Input Input passed to flow declaration to create a binding.
+ * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
+ * @param FlowComponent A component that is initialized when user enters this flow and is shared between
+ *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
-interface FlowIntegration<Input> {
+abstract class FlowIntegration<ParentComponent, FlowComponent> {
 
-    val flowDeclaration: FlowDeclaration<Input, Unit, *>
+    abstract val flowDeclaration: FlowDeclaration<FlowComponent>
 
-    fun input(): Input
+    abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
 
-    fun binding() = flowDeclaration.createBinding(input())
+    fun binding(): Binding<ParentComponent, FragmentContract<*>> {
+        return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(this::createComponent)
+            .apply {
+                flowDeclaration.createFlow().bindings.forEach {
+                    bind(it)
+                }
+            }
+            .build()
+    }
 }

@@ -2,22 +2,20 @@ package com.instacart.formula.integration
 
 import io.reactivex.Flowable
 
-class TestAuthFlowDeclaration : FlowDeclaration<TestAuthFlowDeclaration.Input, Unit, Unit>() {
-    class Input(
+class TestAuthFlowDeclaration : FlowDeclaration<TestAuthFlowDeclaration.Host>() {
+
+    class Host(
         val onAuthCompleted: () -> Unit
     )
 
-    override fun createFlow(input: Input): Flow<Unit, Unit> {
+    override fun createFlow(): Flow<Host> {
         return Flow(
-            flowComponentFactory = {
-                DisposableScope(Unit) {}
-            },
-            childrenBindings = listOf(
-                bind(TestLoginFragmentContract::class) { _, _ ->
-                    Flowable.empty()
+            bindings = listOf(
+                bind { _, _: TestLoginFragmentContract ->
+                    Flowable.empty<String>()
                 },
-                bind(TestSignUpFragmentContract::class) { _, _ ->
-                    Flowable.empty()
+                bind { _, _: TestSignUpFragmentContract ->
+                    Flowable.empty<String>()
                 }
             )
         )

@@ -12,23 +12,11 @@ import kotlin.reflect.KClass
  * @param FlowComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
-abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
+abstract class FlowDeclaration<FlowComponent> {
 
-    data class Flow<ParentComponent, FlowComponent>(
-        val flowComponentFactory: ComponentFactory<ParentComponent, FlowComponent>,
-        val childrenBindings: List<Binding<FlowComponent, FragmentContract<*>>>
-    ) {
-
-        fun asBinding(): Binding<ParentComponent, FragmentContract<*>> {
-            return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(flowComponentFactory)
-                .apply {
-                    childrenBindings.forEach {
-                        bind(it)
-                    }
-                }
-                .build()
-        }
-    }
+    data class Flow<FlowComponent>(
+        val bindings: List<Binding<FlowComponent, FragmentContract<*>>>
+    )
 
     /**
      * A utility function to create a binding for [FragmentContract] to the render model management.
@@ -46,9 +34,5 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
         return bind(Contract::class, init)
     }
 
-    protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
-
-    fun createBinding(input: Input): Binding<ParentComponent, FragmentContract<*>> {
-        return createFlow(input).asBinding()
-    }
+    abstract fun createFlow(): Flow<FlowComponent>
 }
