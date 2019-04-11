@@ -5,7 +5,7 @@ import io.reactivex.Flowable
 /**
  * Defines a factory for [RenderLoop]
  */
-interface RenderFormula<Input, State, Effect, RenderModel> : Formula<Input, RenderModel> {
+interface RenderFormula<in Input, State, Effect, RenderModel> : Formula<Input, RenderModel> {
 
     /**
      * Creates the render loop, using the given input

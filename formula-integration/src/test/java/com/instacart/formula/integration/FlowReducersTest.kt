@@ -8,7 +8,7 @@ import org.junit.Test
 class FlowReducersTest {
     data class TestKey(val value: String)
 
-    lateinit var root: KeyBinding.CompositeBinding<Unit, TestKey, Unit>
+    lateinit var root: Binding<Unit, TestKey, Any>
     lateinit var reducers: FlowReducers<TestKey>
 
     @Before fun setup() {
@@ -16,7 +16,7 @@ class FlowReducersTest {
         reducers = FlowReducers(root)
     }
 
-    @Test fun onBackstackChange_clearDetachedContracts() {
+    @Test fun `on backstack change we clear detached contracts`() {
         val firstEntry = TestKey("first")
         val secondEntry = TestKey("second")
 

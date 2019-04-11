@@ -15,14 +15,12 @@ import kotlin.reflect.KClass
 abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
 
     data class Flow<ParentComponent, FlowComponent>(
-        val flowComponentFactory: (ParentComponent) -> DisposableScope<FlowComponent>,
-        val childrenBindings: List<KeyBinding.Binding<FragmentContract<*>, FlowComponent, *>>
+        val flowComponentFactory: ComponentFactory<ParentComponent, FlowComponent>,
+        val childrenBindings: List<Binding<FlowComponent, FragmentContract<*>, *>>
     ) {
 
-        fun asBinding(): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
-            return KeyBinding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(
-                flowComponentFactory
-            )
+        fun asBinding(): Binding<ParentComponent, FragmentContract<*>, Any> {
+            return Binding.Builder<ParentComponent, FlowComponent, FragmentContract<*>>(flowComponentFactory)
                 .apply {
                     childrenBindings.forEach {
                         bind(it)
@@ -38,16 +36,19 @@ abstract class FlowDeclaration<Input, ParentComponent, FlowComponent> {
     protected fun <State, Contract : FragmentContract<State>> bind(
         type: KClass<Contract>,
         init: (FlowComponent, Contract) -> Flowable<State>
-    ): KeyBinding.Binding<FragmentContract<*>, FlowComponent, *> {
-        return KeyBinding.Binding(
-            type.java,
-            init
-        ) as KeyBinding.Binding<FragmentContract<*>, FlowComponent, *>
+    ): Binding<FlowComponent, FragmentContract<*>, *> {
+        return Binding.single(type, init) as Binding<FlowComponent, FragmentContract<*>, *>
     }
 
-    abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
+    protected inline fun <State, reified Contract : FragmentContract<State>> bind(
+        noinline init: (FlowComponent, Contract) -> Flowable<State>
+    ): Binding<FlowComponent, FragmentContract<*>, *> {
+        return bind(Contract::class, init)
+    }
 
-    fun createBinding(input: Input): KeyBinding.CompositeBinding<ParentComponent, FragmentContract<*>, FlowComponent> {
+    protected abstract fun createFlow(input: Input): Flow<ParentComponent, FlowComponent>
+
+    fun createBinding(input: Input): Binding<ParentComponent, FragmentContract<*>, Any> {
         return createFlow(input).asBinding()
     }
 }
