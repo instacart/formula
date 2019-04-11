@@ -19,7 +19,7 @@ class IntegrationTest {
         }
     }
 
-    class MyIntegration : Integration<String, MyFormula.Input, String>() {
+    class MyIntegration : Integration<String, MyFormula.Input, String> {
         override fun createFormula(key: String): Formula<MyFormula.Input, String> {
             return MyFormula()
         }
