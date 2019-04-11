@@ -16,17 +16,15 @@ class TestFragmentFlowViewModel : ViewModel() {
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentContract<*>, Any>>()
 
     private val store = FragmentFlowStore.init {
-        register(TaskListContract::class) {
-            stateChanges(it)
+        bind { key: TaskListContract ->
+            stateChanges(key)
         }
 
-        register(TaskDetailContract::class) {
-            stateChanges(it)
+        bind { key: TaskDetailContract ->
+            stateChanges(key)
         }
 
-        register(TestLifecycleContract::class) {
-            stateChanges(it)
-        }
+        bind(TestLifecycleContract::class, ::stateChanges)
     }
 
     private val disposables = CompositeDisposable()

@@ -12,7 +12,7 @@ import kotlinx.android.parcel.Parcelize
 data class TestLifecycleContract(
     override val tag: String = "task list",
     override val layoutId: Int = R.layout.test_empty_layout
-) : FragmentContract<String>() {
+) : FragmentContract<Any>() {
 
     @IgnoredOnParcel
     var hasOnViewCreated = false
@@ -31,7 +31,7 @@ data class TestLifecycleContract(
     @IgnoredOnParcel
     var hasOnDestroyView = false
 
-    override fun createComponent(view: View): FragmentComponent<String> {
+    override fun createComponent(view: View): FragmentComponent<Any> {
         return FragmentComponent.create(render = {}, lifecycleCallbacks = object : FragmentLifecycleCallback {
 
             override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
