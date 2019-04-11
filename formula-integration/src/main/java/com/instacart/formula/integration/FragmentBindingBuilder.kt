@@ -10,6 +10,13 @@ import kotlin.reflect.KClass
  * Used to create a [Binding] for [FragmentContract] keys.
  */
 class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, FragmentContract<*>>() {
+    companion object {
+        inline fun <Component> build(
+            crossinline init: FragmentBindingBuilder<Component>.() -> Unit
+        ): List<Binding<Component, FragmentContract<*>>> {
+            return FragmentBindingBuilder<Component>().apply(init).build()
+        }
+    }
 
     fun <T: FragmentContract<RenderModel>, RenderModel : Any> bind(type : KClass<T>, integration: Integration<Component, T, RenderModel>) = apply {
         bind(SingleBinding(type.java, integration) as Binding<Component, FragmentContract<*>>)

@@ -29,10 +29,7 @@ class FragmentFlowStore(
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val bindings = FragmentBindingBuilder<Component>()
-                .apply(init)
-                .build()
-
+            val bindings = FragmentBindingBuilder.build(init)
             val root = Binding.composite(factory, bindings)
             val store = FlowStore(contractStore.stateChanges(), root)
             return FragmentFlowStore(contractStore, store)

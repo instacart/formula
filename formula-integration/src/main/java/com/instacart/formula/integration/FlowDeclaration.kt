@@ -19,8 +19,8 @@ abstract class FlowDeclaration<FlowComponent> {
     /**
      * A utility function to build a flow.
      */
-    protected inline fun build(init: FragmentBindingBuilder<FlowComponent>.() -> Unit): Flow<FlowComponent> {
-        val bindings = FragmentBindingBuilder<FlowComponent>().apply(init).build()
+    protected inline fun build(crossinline init: FragmentBindingBuilder<FlowComponent>.() -> Unit): Flow<FlowComponent> {
+        val bindings = FragmentBindingBuilder.build(init)
         return Flow(bindings)
     }
 
