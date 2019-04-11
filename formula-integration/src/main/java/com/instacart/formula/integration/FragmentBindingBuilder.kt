@@ -32,6 +32,11 @@ class FragmentBindingBuilder<ParentComponent, Component>(
         bind(binding as Binding<Component, FragmentContract<*>>)
     }
 
+    inline fun <reified T: FragmentContract<*>> bind(integration: Integration<T, *, *>) = apply {
+        val init: (T) -> Flowable<Nothing> = integration::init as (T) -> Flowable<Nothing>
+        bind(T::class, init)
+    }
+
     fun bind(flowIntegration: FlowIntegration<Component, *>) = apply {
         bind(flowIntegration.binding())
     }

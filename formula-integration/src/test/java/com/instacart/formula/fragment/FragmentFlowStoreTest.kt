@@ -42,10 +42,10 @@ class FragmentFlowStoreTest {
         updateRelay = PublishRelay.create()
 
         store = FragmentFlowStore.init {
-            register(Master::class) { key ->
+            bind(Master::class) { key ->
                 state(key)
             }
-            register(Detail::class) { key ->
+            bind(Detail::class) { key ->
                 state(key)
             }
         }
