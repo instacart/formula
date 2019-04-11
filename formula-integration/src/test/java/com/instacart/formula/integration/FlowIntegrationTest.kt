@@ -1,23 +1,18 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.integration.test.TestAccountFragmentContract
+import com.instacart.formula.integration.test.TestAuthFlowIntegration
+import com.instacart.formula.integration.test.auth.TestLoginFragmentContract
+import com.instacart.formula.integration.test.auth.TestSignUpFragmentContract
 import org.junit.Test
 
 class FlowIntegrationTest {
-    class Integration : FlowIntegration<TestAuthFlowDeclaration.Input> {
-        override val flowDeclaration = TestAuthFlowDeclaration()
-
-        override fun input(): TestAuthFlowDeclaration.Input {
-            return TestAuthFlowDeclaration.Input(onAuthCompleted = {
-                // do
-            })
-        }
-    }
-
     @Test fun binds() {
-        val binding = Integration().binding()
+        val binding = TestAuthFlowIntegration().binding()
         assertThat(binding.binds(TestLoginFragmentContract())).isTrue()
         assertThat(binding.binds(TestSignUpFragmentContract())).isTrue()
+
         assertThat(binding.binds(TestAccountFragmentContract())).isFalse()
     }
 }
