@@ -1,7 +1,6 @@
 package com.examples.todoapp
 
 import androidx.lifecycle.ViewModel
-import com.examples.todoapp.data.TaskRepo
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
 import com.instacart.formula.fragment.FragmentContract
@@ -15,13 +14,13 @@ import io.reactivex.disposables.CompositeDisposable
 
 class TodoActivityViewModel : ViewModel() {
     // Should be injected
-    private val repo: TaskRepo = TaskRepo()
+    private val component: TodoAppComponent = TodoAppComponent()
 
     private val activityEffectRelay: PublishRelay<TodoActivityEffect> = PublishRelay.create()
 
-    private val store: FragmentFlowStore = FragmentFlowStore.init {
-        bind(TaskListContract::class) { scope, key ->
-            TaskListFormula(repo).state(TaskListFormula.Input(showToast = { message ->
+    private val store: FragmentFlowStore = FragmentFlowStore.init(component) {
+        bind(TaskListContract::class) { component, key ->
+            component.createTaskListFormula().state(TaskListFormula.Input(showToast = { message ->
                 activityEffectRelay.accept(TodoActivityEffect.ShowToast(message))
             }))
         }
