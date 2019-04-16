@@ -10,7 +10,7 @@ import io.reactivex.Flowable
 import kotlinx.android.parcel.Parcelize
 import org.junit.Test
 
-class FragmentIntegrationTest {
+class UnscopedFormulaIntegrationTest {
 
     @Parcelize
     data class TestContract(
