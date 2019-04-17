@@ -1,5 +1,5 @@
 ## Formula Integration
-Integration module provides declarative API to connect reactive state management to Android fragments. This module
+Integration module provides declarative API to connect reactive state management to Android Fragments. This module
 has been designed from the start for gradual adoption. You can use as much of it as you like.
 
 Benefits of using it:
@@ -165,6 +165,37 @@ val store = FragmentFlowStore.init {
 }
 
 ```
+
+## Moving integration into a separate class
+When you reach a certain number of fragment integrations, the store creation logic can become unwieldy. To keep it tidy,
+you can place integration logic into separate class.
+```kotlin
+object TaskDetailIntegration : Integration<TaskAppComponent, TaskDetailContract, TaskDetailRenderModel>() {
+    override fun create(component: TaskAppComponent, key: TaskDetailContract): Flowable<TaskDetailRenderModel> {
+        return component.taskRepo.findTask(taskId).map { task ->
+            TaskDetailRenderModel(
+                description = task.description,
+                onDeleteSelected = {
+                    component.taskRepo.delete(taskId)
+                }
+            )
+        }
+    }
+}
+```
+
+Now we can update our store to use this integration.
+```kotlin
+val store = FragmentFlowStore.init(taskAppComponent) {
+    bind(TaskDetailIntegration)
+    
+    // Other integrations.
+    bind(Contract1Integration)
+    bind(Contract2Integration)
+}
+```
+
+## Sharing state between multiple fragments (TODO)
 
 ## Grouping multiple fragments as part of a flow.
 Flow is a combination of screens that are grouped together and can share a common component / state.
