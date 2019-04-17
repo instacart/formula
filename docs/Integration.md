@@ -1,20 +1,21 @@
 ## Formula Integration
-Integration module provides declarative API to connect reactive state management to Android Fragments. This module
-has been designed from the start for gradual adoption. You can use as much of it as you like.
+The integration module provides declarative API to connect reactive state management to Android Fragments. 
+This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
 Benefits of using it:
-1. Supports incremental migration / usage. Not all fragments need to use Formula state management.
-2. State management survives configuration changes.
-3. Supports modularization
-4. Works naturally with Dagger 2
+1. Can be added easily to an app that already uses Fragments.
+2. Supports incremental migration / usage. Not all fragments need to use Formula state management.
+3. State management survives configuration changes.
+4. Supports modularization
+5. Works naturally with Dagger 2
 
 
 ## Defining the first fragment contract
-Fragment contract defines how a fragment should bind a specific type of render model to Android views. It is also
+FragmentContract defines how a fragment should bind a specific type of render model to Android views. It is also
 used as a key to instantiate the state management. 
 
 ```kotlin
-// Fragment contract has provide Parcelable implementation because it is passed to the fragment as an argument.
+// Fragment contract has to provide Parcelable implementation because it is passed to the fragment as an argument.
 // Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
 @Parcelize 
 data class TaskDetailContract(
@@ -49,7 +50,7 @@ supportFragmentManager.beginTransaction()
 
 ```
 
-Now let's bind the fragment contract to the state management. We create a fragment flow store that
+Now let's bind the fragment contract to the state management. We create a `FragmentFlowStore` that
 enables us to bind various fragment contracts to their state management.
 ```kotlin
 val component: TaskAppComponent = ...
@@ -196,8 +197,6 @@ val store = FragmentFlowStore.init(taskAppComponent) {
 }
 ```
 
-## Sharing state between multiple fragments (TODO)
-
 ## Grouping multiple fragments as part of a flow.
 Flow is a combination of screens that are grouped together and can share a common component / state.
 
@@ -211,15 +210,19 @@ class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
 
   override fun createFlow(): Flow<Component> {
     return build {
-      bind(Contract1::class, Contract1Integration())
-      bind(Contract2::class, Contract2Integration())
+      bind(Contract1::class) { component, key ->
+        // create contract 1 state stream
+      }
+      bind(Contract2::class) { component, key ->
+        // create contract 2 state stream
+      }
     } 
   }
 }
 ```
 
 
-## Configuration changes (TODO)
+## How the fragment flow store works? (TODO)
 
 
 ## Using with dagger (TODO)
