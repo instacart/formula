@@ -6,7 +6,7 @@ Benefits of using it:
 1. Supports incremental migration / usage. Not all fragments need to use Formula state management.
 2. State management survives configuration changes.
 3. Supports modularization
-4. Works naturally with dagger 2
+4. Works naturally with Dagger 2
 
 
 ## Defining the first fragment contract
@@ -15,7 +15,8 @@ used as a key to instantiate the state management.
 
 ```kotlin
 // Fragment contract has provide Parcelable implementation because it is passed to the fragment as an argument.
-@Parcelize
+// Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
+@Parcelize 
 data class TaskDetailContract(
     val taskId: Int,
     override val tag: String = "task ${taskId}",

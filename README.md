@@ -6,7 +6,7 @@ To learn more, see our [Gettting Started Guide](docs/Getting-Started.md). Also, 
 folder.
 
 ## Integration
-Integration module provides declarative API to connect reactive state management to Android fragments. This module
+Integration module provides declarative API to connect reactive state management to Android Fragments. This module
 has been designed from the start for gradual adoption. You can use as much of it as you like.  
 
 To learn more, see our [Integration Guide](docs/Integration.md).
