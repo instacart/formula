@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, FragmentContract<*>>() {
     companion object {
         inline fun <Component> build(
-            crossinline init: FragmentBindingBuilder<Component>.() -> Unit
+            init: FragmentBindingBuilder<Component>.() -> Unit
         ): List<Binding<Component, FragmentContract<*>>> {
             return FragmentBindingBuilder<Component>().apply(init).build()
         }
