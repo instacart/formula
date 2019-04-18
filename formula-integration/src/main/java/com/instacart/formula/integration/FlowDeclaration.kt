@@ -3,10 +3,11 @@ package com.instacart.formula.integration
 import com.instacart.formula.fragment.FragmentContract
 
 /**
- * Defines a Flow, which is a sequence of related screens a user may navigate between to perform a task.
+ * The FlowDeclaration class defines a [Flow], which is a sequence of related screens a user may navigate
+ * between to perform a task. A shared [FlowComponent] is passed to individual screen integrations to help
+ * initialize their render model stream. This component can be used to share state, routers, action handlers
+ * and other dependencies.
  *
- * @param Input Parent can pass callbacks and initial information when creating a flow.
- * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
  * @param FlowComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
