@@ -28,9 +28,9 @@ import com.instacart.formula.fragment.FragmentContract
  */
 abstract class FlowIntegration<in ParentComponent, FlowComponent> {
 
-    protected abstract val flowDeclaration: FlowDeclaration<FlowComponent>
+    internal abstract val flowDeclaration: FlowDeclaration<FlowComponent>
 
-    protected abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
+    internal abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
 
     fun binding(): Binding<ParentComponent, FragmentContract<*>> {
         return Binding.composite(this::createComponent, flowDeclaration.createFlow().bindings)
