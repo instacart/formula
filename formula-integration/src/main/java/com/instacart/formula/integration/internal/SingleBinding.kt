@@ -2,20 +2,24 @@ package com.instacart.formula.integration.internal
 
 import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
+import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
 
-internal class SingleBinding<Key, Scope, State>(
+/**
+ * Defines how a specific key should be bound to it's [Integration],
+ */
+internal class SingleBinding<Component, Key, State : Any>(
     private val type: Class<Key>,
-    private val init: (Scope, Key) -> Flowable<State>
-) : Binding<Scope, Key, State>() {
+    private val integration: Integration<Component, Key, State>
+) : Binding<Component, Key>() {
     /**
      * Helper method to select state from active backstack.
      */
-    override fun state(component: Scope, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, State>> {
+    override fun state(component: Component, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            init(component, key)
+            integration.create(component, key)
         }
     }
 
@@ -30,17 +34,17 @@ internal class SingleBinding<Key, Scope, State>(
      * @param type key class
      * @param init a function that initializes the render model [Flowable]
      */
-    private fun <Key, State> Flowable<BackStack<Key>>.createStateUpdates(
+    private fun <Key, State : Any> Flowable<BackStack<Key>>.createStateUpdates(
         type: Class<Key>,
         init: (Key) -> Flowable<State>
-    ): Flowable<KeyState<Key, State>> {
+    ): Flowable<KeyState<Key>> {
         return this
             .lifecycleEffects()
             .filter { type.isInstance(it.key) }
             .groupBy { it.key }
             .flatMap {
                 it.switchMap {
-                    val contract = it.key as Key
+                    val contract = it.key
                     when (it) {
                         is LifecycleEvent.Added -> init(contract).map { state ->
                             KeyState(contract, state)

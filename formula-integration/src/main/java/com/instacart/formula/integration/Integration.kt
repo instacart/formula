@@ -1,21 +1,23 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.Formula
 import io.reactivex.Flowable
 
 /**
- * Defines how a [Key] is bounds to a formula.
+ * Defines an integration for a specific [Key].
  *
+ * @param Component a component that helps construct the state management stream.
  * @param Key a backstack entry for this screen.
- * @param Input a formula input
- * @param RenderModel a render model that the formula produces.
+ * @param RenderModel a render model that the state management produces.
+ *
+ * ```
+ * class TaskListIntegration<AppComponent, TaskListKey, TaskListRenderModel>() {
+ *   override fun create(component: AppComponent, key: TaskListKey): Flowable<TaskListRenderModel> {
+ *     return component.createTaskListFormula().state(Input())
+ *   }
+ * }
+ * ```
  */
-interface Integration<in Key, Input, RenderModel : Any> {
-    fun createFormula(key: Key): Formula<Input, RenderModel>
+abstract class Integration<in Component, in Key, RenderModel : Any> {
 
-    fun input(key: Key): Input
-
-    fun init(key: Key): Flowable<RenderModel> {
-        return createFormula(key).state(input(key))
-    }
+    abstract fun create(component: Component, key: Key): Flowable<RenderModel>
 }

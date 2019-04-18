@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.integration.test
 
 import android.view.View
 import com.instacart.formula.fragment.FragmentComponent

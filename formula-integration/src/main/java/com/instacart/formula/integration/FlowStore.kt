@@ -1,5 +1,6 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 
 /**
@@ -9,28 +10,39 @@ import io.reactivex.Flowable
  * ```
  * val backstack = BackStackStore<Key>()
  * FlowStore.init(backstack.changes()) {
- *     register(TaskListIntegration())
- *     register(TaskDetailIntegration())
- *     register(SettingsIntegration())
+ *     bind(TaskListIntegration())
+ *     bind(TaskDetailIntegration())
+ *     bind(SettingsIntegration())
  * }
  * ```
  */
 class FlowStore<Key : Any> constructor(
     keyState: Flowable<BackStack<Key>>,
-    private val root: Binding<Unit, Key, Any>
+    private val root: Binding<Unit, Key>
 ) {
     companion object {
         inline fun <Key : Any> init(
             state: Flowable<BackStack<Key>>,
-            crossinline init: Binding.Builder<Unit, Unit, Key>.() -> Unit
+            crossinline init: BindingBuilder<Unit, Key>.() -> Unit
         ): FlowStore<Key> {
-            val root = Binding.Builder<Unit, Unit, Key>(componentFactory = {
-                DisposableScope(component = Unit, onDispose = {})
-            })
+            return init(Unit, state, init)
+        }
+
+        inline fun <Component, Key : Any> init(
+            rootComponent: Component,
+            state: Flowable<BackStack<Key>>,
+            crossinline init: BindingBuilder<Component, Key>.() -> Unit
+        ): FlowStore<Key> {
+            val factory: (Unit) -> DisposableScope<Component> = {
+                DisposableScope(component = rootComponent, onDispose = {})
+            }
+
+            val root = BindingBuilder<Component, Key>()
                 .apply(init)
                 .build()
 
-            return FlowStore(state, root)
+            val rootBinding = Binding.composite(factory, root)
+            return FlowStore(state, rootBinding)
         }
     }
 

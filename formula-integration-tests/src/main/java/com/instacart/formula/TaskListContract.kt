@@ -9,8 +9,8 @@ import kotlinx.android.parcel.Parcelize
 data class TaskListContract(
     override val tag: String = "task list",
     override val layoutId: Int = R.layout.test_empty_layout
-) : FragmentContract<String>() {
-    override fun createComponent(view: View): FragmentComponent<String> {
+) : FragmentContract<Any>() {
+    override fun createComponent(view: View): FragmentComponent<Any> {
         return TestFragmentComponent.create(this, view)
     }
 }

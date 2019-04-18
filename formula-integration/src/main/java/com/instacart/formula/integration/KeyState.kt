@@ -1,6 +1,6 @@
 package com.instacart.formula.integration
 
 /**
- * Defines the current render model state for a specific [key].
+ * Defines the current render model for a specific [key].
  */
-data class KeyState<Key, RenderModel>(val key: Key, val renderModel: RenderModel)
+data class KeyState<Key>(val key: Key, val renderModel: Any)

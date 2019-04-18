@@ -19,7 +19,7 @@ class IntegrationTest {
         }
     }
 
-    class MyIntegration : Integration<String, MyFormula.Input, String> {
+    class MyIntegration : UnscopedFormulaIntegration<String, MyFormula.Input, String>() {
         override fun createFormula(key: String): Formula<MyFormula.Input, String> {
             return MyFormula()
         }
@@ -30,7 +30,7 @@ class IntegrationTest {
     }
 
     @Test fun `integration invoke method`() {
-        val state = MyIntegration().init("aha")
+        val state = MyIntegration().create(Unit, "aha")
 
         state.test().assertValues("aha - 0", "aha - 1", "aha - 2")
     }

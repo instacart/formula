@@ -7,6 +7,8 @@ import com.instacart.formula.integration.KeyState
 import io.reactivex.Flowable
 
 /**
+ * Defines how a group of keys should be bound to their integrations.
+ *
  * @param Key A key type associated with this binding.
  * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
  * @param ScopedComponent A component that is initialized when user enters this flow and is shared between
@@ -14,14 +16,14 @@ import io.reactivex.Flowable
  */
 internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
-    private val bindings: List<Binding<ScopedComponent, Key, *>>
-) : Binding<ParentComponent, Key, Any>() {
+    private val bindings: List<Binding<ScopedComponent, Key>>
+) : Binding<ParentComponent, Key>() {
 
     override fun binds(key: Any): Boolean {
         return bindings.any { it.binds(key) }
     }
 
-    override fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key, Any>> {
+    override fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
         return backstack
             .isInScope()
             .switchMap { enterScope ->
@@ -32,9 +34,9 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
                     }
 
                     Flowable.merge(updates)
-                        .doOnCancel { disposableScope.dispose() } as Flowable<KeyState<Key, Any>>
+                        .doOnCancel { disposableScope.dispose() } as Flowable<KeyState<Key>>
                 } else {
-                    Flowable.empty<KeyState<Key, Any>>()
+                    Flowable.empty<KeyState<Key>>()
                 }
             }
     }

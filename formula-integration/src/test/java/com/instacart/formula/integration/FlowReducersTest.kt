@@ -8,7 +8,7 @@ import org.junit.Test
 class FlowReducersTest {
     data class TestKey(val value: String)
 
-    lateinit var root: Binding<Unit, TestKey, Any>
+    lateinit var root: Binding<Unit, TestKey>
     lateinit var reducers: FlowReducers<TestKey>
 
     @Before fun setup() {

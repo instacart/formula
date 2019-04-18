@@ -1,6 +1,5 @@
 package com.instacart.formula.integration
 
-import arrow.core.Option
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.BackpressureStrategy
@@ -27,11 +26,11 @@ class FlowStoreTest {
         detailScreenState = BehaviorRelay.createDefault("detail-initial")
 
         store = FlowStore.init(keys.toFlowable(BackpressureStrategy.LATEST)) {
-            register(Key.Main::class, init = {
+            bind(Key.Main::class, init = { key ->
                 mainScreenState.toFlowable(BackpressureStrategy.LATEST)
             })
 
-            register(Key.Detail::class, init = {
+            bind(Key.Detail::class, init = { key ->
                 detailScreenState.toFlowable(BackpressureStrategy.LATEST)
             })
         }
@@ -96,9 +95,10 @@ class FlowStoreTest {
 
     private fun expectedState(vararg states: Pair<Key, *>): FlowState<Key> {
         val asList = states.toList()
-        val keyStates = asList.fold(mutableMapOf<Key, KeyState<Key, *>>()) { acc, value ->
-            if (value.second != null) {
-                acc.put(value.first, KeyState(value.first, value.second))
+        val keyStates = asList.fold(mutableMapOf<Key, KeyState<Key>>()) { acc, value ->
+            val second = value.second
+            if (second != null) {
+                acc.put(value.first, KeyState(value.first, second))
             }
 
             acc
