@@ -26,11 +26,11 @@ class FlowStoreTest {
         detailScreenState = BehaviorRelay.createDefault("detail-initial")
 
         store = FlowStore.init(keys.toFlowable(BackpressureStrategy.LATEST)) {
-            register(Key.Main::class, init = {
+            bind(Key.Main::class, init = {
                 mainScreenState.toFlowable(BackpressureStrategy.LATEST)
             })
 
-            register(Key.Detail::class, init = {
+            bind(Key.Detail::class, init = {
                 detailScreenState.toFlowable(BackpressureStrategy.LATEST)
             })
         }

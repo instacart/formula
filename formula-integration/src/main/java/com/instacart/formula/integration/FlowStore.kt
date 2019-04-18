@@ -10,9 +10,9 @@ import io.reactivex.Flowable
  * ```
  * val backstack = BackStackStore<Key>()
  * FlowStore.init(backstack.changes()) {
- *     register(TaskListIntegration())
- *     register(TaskDetailIntegration())
- *     register(SettingsIntegration())
+ *     bind(TaskListIntegration())
+ *     bind(TaskDetailIntegration())
+ *     bind(SettingsIntegration())
  * }
  * ```
  */

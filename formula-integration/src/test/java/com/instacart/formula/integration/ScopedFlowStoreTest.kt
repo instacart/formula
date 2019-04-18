@@ -35,7 +35,7 @@ class ScopedFlowStoreTest {
 
     class SignUpComponent() {
         val loginScreenState = BehaviorRelay.createDefault("login-initial")
-        val registerScreenState = BehaviorRelay.createDefault("register-initial")
+        val registerScreenState = BehaviorRelay.createDefault("bind-initial")
     }
 
     class LoggedInComponent() {

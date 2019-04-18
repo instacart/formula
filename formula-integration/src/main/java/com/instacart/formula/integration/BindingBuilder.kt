@@ -7,12 +7,12 @@ import kotlin.reflect.KClass
 
 class BindingBuilder<Component, Key : Any> : BaseBindingBuilder<Component, Key>() {
 
-    inline fun <reified T : Key, S : Any> register(noinline init: (T) -> Flowable<S>) = register(T::class, init)
+    inline fun <reified T : Key, S : Any> bind(noinline init: (T) -> Flowable<S>) = bind(T::class, init)
 
     /**
      * Binds specific type of key to the render model management.
      */
-    fun <T : Key, S : Any> register(type: KClass<T>, init: (T) -> Flowable<S>) = apply {
+    fun <T : Key, S : Any> bind(type: KClass<T>, init: (T) -> Flowable<S>) = apply {
         val initWithScope = { _: Component, key: T ->
             init(key)
         }
