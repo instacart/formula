@@ -1,47 +1,177 @@
 # Getting Started
+A functional reactive framework for managing state and side effects based on RxJava. It enables building 
+deterministic, composable, testable applications.
 
-
-
-
-## Creating render formula
+## Core concepts
+### State 
+State is a Kotlin data class that contains all the necessary information to render your view.
 ```kotlin
-class TodoListRenderFormula() : RenderFormula<Input, TodoListState, TodoListEffect, TodoListRenderModel> {
+data class MyScreenState(
+  val userInfoRequest: Lce<UserInfo>,
+  val isSaving: Boolean = false
+)
+```
 
-    class Input(
-        val onTodoSelected: (Todo) -> Unit
-    )
-    
-    override fun createRenderLoop(input: Input): RenderLoop<TodoListState, TodoEffect, TodoListRenderModel> {
-        return RenderLoop(
-            initialState = TodoListState(),
-            reducers = /* define state transformations */,
-            renderModelGenerator = RenderModelGenerator.create { state ->
-              // create render model from state
-              TodoListRenderModel(
-                todoRows = state.todos.map { todo ->
-                  TodoRow(
-                    name = todo.text,
-                    onClicked = {
-                      input.onTodoSelected(todo)
-                    } 
-                  )
-                }
-              )
-            },
-            onEffect = { effect ->
-                // Handle effects.
-                when (effect) {
-                  
-                }
-            }
+Note: for info about `Lce`, please check [this article](https://tech.instacart.com/lce-modeling-data-loading-in-rxjava-b798ac98d80).  
+
+### Render Model
+Render Model is an immutable representation of your view. It will be used to update the Android views. Typically,
+it will also contain callbacks that will be invoked when user interacts with the UI.
+```kotlin
+data class FooterButtonRenderModel(
+  val title: String,
+  val isEnabled: Boolean,
+  val onClick: () -> Unit
+)
+```
+
+### Render View
+Render view is responsible for taking the Render Model and applying it to the Android views.
+
+```kotlin
+class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRenderView> {
+  private val footerButton: Button = root.findViewById(R.id.footer_button)
+  
+  override val renderer: Renderer<FooterButtonRenderView> = Renderer.create { model ->
+      footerButton.text = model.title
+      footerButton.isEnabled = model.isEnabled
+      footerButton.setOnClickListener {
+          model.onClick()
+      }
+  } 
+}
+```
+
+### Render Model Generator
+Render Model Generator takes a State and creates a Render Model from it. 
+```kotlin
+class MyScreenRenderModelGenerator(
+    private val onSaveUserInfoSelected: () -> Unit
+) : RenderModelGenerator<MyScreenState, FooterButtonRenderModel> {
+    override fun toRenderModel(state: MyScreenState): FooterButtonRenderModel {
+        return FooterButtonRenderModel(
+            title = "Save User Info",
+            isEnabled = state.userInfoRequest.isData() && !state.isSaving,
+            onClick = onSaveUserInfoSelected
         )
     }
 }
-
 ```
 
+### Reducers 
+Reducers class defines all the possible State transformations. It defines methods that take an event object and 
+return a transformation.
 
+```kotlin
+class MyScreenReducers : Reducers<MyScreenState, Unit>() {
+    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects {
+        it.copy(userInfoRequest = event)
+    }
+    
+    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects {
+        it.copy(isSaving = event.isLoading())
+    }
+}
+```
 
+### Render Formula
+Render Formula is responsible for state management. It combines various RxJava event streams and maps them to 
+state transformations.
+ 
+```kotlin
+class MyScreenRenderFormula(
+    private val userRepo: UserRepo
+) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
+    override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
+        val reducers = MyScreenReducers()
+        
+        val userInfoRequestChanges = userRepo.fetchUserInfo().map(reducers::onUserInfoRequest)
+        
+        // We use a RxRelay library to turn user events into an RxJava stream
+        val saveUserInfoRelay = PublishRelay.create<Unit>()
+        val saveUserInfoChanges = saveUserInfoRelay
+            .toFlowable(BackpressureStrategy.LATEST)
+            .switchMap { userRepo.saveUserInfo() }
+            .map(reducers::onSaveUserInfoRequest)
+        
+        return RenderLoop(
+            initialState = MyScreenState(
+                userInfoRequest = Lce.loading()
+            ),
+            reducers = Flowable.merge(
+                userInfoRequestChanges,
+                saveUserInfoChanges
+            ),
+            renderModelGenerator = MyScreeenRenderModelGenerator(
+                onSaveUserInfoSelected = {
+                    saveUserInfoRelay.accept(Unit)
+                }
+            )
+        )
+    }
+}
+```
+
+### Using Render Formula
+Render formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
+it would be placed within a surface that survives configuration changes such as Android Components ViewModel.
+
+In this example, we keep the stream running until the view model is cleared.
+```kotlin
+class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
+    private val disposables = CompositeDisposable()
+    
+    val renderModels = formula.state(Unit).replay(1).apply {
+        connect { disposables.add(it) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
+    }
+}
+```
+
+In our activity, we then subscribe to the Render Model changes and pass them to the Render View.
+```kotlin
+class MyActivity : AppCompatActivity() {
+    private val disposables = CompositeDisposable()
+
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
+        setContentView(R.string.my_screen)
+        
+        val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
+        val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
+        
+        disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
+    }
+    
+    override fun onDestroy() {
+        disposables.clear()
+        super.onDestroy()
+    }
+}
+```
+
+Formula also comes with a module that provides declarative API to connect state management to Android Fragments. To learn more, see our [Integration Guide](docs/Integration.md).
+
+### Input
+Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
+and callbacks for events that the parent should be aware of. 
+```kotlin
+class ItemDetailRenderFormula() : RenderFormula<Input, ..., ..., ...> {
+   class Input(
+        val itemId: String,
+        val onItemDeleted: () -> Unit
+    )
+
+    override fun createRenderLoop(input: Input): RenderLoop<...> {
+        // We can use the input here to fetch the item from the repo.
+        // We can also notify the parent when the item is deleted using input.onItemDeleted()
+    }
+}
+```
 
 ## Handling User UI Actions
 
