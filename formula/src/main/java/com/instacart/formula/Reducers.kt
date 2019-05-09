@@ -34,48 +34,72 @@ abstract class Reducers<State, Effect> {
 
     protected inline fun withoutEffects(crossinline modify: (State) -> State): NextReducer<State, Effect> {
         return {
-            modify(it).toNext()
+            modify(it).noEffects()
         }
     }
 
     protected inline fun optionalEffect(crossinline effect: (State) -> Effect?): NextReducer<State, Effect> {
         return {
-            it.toNextWithOptionalEffect(effect(it))
+            it.withOptionalEffect(effect(it))
         }
     }
 
     protected inline fun onlyEffect(crossinline effect: (State) -> Effect): NextReducer<State, Effect> {
         return {
-            it.toNextWithEffects(effect(it))
+            it.withEffects(effect(it))
         }
     }
 
     protected inline fun onlyEffects(crossinline effect: (State) -> Set<Effect>): NextReducer<State, Effect> {
         return {
-            it.toNextWithEffects(effect(it))
+            it.withEffects(effect(it))
         }
     }
 
     /**
      * Next creation utils
      */
-    protected inline fun State.toNext(): Next<State, Effect> {
+    protected inline fun State.noEffects(): Next<State, Effect> {
         return Next(this, emptySet())
     }
 
-    protected inline fun State.toNextWithEffects(vararg effect: Effect): Next<State, Effect> {
+    protected inline fun State.withEffects(vararg effect: Effect): Next<State, Effect> {
         return Next(this, setOf(*effect))
     }
 
-    protected inline fun State.toNextWithEffects(effects: Set<Effect>): Next<State, Effect> {
+    protected inline fun State.withEffects(effects: Set<Effect>): Next<State, Effect> {
         return Next(this, effects)
     }
 
-    protected inline fun State.toNextWithOptionalEffect(effect: Effect?): Next<State, Effect> {
+    protected inline fun State.withOptionalEffect(effect: Effect?): Next<State, Effect> {
         return Next(this, effect?.let { setOf(it) }.orEmpty())
     }
 
-    protected inline fun State.toNextWithOptionalEffects(effects: Set<Effect>?): Next<State, Effect> {
+    protected inline fun State.withOptionalEffects(effects: Set<Effect>?): Next<State, Effect> {
         return Next(this, effects.orEmpty())
+    }
+
+    @Deprecated("Use noEffects()", replaceWith = ReplaceWith("noEffects()"))
+    protected inline fun State.toNext(): Next<State, Effect> {
+        return noEffects()
+    }
+
+    @Deprecated("Use withEffects()", replaceWith = ReplaceWith("withEffects(*effect)"))
+    protected inline fun State.toNextWithEffects(vararg effect: Effect): Next<State, Effect> {
+        return withEffects(*effect)
+    }
+
+    @Deprecated("Use withEffects()", replaceWith = ReplaceWith("withEffects(effects)"))
+    protected inline fun State.toNextWithEffects(effects: Set<Effect>): Next<State, Effect> {
+        return withEffects(effects)
+    }
+
+    @Deprecated("Use withOptionalEffect()", replaceWith = ReplaceWith("withOptionalEffect(effect)"))
+    protected inline fun State.toNextWithOptionalEffect(effect: Effect?): Next<State, Effect> {
+        return withOptionalEffect(effect)
+    }
+
+    protected inline fun State.toNextWithOptionalEffects(effects: Set<Effect>?): Next<State, Effect> {
+        return withOptionalEffects(effects)
     }
 }

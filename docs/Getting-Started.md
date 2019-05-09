@@ -173,6 +173,65 @@ class ItemDetailRenderFormula() : RenderFormula<Input, ..., ..., ...> {
 }
 ```
 
+### Effects
+Effects are message objects used to request the execution of impure code. Operations such as firing a network request,
+reading / writing to disk, navigation or updating global state are considered side-effects. Instead of performing those
+operations within the Reducers class, we return the Effect object and let the caller execute the side effect.
+ 
+Typically, we define all possible side-effects as a sealed Kotlin class.
+```kotlin
+sealed class MyScreenEffect {
+    data class ShowErrorModal(val errorMessage: String): MyScreenEffect()
+    data class Exit(val savedUserInfo: Boolean): MyScreenEffect()
+}
+```
+
+To emit effect 
+```kotlin
+class MyScreenReducers : Reducers<..., MyScreenEffect>() {
+    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = reduce {
+        val updated = it.copy(isSaving = event.isLoading())
+        
+        // Check if there are side effects
+        val effect = if (event.isData()) {
+            // We want to close the screen when user info is saved.
+            MyScreenEffect.Exit(savedUserInfo = true)
+        } else if (event.isError()) {
+            MyScreenEffect.ShowErrorModal(errorMessage = event.error.getMessage())
+        } else {
+            null
+        }
+        
+        state.withOptionalEffect(effect)
+    }
+}
+```
+
+Within the Render Formula, we can decide how to handle the effects.
+```kotlin
+class MyScreenRenderFormula : RenderFormula<..., ..., MyScreenEffect, ...> {
+    
+    override fun createRenderLoop(input: ...): RenderLoop<..., MyScreenEffect, ...> {
+        return RenderLoop(
+            ...,
+            onEffect = { effect ->
+                // We decide here how to execute the effect. We can
+                // 1. bubble it to the parent using the callbacks passed by the Input object
+                // 2. handle it internally by passing it to a RxRelay or RxJava Subject
+                when(effect) {
+                    is ShowErrorModal -> {
+                    
+                    }
+                    is Exit -> {
+                        
+                    }
+                }
+            }
+        )
+    }
+}
+```
+
 ## Handling User UI Actions
 
 In our architecture, the UI doesn't have direct access to the ViewModel. The only thing that UI has access to is a render model. So to pass a user action up to our state management layer, we need to add a callback to the render model.
@@ -328,48 +387,6 @@ fun deleteTask(taskId: String): (State) -> State {
 deleteTask("task-id")(currentState)
 ```
 
-## What are Effects
-
-Effects are message objects used to request the execution of impure code. For example, we want to notify the backend that the user has deleted a task. Performing this inside of a reducer function would introduce unpredictability and make the function impure. Operations such as network requests, reading / writing to disk and updating global state are known as side-effects. Instead of performing impure code here, we emit a message and let the caller decide how to execute it. 
-
-Usually we define effects as a sealed Kotlin class. 
-```kotlin
-sealed class Effect {
-  data class SendDeleteTaskRequest(val taskId: String): Effect()
-}
-```
-
-
-To emit effects as part of the reducer function, we have to introduce a new type
-```kotlin
-data class Next<State, Effect>(
-  val state: State,
-  // We allow multiple effect emissions.
-  val effects: Set<Effect>
-)
-```
-
-We also have to change the reducer functions signature
-
-```kotlin
-// The reducer function now returns Next<State, Effect> instead of just State
-fun deleteTask(taskId: String): (State) -> Next<State, Effect> {
-  return { state ->
-    // Remove the task from the list
-    val updatedTaskList = state.tasks.filter { task ->
-      task.id != taskId
-    }
-        
-    Next(
-      // Create a new state without the deleted task 
-      state = state.copy(tasks = updatedTaskList),
-      // Emit a message to send a delete task request.
-      effects = setOf(Effect.SendDeleteTaskRequest(taskId))
-    )
-  }
-}
-```
-
 ## Keeping all reducers together
 
 For better testability, we keep all reducers inside of a class that extends Reducers. This also provides us with utility methods to construct the reducer.
@@ -498,5 +515,8 @@ TODO
 TODO
 
 
+## Navigation
+
+TODO
 
 
