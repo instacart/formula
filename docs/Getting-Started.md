@@ -64,12 +64,12 @@ return a transformation.
 
 ```kotlin
 class MyScreenReducers : Reducers<MyScreenState, Unit>() {
-    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects {
-        it.copy(userInfoRequest = event)
+    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
+        state.copy(userInfoRequest = event)
     }
     
-    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects {
-        it.copy(isSaving = event.isLoading())
+    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
+        state.copy(isSaving = event.isLoading())
     }
 }
 ```
@@ -553,7 +553,133 @@ class NotificationSettingsRenderView(private val root: View) : RenderView<Notifi
 ```
 
 ## Annotation processor
-TODO
+There is an optional annotation processor to remove some of the boiler plate code. It is primarily driven by
+`@State` annotation placed on the State data class.
+```kotlin
+@State(reducers = MyScreenReducers::class)
+data class MyScreenState(
+  val userInfoRequest: Lce<UserInfo>,
+  val isSaving: Boolean = false
+)
+
+class MyScreenReducers : Reducers<MyScreenState, Unit>() {
+    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
+        state.copy(userInfoRequest = event)
+    }
+    
+    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
+        state.copy(isSaving = event.isLoading())
+    }
+}
+```
+
+
+This will generate an Events class that handles binding the RxJava streams to the appropriate event methods defined 
+in the Reducers class.
+```kotlin
+@Generated
+class MyScreenStateEvents(private val reducers: MyScreenReducers) {
+    fun bind(
+        onUserInfoRequest: Flowable<Lce<UserInfo>>,
+        onSaveUserInfoRequest: Flowable<Lce<SaveUserInfoResponse>>
+    ): Flowable<...> {
+        val list = ArrayList<Flowable<...>>()
+        list.add(onUserInfoRequest.map(reducers::onUserInfoRequest))
+        list.add(onSaveUserInfoRequest.map(reducers::onSaveUserInfoRequest))
+        return Flowable.merge(list)
+    }
+}
+``` 
+
+You can use this Events class within the Render Formula.
+```kotlin
+class MyScreenRenderFormula(
+    private val userRepo: UserRepo
+) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
+    override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
+        
+        val events = MyScreenStateEvents(MyScreenReducers())
+        
+        return RenderLoop(
+            ...,
+            reducers = events.bind(
+                onUserInfoRequest = userRepo.fetchUserInfo(),
+                onSaveUserInfoRequest = ... 
+            )
+        )
+    }
+}
+```
+
+### Using @ExportedProperty
+Exported Property annotation generates a transformation that updates a single property.
+```kotlin
+@State(reducers = MyScreenReducers::class)
+data class MyScreenState(
+  @ExportedProperty val userInfoRequest: Lce<UserInfo>,
+  ...
+)
+```
+
+The generated code is equivalent to this snippet, so we can delete it completely from MyScreenReducers.
+```kotlin
+fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
+    state.copy(userInfoRequest = event)
+}
+```
+
+### Using isDirectInput (@ExportedProperty)
+Direct input generates a method on Events class that can directly cause a state transformation.
+```kotlin
+@State
+data class NotificationSettingsState(
+    @ExportedProperty(isDirectInput = true) val isPushNotificationsEnabled: Boolean
+)
+```
+
+Now you can update this property through the NotificationSettingsStateEvents class.
+```kotlin
+class NotificationSettingsRenderModelGenerator(
+    private val events: NotificationSettingsStateEvents
+): RenderModelGenerator<NotificationSettingsState, CheckboxRenderModel> {
+
+    override fun toRenderModel(state: NotificationSettingsState): CheckboxRenderModel {
+        return CheckboxRenderModel(
+            text = "Push notifications",
+            isChecked = state.isPushNotificationsEnabled,
+            onToggle = {
+                // We are invoking a generated method.
+                events.onIsPushNotificationsEnabledChanged(!state.isPushNotificationEnabled)
+            }
+        )
+    }
+}
+```
+
+### Using @DirectInput
+Direct Input annotation works in similar manner as `@ExportedProperty(isDirectInput = true)` except you mark
+transformation methods within the Reducers class instead of properties on State class.
+```kotlin
+class TaskListReducers : Reducers<TaskListState, Unit>() {
+    @DirectInput fun onTaskCompleted(taskId: String) = withoutEffects { state ->
+        state.tasks.map {
+            if (it.id == taskId) {
+                it.copy(completed = true)
+            } else {
+                it
+            }
+        } 
+    }
+}
+
+@State(reducers = TaskListReducers::class)
+data class TaskListState(
+    val tasks: List<Task>
+)
+```
+
+This will generated a method `TaskListStateEvents.onTaskCompleted`. You can now invoke this method on user input
+and it will update the state.
 
 
 ## Navigation
