@@ -4,7 +4,7 @@ deterministic, composable, testable applications.
 
 ## Core concepts
 ### State 
-State is a Kotlin data class that contains all the necessary information to render your view.
+State is a Kotlin data class that contains all the necessary information to render your view. 
 ```kotlin
 data class MyScreenState(
   val userInfoRequest: Lce<UserInfo>,
@@ -60,7 +60,8 @@ class MyScreenRenderModelGenerator(
 
 ### Reducers 
 Reducers class defines all the possible State transformations. It defines methods that take an event object and 
-return a transformation.
+return a transformation. Instead of of mutating properties when an event happens, we create a new version of the
+State class. To accomplish that, we use data class `copy` method.
 
 ```kotlin
 class MyScreenReducers : Reducers<MyScreenState, Unit>() {
@@ -202,7 +203,7 @@ class MyScreenReducers : Reducers<..., MyScreenEffect>() {
             null
         }
         
-        state.withOptionalEffect(effect)
+        updated.withOptionalEffect(effect)
     }
 }
 ```
@@ -233,41 +234,38 @@ class MyScreenRenderFormula : RenderFormula<..., ..., MyScreenEffect, ...> {
 ```
 
 ## Handling User UI Actions
-
-In our architecture, the UI doesn't have direct access to the ViewModel. The only thing that UI has access to is a render model. So to pass a user action up to our state management layer, we need to add a callback to the render model.
-
-Example:
+To handle user UI actions, we set listeners on Android Views and delegate to the callbacks on the Render Model. 
 ```kotlin
-data class RenderModel(
+data class MyRenderModel(
   // Defining a callback for a user action. 
   // Usually, callback will not take any parameters. 
   val onSaveButtonClicked: () -> Unit
 )
 
-// UI can simply use this callback when setting a listener.
-fun render(model: RenderModel) {
-  saveButton.setOnClickListener {
-    // When user clicks the button, we invoke the callback.
-    model.onSaveButtonClicked()
-  }
+class MyRenderView(...) : RenderView<MyRenderModel> {
+  val saveButton: TextView = ...
+    
+  override val renderer: Renderer<MyRenderModel> = Renderer.create { model ->
+    // We just set a click listener and delegate to the callback on the Render Model.
+    saveButton.setOnClickListener {
+      model.onSaveButtonClicked()
+    }
+  }  
 }
 ```
 
-Now, the place that creates the render model will be responsible for handling the user action. Since render model creation lives in the RenderModelGenerator, that's where the callback will be created.
+The Render Model creation will be scoped to the current state object, so we can use it to decide how we should bubble it up.
 ```kotlin
 class MyRenderModelGenerator(
-  // We split button click into two options:
-  // 1. We want to show validation error
-  // 2. We want to save user info
-  val showValidationError: (String) -> Unit,
-  val saveUserInfo: (UserInfo) -> Unit
-) : RenderModelGenerator<State, RenderModel> {
+  // We splitting save button click into two options
+  private val showValidationError: (String) -> Unit,
+  private val saveUserInfo: (UserInfo) -> Unit
+) : RenderModelGenerator<State, MyRenderModel> {
 
-  override fun toRenderModel(state: State): RenderModel {
+  override fun toRenderModel(state: State): MyRenderModel {
     return RenderModel(
       onSaveButtonClicked = {
-        // Here we have access to the current state, so we can use that
-        // when escalating the action up.
+        // We use the current state to decide which callback to invoke
         if (state.isValid) {
           saveUserInfo(state.userInfo)
         } else {
@@ -279,7 +277,7 @@ class MyRenderModelGenerator(
 }
 ```
 
-Now, we need to hook this render model generator to our state management.
+We will provide those callbacks in the Render Formula.
 ```kotlin
 class MyRenderFormula : RenderFormula<Input, State, .., RenderModel> {
 
@@ -295,7 +293,7 @@ class MyRenderFormula : RenderFormula<Input, State, .., RenderModel> {
         // 2. Delegate to another class that was injected through the constructor
         // 3. Handle it internally by passing the event to a PublishRelay
         showValidationError = { error ->
-          // Let's ask the parent to show a toast.
+          // Let's bubble up this event to the parent of this formula using the Input class
           input.showToast(error)
         },
         saveUserInfo = { info ->
@@ -318,11 +316,11 @@ class SaveUserInfoRepo {
 } 
 
 class MyRenderFormula(
-  val repo: SaveUserInfoRepo
+  private val repo: SaveUserInfoRepo
 ) : RenderFormula<Input, State, .., RenderModel> {
 
   override fun createRenderLoop(input: Input): RenderLoop<...> {
-    // We create a relay here. This allows us to combine callbacks with RxJava.
+    // We use a RxRelay library to turn user events into an RxJava stream. You could also use RxJava subjects.
     val saveUserInfoRelay = PublishRelay.create<UserInfo>()
 
     val saveUserInfoReducer = saveUserInfoRelay
@@ -351,159 +349,6 @@ class MyRenderFormula(
     )
   }  
 }
-```
-
-## Reducers (AKA State transformations)
-
-We use immutable data classes to represent state. Instead of mutating properties when an action happens,
-we create a new version of the state class. Let's use a a simple list of tasks as an example to display how this actually looks in code. Imagine next to each task there is a button that user can click to delete that task.
-
-Let's define our data classes:
-```kotlin
-data class Task(val id: String, val text: String)
-
-data class State(val tasks: List<Task>)
-```
-
-
-We need to define a transformation for the delete action. Transformation is a function that takes the current state as a parameter and returns new state. This is also called a reduce function. 
-```kotlin
-// Note the signature of deleteTask function: this function itself is 
-// not the transformation. This function only creates the transformation
-// function. You then need to pass the state object to execute it. 
-fun deleteTask(taskId: String): (State) -> State {
-  return { state ->
-    // Remove the task from the list
-    val updatedTaskList = state.tasks.filter { task ->
-      task.id != taskId
-    }
-    
-    // Create a new state without the deleted task 
-    state.copy(tasks = updatedTaskList)
-  }
-}
-
-// To manually invoke this function
-deleteTask("task-id")(currentState)
-```
-
-## Keeping all reducers together
-
-For better testability, we keep all reducers inside of a class that extends Reducers. This also provides us with utility methods to construct the reducer.
-```kotlin
-class MyStateReducers : Reducers<State, Effect> {
-
-    // We don't have to specify the return type of this method.
-    fun deleteTask(taskId: String) = reduce { state ->
-      // toNextWithEffects() helps construct Next<State, Effect> for us
-      state.copy(/* perform update*/).toNextWithEffects(
-        Effect.SendDeleteTaskRequest(taskId)
-      )
-    }
-
-    fun insertTask(task: Task) = withoutEfects { state ->
-      // withoutEffects allows you to just emit state.
-      state
-    }
-}
-
-```
-
-
-Note: if you don't have any effects, you can use Kotlin Unit type to indicate that. 
-
-## Combining reducers into a State Loop
-
-The reason why we have a function that creates a function is to have a common type that all transformations fulfill. This enables us to combine different state reducers into a single collection. In our case, we want to a combine them into single RxJava stream.
-```kotlin
-// User action streams
-val deleteTaskActions: Flowable<String> = ...
-val insertTaskActions: Flowable<Task> = ...
-
-// Initialize the class containing all state reducers
-val reducers = MyStateReducers()
-
-// Combine all transformations into a single stream
-val transformations: Flowable<(State) -> Next<State, Effect>> = Flowable.merge(
-  deleteTaskActions.map { taskId ->
-    // Create a delete reducer 
-    reducers.deleteTask(taskId)
-  },
-  insertTaskActions.map { task ->
-    // Create an insert task reducer
-    reducers.insertTask(task)
-  }
-)
-
-// To execute all these transformations, we will use RxJava scan operator
-// Note: no transformations will be executed until something subscribes to
-// this stream 
-val initialEmission = Next(
-  state = State(tasks = emptyList()),
-  effects = emptyList() // no initial effects
-)
-
-val stateChanges: Flowable<State> = 
-  transformations.scan(initialEmission) { current, transformation ->
-    // When a new transformation is emitted, we take the current state
-    // and transform it. The resulting state is emitted to the subscribers
-    // of this state change stream. 
-    transformation(current.state)
-  }
-  .doOnNext { event ->
-    // Let's handle effects here 
-    event.effects.forEach {
-      // we do a pattern match here
-      when (it) {
-        is SendDeleteTaskRequest -> // trigger network request?
-      }
-    }
-  }
-  // Only emit state
-  .map { event ->
-    event.state
-  }
-  // We avoid emitting duplicate state updates.
-  .distinctUntilChanged()
-```
-
-There is a lot of integration logic here that can be reused here. To have a better API and remove code duplication, we have a StateLoop class.
-```kotlin
-// We only pass the important properties here
-// while removing all the integration noise.
-val loop = StateLoop(
-  initialState = State(tasks = emptyList()),
-  reducers = transformations,
-  onEffect = { effect ->
-    // we do a pattern match here
-    when (effect) {
-      is SendDeleteTaskRequest -> // trigger network request?
-    }
-  }
-)
-
-val stateChanges: Flowable<State> = loop.createLoop()
-stateChanges.subscribe()
-```
-
-## When to use Render Loop
-
-If you understand StateLoop, you practically know RenderLoop. The only difference is that RenderLoop expects a RenderModel and a RenderModelGenerator. So, if you have a view that needs to be updated based on state changes, use RenderLoop. For non UI state management, use StateLoop.
-```kotlin
-val loop = RenderLoop(
-  initialState = State(tasks = emptyList()),
-  reducers = transformations,
-  onEffect = { effect ->
-    // we do a pattern match here
-    when (effect) {
-      is SendDeleteTaskRequest -> // trigger network request?
-    }
-  },
-  renderModelGenerator = MyRenderModelGenerator()
-)
-
-val renderModelChanges = loop.createRenderModelStream()
-renderModelChanges.subscribe()
 ```
 
 ## Composing Render models
