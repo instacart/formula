@@ -29,10 +29,10 @@ data class FooterButtonRenderModel(
 Render view is responsible for taking the Render Model and applying it to the Android views.
 
 ```kotlin
-class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRenderView> {
+class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRenderModel> {
   private val footerButton: Button = root.findViewById(R.id.footer_button)
   
-  override val renderer: Renderer<FooterButtonRenderView> = Renderer.create { model ->
+  override val renderer: Renderer<FooterButtonRenderModel> = Renderer.create { model ->
       footerButton.text = model.title
       footerButton.isEnabled = model.isEnabled
       footerButton.setOnClickListener {
@@ -507,16 +507,56 @@ renderModelChanges.subscribe()
 ```
 
 ## Composing Render models
+Render Models are meant to be composable. You can build bigger Render Models from smaller Render Models.
+```kotlin
+data class CheckboxRenderModel(
+    val text: String,
+    val isChecked: Boolean,
+    val onToggle: () -> Unit
+)
 
-TODO
+data class NotificationSettingsRenderModel(
+    val messagePushNotification: CheckboxRenderModel,
+    val promotionalPushNotifications: CheckboxRenderModel,
+    val marketingEmailNotifications: CheckboxRenderModel,
+    val saveSettingsButton: FooterButtonRenderModel
+)
+```
+
+You can also do the same in your Render View layer.
+```kotlin
+class CheckboxRenderView(private val root: View) : RenderView<CheckboxRenderModel> {
+    private val checkbox: Checkbox = root.findViewById(R.id.checkbox)
+  
+    override val renderer: Renderer<CheckboxRenderModel> = Renderer.create { model ->
+        checkbox.text = model.title
+        checkbox.isChecked = model.isChecked
+        checkbox.setOnCheckedListener {
+            model.onToggle()
+        }
+    } 
+}
+
+class NotificationSettingsRenderView(private val root: View) : RenderView<NotificationSettingsRenderModel> {
+    private val messagePushNotification = CheckboxRenderView(root.findViewById(R.id.message_push_checkbox))
+    private val promotionalPushNotifications = CheckboxRenderView(root.findViewById(R.id.promotional_push_checkbox))
+    private val marketingEmailNotifications = CheckboxRenderView(root.findViewById(R.id.marketing_email_checkbox))
+    private val saveButton = FooterButtonRenderView(root.findViewById(R.id.save_button))
+  
+    override val renderer: Renderer<NotificationSettingsRenderModel> = Renderer.create { model ->
+        messagePushNotification.renderer.render(model.messagePushNotification)
+        promotionalPushNotifications.renderer.render(model.promotionalPushNotifications)
+        marketingEmailNotifications.renderer.render(model.marketingEmailNotifications)
+        saveButton.renderer.render(model.saveSettingsButton)
+    } 
+}
+```
 
 ## Annotation processor
-
 TODO
 
 
 ## Navigation
-
 TODO
 
 
