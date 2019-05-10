@@ -33,11 +33,11 @@ class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRe
   private val footerButton: Button = root.findViewById(R.id.footer_button)
   
   override val renderer: Renderer<FooterButtonRenderModel> = Renderer.create { model ->
-      footerButton.text = model.title
-      footerButton.isEnabled = model.isEnabled
-      footerButton.setOnClickListener {
-          model.onClick()
-      }
+    footerButton.text = model.title
+    footerButton.isEnabled = model.isEnabled
+    footerButton.setOnClickListener {
+      model.onClick()
+    }
   } 
 }
 ```
@@ -46,15 +46,15 @@ class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRe
 Render Model Generator takes a State and creates a Render Model from it. 
 ```kotlin
 class MyScreenRenderModelGenerator(
-    private val onSaveUserInfoSelected: () -> Unit
+  private val onSaveUserInfoSelected: () -> Unit
 ) : RenderModelGenerator<MyScreenState, FooterButtonRenderModel> {
-    override fun toRenderModel(state: MyScreenState): FooterButtonRenderModel {
-        return FooterButtonRenderModel(
-            title = "Save User Info",
-            isEnabled = state.userInfoRequest.isData() && !state.isSaving,
-            onClick = onSaveUserInfoSelected
-        )
-    }
+  override fun toRenderModel(state: MyScreenState): FooterButtonRenderModel {
+    return FooterButtonRenderModel(
+      title = "Save User Info",
+      isEnabled = state.userInfoRequest.isData() && !state.isSaving,
+      onClick = onSaveUserInfoSelected
+    )
+  }
 }
 ```
 
@@ -65,13 +65,14 @@ State class. To accomplish that, we use data class `copy` method.
 
 ```kotlin
 class MyScreenReducers : Reducers<MyScreenState, Unit>() {
-    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-        state.copy(userInfoRequest = event)
-    }
+
+  fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
+    state.copy(userInfoRequest = event)
+  }
     
-    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
-        state.copy(isSaving = event.isLoading())
-    }
+  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
+    state.copy(isSaving = event.isLoading())
+  }
 }
 ```
 
@@ -81,35 +82,36 @@ state transformations.
  
 ```kotlin
 class MyScreenRenderFormula(
-    private val userRepo: UserRepo
+  private val userRepo: UserRepo
 ) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
-    override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
-        val reducers = MyScreenReducers()
+
+  override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
+    val reducers = MyScreenReducers()
+       
+    val userInfoRequestChanges = userRepo.fetchUserInfo().map(reducers::onUserInfoRequest)
+       
+    // We use a RxRelay library to turn user events into an RxJava stream
+    val saveUserInfoRelay = PublishRelay.create<Unit>()
+    val saveUserInfoChanges = saveUserInfoRelay
+      .toFlowable(BackpressureStrategy.LATEST)
+      .switchMap { userRepo.saveUserInfo() }
+      .map(reducers::onSaveUserInfoRequest)
         
-        val userInfoRequestChanges = userRepo.fetchUserInfo().map(reducers::onUserInfoRequest)
-        
-        // We use a RxRelay library to turn user events into an RxJava stream
-        val saveUserInfoRelay = PublishRelay.create<Unit>()
-        val saveUserInfoChanges = saveUserInfoRelay
-            .toFlowable(BackpressureStrategy.LATEST)
-            .switchMap { userRepo.saveUserInfo() }
-            .map(reducers::onSaveUserInfoRequest)
-        
-        return RenderLoop(
-            initialState = MyScreenState(
-                userInfoRequest = Lce.loading()
-            ),
-            reducers = Flowable.merge(
-                userInfoRequestChanges,
-                saveUserInfoChanges
-            ),
-            renderModelGenerator = MyScreeenRenderModelGenerator(
-                onSaveUserInfoSelected = {
-                    saveUserInfoRelay.accept(Unit)
-                }
-            )
-        )
-    }
+    return RenderLoop(
+      initialState = MyScreenState(
+        userInfoRequest = Lce.loading()
+      ),
+      reducers = Flowable.merge(
+        userInfoRequestChanges,
+        saveUserInfoChanges
+      ),
+      renderModelGenerator = MyScreeenRenderModelGenerator(
+        onSaveUserInfoSelected = {
+          saveUserInfoRelay.accept(Unit)
+        }
+      )
+    )
+  }
 }
 ```
 
@@ -120,38 +122,38 @@ it would be placed within a surface that survives configuration changes such as 
 In this example, we keep the stream running until the view model is cleared.
 ```kotlin
 class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
-    private val disposables = CompositeDisposable()
+  private val disposables = CompositeDisposable()
     
-    val renderModels = formula.state(Unit).replay(1).apply {
-        connect { disposables.add(it) }
-    }
+  val renderModels = formula.state(Unit).replay(1).apply {
+    connect { disposables.add(it) }
+  }
 
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
+  override fun onCleared() {
+    super.onCleared()
+    disposables.clear()
+  }
 }
 ```
 
 In our activity, we then subscribe to the Render Model changes and pass them to the Render View.
 ```kotlin
 class MyActivity : AppCompatActivity() {
-    private val disposables = CompositeDisposable()
+  private val disposables = CompositeDisposable()
 
-    override fun onCreate(state: Bundle?) {
-        super.onCreate(state)
-        setContentView(R.string.my_screen)
+  override fun onCreate(state: Bundle?) {
+    super.onCreate(state)
+    setContentView(R.string.my_screen)
         
-        val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
-        val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
+    val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
+    val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
         
-        disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
-    }
+    disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
+  }
     
-    override fun onDestroy() {
-        disposables.clear()
-        super.onDestroy()
-    }
+  override fun onDestroy() {
+    disposables.clear()
+    super.onDestroy()
+  }
 }
 ```
 
@@ -162,15 +164,16 @@ Input is used to pass information when creating a state stream. Typically it wil
 and callbacks for events that the parent should be aware of. 
 ```kotlin
 class ItemDetailRenderFormula() : RenderFormula<Input, ..., ..., ...> {
-   class Input(
-        val itemId: String,
-        val onItemDeleted: () -> Unit
-    )
 
-    override fun createRenderLoop(input: Input): RenderLoop<...> {
-        // We can use the input here to fetch the item from the repo.
-        // We can also notify the parent when the item is deleted using input.onItemDeleted()
-    }
+  class Input(
+    val itemId: String,
+    val onItemDeleted: () -> Unit
+  )
+
+  override fun createRenderLoop(input: Input): RenderLoop<...> {
+    // We can use the input here to fetch the item from the repo.
+    // We can also notify the parent when the item is deleted using input.onItemDeleted()
+  }
 }
 ```
 
@@ -182,29 +185,30 @@ operations within the Reducers class, we return the Effect object and let the ca
 Typically, we define all possible side-effects as a sealed Kotlin class.
 ```kotlin
 sealed class MyScreenEffect {
-    data class ShowErrorModal(val errorMessage: String): MyScreenEffect()
-    data class Exit(val savedUserInfo: Boolean): MyScreenEffect()
+  data class ShowErrorModal(val errorMessage: String): MyScreenEffect()
+  data class Exit(val savedUserInfo: Boolean): MyScreenEffect()
 }
 ```
 
 To emit effect 
 ```kotlin
 class MyScreenReducers : Reducers<..., MyScreenEffect>() {
-    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = reduce {
-        val updated = it.copy(isSaving = event.isLoading())
+
+  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = reduce {
+    val updated = it.copy(isSaving = event.isLoading())
         
-        // Check if there are side effects
-        val effect = if (event.isData()) {
-            // We want to close the screen when user info is saved.
-            MyScreenEffect.Exit(savedUserInfo = true)
-        } else if (event.isError()) {
-            MyScreenEffect.ShowErrorModal(errorMessage = event.error.getMessage())
-        } else {
-            null
-        }
-        
-        updated.withOptionalEffect(effect)
+    // Check if there are side effects
+    val effect = if (event.isData()) {
+      // We want to close the screen when user info is saved.
+      MyScreenEffect.Exit(savedUserInfo = true)
+    } else if (event.isError()) {
+      MyScreenEffect.ShowErrorModal(errorMessage = event.error.getMessage())
+    } else {
+      null
     }
+        
+    updated.withOptionalEffect(effect)
+  }
 }
 ```
 
@@ -355,45 +359,45 @@ class MyRenderFormula(
 Render Models are meant to be composable. You can build bigger Render Models from smaller Render Models.
 ```kotlin
 data class CheckboxRenderModel(
-    val text: String,
-    val isChecked: Boolean,
-    val onToggle: () -> Unit
+  val text: String,
+  val isChecked: Boolean,
+  val onToggle: () -> Unit
 )
 
 data class NotificationSettingsRenderModel(
-    val messagePushNotification: CheckboxRenderModel,
-    val promotionalPushNotifications: CheckboxRenderModel,
-    val marketingEmailNotifications: CheckboxRenderModel,
-    val saveSettingsButton: FooterButtonRenderModel
+  val messagePushNotification: CheckboxRenderModel,
+  val promotionalPushNotifications: CheckboxRenderModel,
+  val marketingEmailNotifications: CheckboxRenderModel,
+  val saveSettingsButton: FooterButtonRenderModel
 )
 ```
 
 You can also do the same in your Render View layer.
 ```kotlin
 class CheckboxRenderView(private val root: View) : RenderView<CheckboxRenderModel> {
-    private val checkbox: Checkbox = root.findViewById(R.id.checkbox)
+  private val checkbox: Checkbox = root.findViewById(R.id.checkbox)
   
-    override val renderer: Renderer<CheckboxRenderModel> = Renderer.create { model ->
-        checkbox.text = model.title
-        checkbox.isChecked = model.isChecked
-        checkbox.setOnCheckedListener {
-            model.onToggle()
-        }
-    } 
+  override val renderer: Renderer<CheckboxRenderModel> = Renderer.create { model ->
+    checkbox.text = model.title
+    checkbox.isChecked = model.isChecked
+    checkbox.setOnCheckedListener {
+      model.onToggle()
+    }
+  } 
 }
 
 class NotificationSettingsRenderView(private val root: View) : RenderView<NotificationSettingsRenderModel> {
-    private val messagePushNotification = CheckboxRenderView(root.findViewById(R.id.message_push_checkbox))
-    private val promotionalPushNotifications = CheckboxRenderView(root.findViewById(R.id.promotional_push_checkbox))
-    private val marketingEmailNotifications = CheckboxRenderView(root.findViewById(R.id.marketing_email_checkbox))
-    private val saveButton = FooterButtonRenderView(root.findViewById(R.id.save_button))
+  private val messagePushNotification = CheckboxRenderView(root.findViewById(R.id.message_push_checkbox))
+  private val promotionalPushNotifications = CheckboxRenderView(root.findViewById(R.id.promotional_push_checkbox))
+  private val marketingEmailNotifications = CheckboxRenderView(root.findViewById(R.id.marketing_email_checkbox))
+  private val saveButton = FooterButtonRenderView(root.findViewById(R.id.save_button))
   
-    override val renderer: Renderer<NotificationSettingsRenderModel> = Renderer.create { model ->
-        messagePushNotification.renderer.render(model.messagePushNotification)
-        promotionalPushNotifications.renderer.render(model.promotionalPushNotifications)
-        marketingEmailNotifications.renderer.render(model.marketingEmailNotifications)
-        saveButton.renderer.render(model.saveSettingsButton)
-    } 
+  override val renderer: Renderer<NotificationSettingsRenderModel> = Renderer.create { model ->
+    messagePushNotification.renderer.render(model.messagePushNotification)
+    promotionalPushNotifications.renderer.render(model.promotionalPushNotifications)
+    marketingEmailNotifications.renderer.render(model.marketingEmailNotifications)
+    saveButton.renderer.render(model.saveSettingsButton)
+  } 
 }
 ```
 
@@ -408,13 +412,14 @@ data class MyScreenState(
 )
 
 class MyScreenReducers : Reducers<MyScreenState, Unit>() {
-    fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-        state.copy(userInfoRequest = event)
-    }
+
+  fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
+    state.copy(userInfoRequest = event)
+  }
     
-    fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
-        state.copy(isSaving = event.isLoading())
-    }
+  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
+    state.copy(isSaving = event.isLoading())
+  }
 }
 ```
 
@@ -424,35 +429,36 @@ in the Reducers class.
 ```kotlin
 @Generated
 class MyScreenStateEvents(private val reducers: MyScreenReducers) {
-    fun bind(
-        onUserInfoRequest: Flowable<Lce<UserInfo>>,
-        onSaveUserInfoRequest: Flowable<Lce<SaveUserInfoResponse>>
-    ): Flowable<...> {
-        val list = ArrayList<Flowable<...>>()
-        list.add(onUserInfoRequest.map(reducers::onUserInfoRequest))
-        list.add(onSaveUserInfoRequest.map(reducers::onSaveUserInfoRequest))
-        return Flowable.merge(list)
-    }
+
+  fun bind(
+    onUserInfoRequest: Flowable<Lce<UserInfo>>,
+    onSaveUserInfoRequest: Flowable<Lce<SaveUserInfoResponse>>
+  ): Flowable<...> {
+    val list = ArrayList<Flowable<...>>()
+    list.add(onUserInfoRequest.map(reducers::onUserInfoRequest))
+    list.add(onSaveUserInfoRequest.map(reducers::onSaveUserInfoRequest))
+    return Flowable.merge(list)
+  }
 }
 ``` 
 
 You can use this Events class within the Render Formula.
 ```kotlin
 class MyScreenRenderFormula(
-    private val userRepo: UserRepo
+  private val userRepo: UserRepo
 ) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
-    override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
+
+  override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
+    val events = MyScreenStateEvents(MyScreenReducers())
         
-        val events = MyScreenStateEvents(MyScreenReducers())
-        
-        return RenderLoop(
-            ...,
-            reducers = events.bind(
-                onUserInfoRequest = userRepo.fetchUserInfo(),
-                onSaveUserInfoRequest = ... 
-            )
-        )
-    }
+    return RenderLoop(
+      ...,
+      reducers = events.bind(
+        onUserInfoRequest = userRepo.fetchUserInfo(),
+        onSaveUserInfoRequest = ... 
+      )
+    )
+  }
 }
 ```
 
@@ -469,7 +475,7 @@ data class MyScreenState(
 The generated code is equivalent to this snippet, so we can delete it completely from MyScreenReducers.
 ```kotlin
 fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-    state.copy(userInfoRequest = event)
+  state.copy(userInfoRequest = event)
 }
 ```
 
@@ -478,26 +484,26 @@ Direct input generates a method on Events class that can directly cause a state 
 ```kotlin
 @State
 data class NotificationSettingsState(
-    @ExportedProperty(isDirectInput = true) val isPushNotificationsEnabled: Boolean
+  @ExportedProperty(isDirectInput = true) val isPushNotificationsEnabled: Boolean
 )
 ```
 
 Now you can update this property through the NotificationSettingsStateEvents class.
 ```kotlin
 class NotificationSettingsRenderModelGenerator(
-    private val events: NotificationSettingsStateEvents
+  private val events: NotificationSettingsStateEvents
 ): RenderModelGenerator<NotificationSettingsState, CheckboxRenderModel> {
 
-    override fun toRenderModel(state: NotificationSettingsState): CheckboxRenderModel {
-        return CheckboxRenderModel(
-            text = "Push notifications",
-            isChecked = state.isPushNotificationsEnabled,
-            onToggle = {
-                // We are invoking a generated method.
-                events.onIsPushNotificationsEnabledChanged(!state.isPushNotificationEnabled)
-            }
-        )
-    }
+  override fun toRenderModel(state: NotificationSettingsState): CheckboxRenderModel {
+    return CheckboxRenderModel(
+      text = "Push notifications",
+      isChecked = state.isPushNotificationsEnabled,
+      onToggle = {
+        // We are invoking a generated method.
+        events.onIsPushNotificationsEnabledChanged(!state.isPushNotificationEnabled)
+      }
+    )
+  }
 }
 ```
 
@@ -506,20 +512,21 @@ Direct Input annotation works in similar manner as `@ExportedProperty(isDirectIn
 transformation methods within the Reducers class instead of properties on State class.
 ```kotlin
 class TaskListReducers : Reducers<TaskListState, Unit>() {
-    @DirectInput fun onTaskCompleted(taskId: String) = withoutEffects { state ->
-        state.tasks.map {
-            if (it.id == taskId) {
-                it.copy(completed = true)
-            } else {
-                it
-            }
-        } 
-    }
+
+  @DirectInput fun onTaskCompleted(taskId: String) = withoutEffects { state ->
+    state.tasks.map {
+      if (it.id == taskId) {
+        it.copy(completed = true)
+      } else {
+        it
+      }
+    } 
+  }
 }
 
 @State(reducers = TaskListReducers::class)
 data class TaskListState(
-    val tasks: List<Task>
+  val tasks: List<Task>
 )
 ```
 
