@@ -21,14 +21,14 @@ repositories {
 }
 ```
 
-And add the library to your list of dependencies (replace `x.y.z` with the most recent version name):
+And add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.github.instacart:formula:x.y.z'
-    kapt 'com.github.instacart:formula-compiler:x.y.z'
+    implementation 'com.github.instacart:formula:0.2.0'
+    kapt 'com.github.instacart:formula-compiler:0.2.0'
     
-    implementation 'com.github.instacart:formula-integration:x.y.z'
+    implementation 'com.github.instacart:formula-integration:0.2.0'
 }
 ```
 
