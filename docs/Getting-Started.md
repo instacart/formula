@@ -157,7 +157,7 @@ class MyActivity : AppCompatActivity() {
 }
 ```
 
-Formula also comes with a module that provides declarative API to connect state management to Android Fragments. To learn more, see our [Integration Guide](docs/Integration.md).
+Formula also comes with a module that provides declarative API to connect state management to Android Fragments. To learn more, see our [Integration Guide](Integration.md).
 
 ### Input
 Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
