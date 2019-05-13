@@ -2,13 +2,89 @@
 The integration module provides declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
-Benefits of using it:
-1. Can be added easily to an app that already uses Fragments.
-2. Supports incremental migration / usage. Not all fragments need to use Formula state management.
-3. State management survives configuration changes.
-4. Supports modularization
-5. Works naturally with Dagger 2
-6. Supports single activity architecture.
+## Why use integration module?
+The integration module was created to enable good patterns for interacting with Android Fragments. It has
+strict, opinionated, declarative API for defining state management of individual fragments. 
+
+Some of the goals for this module are:
+- Use single RxJava stream to drive the UI.
+- Separate state management from Android UI lifecycle.
+- Ability to group multiple fragments into a flow and share state between them.
+- Safe fragment event handling. (Avoid casting activity to a listener)
+
+
+### Declarative API
+This module provides a declarative API where you define state management for each of your navigation destinations (we call them contracts).
+```kotlin
+val store = FragmentFlowStore.init(...) {
+    bind(LoginContract::class) { ..., contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    }
+
+    bind(ItemListContract::class) { ..., contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    }
+    
+    bind(ItemDetailContract::class) { ..., contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    }
+}
+```
+
+### Lifecycle of individual state streams is managed for you
+The RxJava state stream is instantiated and subscribed to when the user enters declared navigation destination. We 
+dispose of the stream only when user exits the destination. As long as the `FragmentFlowStore.state()` is subscribed to 
+within a surface that survives configuration changes such as Android Components ViewModel, all of the state streams will
+survive configuration changes.
+
+```kotlin
+class MyActivityViewModel : ViewModel() {
+    private val store: FragmentFlowStore = ... 
+
+    private val disposables = CompositeDisposable()
+
+    // We use replay + connect so this stream survives configuration changes.
+    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+        connect { disposables.add(it) }
+    }
+
+    // The activity will pass fragment lifecycle events so we 
+    // could figure out what state management needs to run.
+    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
+        store.onLifecycleEffect(event)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
+    }
+}
+```
+
+### Ability to group multiple destinations into a flow
+Flow is a combination of screens that are grouped together and can share a common component / state.
+
+```kotlin
+class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
+  // Define the shared component for the flow 
+  class Component(val sharedData: Flowable<SharedData>)
+
+  override fun createFlow(): Flow<Component> {
+    return build {
+      bind(Contract1::class) { component, key ->
+        // You can access shared data here.
+        component.sharedData
+        
+        // create contract 1 state stream
+        TODO("return an RxJava state stream that drives the UI")
+      }
+      bind(Contract2::class) { component, key ->
+        // create contract 2 state stream
+      }
+    } 
+  }
+}
+```
 
 ## Defining the first fragment contract
 FragmentContract defines how a fragment should bind a specific type of render model to Android views. It is also
@@ -218,6 +294,85 @@ class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
       }
     } 
   }
+}
+```
+
+### Safe fragment event handling
+In fragments, a common pattern for passing events to the parent is 
+```kotlin
+class MyFragment : Fragment() {
+    override fun onAttach(context: Context) {
+        listener = context as Listener
+    }
+
+    override fun onDetach(context: Context) {
+        listener = null
+    }
+}
+```
+
+Instead, we have a type-safe approach
+```kotlin
+sealed class ActivityEffect {
+    class ShowToast(val message: String): ActivityEffect()
+    class CloseFragment(val tag: String): ActivityEffect()
+}
+
+class MyActivityViewModel : ViewModel() {
+    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
+    private val store = FragmentFlowStore.init(...) {
+        bind(ItemDetailContract::class) { component, contract ->
+            val formula: ItemDetailFormula = component.createItemDetailFormula()
+            formula.state(LoginFormula.Input(
+                onItemFavorited = {
+                    effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
+                },
+                onItemDeleted = {
+                    effectRelay.accept(ActivityEffect.CloseFragment(contract.tag))        
+                }
+            ))
+        }
+    }    
+    
+    private val disposables = CompositeDisposable()
+
+    // We use replay + connect so this stream survives configuration changes.
+    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+        connect { disposables.add(it) }
+    }
+
+    // Expose effects to the activity
+    val effects: Observable<ActivityEffect> = effectRelay.hide()
+}
+```
+
+In the activity, we then listen to `effects` stream and do a pattern match
+```kotlin
+class MyActivity : FragmentActivity() {
+     val disposables = CompositeDisposable()
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
+ 
+         super.onCreate(savedInstanceState)
+         setContentView(R.layout.my_activity)
+         
+         disposables.add(viewModel.effects.subscribe { effect ->
+            when (effect) {
+                is ShowToast -> {
+                    Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
+                } 
+                is CloseFragment -> {
+                    supportFragmentManager.popBackStack()
+                }
+            }
+         })
+     }
+ 
+     override fun onDestroy() {
+         disposables.clear()
+         super.onDestroy()
+     }
 }
 ```
 

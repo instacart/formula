@@ -1,6 +1,5 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.integration.internal.CompositeBinding
 import io.reactivex.Flowable
 
 /**
