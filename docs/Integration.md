@@ -90,7 +90,7 @@ class MyActivityViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     // We use replay + connect so this stream survives configuration changes.
-    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
         connect { disposables.add(it) }
     }
 

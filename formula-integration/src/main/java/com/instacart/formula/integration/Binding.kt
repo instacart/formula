@@ -3,6 +3,7 @@ package com.instacart.formula.integration
 import com.instacart.formula.integration.internal.CompositeBinding
 import com.instacart.formula.integration.internal.SingleBinding
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import kotlin.reflect.KClass
 
 /**
@@ -42,5 +43,5 @@ abstract class Binding<in ParentComponent, Key> {
      * @param component A component associated with the parent. Often this will map to the parent dagger component.
      * @param backstack A stream that emits the current back stack state.
      */
-    abstract fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>>
+    abstract fun state(component: ParentComponent, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>>
 }

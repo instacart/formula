@@ -7,6 +7,7 @@ import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.functions.Consumer
 import kotlinx.android.parcel.Parcelize
 import org.junit.Before
 import org.junit.Test
