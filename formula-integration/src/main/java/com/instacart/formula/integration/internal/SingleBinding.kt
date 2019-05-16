@@ -6,6 +6,7 @@ import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * Defines how a specific key should be bound to it's [Integration],
@@ -17,9 +18,9 @@ internal class SingleBinding<Component, Key, State : Any>(
     /**
      * Helper method to select state from active backstack.
      */
-    override fun state(component: Component, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
+    override fun state(component: Component, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            integration.create(component, key)
+            integration.create(component, key).toObservable()
         }
     }
 
@@ -32,12 +33,12 @@ internal class SingleBinding<Component, Key, State : Any>(
      * when a specified type of key is added to the back stack.
      *
      * @param type key class
-     * @param init a function that initializes the render model [Flowable]
+     * @param init a function that initializes the render model [Observable]
      */
-    private fun <Key, State : Any> Flowable<BackStack<Key>>.createStateUpdates(
+    private fun <Key, State : Any> Observable<BackStack<Key>>.createStateUpdates(
         type: Class<Key>,
-        init: (Key) -> Flowable<State>
-    ): Flowable<KeyState<Key>> {
+        init: (Key) -> Observable<State>
+    ): Observable<KeyState<Key>> {
         return this
             .lifecycleEffects()
             .filter { type.isInstance(it.key) }
@@ -49,13 +50,13 @@ internal class SingleBinding<Component, Key, State : Any>(
                         is LifecycleEvent.Added -> init(contract).map { state ->
                             KeyState(contract, state)
                         }
-                        is LifecycleEvent.Removed -> Flowable.empty()
+                        is LifecycleEvent.Removed -> Observable.empty()
                     }
                 }
             }
     }
 
-    private fun <Key> toLifecycleEffect(): (BackStack<Key>) -> Flowable<LifecycleEvent<Key>> {
+    private fun <Key> toLifecycleEffect(): (BackStack<Key>) -> Observable<LifecycleEvent<Key>> {
         var lastState: BackStack<Key>? = null
         return { state ->
             val effects = BackStackUtils.findLifecycleEffects(
@@ -64,11 +65,11 @@ internal class SingleBinding<Component, Key, State : Any>(
             )
 
             lastState = state
-            Flowable.fromIterable(effects)
+            Observable.fromIterable(effects)
         }
     }
 
-    private fun <Key> Flowable<BackStack<Key>>.lifecycleEffects(): Flowable<LifecycleEvent<Key>> {
+    private fun <Key> Observable<BackStack<Key>>.lifecycleEffects(): Observable<LifecycleEvent<Key>> {
         return this.distinctUntilChanged().flatMap(toLifecycleEffect())
     }
 }

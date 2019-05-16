@@ -6,6 +6,7 @@ import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
 import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.
@@ -40,7 +41,7 @@ class FragmentFlowStore(
         contractStore.onLifecycleEffect(event)
     }
 
-    fun state(): Flowable<FragmentFlowState> {
+    fun state(): Observable<FragmentFlowState> {
         return store.state()
     }
 }

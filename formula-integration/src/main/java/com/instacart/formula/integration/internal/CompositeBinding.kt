@@ -5,6 +5,7 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.ComponentFactory
 import com.instacart.formula.integration.KeyState
 import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * Defines how a group of keys should be bound to their integrations.
@@ -23,7 +24,7 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
         return bindings.any { it.binds(key) }
     }
 
-    override fun state(component: ParentComponent, backstack: Flowable<BackStack<Key>>): Flowable<KeyState<Key>> {
+    override fun state(component: ParentComponent, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>> {
         return backstack
             .isInScope()
             .switchMap { enterScope ->
@@ -33,10 +34,9 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
                         it.state(disposableScope.component, backstack)
                     }
 
-                    Flowable.merge(updates)
-                        .doOnCancel { disposableScope.dispose() } as Flowable<KeyState<Key>>
+                    Observable.merge(updates).doOnDispose { disposableScope.dispose() }
                 } else {
-                    Flowable.empty<KeyState<Key>>()
+                    Observable.empty<KeyState<Key>>()
                 }
             }
     }
@@ -44,7 +44,7 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     /**
      * Defines if any of the binding are in the backstack. We use this to initialize the
      */
-    private fun Flowable<BackStack<Key>>.isInScope(): Flowable<Boolean> {
+    private fun Observable<BackStack<Key>>.isInScope(): Observable<Boolean> {
         return map {
             it.keys.any { key ->
                 binds(key)
