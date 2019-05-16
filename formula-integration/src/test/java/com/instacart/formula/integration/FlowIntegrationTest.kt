@@ -5,7 +5,7 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.test.TestAccountFragmentContract
 import com.instacart.formula.integration.test.TestLoginFragmentContract
 import com.instacart.formula.integration.test.TestSignUpFragmentContract
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import org.junit.Test
 import kotlin.reflect.KClass
 
@@ -17,7 +17,7 @@ class FlowIntegrationTest {
             return build {
                 types.forEach {
                     bind(it) { component, key ->
-                        Flowable.empty()
+                        Observable.empty()
                     }
                 }
             }

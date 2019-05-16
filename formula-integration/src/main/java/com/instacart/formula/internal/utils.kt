@@ -1,11 +1,11 @@
 package com.instacart.formula.internal
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
-inline fun <T, O> Flowable<T>.mapNotNull(crossinline transform: (T) -> O?): Flowable<O> {
+inline fun <T, O> Observable<T>.mapNotNull(crossinline transform: (T) -> O?): Observable<O> {
     return flatMap {
         transform(it)?.let { transformed ->
-            Flowable.just(transformed)
-        } ?: Flowable.empty()
+            Observable.just(transformed)
+        } ?: Observable.empty()
     }
 }

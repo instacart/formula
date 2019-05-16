@@ -4,7 +4,6 @@ import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.ComponentFactory
 import com.instacart.formula.integration.KeyState
-import io.reactivex.Flowable
 import io.reactivex.Observable
 
 /**

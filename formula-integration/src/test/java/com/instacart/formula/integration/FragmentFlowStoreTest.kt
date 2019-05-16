@@ -6,7 +6,7 @@ import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.test.TestAccountFragmentContract
 import com.instacart.formula.integration.test.TestLoginFragmentContract
 import com.instacart.formula.integration.test.TestSignUpFragmentContract
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import org.junit.Test
 
 class FragmentFlowStoreTest {
@@ -32,12 +32,12 @@ class FragmentFlowStoreTest {
             return build {
                 bind { component, key: TestLoginFragmentContract ->
                     component.onInitialized(component, key)
-                    Flowable.empty<String>()
+                    Observable.empty<String>()
                 }
 
                 bind { component, key: TestSignUpFragmentContract ->
                     component.onInitialized(component, key)
-                    Flowable.empty<String>()
+                    Observable.empty<String>()
                 }
             }
         }

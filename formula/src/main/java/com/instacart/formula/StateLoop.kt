@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 
 /**
@@ -16,15 +16,16 @@ import io.reactivex.disposables.Disposable
  */
 class StateLoop<State, Effect>(
     val initialState: State,
-    val reducers: Flowable<NextReducer<State, Effect>>,
+    val reducers: Observable<NextReducer<State, Effect>>,
     val initialEffects: Set<Effect> = emptySet(),
     val onEffect: (Effect) -> Unit = {},
     val onStateChange: (State) -> Unit = {}
 ) {
+
     /**
      * Combines all the parameters and creates a state redux stream.
      */
-    fun createLoop(): Flowable<State> {
+    fun createLoop(): Observable<State> {
         return reducers
             .scan(Next(initialState, initialEffects)) { state, reducer ->
                 reducer(state.state)

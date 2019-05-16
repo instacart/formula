@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * [RenderLoop] combines [StateLoop] and [RenderModelGenerator] to define how [RenderModel] changes over time.
@@ -25,7 +25,7 @@ class RenderLoop<State, Effect, RenderModel> private constructor(
          */
         operator fun <State, Effect, RenderModel> invoke(
             initialState: State,
-            reducers: Flowable<NextReducer<State, Effect>>,
+            reducers: Observable<NextReducer<State, Effect>>,
             renderModelGenerator: RenderModelGenerator<State, RenderModel>,
             initialEffects: Set<Effect> = emptySet(),
             onEffect: (Effect) -> Unit = {},
@@ -44,7 +44,7 @@ class RenderLoop<State, Effect, RenderModel> private constructor(
         }
     }
 
-    fun createRenderModelStream(): Flowable<RenderModel> {
+    fun createRenderModelStream(): Observable<RenderModel> {
         return stateLoop.createLoop().map(renderModelGenerator::toRenderModel)
     }
 }

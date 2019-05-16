@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * The Formula interface defines a protocol for render model management.
@@ -10,7 +10,7 @@ import io.reactivex.Flowable
  * class MyFeatureFormula @Inject constructor(val someUseCase: SomeUseCase) : Formula<MyFeatureFormula.Input, MyFeatureRenderModel> {
  *   data class Input(val id: String, val onSomeActionTaken: (Action) -> Unit)
  *
- *   override fun state(input: Input): Flowable<MyFeatureRenderModel> {
+ *   override fun state(input: Input): Observable<MyFeatureRenderModel> {
  *     return state().map { state ->
  *       createRenderModel(input, state)
  *     }
@@ -28,5 +28,5 @@ interface Formula<in Input, RenderModel> {
      * Creates the render model stream, using the given input
      * @param input The input (callbacks, initial values, etc.) needed to create a stream of render models
      */
-    fun state(input: Input): Flowable<RenderModel>
+    fun state(input: Input): Observable<RenderModel>
 }

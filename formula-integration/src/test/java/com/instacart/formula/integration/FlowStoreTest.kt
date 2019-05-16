@@ -2,9 +2,6 @@ package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.observers.TestObserver
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Before
 import org.junit.Test
 
@@ -27,11 +24,11 @@ class FlowStoreTest {
 
         store = FlowStore.init(keys) {
             bind(Key.Main::class, init = { key ->
-                mainScreenState.toFlowable(BackpressureStrategy.LATEST)
+                mainScreenState
             })
 
             bind(Key.Detail::class, init = { key ->
-                detailScreenState.toFlowable(BackpressureStrategy.LATEST)
+                detailScreenState
             })
         }
     }

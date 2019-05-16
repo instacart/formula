@@ -8,7 +8,6 @@ import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 

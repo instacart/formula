@@ -57,7 +57,7 @@ class FragmentComponent<in RenderModel> private constructor(
 
         /**
          * With the given [renderView] and optional [lifecycleCallbacks], provides the needed integration between
-         * the fragment and the [io.reactivex.Flowable] stream of [RenderModel]s
+         * the fragment and the [io.reactivex.Observable] stream of [RenderModel]s
          * @param renderView the render view which will receive [RenderModel]s
          * @param lifecycleCallbacks optional lifecycle callbacks that correspond to the fragment lifecycle.
          * Only provide if needed

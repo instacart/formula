@@ -48,17 +48,17 @@ import kotlin.reflect.KClass
  *  private val generatedReducers = ICMyFeatureGeneratedReducers<Effect>()
  *
  *  fun bind(
- *    onPropertyAChanged: Flowable<String>,
- *    onUserEvent: Flowable<UserEvent>,
- *    onDataEvent: Flowable<DataEvent>,
- *    onAnotherEvent: Flowable<AnotherEvent>
- *  ): Flowable<(MyState) -> Next<MyState, Effect>> {
- *    val reducers = ArrayList<Flowable<ReturnType>()
+ *    onPropertyAChanged: Observable<String>,
+ *    onUserEvent: Observable<UserEvent>,
+ *    onDataEvent: Observable<DataEvent>,
+ *    onAnotherEvent: Observable<AnotherEvent>
+ *  ): Observable<(MyState) -> Next<MyState, Effect>> {
+ *    val reducers = ArrayList<Observable<ReturnType>()
  *    reducers.add(onPropertyAChanged.map { generatedReducers.onPropertyAChanged(it) })
  *    reducers.add(onUserEvent.map { reducers.onUserEvent(it) })
  *    reducers.add(onDataEvent.map { reducers.onDataEvent(it) })
  *    reducers.add(onAnotherEvent.map { reducers.onAnotherEvent(it) })
- *    return Flowable.merge(reducers)
+ *    return Observable.merge(reducers)
  *  }
  * }
  * ```

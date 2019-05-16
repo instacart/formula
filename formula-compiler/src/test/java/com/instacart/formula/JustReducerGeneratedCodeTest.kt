@@ -1,8 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import io.reactivex.Flowable
-import io.reactivex.subscribers.TestSubscriber
+import io.reactivex.Observable
 import org.junit.Test
 
 class JustReducerGeneratedCodeTest {
@@ -23,13 +22,12 @@ class JustReducerGeneratedCodeTest {
     @Test
     fun simpleTest() {
         val events = JustReducerGeneratedCodeTestStateEvents(reducers = Modifications())
-        val subscriber = TestSubscriber<State>()
-        events
-            .bind(onNameChanged = Flowable.just("John Doe"))
+        val subscriber = events
+            .bind(onNameChanged = Observable.just("John Doe"))
             .scan(State()) { acc, reducer ->
                 reducer(acc).state
             }
-            .subscribe(subscriber)
+            .test()
 
         assertThat(subscriber.valueCount()).isEqualTo(2)
         subscriber.assertValueAt(0, State())

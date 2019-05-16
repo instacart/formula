@@ -5,7 +5,6 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
-import io.reactivex.Flowable
 import io.reactivex.Observable
 
 /**
@@ -20,7 +19,7 @@ internal class SingleBinding<Component, Key, State : Any>(
      */
     override fun state(component: Component, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            integration.create(component, key).toObservable()
+            integration.create(component, key)
         }
     }
 

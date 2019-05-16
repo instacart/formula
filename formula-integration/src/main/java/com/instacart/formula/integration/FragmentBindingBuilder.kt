@@ -3,7 +3,7 @@ package com.instacart.formula.integration
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.internal.BaseBindingBuilder
 import com.instacart.formula.integration.internal.SingleBinding
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import kotlin.reflect.KClass
 
 /**
@@ -41,10 +41,10 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
      */
     fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
         contract: KClass<Contract>,
-        init: (Component, Contract) -> Flowable<RenderModel>
+        init: (Component, Contract) -> Observable<RenderModel>
     ) = apply {
         val integration = object : Integration<Component, Contract, RenderModel>() {
-            override fun create(component: Component, key: Contract): Flowable<RenderModel> {
+            override fun create(component: Component, key: Contract): Observable<RenderModel> {
                 return init(component, key)
             }
         }
@@ -59,10 +59,10 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
      */
     fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
         contract: KClass<Contract>,
-        init: (Contract) -> Flowable<RenderModel>
+        init: (Contract) -> Observable<RenderModel>
     ) = apply {
         val integration = object : Integration<Component, Contract, RenderModel>() {
-            override fun create(component: Component, key: Contract): Flowable<RenderModel> {
+            override fun create(component: Component, key: Contract): Observable<RenderModel> {
                 return init(key)
             }
         }
@@ -87,7 +87,7 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
      * @param init A function that initializes contracts state management.
      */
     inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
-        noinline init: (Component, Contract) -> Flowable<State>
+        noinline init: (Component, Contract) -> Observable<State>
     )= apply {
         bind(Contract::class, init)
     }
@@ -99,7 +99,7 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
      * @param init A function that initializes contracts state management.
      */
     inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
-        noinline init: (Contract) -> Flowable<State>
+        noinline init: (Contract) -> Observable<State>
     )= apply {
         bind(Contract::class, init)
     }

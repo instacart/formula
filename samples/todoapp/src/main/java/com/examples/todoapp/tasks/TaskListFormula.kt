@@ -7,7 +7,6 @@ import com.instacart.formula.RenderFormula
 import com.instacart.formula.RenderLoop
 import com.instacart.formula.RenderModelGenerator
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 
 class TaskListFormula(
@@ -32,7 +31,7 @@ class TaskListFormula(
 
         return RenderLoop(
             initialState = TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS),
-            reducers = changes.toFlowable(BackpressureStrategy.LATEST),
+            reducers = changes,
             renderModelGenerator = RenderModelGenerator.create {
                 val items = createTaskList(
                     it,

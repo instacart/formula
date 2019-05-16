@@ -1,20 +1,19 @@
 package com.instacart.formula
 
-import io.reactivex.Flowable
-import io.reactivex.subscribers.TestSubscriber
+import io.reactivex.Observable
+import io.reactivex.observers.TestObserver
 
 object TestUtils {
 
     fun <State> bind(
         initial: State,
-        changes: Flowable<NextReducer<State, Unit>>,
-        subscriber: TestSubscriber<State>
-    ) {
-        changes
+        changes: Observable<NextReducer<State, Unit>>
+    ) : TestObserver<State> {
+        return changes
             .scan(initial) { acc, reducer ->
                 val next = reducer(acc)
                 next.state
             }
-            .subscribe(subscriber)
+            .test()
     }
 }

@@ -132,7 +132,7 @@ object EventsClassGenerator {
         return reduceMethods
             .filter { !it.isDirectInput }
             .map {
-                PropertySpec.builder(it.name, it.flowableType())
+                PropertySpec.builder(it.name, it.observableType())
                     .initializer(it.name)
                     .build()
             }
