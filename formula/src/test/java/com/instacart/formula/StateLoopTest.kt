@@ -3,8 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import org.junit.Test
 
 class StateLoopTest {
@@ -46,16 +45,14 @@ class StateLoopTest {
         val reducers = Modifications()
 
         val clearStateReducer = clearStateRelay
-            .toFlowable(BackpressureStrategy.LATEST)
             .map(reducers::onClearState)
 
         val actionReducer = actionRelay
-            .toFlowable(BackpressureStrategy.LATEST)
             .map(reducers::onAction)
 
         StateLoop(
             initialState = 0,
-            reducers = Flowable.merge(actionReducer, clearStateReducer),
+            reducers = Observable.merge(actionReducer, clearStateReducer),
             onEffect = {
                 clearStateRelay.accept(it)
             })
@@ -75,14 +72,14 @@ class StateLoopTest {
 
     @Test fun `notifies state updates`() {
         val modifyState = PublishRelay.create<Reducer<Int>>()
-        val reducers = modifyState.toFlowable(BackpressureStrategy.BUFFER).map {
+        val reducers = modifyState.map {
             { state: Int ->
                 Next(it(state), emptySet<Unit>())
             }
         }
 
         val updates = mutableListOf<Int>()
-        val loop = StateLoop<Int, Unit>(
+        val loop = StateLoop(
             initialState = 0,
             reducers = reducers,
             initialEffects = emptySet(),

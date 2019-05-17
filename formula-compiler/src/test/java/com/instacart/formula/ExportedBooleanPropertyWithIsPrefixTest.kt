@@ -2,7 +2,6 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.annotations.ExportedProperty
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Test
 
 class ExportedBooleanPropertyWithIsPrefixTest {
@@ -18,8 +17,7 @@ class ExportedBooleanPropertyWithIsPrefixTest {
         val changes = events.bind()
 
         val state = State()
-        val subscriber = TestSubscriber<State>()
-        TestUtils.bind(state, changes, subscriber)
+        val subscriber = TestUtils.bind(state, changes)
 
         events.onIsEnabledChanged(true)
 

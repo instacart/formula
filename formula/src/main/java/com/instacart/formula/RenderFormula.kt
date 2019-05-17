@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * Defines a factory for [RenderLoop]
@@ -13,7 +13,7 @@ interface RenderFormula<in Input, State, Effect, RenderModel> : Formula<Input, R
      */
     fun createRenderLoop(input: Input): RenderLoop<State, Effect, RenderModel>
 
-    override fun state(input: Input): Flowable<RenderModel> {
+    override fun state(input: Input): Observable<RenderModel> {
         val loop = createRenderLoop(input)
         return loop.createRenderModelStream()
     }

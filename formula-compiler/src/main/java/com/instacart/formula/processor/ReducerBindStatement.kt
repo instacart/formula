@@ -1,9 +1,7 @@
 package com.instacart.formula.processor
 
-import io.reactivex.BackpressureStrategy
-
 /**
- * Statement should return a reducer flowable. This flowable will be added to a list.
+ * Statement should return a reducer observable. This observable will be added to a list.
  */
 class ReducerBindStatement(val format: String, vararg val args: Any?) {
     companion object {
@@ -17,9 +15,8 @@ class ReducerBindStatement(val format: String, vararg val args: Any?) {
 
         fun localRelay(name: String, reducerVariableName: String): ReducerBindStatement {
             return ReducerBindStatement(
-                "%L.toFlowable(%T.LATEST).map($reducerVariableName::%L)",
+                "%L.map($reducerVariableName::%L)",
                 name,
-                BackpressureStrategy::class.java,
                 name
             )
         }

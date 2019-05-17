@@ -2,7 +2,6 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth
 import com.instacart.formula.annotations.ExportedProperty
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Test
 
 class ExportedDirectInputGeneratorTest {
@@ -16,12 +15,7 @@ class ExportedDirectInputGeneratorTest {
     fun singleExportedDirectInput() {
         val events = ExportedDirectInputGeneratorTestStateEvents()
         val changes = events.bind()
-        val subscriber = TestSubscriber<State>()
-        TestUtils.bind(
-            State(password = ""),
-            changes,
-            subscriber
-        )
+        val subscriber = TestUtils.bind(State(password = ""), changes)
 
         events.onPasswordChanged("my-password")
 

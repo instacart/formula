@@ -5,7 +5,6 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
-import io.reactivex.Flowable
 import io.reactivex.Observable
 
 /**

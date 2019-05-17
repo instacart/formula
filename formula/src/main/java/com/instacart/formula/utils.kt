@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import io.reactivex.Flowable
+import io.reactivex.Observable
 
 fun <T, R> cached(factory: (T) -> R): (T) -> R {
     var last: Pair<T, R>? = null
@@ -18,6 +19,16 @@ fun <T, R> cached(factory: (T) -> R): (T) -> R {
 }
 
 fun <T> Flowable<(T) -> T>.reduce(initial: T): Flowable<T> {
+    return this
+        .scan(initial) { state, reducer ->
+            reducer(state)
+        }
+        // Prevent noisy updates
+        .distinctUntilChanged()
+}
+
+
+fun <T> Observable<(T) -> T>.reduce(initial: T): Observable<T> {
     return this
         .scan(initial) { state, reducer ->
             reducer(state)

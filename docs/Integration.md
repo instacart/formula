@@ -64,7 +64,7 @@ val store = FragmentFlowStore.init(component) {
         // function from which we we can get the task id.
         val taskId = key.taskId
         
-        // This function needs to return Flowable<TaskDetailRenderModel>
+        // This function needs to return Observable<TaskDetailRenderModel>
         component.taskRepo.findTask(taskId).map { task ->
             TaskDetailRenderModel(
                 description = task.description,
@@ -76,7 +76,7 @@ val store = FragmentFlowStore.init(component) {
     }
     
     bind(AnotherFragmentContract::class) { component, key ->
-        Flowable.error(Throwable("not implemented yet."))
+        Observable.error(Throwable("not implemented yet."))
     }
 }
 ``` 
@@ -173,7 +173,7 @@ When you reach a certain number of fragment integrations, the store creation log
 you can place integration logic into separate class.
 ```kotlin
 object TaskDetailIntegration : Integration<TaskAppComponent, TaskDetailContract, TaskDetailRenderModel>() {
-    override fun create(component: TaskAppComponent, key: TaskDetailContract): Flowable<TaskDetailRenderModel> {
+    override fun create(component: TaskAppComponent, key: TaskDetailContract): Observable<TaskDetailRenderModel> {
         return component.taskRepo.findTask(taskId).map { task ->
             TaskDetailRenderModel(
                 description = task.description,

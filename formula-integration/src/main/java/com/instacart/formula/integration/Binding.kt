@@ -2,7 +2,6 @@ package com.instacart.formula.integration
 
 import com.instacart.formula.integration.internal.CompositeBinding
 import com.instacart.formula.integration.internal.SingleBinding
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import kotlin.reflect.KClass
 
@@ -13,10 +12,10 @@ abstract class Binding<in ParentComponent, Key> {
     companion object {
         fun <Component, Key : Any, State : Any> single(
             type: KClass<Key>,
-            stateInit: (Component, Key) -> Flowable<State>
+            stateInit: (Component, Key) -> Observable<State>
         ): Binding<Component, Key> {
             val integration = object : Integration<Component, Key, State>() {
-                override fun create(component: Component, key: Key): Flowable<State> {
+                override fun create(component: Component, key: Key): Observable<State> {
                     return stateInit(component, key)
                 }
             }

@@ -1,8 +1,6 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.Reducer
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 

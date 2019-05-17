@@ -93,7 +93,6 @@ class MyScreenRenderFormula(
     // We use a RxRelay library to turn user events into an RxJava stream
     val saveUserInfoRelay = PublishRelay.create<Unit>()
     val saveUserInfoChanges = saveUserInfoRelay
-      .toFlowable(BackpressureStrategy.LATEST)
       .switchMap { userRepo.saveUserInfo() }
       .map(reducers::onSaveUserInfoRequest)
         
@@ -101,7 +100,7 @@ class MyScreenRenderFormula(
       initialState = MyScreenState(
         userInfoRequest = Lce.loading()
       ),
-      reducers = Flowable.merge(
+      reducers = Observable.merge(
         userInfoRequestChanges,
         saveUserInfoChanges
       ),
@@ -316,7 +315,7 @@ This is continuation on the above section. We want to trigger save user info req
 ```kotlin
 // Let's define the repository abstraction for saving user info
 class SaveUserInfoRepo {
-  fun saveUserInfo(info: UserInfo): Flowable<Lce<UserInfoResponse>>
+  fun saveUserInfo(info: UserInfo): Observable<Lce<UserInfoResponse>>
 } 
 
 class MyRenderFormula(
@@ -328,8 +327,6 @@ class MyRenderFormula(
     val saveUserInfoRelay = PublishRelay.create<UserInfo>()
 
     val saveUserInfoReducer = saveUserInfoRelay
-      // We need to convert relay to flowable
-      .toFlowable(BackpressureStrategy.LATEST)
       // We use switch map to cancel previous computation.
       // This means if new save info action happens, we 
       // cancel the previous request and create a new one. 
@@ -431,13 +428,13 @@ in the Reducers class.
 class MyScreenStateEvents(private val reducers: MyScreenReducers) {
 
   fun bind(
-    onUserInfoRequest: Flowable<Lce<UserInfo>>,
-    onSaveUserInfoRequest: Flowable<Lce<SaveUserInfoResponse>>
-  ): Flowable<...> {
-    val list = ArrayList<Flowable<...>>()
+    onUserInfoRequest: Observable<Lce<UserInfo>>,
+    onSaveUserInfoRequest: Observable<Lce<SaveUserInfoResponse>>
+  ): Observable<...> {
+    val list = ArrayList<Observable<...>>()
     list.add(onUserInfoRequest.map(reducers::onUserInfoRequest))
     list.add(onSaveUserInfoRequest.map(reducers::onSaveUserInfoRequest))
-    return Flowable.merge(list)
+    return Observable.merge(list)
   }
 }
 ``` 
