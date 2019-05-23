@@ -99,7 +99,7 @@ abstract class Reducers<State, Effect> {
         return withOptionalEffect(effect)
     }
 
-    @Deprecated("Use withOptionalEffects()", replaceWith = ReplaceWith("withOptionalEffects(effect)"))
+    @Deprecated("Use withOptionalEffects()", replaceWith = ReplaceWith("withOptionalEffects(effects)"))
     protected inline fun State.toNextWithOptionalEffects(effects: Set<Effect>?): Next<State, Effect> {
         return withOptionalEffects(effects)
     }
