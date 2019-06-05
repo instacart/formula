@@ -1,31 +1,29 @@
 ## Formula Integration
-The integration module provides declarative API to connect reactive state management to Android Fragments. 
+The integration module provides a declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
-
-## Why use integration module?
-The integration module was created to enable good patterns for interacting with Android Fragments. It has
-strict, opinionated, declarative API for defining state management of individual fragments. 
 
 Some of the goals for this module are:
 - Use single RxJava stream to drive the UI.
 - Separate state management from Android UI lifecycle.
 - Ability to group multiple fragments into a flow and share state between them.
-- Safe fragment event handling. (Avoid casting activity to a listener)
-
+- Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
 
 ### Declarative API
-This module provides a declarative API where you define state management for each of your navigation destinations (we call them contracts).
+This module provides a declarative API where you define state management for each of 
+your navigation destinations (we call them contracts). You define a store and bind
+individual contract types to the state management.
+
 ```kotlin
 val store = FragmentFlowStore.init(...) {
-    bind(LoginContract::class) { ..., contract ->
+    bind(LoginContract::class) { _, contract ->
         TODO("return an RxJava state stream that drives the UI")
     }
 
-    bind(ItemListContract::class) { ..., contract ->
+    bind(ItemListContract::class) { _, contract ->
         TODO("return an RxJava state stream that drives the UI")
-    }
+    } 
     
-    bind(ItemDetailContract::class) { ..., contract ->
+    bind(ItemDetailContract::class) { _, contract ->
         TODO("return an RxJava state stream that drives the UI")
     }
 }
@@ -44,7 +42,7 @@ class MyActivityViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     // We use replay + connect so this stream survives configuration changes.
-    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
         connect { disposables.add(it) }
     }
 
@@ -61,30 +59,6 @@ class MyActivityViewModel : ViewModel() {
 }
 ```
 
-### Ability to group multiple destinations into a flow
-Flow is a combination of screens that are grouped together and can share a common component / state.
-
-```kotlin
-class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
-  // Define the shared component for the flow 
-  class Component(val sharedData: Flowable<SharedData>)
-
-  override fun createFlow(): Flow<Component> {
-    return build {
-      bind(Contract1::class) { component, key ->
-        // You can access shared data here.
-        component.sharedData
-        
-        // create contract 1 state stream
-        TODO("return an RxJava state stream that drives the UI")
-      }
-      bind(Contract2::class) { component, key ->
-        // create contract 2 state stream
-      }
-    } 
-  }
-}
-```
 
 ## Defining the first fragment contract
 FragmentContract defines how a fragment should bind a specific type of render model to Android views. It is also
@@ -217,88 +191,8 @@ class MyActivity : FragmentActivity() {
 }
 ```
 
-## How to pass arguments such as item id to the fragment?
-Arguments can be passed using the Fragment contract.
-```kotlin
-@Parcelize
-data class ItemDetailContract(
-    val itemId: Int,
-    override val tag: String = "item detail ${taskId}",
-    override val layoutId: Int = ...
-) : FragmentContract<RenderModelType>() {
-  
-    override fun createComponent(view: View): FragmentComponent<RenderModelType> {
-        return ...
-    }
-}
-```
-
-The contract is passed to the function that instantiates the state management
-```kotlin
-val store = FragmentFlowStore.init {
-    bind(ItemDetailContract::class) { _, key: ItemDetailContract ->
-        // do something with the item id
-        key.itemId
-    }
-}
-
-```
-
-## Moving integration into a separate class
-When you reach a certain number of fragment integrations, the store creation logic can become unwieldy. To keep it tidy,
-you can place integration logic into separate class.
-```kotlin
-object TaskDetailIntegration : Integration<TaskAppComponent, TaskDetailContract, TaskDetailRenderModel>() {
-    override fun create(component: TaskAppComponent, key: TaskDetailContract): Observable<TaskDetailRenderModel> {
-        return component.taskRepo.findTask(taskId).map { task ->
-            TaskDetailRenderModel(
-                description = task.description,
-                onDeleteSelected = {
-                    component.taskRepo.delete(taskId)
-                }
-            )
-        }
-    }
-}
-```
-
-Now we can update our store to use this integration.
-```kotlin
-val store = FragmentFlowStore.init(taskAppComponent) {
-    bind(TaskDetailIntegration)
-    
-    // Other integrations.
-    bind(Contract1Integration)
-    bind(Contract2Integration)
-}
-```
-
-## Grouping multiple fragments as part of a flow.
-Flow is a combination of screens that are grouped together and can share a common component / state.
-
-```kotlin
-class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
-  // Define the shared component for the flow 
-  class Component(
-    val sharedService: MyFlowService,
-    val onSomeEvent: () -> Unit
-  )
-
-  override fun createFlow(): Flow<Component> {
-    return build {
-      bind(Contract1::class) { component, key ->
-        // create contract 1 state stream
-      }
-      bind(Contract2::class) { component, key ->
-        // create contract 2 state stream
-      }
-    } 
-  }
-}
-```
-
-### Safe fragment event handling
-In fragments, a common pattern for passing events to the parent is 
+### Fragment Event Handling
+In fragments, a common pattern for passing events to the parent is casting Activity into a Listener
 ```kotlin
 class MyFragment : Fragment() {
     override fun onAttach(context: Context) {
@@ -311,19 +205,23 @@ class MyFragment : Fragment() {
 }
 ```
 
-Instead, we have a type-safe approach
+Instead of a listener with methods, we define a sealed class of possible actions that activity can perform.
 ```kotlin
 sealed class ActivityEffect {
     class ShowToast(val message: String): ActivityEffect()
     class CloseFragment(val tag: String): ActivityEffect()
 }
+```
 
+We then, create a PublishRelay that we use for pub-sub messaging with the Activity.
+```kotlin
 class MyActivityViewModel : ViewModel() {
     private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
+    
     private val store = FragmentFlowStore.init(...) {
         bind(ItemDetailContract::class) { component, contract ->
             val formula: ItemDetailFormula = component.createItemDetailFormula()
-            formula.state(LoginFormula.Input(
+            formula.state(ItemDetailFormula.Input(
                 onItemFavorited = {
                     effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
                 },
@@ -337,7 +235,7 @@ class MyActivityViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     // We use replay + connect so this stream survives configuration changes.
-    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
         connect { disposables.add(it) }
     }
 
@@ -373,6 +271,85 @@ class MyActivity : FragmentActivity() {
          disposables.clear()
          super.onDestroy()
      }
+}
+```
+
+## How to pass arguments such as item id to the fragment?
+Arguments can be passed using the Fragment contract.
+```kotlin
+@Parcelize
+data class ItemDetailContract(
+    val itemId: Int,
+    override val tag: String = "item detail ${taskId}",
+    override val layoutId: Int = ...
+) : FragmentContract<RenderModelType>() {
+  
+    override fun createComponent(view: View): FragmentComponent<RenderModelType> {
+        return ...
+    }
+}
+```
+
+The contract is passed to the function that instantiates the state management
+```kotlin
+val store = FragmentFlowStore.init {
+    bind(ItemDetailContract::class) { _, key: ItemDetailContract ->
+        // do something with the item id
+        key.itemId
+    }
+}
+```
+
+## Grouping multiple navigation destinations as part of a flow.
+Flow is a combination of screens that are grouped together and can share a common component / state.
+
+```kotlin
+class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
+  // Define the shared component for the flow 
+  class Component(
+    val sharedService: MyFlowService,
+    val onSomeEvent: () -> Unit
+  )
+
+  override fun createFlow(): Flow<Component> {
+    return build {
+      bind(Contract1::class) { component, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+      }
+      bind(Contract2::class) { component, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+      }
+    } 
+  }
+}
+```
+
+## Moving integration into a separate class
+When you reach a certain number of fragment integrations, the store creation logic can become unwieldy. To keep it tidy,
+you can place integration logic into separate class.
+```kotlin
+object TaskDetailIntegration : Integration<TaskAppComponent, TaskDetailContract, TaskDetailRenderModel>() {
+    override fun create(component: TaskAppComponent, key: TaskDetailContract): Observable<TaskDetailRenderModel> {
+        return component.taskRepo.findTask(taskId).map { task ->
+            TaskDetailRenderModel(
+                description = task.description,
+                onDeleteSelected = {
+                    component.taskRepo.delete(taskId)
+                }
+            )
+        }
+    }
+}
+```
+
+Now we can update our store to use this integration.
+```kotlin
+val store = FragmentFlowStore.init(taskAppComponent) {
+    bind(TaskDetailIntegration)
+    
+    // Other integrations.
+    bind(Contract1Integration)
+    bind(Contract2Integration)
 }
 ```
 
