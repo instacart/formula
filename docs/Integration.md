@@ -191,6 +191,32 @@ class MyActivity : FragmentActivity() {
 }
 ```
 
+## How to pass arguments such as item id to the fragment?
+Arguments can be passed using the Fragment contract.
+```kotlin
+@Parcelize
+data class ItemDetailContract(
+    val itemId: Int,
+    override val tag: String = "item detail ${itemId}",
+    override val layoutId: Int = R.layout.item_detail
+) : FragmentContract<RenderModelType>() {
+  
+    override fun createComponent(view: View): FragmentComponent<RenderModelType> {
+        return TODO()
+    }
+}
+```
+
+The contract is passed to the function that instantiates the state management
+```kotlin
+val store = FragmentFlowStore.init {
+    bind(ItemDetailContract::class) { _, key: ItemDetailContract ->
+        // do something with the item id
+        key.itemId
+    }
+}
+```
+
 ### Fragment Event Handling
 In fragments, a common pattern for passing events to the parent is casting Activity into a Listener
 ```kotlin
@@ -274,31 +300,55 @@ class MyActivity : FragmentActivity() {
 }
 ```
 
-## How to pass arguments such as item id to the fragment?
-Arguments can be passed using the Fragment contract.
+## Navigation
+To trigger navigation from one screen to another, we add a new type to the `ActivityEffect` sealed class.
 ```kotlin
-@Parcelize
-data class ItemDetailContract(
-    val itemId: Int,
-    override val tag: String = "item detail ${taskId}",
-    override val layoutId: Int = ...
-) : FragmentContract<RenderModelType>() {
-  
-    override fun createComponent(view: View): FragmentComponent<RenderModelType> {
-        return ...
-    }
+sealed class ActivityEffect {
+    ... 
+    class NavigateToFragmentContract(val contract: FragmentContract<*>): ActivityEffect()
 }
 ```
 
-The contract is passed to the function that instantiates the state management
+Now, we can trigger it from event callback such as `onItemSelected`
 ```kotlin
-val store = FragmentFlowStore.init {
-    bind(ItemDetailContract::class) { _, key: ItemDetailContract ->
-        // do something with the item id
-        key.itemId
-    }
+class MyActivityViewModel : ViewModel() {
+
+    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
+    
+    private val store = FragmentFlowStore.init(...) {
+        bind(ItemListContract::class) { component, contract ->
+            val formula: ItemListFormula = ...
+            formula.state(ItemListFormula.Input(
+                onItemSelected = { item ->
+                    val contract = ItemDetailContract(id = item.id)
+                    effectRelay.accept(ActivityEffect.NavigateToFragmentContract(contract))        
+                }
+            ))
+        }
+    }    
 }
 ```
+
+In our activity, we can re-act to this effect and perform the navigation
+```kotlin
+class MyActivity : FragmentActivity() {
+     
+     private fun handleActivityEffect(effect: ActivityEffect) {
+        when(effect) {
+            is NavigateToFragmentContract -> {
+                // Perform navigation using fragment transaction
+                val fragment = FormulaFragment.newInstance(effect.contract)
+                
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment, effect.contract.tag)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+     }
+}
+```
+
 
 ## Grouping multiple navigation destinations as part of a flow.
 Flow is a combination of screens that are grouped together and can share a common component / state.
@@ -353,8 +403,6 @@ val store = FragmentFlowStore.init(taskAppComponent) {
 }
 ```
 
-
-## How to navigate from one fragment to another?
 
 ## Using with dagger (TODO)
 
