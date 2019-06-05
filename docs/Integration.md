@@ -377,20 +377,6 @@ class MyActivity : FragmentActivity() {
 ```
 
 
-## How does the fragment flow store works?
-The basic mechanism:
-- `FragmentFlowRenderView` listens to fragment add & remove events and passes those events to `FragmentFlowStore`
-- Based on those events, `FragmentFlowStore` instantiates or disposes of the appropriate render model stream.
-- We then listen to `FragmentFlowStore.state()` and pass those render model changes to the `FragmentFlowRenderView.renderer.render` 
-- `FragmentFlowRenderView` finds `FormulaFragment` and passes the state to the `RenderView` which then applies the change to Android views.  
-
-Key things:
-- An instance of `FragmentFlowStore` should be created for each `Activity`. This instance should survive the `Activity` lifecycle (e.g. using `ViewModel`) and should be disposed of when no longer in use.
-- `FragmentFlowRenderView` needs to be created before `Activity.super.onCreate()`, so we do not miss fragment events on Activity restoration.
-- Only when fragment is completely removed, do we dispose of the state management. This means that if you are going 
-forward from `A` to `B` fragment, both A & B state management streams will be running. 
-
-
 ## How to navigate from one fragment to another?
 
 ## Using with dagger (TODO)
