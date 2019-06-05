@@ -2,8 +2,6 @@ package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Before
 import org.junit.Test
 
@@ -17,7 +15,6 @@ class FlowStoreTest {
     lateinit var store: FlowStore<Key>
     lateinit var mainScreenState: BehaviorRelay<String>
     lateinit var detailScreenState: BehaviorRelay<String>
-    lateinit var subscriber: TestSubscriber<FlowState<Key>>
 
     @Before
     fun setup() {
@@ -25,17 +22,15 @@ class FlowStoreTest {
         mainScreenState = BehaviorRelay.createDefault("main-initial")
         detailScreenState = BehaviorRelay.createDefault("detail-initial")
 
-        store = FlowStore.init(keys.toFlowable(BackpressureStrategy.LATEST)) {
+        store = FlowStore.init(keys) {
             bind(Key.Main::class, init = { key ->
-                mainScreenState.toFlowable(BackpressureStrategy.LATEST)
+                mainScreenState
             })
 
             bind(Key.Detail::class, init = { key ->
-                detailScreenState.toFlowable(BackpressureStrategy.LATEST)
+                detailScreenState
             })
         }
-
-        subscriber = store.state().test()
     }
 
     @Test
@@ -89,9 +84,7 @@ class FlowStoreTest {
         keys.accept(BackStack(entries.toList()))
     }
 
-    private fun init(): TestSubscriber<FlowState<Key>> {
-        return store.state().test()
-    }
+    private fun init() = store.state().test()
 
     private fun expectedState(vararg states: Pair<Key, *>): FlowState<Key> {
         val asList = states.toList()

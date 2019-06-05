@@ -1,6 +1,6 @@
 package com.instacart.formula.integration
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * Defines an integration for a specific [Key].
@@ -11,7 +11,7 @@ import io.reactivex.Flowable
  *
  * ```
  * class TaskListIntegration<AppComponent, TaskListKey, TaskListRenderModel>() {
- *   override fun create(component: AppComponent, key: TaskListKey): Flowable<TaskListRenderModel> {
+ *   override fun create(component: AppComponent, key: TaskListKey): Observable<TaskListRenderModel> {
  *     return component.createTaskListFormula().state(Input())
  *   }
  * }
@@ -19,5 +19,5 @@ import io.reactivex.Flowable
  */
 abstract class Integration<in Component, in Key, RenderModel : Any> {
 
-    abstract fun create(component: Component, key: Key): Flowable<RenderModel>
+    abstract fun create(component: Component, key: Key): Observable<RenderModel>
 }

@@ -23,10 +23,10 @@ package com.instacart.formula.annotations
  *     onButtonClick.accept(action)
  *   }
  *
- *   fun bind(actions: MyFeatureReducers): Flowable<ReturnType> {
- *     val reducers = ArrayList<Flowable<ReturnType>()
- *     reducers.add(onButtonClick.toFlowable(BackpressureStrategy.LATEST).map { actions.onButtonClick(it) })
- *     return Flowable.merge(reducers)
+ *   fun bind(actions: MyFeatureReducers): Observable<ReturnType> {
+ *     val reducers = ArrayList<Observable<ReturnType>()
+ *     reducers.add(onButtonClick.map { actions.onButtonClick(it) })
+ *     return Observable.merge(reducers)
  *   }
  * }
  * ```

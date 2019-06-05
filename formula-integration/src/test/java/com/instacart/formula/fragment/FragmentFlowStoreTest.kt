@@ -5,8 +5,7 @@ import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import kotlinx.android.parcel.Parcelize
 import org.junit.Before
 import org.junit.Test
@@ -121,8 +120,8 @@ class FragmentFlowStoreTest {
         )
     }
 
-    private fun state(key: FragmentContract<*>): Flowable<String> {
-        val updates = updateRelay.filter { it.first == key }.toFlowable(BackpressureStrategy.LATEST).map { it.second }
-        return Flowable.just("${key.tag}-state").mergeWith(updates)
+    private fun state(key: FragmentContract<*>): Observable<String> {
+        val updates = updateRelay.filter { it.first == key }.map { it.second }
+        return updates.startWith("${key.tag}-state")
     }
 }

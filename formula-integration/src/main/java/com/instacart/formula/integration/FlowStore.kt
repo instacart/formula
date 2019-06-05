@@ -1,6 +1,6 @@
 package com.instacart.formula.integration
 
-import io.reactivex.Flowable
+import io.reactivex.Observable
 
 /**
  * A store that manages render model changes for each entry in the [BackStack].
@@ -16,12 +16,12 @@ import io.reactivex.Flowable
  * ```
  */
 class FlowStore<Key : Any> constructor(
-    keyState: Flowable<BackStack<Key>>,
+    keyState: Observable<BackStack<Key>>,
     private val root: Binding<Unit, Key>
 ) {
     companion object {
         inline fun <Key : Any> init(
-            state: Flowable<BackStack<Key>>,
+            state: Observable<BackStack<Key>>,
             crossinline init: BindingBuilder<Unit, Key>.() -> Unit
         ): FlowStore<Key> {
             return init(Unit, state, init)
@@ -29,7 +29,7 @@ class FlowStore<Key : Any> constructor(
 
         inline fun <Component, Key : Any> init(
             rootComponent: Component,
-            state: Flowable<BackStack<Key>>,
+            state: Observable<BackStack<Key>>,
             crossinline init: BindingBuilder<Component, Key>.() -> Unit
         ): FlowStore<Key> {
             val factory: (Unit) -> DisposableScope<Component> = {
@@ -48,11 +48,11 @@ class FlowStore<Key : Any> constructor(
     private val reducerFactory = FlowReducers(root)
     private val keyState = keyState.replay(1).refCount()
 
-    fun state(): Flowable<FlowState<Key>> {
+    fun state(): Observable<FlowState<Key>> {
         val backstackChangeReducer = keyState.map(reducerFactory::onBackstackChange)
         val stateChangeReducers = root.state(Unit, keyState).map(reducerFactory::onScreenStateChanged)
 
-        val reducers = Flowable.merge(backstackChangeReducer, stateChangeReducers)
+        val reducers = Observable.merge(backstackChangeReducer, stateChangeReducers)
 
         return reducers
             .scan(FlowState<Key>()) { state, reducer ->

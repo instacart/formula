@@ -8,7 +8,6 @@ import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
@@ -29,7 +28,7 @@ class TodoActivityViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     // We use replay + connect so this stream survives configuration changes.
-    val state: Flowable<FragmentFlowState> =  store.state().replay(1).apply {
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
         connect { disposables.add(it) }
     }
 

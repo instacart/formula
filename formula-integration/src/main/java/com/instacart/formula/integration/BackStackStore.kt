@@ -1,8 +1,7 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.Reducer
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 
 /**
@@ -19,8 +18,8 @@ class BackStackStore<Key>(initial: List<Key>) {
 
     private val backStackStateRelay = BehaviorSubject.createDefault(BackStack(initial))
 
-    fun stateChanges(): Flowable<BackStack<Key>> {
-        return backStackStateRelay.toFlowable(BackpressureStrategy.BUFFER).distinctUntilChanged()
+    fun stateChanges(): Observable<BackStack<Key>> {
+        return backStackStateRelay.distinctUntilChanged()
     }
 
     fun navigateBack() {

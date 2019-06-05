@@ -23,7 +23,7 @@ class CounterRenderFormula : RenderFormula<Unit, Int, Unit, CounterRenderModel> 
 
         return RenderLoop(
             initialState = 0,
-            reducers = reducers.toFlowable(BackpressureStrategy.BUFFER),
+            reducers = reducers,
             renderModelGenerator = RenderModelGenerator.create { currentCount ->
                 CounterRenderModel(
                     count = "Count: $currentCount",

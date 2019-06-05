@@ -2,8 +2,7 @@ package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
 import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.subscribers.TestSubscriber
+import io.reactivex.observers.TestObserver
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -56,7 +55,7 @@ class ScopedFlowStoreTest {
     lateinit var keys: BehaviorRelay<BackStack<Key>>
     lateinit var store: FlowStore<Key>
 
-    lateinit var subscriber: TestSubscriber<FlowState<Key>>
+    lateinit var subscriber: TestObserver<FlowState<Key>>
 
     lateinit var rootComponent: AppComponent
 
@@ -67,31 +66,30 @@ class ScopedFlowStoreTest {
         rootComponent = AppComponent()
         store = FlowStore.init(
             rootComponent = rootComponent,
-            state = keys.toFlowable(BackpressureStrategy.LATEST)
+            state = keys
         ) {
             withScope(AppComponent::signUpComponent) {
                 bind(Key.Login::class, init = { component, key ->
-                    component.loginScreenState.toFlowable(BackpressureStrategy.LATEST)
+                    component.loginScreenState
                 })
 
                 bind(Key.Register::class, init = { component, key ->
-                    component.registerScreenState.toFlowable(BackpressureStrategy.LATEST)
+                    component.registerScreenState
                 })
             }
 
             withScope(AppComponent::loggedInComponent) {
                 bind(Key.Browse::class, init = { component, key ->
-                    component.browseScreenState.toFlowable(BackpressureStrategy.LATEST)
+                    component.browseScreenState
                 })
 
                 bind(Key.Account::class, init = { component, key ->
-                    component.accountScreenState.toFlowable(BackpressureStrategy.LATEST)
+                    component.accountScreenState
                 })
             }
         }
 
-        subscriber = TestSubscriber()
-        store.state().subscribe(subscriber)
+        subscriber = store.state().test()
     }
 
     @After

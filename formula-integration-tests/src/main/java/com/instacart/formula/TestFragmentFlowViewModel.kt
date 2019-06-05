@@ -6,8 +6,7 @@ import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
 class TestFragmentFlowViewModel : ViewModel() {
@@ -30,7 +29,7 @@ class TestFragmentFlowViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     // Share state
-    val state: Flowable<FragmentFlowState> = store.state().replay(1).apply {
+    val state: Observable<FragmentFlowState> = store.state().replay(1).apply {
         connect { disposables.add(it) }
     }
 
@@ -47,9 +46,8 @@ class TestFragmentFlowViewModel : ViewModel() {
         disposables.clear()
     }
 
-    private fun stateChanges(contract: FragmentContract<*>): Flowable<Any> {
+    private fun stateChanges(contract: FragmentContract<*>): Observable<Any> {
         return stateChangeRelay
-            .toFlowable(BackpressureStrategy.BUFFER)
             .filter { event ->
                 event.first == contract
             }
