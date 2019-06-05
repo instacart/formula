@@ -1,13 +1,63 @@
 ## Formula Integration
-The integration module provides declarative API to connect reactive state management to Android Fragments. 
+The integration module provides a declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
-Benefits of using it:
-1. Can be added easily to an app that already uses Fragments.
-2. Supports incremental migration / usage. Not all fragments need to use Formula state management.
-3. State management survives configuration changes.
-4. Supports modularization
-5. Works naturally with Dagger 2
+Some of the goals for this module are:
+- Use single RxJava stream to drive the UI.
+- Separate state management from Android UI lifecycle.
+- Ability to group multiple fragments into a flow and share state between them.
+- Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
+
+### Declarative API
+This module provides a declarative API where you define state management for each of 
+your navigation destinations (we call them contracts). You define a store and bind
+individual contract types to the state management.
+
+```kotlin
+val store = FragmentFlowStore.init(...) {
+    bind(LoginContract::class) { _, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    }
+
+    bind(ItemListContract::class) { _, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    } 
+    
+    bind(ItemDetailContract::class) { _, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+    }
+}
+```
+
+### Lifecycle of individual state streams is managed for you
+The RxJava state stream is instantiated and subscribed to when the user enters declared navigation destination. We 
+dispose of the stream only when user exits the destination. As long as the `FragmentFlowStore.state()` is subscribed to 
+within a surface that survives configuration changes such as Android Components ViewModel, all of the state streams will
+survive configuration changes.
+
+```kotlin
+class MyActivityViewModel : ViewModel() {
+    private val store: FragmentFlowStore = ... 
+
+    private val disposables = CompositeDisposable()
+
+    // We use replay + connect so this stream survives configuration changes.
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
+        connect { disposables.add(it) }
+    }
+
+    // The activity will pass fragment lifecycle events so we 
+    // could figure out what state management needs to run.
+    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
+        store.onLifecycleEffect(event)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
+    }
+}
+```
 
 
 ## Defining the first fragment contract
@@ -147,12 +197,12 @@ Arguments can be passed using the Fragment contract.
 @Parcelize
 data class ItemDetailContract(
     val itemId: Int,
-    override val tag: String = "item detail ${taskId}",
-    override val layoutId: Int = ...
+    override val tag: String = "item detail ${itemId}",
+    override val layoutId: Int = R.layout.item_detail
 ) : FragmentContract<RenderModelType>() {
   
     override fun createComponent(view: View): FragmentComponent<RenderModelType> {
-        return ...
+        return TODO()
     }
 }
 ```
@@ -165,7 +215,163 @@ val store = FragmentFlowStore.init {
         key.itemId
     }
 }
+```
 
+### Fragment Event Handling
+In fragments, a common pattern for passing events to the parent is casting Activity into a Listener
+```kotlin
+class MyFragment : Fragment() {
+    override fun onAttach(context: Context) {
+        listener = context as Listener
+    }
+
+    override fun onDetach(context: Context) {
+        listener = null
+    }
+}
+```
+
+Instead of a listener with methods, we define a sealed class of possible actions that activity can perform.
+```kotlin
+sealed class ActivityEffect {
+    class ShowToast(val message: String): ActivityEffect()
+    class CloseFragment(val tag: String): ActivityEffect()
+}
+```
+
+We then, create a PublishRelay that we use for pub-sub messaging with the Activity.
+```kotlin
+class MyActivityViewModel : ViewModel() {
+    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
+    
+    private val store = FragmentFlowStore.init(...) {
+        bind(ItemDetailContract::class) { component, contract ->
+            val formula: ItemDetailFormula = component.createItemDetailFormula()
+            formula.state(ItemDetailFormula.Input(
+                onItemFavorited = {
+                    effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
+                },
+                onItemDeleted = {
+                    effectRelay.accept(ActivityEffect.CloseFragment(contract.tag))        
+                }
+            ))
+        }
+    }    
+    
+    private val disposables = CompositeDisposable()
+
+    // We use replay + connect so this stream survives configuration changes.
+    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
+        connect { disposables.add(it) }
+    }
+
+    // Expose effects to the activity
+    val effects: Observable<ActivityEffect> = effectRelay.hide()
+}
+```
+
+In the activity, we then listen to `effects` stream and do a pattern match
+```kotlin
+class MyActivity : FragmentActivity() {
+     val disposables = CompositeDisposable()
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
+ 
+         super.onCreate(savedInstanceState)
+         setContentView(R.layout.my_activity)
+         
+         disposables.add(viewModel.effects.subscribe { effect ->
+            when (effect) {
+                is ShowToast -> {
+                    Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
+                } 
+                is CloseFragment -> {
+                    supportFragmentManager.popBackStack()
+                }
+            }
+         })
+     }
+ 
+     override fun onDestroy() {
+         disposables.clear()
+         super.onDestroy()
+     }
+}
+```
+
+## Navigation
+To trigger navigation from one screen to another, we add a new type to the `ActivityEffect` sealed class.
+```kotlin
+sealed class ActivityEffect {
+    ... 
+    class NavigateToFragmentContract(val contract: FragmentContract<*>): ActivityEffect()
+}
+```
+
+Now, we can trigger it from event callback such as `onItemSelected`
+```kotlin
+class MyActivityViewModel : ViewModel() {
+
+    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
+    
+    private val store = FragmentFlowStore.init(...) {
+        bind(ItemListContract::class) { component, contract ->
+            val formula: ItemListFormula = ...
+            formula.state(ItemListFormula.Input(
+                onItemSelected = { item ->
+                    val contract = ItemDetailContract(id = item.id)
+                    effectRelay.accept(ActivityEffect.NavigateToFragmentContract(contract))        
+                }
+            ))
+        }
+    }    
+}
+```
+
+In our activity, we can re-act to this effect and perform the navigation
+```kotlin
+class MyActivity : FragmentActivity() {
+     
+     private fun handleActivityEffect(effect: ActivityEffect) {
+        when(effect) {
+            is NavigateToFragmentContract -> {
+                // Perform navigation using fragment transaction
+                val fragment = FormulaFragment.newInstance(effect.contract)
+                
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment, effect.contract.tag)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+     }
+}
+```
+
+
+## Grouping multiple navigation destinations as part of a flow.
+Flow is a combination of screens that are grouped together and can share a common component / state.
+
+```kotlin
+class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
+  // Define the shared component for the flow 
+  class Component(
+    val sharedService: MyFlowService,
+    val onSomeEvent: () -> Unit
+  )
+
+  override fun createFlow(): Flow<Component> {
+    return build {
+      bind(Contract1::class) { component, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+      }
+      bind(Contract2::class) { component, contract ->
+        TODO("return an RxJava state stream that drives the UI")
+      }
+    } 
+  }
+}
 ```
 
 ## Moving integration into a separate class
@@ -196,33 +402,6 @@ val store = FragmentFlowStore.init(taskAppComponent) {
     bind(Contract2Integration)
 }
 ```
-
-## Grouping multiple fragments as part of a flow.
-Flow is a combination of screens that are grouped together and can share a common component / state.
-
-```kotlin
-class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
-  // Define the shared component for the flow 
-  class Component(
-    val sharedService: MyFlowService,
-    val onSomeEvent: () -> Unit
-  )
-
-  override fun createFlow(): Flow<Component> {
-    return build {
-      bind(Contract1::class) { component, key ->
-        // create contract 1 state stream
-      }
-      bind(Contract2::class) { component, key ->
-        // create contract 2 state stream
-      }
-    } 
-  }
-}
-```
-
-
-## How the fragment flow store works? (TODO)
 
 
 ## Using with dagger (TODO)
