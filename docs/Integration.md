@@ -239,22 +239,24 @@ sealed class ActivityEffect {
 }
 ```
 
-We then, create a PublishRelay that we use for pub-sub messaging with the Activity.
+We then create a PublishRelay that we use for pub-sub messaging with the Activity.
 ```kotlin
 class MyActivityViewModel : ViewModel() {
     private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
     
     private val store = FragmentFlowStore.init(...) {
         bind(ItemDetailContract::class) { component, contract ->
-            val formula: ItemDetailFormula = component.createItemDetailFormula()
-            formula.state(ItemDetailFormula.Input(
+            val input = ItemDetailFormula.Input(
                 onItemFavorited = {
                     effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
                 },
                 onItemDeleted = {
                     effectRelay.accept(ActivityEffect.CloseFragment(contract.tag))        
                 }
-            ))
+            )
+        
+            val formula: ItemDetailFormula = component.createItemDetailFormula()
+            formula.state(input)
         }
     }    
     
@@ -317,13 +319,17 @@ class MyActivityViewModel : ViewModel() {
     
     private val store = FragmentFlowStore.init(...) {
         bind(ItemListContract::class) { component, contract ->
-            val formula: ItemListFormula = ...
-            formula.state(ItemListFormula.Input(
+            // Provide callbacks to item list feature events.
+            val input = ItemListFormula.Input(
                 onItemSelected = { item ->
                     val contract = ItemDetailContract(id = item.id)
                     effectRelay.accept(ActivityEffect.NavigateToFragmentContract(contract))        
                 }
-            ))
+            )
+        
+            // Hook up the formula state management
+            val formula: ItemListFormula = ...
+            formula.state(input)
         }
     }    
 }
@@ -400,6 +406,35 @@ val store = FragmentFlowStore.init(taskAppComponent) {
     // Other integrations.
     bind(Contract1Integration)
     bind(Contract2Integration)
+}
+```
+
+## Handling back button events
+To override how the back button works for a particular navigation destination, your render model needs to implement
+`BackCallback` interface.
+
+```kotlin
+data class FormRenderModel(
+    private val confirmUserWantsToExit: () -> Unit
+): BackCallback {
+
+    fun onBackPressed() {
+        confirmUserWantsToExit()
+    }
+}
+```
+
+Your `Activity` needs to call `FragmentFlowRenderView.onBackPressed()`. It will check if your current screen
+implements `BackCallback` and will invoke it.
+```kotlin
+class MyActivity : FragmentActivity() {
+     private lateinit var fragmentRenderView: FragmentFlowRenderView
+ 
+     override fun onBackPressed() {
+         if (!fragmentRenderView.onBackPressed()) {
+             super.onBackPressed()
+         }
+     }
 }
 ```
 
