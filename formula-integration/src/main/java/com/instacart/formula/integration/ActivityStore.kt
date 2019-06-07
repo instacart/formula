@@ -30,7 +30,7 @@ class ActivityStore<A : FragmentActivity>(
         inline fun build(
             crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
         ): ActivityStore<A> {
-            return init(Unit, init)
+            return build(Unit, init)
         }
 
         inline fun <Component> build(
@@ -39,28 +39,6 @@ class ActivityStore<A : FragmentActivity>(
         ) : ActivityStore<A> {
             val fragmentFlowStore = FragmentFlowStore.init(rootComponent, init)
             return build(fragmentFlowStore)
-        }
-    }
-
-    companion object {
-
-        inline fun <A : FragmentActivity> build(
-            crossinline init: Builder<A>.() -> ActivityStore<A>
-        ): ActivityStore<A> {
-            return Builder<A>().init()
-        }
-
-        inline fun <A: FragmentActivity> init(
-            crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
-        ): ActivityStore<A> {
-            return init(Unit, init)
-        }
-
-        inline fun <A : FragmentActivity, Component> init(
-            rootComponent: Component,
-            crossinline init: FragmentBindingBuilder<Component>.() -> Unit
-        ): ActivityStore<A> {
-            return Builder<A>().build(rootComponent, init)
         }
     }
 
