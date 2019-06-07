@@ -13,7 +13,7 @@ import java.util.UUID
  * Manages [FragmentFlowStore] for individual activities. [FragmentFlowStore] survives configuration changes
  * by default.
  */
-class StoreManager(
+internal class StoreManager(
     private val factory: AppStoreFactory
 ) {
 
@@ -22,14 +22,14 @@ class StoreManager(
     }
 
     private val activityToKeyMap = mutableMapOf<Activity, String>()
-    private val componentMap = mutableMapOf<String, AppStoreFactory.StoreHolder<FragmentActivity>>()
+    private val componentMap = mutableMapOf<String, ActivityStoreHolder<FragmentActivity>>()
 
     private val renderViewMap = mutableMapOf<Activity, FragmentFlowRenderView>()
     private val subscriptions = mutableMapOf<Activity, Disposable>()
 
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
         // Find store holder
-        val storeHolder: AppStoreFactory.StoreHolder<FragmentActivity>? = findOrInitializeStore(activity, savedInstance)
+        val storeHolder: ActivityStoreHolder<FragmentActivity>? = findOrInitActivityStore(activity, savedInstance)
         if (storeHolder == null) {
             /**
              * TODO:
@@ -46,7 +46,7 @@ class StoreManager(
 
 
     fun onActivityCreated(activity: FragmentActivity) {
-        val storeHolder: AppStoreFactory.StoreHolder<FragmentActivity>? = findStore(activity)
+        val storeHolder: ActivityStoreHolder<FragmentActivity>? = findStore(activity)
         if (storeHolder == null) {
             // TODO log missing store
             return
@@ -57,6 +57,8 @@ class StoreManager(
         val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
         val disposable = storeHolder.state.subscribe {
             renderView.renderer.render(it)
+            storeHolder.store.onRender?.invoke(activity, it)
+
         }
         subscriptions[activity] = disposable
     }
@@ -78,7 +80,7 @@ class StoreManager(
         val key = activityToKeyMap.remove(activity)
         if (key != null && activity.isFinishing) {
 //            Timber.d("finishing $activity, $key")
-            clearComponent(key)
+            clearActivityStore(key)
         }
     }
 
@@ -90,11 +92,7 @@ class StoreManager(
         return renderViewMap[activity]?.onBackPressed() ?: false
     }
 
-    fun clearAll() {
-        componentMap.clear()
-    }
-
-    private fun findStore(activity: FragmentActivity): AppStoreFactory.StoreHolder<FragmentActivity>? {
+    private fun findStore(activity: FragmentActivity): ActivityStoreHolder<FragmentActivity>? {
         val key = activityToKeyMap[activity]
         return key?.let {
             componentMap[it]
@@ -102,29 +100,29 @@ class StoreManager(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <A : FragmentActivity> findOrInitializeStore(
+    private fun <A : FragmentActivity> findOrInitActivityStore(
         activity: FragmentActivity, savedState: Bundle?
-    ): AppStoreFactory.StoreHolder<A>? {
+    ): ActivityStoreHolder<A>? {
         val key = findOrGenerateActivityKey(activity, savedState) // generate new key
         activityToKeyMap[activity] = key
 
-        val cached = componentMap[key] as? AppStoreFactory.StoreHolder<A>?
+        val cached = componentMap[key] as? ActivityStoreHolder<A>?
         if (cached != null) {
             return cached
         }
 
-        val component = factory.init(activity) as AppStoreFactory.StoreHolder<A>?
+        val component = factory.init(activity) as ActivityStoreHolder<A>?
         if (component != null) {
 //            Timber.d("initialized a new component for $activity, $key")
             // let's store the flow to the map
-            componentMap[key] = component as AppStoreFactory.StoreHolder<FragmentActivity>
+            componentMap[key] = component as ActivityStoreHolder<FragmentActivity>
             return component
         }
 //        Timber.d("couldn't find component for $activity, $key")
         return null
     }
 
-    private fun clearComponent(key: String) {
+    private fun clearActivityStore(key: String) {
         val component = componentMap.remove(key)
         component?.subscription?.dispose()
     }
