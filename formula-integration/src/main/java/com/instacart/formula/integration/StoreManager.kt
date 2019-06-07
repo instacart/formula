@@ -22,15 +22,15 @@ internal class StoreManager(
     }
 
     private val activityToKeyMap = mutableMapOf<Activity, String>()
-    private val componentMap = mutableMapOf<String, ActivityStoreHolder<FragmentActivity>>()
+    private val componentMap = mutableMapOf<String, ActivityStore<FragmentActivity>>()
 
     private val renderViewMap = mutableMapOf<Activity, FragmentFlowRenderView>()
     private val subscriptions = mutableMapOf<Activity, Disposable>()
 
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
-        // Find store holder
-        val storeHolder: ActivityStoreHolder<FragmentActivity>? = findOrInitActivityStore(activity, savedInstance)
-        if (storeHolder == null) {
+        // Find store
+        val store: ActivityStore<FragmentActivity>? = findOrInitActivityStore(activity, savedInstance)
+        if (store == null) {
             /**
              * TODO:
              * This activity doesn't have a valid FragmentFlowStore. Should we use no-op store instead
@@ -40,24 +40,24 @@ internal class StoreManager(
         }
 
         // Initialize render view
-        val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = storeHolder.store::onLifecycleEvent)
+        val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store::onLifecycleEvent)
         renderViewMap[activity] = renderView
     }
 
 
     fun onActivityCreated(activity: FragmentActivity) {
-        val storeHolder: ActivityStoreHolder<FragmentActivity>? = findStore(activity)
+        val storeHolder: ActivityStore<FragmentActivity>? = findStore(activity)
         if (storeHolder == null) {
             // TODO log missing store
             return
         }
 
-        storeHolder.effectHandler.attachActivity(activity)
+        storeHolder.proxy.attachActivity(activity)
 
         val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
         val disposable = storeHolder.state.subscribe {
             renderView.renderer.render(it)
-            storeHolder.store.onRenderFragmentState?.invoke(activity, it)
+            storeHolder.onRenderFragmentState?.invoke(activity, it)
 
         }
         subscriptions[activity] = disposable
@@ -75,7 +75,7 @@ internal class StoreManager(
         renderViewMap.remove(activity)?.dispose()
 
         val store = findStore(activity)
-        store?.effectHandler?.detachActivity(activity)
+        store?.proxy?.detachActivity(activity)
 
         val key = activityToKeyMap.remove(activity)
         if (key != null && activity.isFinishing) {
@@ -85,14 +85,14 @@ internal class StoreManager(
     }
 
     fun onActivityResult(activity: FragmentActivity, result: ActivityResult) {
-        findStore(activity)?.effectHandler?.onActivityResult(result)
+        findStore(activity)?.proxy?.onActivityResult(result)
     }
 
     fun onBackPressed(activity: FragmentActivity): Boolean {
         return renderViewMap[activity]?.onBackPressed() ?: false
     }
 
-    private fun findStore(activity: FragmentActivity): ActivityStoreHolder<FragmentActivity>? {
+    private fun findStore(activity: FragmentActivity): ActivityStore<FragmentActivity>? {
         val key = activityToKeyMap[activity]
         return key?.let {
             componentMap[it]
@@ -102,20 +102,20 @@ internal class StoreManager(
     @Suppress("UNCHECKED_CAST")
     private fun <A : FragmentActivity> findOrInitActivityStore(
         activity: FragmentActivity, savedState: Bundle?
-    ): ActivityStoreHolder<A>? {
+    ): ActivityStore<A>? {
         val key = findOrGenerateActivityKey(activity, savedState) // generate new key
         activityToKeyMap[activity] = key
 
-        val cached = componentMap[key] as? ActivityStoreHolder<A>?
+        val cached = componentMap[key] as? ActivityStore<A>?
         if (cached != null) {
             return cached
         }
 
-        val component = factory.init(activity) as ActivityStoreHolder<A>?
+        val component = factory.init(activity) as ActivityStore<A>?
         if (component != null) {
 //            Timber.d("initialized a new component for $activity, $key")
             // let's store the flow to the map
-            componentMap[key] = component as ActivityStoreHolder<FragmentActivity>
+            componentMap[key] = component as ActivityStore<FragmentActivity>
             return component
         }
 //        Timber.d("couldn't find component for $activity, $key")

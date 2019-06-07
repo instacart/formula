@@ -11,13 +11,13 @@ class TodoApp : Application() {
         super.onCreate()
 
         FormulaAndroid.init(this) {
-            activity(TodoActivity::class) { effectHandler ->
+            activity(TodoActivity::class) {
                 val component = TodoAppComponent()
 
                 build(component) {
                     bind(TaskListContract::class) { component, key ->
                         val input = TaskListFormula.Input(showToast = { message ->
-                            effectHandler.send {
+                            proxy.send {
                                 onEffect(TodoActivityEffect.ShowToast(message))
                             }
                         })

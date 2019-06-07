@@ -19,7 +19,7 @@ class AppStoreFactoryTest {
             }
             .build()
 
-        val storeHolder = factory.init(mock<FakeActivity>())!!
-        assertThat(storeHolder.subscription.isDisposed).isFalse()
+        val store = factory.init(mock<FakeActivity>())!!
+        assertThat(store.subscription.isDisposed).isFalse()
     }
 }

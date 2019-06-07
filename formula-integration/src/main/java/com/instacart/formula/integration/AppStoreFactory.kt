@@ -7,7 +7,7 @@ class AppStoreFactory internal constructor(
     private val bindings: Map<KClass<*>, Binding<*>>
 ) {
     internal class Binding<A : FragmentActivity>(
-        val init: ActivityStore.Builder<A>.(ActivityProxy<A>) -> ActivityStore<A>?
+        val init: ActivityStoreContext<A>.() -> ActivityStore<A>?
     )
 
     class Builder {
@@ -15,7 +15,7 @@ class AppStoreFactory internal constructor(
 
         fun <A : FragmentActivity> activity(
             type: KClass<A>,
-            init: ActivityStore.Builder<A>.(ActivityProxy<A>) -> ActivityStore<A>?
+            init: ActivityStoreContext<A>.() -> ActivityStore<A>?
         ) {
             bindings[type] = Binding(init)
         }
@@ -25,13 +25,10 @@ class AppStoreFactory internal constructor(
         }
     }
 
-    internal fun <A : FragmentActivity> init(activity: A): ActivityStoreHolder<A>? {
+    internal fun <A : FragmentActivity> init(activity: A): ActivityStore<A>? {
         val initializer = bindings[activity::class] as? Binding<A>
         val activityProxy = ActivityProxy<A>()
-        val activityStoreBuilder = ActivityStore.Builder<A>()
-        val store = initializer?.init?.invoke(activityStoreBuilder, activityProxy)
-        return store?.let {
-            ActivityStoreHolder(activityProxy, store)
-        }
+        val activityStoreBuilder = ActivityStoreContext(activityProxy)
+        return initializer?.init?.invoke(activityStoreBuilder)
     }
 }

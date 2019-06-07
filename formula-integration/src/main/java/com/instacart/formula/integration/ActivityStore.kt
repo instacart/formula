@@ -12,35 +12,12 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
  */
 class ActivityStore<A : FragmentActivity>(
     internal val onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+    internal val proxy: ActivityProxy<A>,
     internal val fragmentFlowStore: FragmentFlowStore
 ) {
 
-    class Builder<A : FragmentActivity> {
-        private var onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null
-
-
-        fun onRenderFragmentState(render: (A, FragmentFlowState) -> Unit) {
-            onRenderFragmentState = render
-        }
-
-        fun build(store: FragmentFlowStore) : ActivityStore<A>  {
-            return ActivityStore(onRenderFragmentState, store)
-        }
-
-        inline fun build(
-            crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
-        ): ActivityStore<A> {
-            return build(Unit, init)
-        }
-
-        inline fun <Component> build(
-            rootComponent: Component,
-            crossinline init: FragmentBindingBuilder<Component>.() -> Unit
-        ) : ActivityStore<A> {
-            val fragmentFlowStore = FragmentFlowStore.init(rootComponent, init)
-            return build(fragmentFlowStore)
-        }
-    }
+    internal val state = fragmentFlowStore.state().replay(1)
+    internal val subscription = state.connect()
 
     internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         fragmentFlowStore.onLifecycleEffect(event)
