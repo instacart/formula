@@ -1,28 +1,27 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.fragment.FragmentFlowStore
 import kotlin.reflect.KClass
 
 class AppStoreFactory internal constructor(
     private val bindings: Map<KClass<*>, Binding<*>>
 ) {
     internal class Binding<A : FragmentActivity>(
-        val init: (ActivityProxy<A>) -> FragmentFlowStore?
+        val init: (ActivityProxy<A>) -> ActivityStore?
     )
 
-    class Store<A : FragmentActivity>(
+    internal class StoreHolder<A : FragmentActivity>(
         val effectHandler: ActivityProxy<A>,
-        val store: FragmentFlowStore
+        val store: ActivityStore
     ) {
-        val state = store.state().replay(1)
+        val state = store.fragmentFlowStore.state().replay(1)
         val subscription = state.connect()
     }
 
     class Builder {
         private val bindings = mutableMapOf<KClass<*>, Binding<*>>()
 
-        fun <A: FragmentActivity> bind(type: KClass<A>, init: (ActivityProxy<A>) -> FragmentFlowStore?) {
+        fun <A: FragmentActivity> bind(type: KClass<A>, init: (ActivityProxy<A>) -> ActivityStore?) {
             bindings[type] = Binding(init)
         }
 
@@ -31,12 +30,12 @@ class AppStoreFactory internal constructor(
         }
     }
 
-    fun <A : FragmentActivity> init(activity: A): Store<A>? {
-        val initializer = bindings[activity::class] as (ActivityProxy<A>) -> FragmentFlowStore?
+    internal fun <A : FragmentActivity> init(activity: A): StoreHolder<A>? {
+        val initializer = bindings[activity::class] as (ActivityProxy<A>) -> ActivityStore?
         val effectHandler = ActivityProxy<A>()
         val store = initializer(effectHandler)
         return store?.let {
-            Store(effectHandler, store)
+            StoreHolder(effectHandler, store)
         }
     }
 }

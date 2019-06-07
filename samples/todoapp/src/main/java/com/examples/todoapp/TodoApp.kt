@@ -4,7 +4,7 @@ import android.app.Application
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.fragment.FragmentFlowStore
+import com.instacart.formula.integration.ActivityStore
 
 class TodoApp : Application() {
 
@@ -14,7 +14,7 @@ class TodoApp : Application() {
         FormulaAndroid.init(this) {
             bind(TodoActivity::class) { effectHandler ->
                 val component = TodoAppComponent()
-                FragmentFlowStore.init(component) {
+                ActivityStore.init(component) {
                     bind(TaskListContract::class) { component, key ->
                         val input = TaskListFormula.Input(showToast = { message ->
                             effectHandler.send {
