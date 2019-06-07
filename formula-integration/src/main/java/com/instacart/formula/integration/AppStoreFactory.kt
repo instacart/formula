@@ -26,9 +26,10 @@ class AppStoreFactory internal constructor(
     }
 
     internal fun <A : FragmentActivity> init(activity: A): ActivityStoreHolder<A>? {
-        val initializer = bindings[activity::class] as (ActivityProxy<A>) -> ActivityStore<A>?
+        val initializer = bindings[activity::class] as? Binding<A>
         val activityProxy = ActivityProxy<A>()
-        val store = initializer(activityProxy)
+        val activityStoreBuilder = ActivityStore.Builder<A>()
+        val store = initializer?.init?.invoke(activityStoreBuilder, activityProxy)
         return store?.let {
             ActivityStoreHolder(activityProxy, store)
         }
