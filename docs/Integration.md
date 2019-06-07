@@ -17,8 +17,8 @@ individual contract types to the state management.
 class MyApp : Application() {
     override fun onCreate() {
         FormulaAndroid.init(this) {
-            activity(LoginActivity::class) { proxy ->
-                build {
+            activity(LoginActivity::class) {
+                store {
                     bind(LoginContract::class) { _, key ->
                        TODO("return an RxJava state stream that drives the UI")
                     }
@@ -29,8 +29,8 @@ class MyApp : Application() {
                 }
             }
             
-            activity(MainActivity::class) { proxy ->
-                build {
+            activity(MainActivity::class) {
+                store {
                     bind(ItemListContract::class) { _, key ->
                        TODO("return an RxJava state stream that drives the UI")
                     }
@@ -296,8 +296,8 @@ class MyActivity : FragmentActivity() {
 
 We can then use a `ActivityProxy<MyActivity>` to trigger this effect.
 ```kotlin
-activity(MyActivity::class) { proxy ->
-    build {
+activity(MyActivity::class) {
+    store {
         bind(ItemDetailContract::class) { _, contract ->
             val input = ItemDetailFormula.Input(
                 onItemFavorited = {
@@ -330,8 +330,8 @@ sealed class MyActivityEffect {
 
 Now, we can trigger it from event callback such as `onItemSelected`
 ```kotlin
-activity(MyActivity::class) { proxy_
-    build {
+activity(MyActivity::class) {
+    store {
         bind(ItemListContract::class) { _, contract ->
             // Provide callbacks to item list feature events.
             val input = ItemListFormula.Input(
