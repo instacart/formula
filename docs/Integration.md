@@ -272,97 +272,74 @@ class MyFragment : Fragment() {
 
 Instead of a listener with methods, we define a sealed class of possible actions that activity can perform.
 ```kotlin
-sealed class ActivityEffect {
-    class ShowToast(val message: String): ActivityEffect()
-    class CloseFragment(val tag: String): ActivityEffect()
+sealed class MyActivityEffect {
+    class ShowToast(val message: String): MyActivityEffect()
+    class CloseFragment(val tag: String): MyActivityEffect()
 }
 ```
 
-We then create a PublishRelay that we use for pub-sub messaging with the Activity.
 ```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
-    
-    private val store = FragmentFlowStore.init(...) {
-        bind(ItemDetailContract::class) { component, contract ->
+class MyActivity : FragmentActivity() {
+
+    fun onActivityEffect(effect: MyActivityEffect) {
+        when (effect) {
+            is ShowToast -> {
+                Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
+            } 
+            is CloseFragment -> {
+                supportFragmentManager.popBackStack()
+            }
+        }
+    }
+}
+```
+
+We can then use a `ActivityProxy<MyActivity>` to trigger this effect.
+```kotlin
+activity(MyActivity::class) { proxy ->
+    build {
+        bind(ItemDetailContract::class) { _, contract ->
             val input = ItemDetailFormula.Input(
                 onItemFavorited = {
-                    effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
+                    proxy.send {
+                        onActivityEffect(MyActivityEffect.ShowToast("Item was added to your favorites."))
+                    }
                 },
                 onItemDeleted = {
-                    effectRelay.accept(ActivityEffect.CloseFragment(contract.tag))        
+                    proxy.send {
+                        onActivityEffect(MyActivityEffect.CloseFragment(contract.tag))
+                    }
                 }
             )
         
             val formula: ItemDetailFormula = component.createItemDetailFormula()
             formula.state(input)
         }
-    }    
-    
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
     }
-
-    // Expose effects to the activity
-    val effects: Observable<ActivityEffect> = effectRelay.hide()
-}
-```
-
-In the activity, we then listen to `effects` stream and do a pattern match
-```kotlin
-class MyActivity : FragmentActivity() {
-     val disposables = CompositeDisposable()
- 
-     override fun onCreate(savedInstanceState: Bundle?) {
-         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
- 
-         super.onCreate(savedInstanceState)
-         setContentView(R.layout.my_activity)
-         
-         disposables.add(viewModel.effects.subscribe { effect ->
-            when (effect) {
-                is ShowToast -> {
-                    Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
-                } 
-                is CloseFragment -> {
-                    supportFragmentManager.popBackStack()
-                }
-            }
-         })
-     }
- 
-     override fun onDestroy() {
-         disposables.clear()
-         super.onDestroy()
-     }
 }
 ```
 
 ## Navigation
-To trigger navigation from one screen to another, we add a new type to the `ActivityEffect` sealed class.
+To trigger navigation from one screen to another, we add a new type to the `MyActivityEffect` sealed class.
 ```kotlin
-sealed class ActivityEffect {
+sealed class MyActivityEffect {
     ... 
-    class NavigateToFragmentContract(val contract: FragmentContract<*>): ActivityEffect()
+    class NavigateToFragmentContract(val contract: FragmentContract<*>): MyActivityEffect()
 }
 ```
 
 Now, we can trigger it from event callback such as `onItemSelected`
 ```kotlin
-class MyActivityViewModel : ViewModel() {
-
-    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
-    
-    private val store = FragmentFlowStore.init(...) {
-        bind(ItemListContract::class) { component, contract ->
+activity(MyActivity::class) { proxy_
+    build {
+        bind(ItemListContract::class) { _, contract ->
             // Provide callbacks to item list feature events.
             val input = ItemListFormula.Input(
                 onItemSelected = { item ->
                     val contract = ItemDetailContract(id = item.id)
-                    effectRelay.accept(ActivityEffect.NavigateToFragmentContract(contract))        
+                    proxy.send {
+                        onActivityEffect(ActivityEffect.NavigateToFragmentContract(contract))
+                    }
                 }
             )
         
@@ -370,7 +347,7 @@ class MyActivityViewModel : ViewModel() {
             val formula: ItemListFormula = ...
             formula.state(input)
         }
-    }    
+    }
 }
 ```
 
@@ -378,7 +355,7 @@ In our activity, we can re-act to this effect and perform the navigation
 ```kotlin
 class MyActivity : FragmentActivity() {
      
-     private fun handleActivityEffect(effect: ActivityEffect) {
+     fun onActivityEffect(effect: MyActivityEffect) {
         when(effect) {
             is NavigateToFragmentContract -> {
                 // Perform navigation using fragment transaction
