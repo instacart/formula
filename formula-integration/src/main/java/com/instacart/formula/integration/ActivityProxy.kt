@@ -15,10 +15,11 @@ import io.reactivex.Observable
  * @param A - type of Activity.
  */
 class ActivityProxy<A : FragmentActivity> {
-    private var activity: A? = null
+    // Event relays
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
-
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
+
+    @PublishedApi internal var activity: A? = null
 
     private fun latestActivity(): Observable<Option<A>> {
         return lifecycleEventRelay.startWith(Unit).map {
@@ -42,7 +43,7 @@ class ActivityProxy<A : FragmentActivity> {
         activityResultRelay.accept(result)
     }
 
-    fun send(effect: A.() -> Unit) {
+    inline fun send(effect: A.() -> Unit) {
         activity?.effect() ?: run {
             // Log missing activity.
         }
