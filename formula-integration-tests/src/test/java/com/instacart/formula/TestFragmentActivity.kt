@@ -3,24 +3,15 @@ package com.instacart.formula
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.integration.FragmentFlowRenderView
-import io.reactivex.disposables.CompositeDisposable
 
 class TestFragmentActivity : FragmentActivity() {
 
-    private val disposables = CompositeDisposable()
-
-    lateinit var fragmentRenderView: FragmentFlowRenderView
-    val component = TestFragmentFlowViewModel()
     lateinit var contract: TestLifecycleContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        fragmentRenderView = FragmentFlowRenderView(this, onLifecycleEvent = component::onLifecycleEvent)
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_activity)
-
-        disposables.add(component.state.subscribe(fragmentRenderView.renderer::render))
 
         if (savedInstanceState == null) {
             val contract = TestLifecycleContract()
@@ -31,14 +22,8 @@ class TestFragmentActivity : FragmentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        fragmentRenderView.dispose()
-        disposables.clear()
-        super.onDestroy()
-    }
-
     override fun onBackPressed() {
-        if (!fragmentRenderView.onBackPressed()) {
+        if (!FormulaAndroid.onBackPressed(this)) {
             super.onBackPressed()
         }
     }

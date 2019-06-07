@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -17,6 +18,8 @@ class FragmentLifecycleTest {
 
     private lateinit var activityController: ActivityController<TestFragmentActivity>
     private lateinit var contract: TestLifecycleContract
+
+    @get:Rule val formulaRule = TestFormulaRule(TestFragmentActivity::class)
 
     @Before
     fun setup() {

@@ -3,6 +3,7 @@ package com.instacart.formula
 import android.app.Application
 import android.content.Intent
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.integration.AppStoreFactory
@@ -12,6 +13,7 @@ import java.lang.IllegalStateException
 
 object FormulaAndroid {
 
+    private var application: Application? = null
     private var storeManager: StoreManager? = null
     private var callbacks: FormulaActivityCallbacks? = null
 
@@ -26,6 +28,7 @@ object FormulaAndroid {
         val activityLifecycleCallbacks = FormulaActivityCallbacks(manager)
         application.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
 
+        this.application = application
         this.storeManager = manager
         this.callbacks = activityLifecycleCallbacks
     }
@@ -66,5 +69,17 @@ object FormulaAndroid {
 
     private fun managerOrThrow(activity: FragmentActivity): StoreManager {
         return storeManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
+    }
+
+    /**
+     * Used in testing to clear current store manager.
+     */
+    @VisibleForTesting fun tearDown() {
+        val app = application ?: throw IllegalStateException("not initialized")
+        app.unregisterActivityLifecycleCallbacks(callbacks)
+
+        application = null
+        storeManager = null
+        callbacks = null
     }
 }

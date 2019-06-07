@@ -11,6 +11,7 @@ import com.instacart.formula.integration.BackCallback
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
@@ -18,11 +19,17 @@ class FragmentFlowRenderViewTest {
 
     class HeadlessFragment : Fragment()
 
-    @get:Rule val rule = ActivityScenarioRule(TestFlowViewActivity::class.java)
+    val formulaRule = TestFormulaRule(TestFlowViewActivity::class)
+    val activityRule = ActivityScenarioRule(TestFlowViewActivity::class.java)
+    @get:Rule val rule = RuleChain.outerRule(formulaRule).around(activityRule)
     lateinit var scenario: ActivityScenario<TestFlowViewActivity>
 
     @Before fun setup() {
-        scenario = rule.scenario
+        scenario = activityRule.scenario
+    }
+
+    fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {
+        formulaRule.sendStateUpdate(contract, update)
     }
 
     @Test fun `add fragment lifecycle event`() {
@@ -58,16 +65,16 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `render model is passed to visible fragment`() {
-        val viewModel = viewModel()
-        viewModel.sendStateUpdate(TaskListContract(), "update")
+        val viewModel = activity()
+        sendStateUpdate(TaskListContract(), "update")
         assertThat(viewModel.renderCalls).containsExactly(TaskListContract() to "update")
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
         navigateToTaskDetail()
 
-        val viewModel = viewModel()
-        viewModel.sendStateUpdate(TaskListContract(), "update")
+        val viewModel = activity()
+        sendStateUpdate(TaskListContract(), "update")
         assertThat(viewModel.renderCalls).isEqualTo(emptyList<Any>())
     }
 
@@ -76,13 +83,13 @@ class FragmentFlowRenderViewTest {
 
         val contract = TaskDetailContract(1)
 
-        val viewModel = viewModel()
-        viewModel.sendStateUpdate(contract, "update")
+        val viewModel = activity()
+        sendStateUpdate(contract, "update")
         assertThat(viewModel.renderCalls).containsExactly(contract to "update")
 
         navigateBack()
 
-        viewModel.sendStateUpdate(contract, "update-two")
+        sendStateUpdate(contract, "update-two")
         assertThat(viewModel.renderCalls).containsExactly(contract to "update")
     }
 
@@ -92,8 +99,7 @@ class FragmentFlowRenderViewTest {
         var backPressed = 0
 
         val contract = TaskDetailContract(1)
-        val viewModel = viewModel()
-        viewModel.sendStateUpdate(contract, object : BackCallback {
+        sendStateUpdate(contract, object : BackCallback {
             override fun onBackPressed() {
                 backPressed += 1
             }
@@ -108,15 +114,31 @@ class FragmentFlowRenderViewTest {
     @Test fun `activity restart`() {
         navigateToTaskDetail()
 
-        val previous = viewModel()
+        val previous = activity()
 
         scenario.recreate()
 
         // Verify that view models have changed
-        val new = viewModel()
+        val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
-        // Only restores the current fragment
+        // Both contracts should be in the backstack.
+        assertThat(currentBackstack()).containsExactly(TaskListContract(), TaskDetailContract(1))
+    }
+
+    @Test fun `process death imitation`() {
+        navigateToTaskDetail()
+
+        val previous = activity()
+        formulaRule.fakeProcessDeath()
+
+        scenario.recreate()
+
+        // Verify that view models have changed
+        val new = activity()
+        assertThat(previous).isNotEqualTo(new)
+
+        // When activity is recreated, it only triggers event for current fragment
         assertThat(currentBackstack()).containsExactly(TaskDetailContract(1))
 
         navigateBack()
@@ -139,13 +161,13 @@ class FragmentFlowRenderViewTest {
         }
     }
 
-    private fun viewModel(): TestFragmentFlowViewModel {
-        return get { viewModel }
+    private fun activity(): TestFlowViewActivity {
+        return get { this }
     }
 
     private fun currentBackstack(): List<FragmentContract<*>> {
         return get {
-            viewModel.state.test().values().last().backStack.keys
+            formulaRule.lastState!!.backStack.keys
         }
     }
 
