@@ -11,20 +11,20 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
  * management stream.
  */
 class ActivityStore<A : FragmentActivity>(
-    internal val onRender: ((A, FragmentFlowState) -> Unit)? = null,
+    internal val onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
     internal val fragmentFlowStore: FragmentFlowStore
 ) {
 
     class Builder<A : FragmentActivity> {
-        private var onRender: ((A, FragmentFlowState) -> Unit)? = null
+        private var onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null
 
 
-        fun onRenderState(render: (A, FragmentFlowState) -> Unit) {
-            onRender = render
+        fun onRenderFragmentState(render: (A, FragmentFlowState) -> Unit) {
+            onRenderFragmentState = render
         }
 
         fun build(store: FragmentFlowStore) : ActivityStore<A>  {
-            return ActivityStore(onRender, store)
+            return ActivityStore(onRenderFragmentState, store)
         }
 
         inline fun build(

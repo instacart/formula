@@ -45,15 +45,16 @@ class MyApp : Application() {
 }
 ```
 
-To support Formula within your activity, you just need to make a few calls.
+To support Formula within your activity, you can extend `FormulaAppCompatActivity`.
 ```kotlin
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : FormulaAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login_activity)
         
         if (savedInstanceState == null) {
+            // Initialize FormulaFragment with a contract 
+            // and use fragment transactions to add it.
             val contract = LoginContract()
             val fragment = FormulaFragment.newInstance(contract)
             supportFragmentManager.beginTransaction()
@@ -61,14 +62,10 @@ class LoginActivity : AppCompatActivity() {
                 .commit()    
         }
     }
-    
-    override fun onBackPressed() {
-        if (!FormulaAndroid.onBackPressed(this)) {
-            super.onBackPressed()
-        }
-    }
 }
 ```
+
+If your `Activity` has another base class, you can just copy logic from `FormulaAppCompatActivity` into your `Activity`.
 
 
 ### Lifecycle of individual state streams is managed for you

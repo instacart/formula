@@ -57,7 +57,7 @@ internal class StoreManager(
         val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
         val disposable = storeHolder.state.subscribe {
             renderView.renderer.render(it)
-            storeHolder.store.onRender?.invoke(activity, it)
+            storeHolder.store.onRenderFragmentState?.invoke(activity, it)
 
         }
         subscriptions[activity] = disposable
