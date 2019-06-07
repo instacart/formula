@@ -14,20 +14,62 @@ your navigation destinations (we call them contracts). You define a store and bi
 individual contract types to the state management.
 
 ```kotlin
-val store = FragmentFlowStore.init(...) {
-    bind(LoginContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-    }
+class MyApp : Application() {
+    override fun onCreate() {
+        FormulaAndroid.init(this) {
+            activity(LoginActivity::class) { proxy ->
+                build {
+                    bind(LoginContract::class) { _, key ->
+                       TODO("return an RxJava state stream that drives the UI")
+                    }
+                    
+                    bind(SignUpActivity::class) { _, key ->
+                       TODO("return an RxJava state stream that drives the UI")
+                    }
+                }
+            }
+            
+            activity(MainActivity::class) { proxy ->
+                build {
+                    bind(ItemListContract::class) { _, key ->
+                       TODO("return an RxJava state stream that drives the UI")
+                    }
+                    
+                    bind(ItemDetailContract::class) { _, key ->
+                       TODO("return an RxJava state stream that drives the UI")
+                    }
+                }
+            }
+        }
+    }   
+}
+```
 
-    bind(ItemListContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-    } 
+To support Formula within your activity, you just need to make a few calls.
+```kotlin
+class LoginActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.login_activity)
+        
+        if (savedInstanceState == null) {
+            val contract = LoginContract()
+            val fragment = FormulaFragment.newInstance(contract)
+            supportFragmentManager.beginTransaction()
+                .add(R.id.activity_content, fragment, contract.tag)
+                .commit()    
+        }
+    }
     
-    bind(ItemDetailContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
+    override fun onBackPressed() {
+        if (!FormulaAndroid.onBackPressed(this)) {
+            super.onBackPressed()
+        }
     }
 }
 ```
+
 
 ### Lifecycle of individual state streams is managed for you
 The RxJava state stream is instantiated and subscribed to when the user enters declared navigation destination. We 
@@ -424,14 +466,13 @@ data class FormRenderModel(
 }
 ```
 
-Your `Activity` needs to call `FragmentFlowRenderView.onBackPressed()`. It will check if your current screen
+Your `Activity` needs to call `FormulaAndroid.onBackPressed()`. It will check if your current screen
 implements `BackCallback` and will invoke it.
 ```kotlin
 class MyActivity : FragmentActivity() {
-     private lateinit var fragmentRenderView: FragmentFlowRenderView
- 
+
      override fun onBackPressed() {
-         if (!fragmentRenderView.onBackPressed()) {
+         if (!FormulaAndroid.onBackPressed(this)) {
              super.onBackPressed()
          }
      }
