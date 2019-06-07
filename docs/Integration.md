@@ -351,9 +351,9 @@ activity(MyActivity::class) {
 }
 ```
 
-In our activity, we can re-act to this effect and perform the navigation
+In our activity, we can react to this effect and perform the navigation
 ```kotlin
-class MyActivity : FragmentActivity() {
+class MyActivity : FormulaAppCompatActivity() {
      
      fun onActivityEffect(effect: MyActivityEffect) {
         when(effect) {
