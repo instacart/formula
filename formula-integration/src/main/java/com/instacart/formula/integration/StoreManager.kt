@@ -1,7 +1,6 @@
 package com.instacart.formula.integration
 
 import android.app.Activity
-import android.app.Instrumentation
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.activity.ActivityResult
@@ -30,20 +29,23 @@ class StoreManager(
 
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
         // Find store holder
-        val holder: AppStoreFactory.Store<FragmentActivity>? = findOrInitializeStore(activity, savedInstance)
-        if (holder == null) {
-            // TODO what should we do here?
+        val store: AppStoreFactory.Store<FragmentActivity>? = findOrInitializeStore(activity, savedInstance)
+        if (store == null) {
+            /**
+             * TODO:
+             * This activity doesn't have a valid FragmentFlowStore. Should we use no-op store instead
+             * of null for such scenarios instead and crash if it's missing completely?
+             */
             return
         }
 
         // Initialize render view
-        val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = holder.store::onLifecycleEffect)
-        renderViewMap.put(activity, renderView)
+        val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store.store::onLifecycleEffect)
+        renderViewMap[activity] = renderView
     }
 
 
     fun onActivityCreated(activity: FragmentActivity) {
-        val renderView: FragmentFlowRenderView = renderViewMap[activity] ?: throw IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): $activity")
         val store: AppStoreFactory.Store<FragmentActivity>? = findStore(activity)
         if (store == null) {
             // TODO log missing store
@@ -52,6 +54,7 @@ class StoreManager(
 
         store.effectHandler.attachActivity(activity)
 
+        val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
         val disposable = store.state.subscribe {
             renderView.renderer.render(it)
         }
@@ -78,7 +81,6 @@ class StoreManager(
             clearComponent(key)
         }
     }
-
 
     fun onActivityResult(activity: FragmentActivity, result: ActivityResult) {
         findStore(activity)?.effectHandler?.onActivityResult(result)
@@ -134,5 +136,10 @@ class StoreManager(
         return (activityToKeyMap[activity] // Try the map
             ?: savedState?.getString(BUNDLE_KEY) // Try the bundle
             ?: UUID.randomUUID().toString())
+    }
+
+    private fun renderViewOrThrow(activity: FragmentActivity): FragmentFlowRenderView {
+        return renderViewMap[activity]
+            ?: throw IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): $activity")
     }
 }

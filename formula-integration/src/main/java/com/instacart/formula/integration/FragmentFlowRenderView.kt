@@ -109,7 +109,7 @@ class FragmentFlowRenderView(
 
     private fun updateVisibleFragments(state: FragmentFlowState) {
         state.states.forEach { entry ->
-            val fragment = visibleFragments.get(entry.key.tag)
+            val fragment = visibleFragments[entry.key.tag]
             if (fragment != null && fragment is BaseFormulaFragment<*>) {
                 (fragment as BaseFormulaFragment<Any>).setState(entry.value.renderModel)
             }
