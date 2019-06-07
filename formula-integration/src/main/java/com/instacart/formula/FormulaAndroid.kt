@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.integration.AppStoreFactory
 import com.instacart.formula.integration.StoreManager
 import com.instacart.formula.internal.FormulaActivityCallbacks
@@ -13,7 +14,6 @@ object FormulaAndroid {
 
     private var storeManager: StoreManager? = null
     private var callbacks: FormulaActivityCallbacks? = null
-
 
     fun init(application: Application, init: AppStoreFactory.Builder.() -> Unit) {
         // Should we allow re-initialization?
@@ -34,7 +34,8 @@ object FormulaAndroid {
     }
 
     fun onActivityResult(activity: FragmentActivity, requestCode: Int, resultCode: Int, data: Intent?) {
-        // TODO
+        val result = ActivityResult(requestCode, resultCode, data)
+        storeManager?.onActivityResult(activity, result)
     }
 
     fun onBackPressed(activity: FragmentActivity): Boolean {

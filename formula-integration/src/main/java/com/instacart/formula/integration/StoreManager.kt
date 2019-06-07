@@ -1,8 +1,10 @@
 package com.instacart.formula.integration
 
 import android.app.Activity
+import android.app.Instrumentation
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowStore
 import io.reactivex.disposables.Disposable
 import java.lang.IllegalStateException
@@ -47,7 +49,8 @@ class StoreManager(
             // TODO log missing store
             return
         }
-        store.effectHandler.activity = activity
+
+        store.effectHandler.attachActivity(activity)
 
         val disposable = store.state.subscribe {
             renderView.renderer.render(it)
@@ -67,16 +70,18 @@ class StoreManager(
         renderViewMap.remove(activity)?.dispose()
 
         val store = findStore(activity)
-
-        if (store?.effectHandler?.activity == activity) {
-            store.effectHandler.activity = null
-        }
+        store?.effectHandler?.detachActivity(activity)
 
         val key = activityToKeyMap.remove(activity)
         if (key != null && activity.isFinishing) {
 //            Timber.d("finishing $activity, $key")
             clearComponent(key)
         }
+    }
+
+
+    fun onActivityResult(activity: FragmentActivity, result: ActivityResult) {
+        findStore(activity)?.effectHandler?.onActivityResult(result)
     }
 
     fun onBackPressed(activity: FragmentActivity): Boolean {

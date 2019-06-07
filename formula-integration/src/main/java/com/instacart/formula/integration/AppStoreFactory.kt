@@ -8,11 +8,11 @@ class AppStoreFactory internal constructor(
     private val bindings: Map<KClass<*>, Binding<*>>
 ) {
     internal class Binding<A : FragmentActivity>(
-        val init: (ActivityEffectHandler<A>) -> FragmentFlowStore?
+        val init: (ActivityProxy<A>) -> FragmentFlowStore?
     )
 
     class Store<A : FragmentActivity>(
-        val effectHandler: ActivityEffectHandler<A>,
+        val effectHandler: ActivityProxy<A>,
         val store: FragmentFlowStore
     ) {
         val state = store.state().replay(1)
@@ -22,7 +22,7 @@ class AppStoreFactory internal constructor(
     class Builder {
         private val bindings = mutableMapOf<KClass<*>, Binding<*>>()
 
-        fun <A: FragmentActivity> bind(type: KClass<A>, init: (ActivityEffectHandler<A>) -> FragmentFlowStore?) {
+        fun <A: FragmentActivity> bind(type: KClass<A>, init: (ActivityProxy<A>) -> FragmentFlowStore?) {
             bindings[type] = Binding(init)
         }
 
@@ -32,8 +32,8 @@ class AppStoreFactory internal constructor(
     }
 
     fun <A : FragmentActivity> init(activity: A): Store<A>? {
-        val initializer = bindings[activity::class] as (ActivityEffectHandler<A>) -> FragmentFlowStore?
-        val effectHandler = ActivityEffectHandler<A>()
+        val initializer = bindings[activity::class] as (ActivityProxy<A>) -> FragmentFlowStore?
+        val effectHandler = ActivityProxy<A>()
         val store = initializer(effectHandler)
         return store?.let {
             Store(effectHandler, store)
