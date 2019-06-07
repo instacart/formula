@@ -7,29 +7,40 @@ import com.instacart.formula.fragment.FragmentFlowStore
 /**
  * This class provides ability to create [ActivityStore]. It provides access to the
  * [ActivityProxy].
+ *
+ * @param A - type of activity that this class provides context for.
  */
 class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
 
-    fun build(
+    /**
+     * Creates an [ActivityStore].
+     */
+    fun store(
         onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
         store: FragmentFlowStore
     ) : ActivityStore<A>  {
         return ActivityStore(onRenderFragmentState, proxy, store)
     }
 
-    inline fun build(
+    /**
+     * Creates an [ActivityStore].
+     */
+    inline fun store(
         noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
         crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
     ): ActivityStore<A> {
-        return build(Unit, onRenderFragmentState, init)
+        return store(Unit, onRenderFragmentState, init)
     }
 
-    inline fun <Component> build(
+    /**
+     * Creates an [ActivityStore].
+     */
+    inline fun <Component> store(
         rootComponent: Component,
         noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
         crossinline init: FragmentBindingBuilder<Component>.() -> Unit
     ) : ActivityStore<A> {
         val fragmentFlowStore = FragmentFlowStore.init(rootComponent, init)
-        return build(onRenderFragmentState, fragmentFlowStore)
+        return store(onRenderFragmentState, fragmentFlowStore)
     }
 }

@@ -14,7 +14,7 @@ class AppStoreFactoryTest {
         val factory = AppStoreFactory.Builder()
             .apply {
                 activity(FakeActivity::class) {
-                    build { }
+                    store { }
                 }
             }
             .build()

@@ -21,7 +21,7 @@ object FormulaAndroid {
             throw IllegalStateException("can only initialize the store once.")
         }
 
-        val factory = AppStoreFactory.Builder().also { it.init() }.build()
+        val factory = AppStoreFactory.Builder().apply { init() }.build()
         val manager = StoreManager(factory)
         val activityLifecycleCallbacks = FormulaActivityCallbacks(manager)
         application.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
