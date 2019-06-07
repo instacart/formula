@@ -17,29 +17,33 @@ object FormulaAndroid {
 
     fun init(application: Application, init: AppStoreFactory.Builder.() -> Unit) {
         // Should we allow re-initialization?
+        if (storeManager != null) {
+            throw IllegalStateException("can only initialize the store once.")
+        }
 
-        val builder = AppStoreFactory.Builder()
-        builder.init()
-        val factory = builder.build()
+        val factory = AppStoreFactory.Builder().also { it.init() }.build()
         val manager = StoreManager(factory)
         val activityLifecycleCallbacks = FormulaActivityCallbacks(manager)
         application.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
-        this.storeManager
+
+        this.storeManager = manager
         this.callbacks = activityLifecycleCallbacks
     }
 
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
-        val manager = storeManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
-        manager.onPreCreate(activity, savedInstance)
+        managerOrThrow(activity).onPreCreate(activity, savedInstance)
     }
 
     fun onActivityResult(activity: FragmentActivity, requestCode: Int, resultCode: Int, data: Intent?) {
         val result = ActivityResult(requestCode, resultCode, data)
-        storeManager?.onActivityResult(activity, result)
+        managerOrThrow(activity).onActivityResult(activity, result)
     }
 
     fun onBackPressed(activity: FragmentActivity): Boolean {
-        val manager = storeManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
-        return manager.onBackPressed(activity)
+        return managerOrThrow(activity).onBackPressed(activity)
+    }
+
+    private fun managerOrThrow(activity: FragmentActivity): StoreManager {
+        return storeManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
     }
 }
