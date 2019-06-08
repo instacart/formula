@@ -8,55 +8,101 @@ Some of the goals for this module are:
 - Ability to group multiple fragments into a flow and share state between them.
 - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
 
-### Declarative API
-This module provides a declarative API where you define state management for each of 
-your navigation destinations (we call them contracts). You define a store and bind
-individual contract types to the state management.
+## Getting Started
+For the getting started guide, we will build a timer which you can reset. This is a simple example, but 
+it will be sufficient to display some of the concepts around this module.
+
+### Defining the render model
+When working with Formula, usually the first thing we define is what our UI will be rendering and what actions it will
+perform. Render Model is a class that defines this.
 
 ```kotlin
-class MyApp : Application() {
-    override fun onCreate() {
-        FormulaAndroid.init(this) {
-            activity(LoginActivity::class) {
-                store {
-                    bind(LoginContract::class) { _, key ->
-                       TODO("return an RxJava state stream that drives the UI")
-                    }
-                    
-                    bind(SignUpActivity::class) { _, key ->
-                       TODO("return an RxJava state stream that drives the UI")
-                    }
-                }
+class TimerRenderModel(
+    val time: String,
+    val onResetSelected: () -> Unit
+)
+```
+
+### Let's apply this render model to android views
+We define a fragment contract for how a render model is applied to Android views.
+```kotlin
+// Fragment contract has to provide Parcelable implementation because it is passed to the fragment as an argument.
+// Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
+@Parcelize
+data class TimerContract(
+    override val tag: String = "timer",
+    override val layoutId: Int = R.layout.timer
+) : FragmentContract<TimerRenderModel>() {
+
+    // A layout is automatically inflated and the view is passed to this callback.
+    override fun createComponent(view: View): FragmentComponent<TimerRenderModel> {
+        val timerTextView = view.findViewById(R.id.timer_text_view)
+        val resetButton = view.findViewById(R.id.timer_reset_button)
+        
+        return FragmentComponent.create { renderModel ->
+            timerTextView.text = renderModel.time
+            resetButton.setOnClickListener {
+                renderModel.onResetSelected()
             }
-            
-            activity(MainActivity::class) {
+        }
+    }
+}
+```
+
+### Register state management for this screen
+Fragment contract is used as a navigation destination key. For each of the fragment contract types, we provide 
+a state management factory. This factory has to return an `Observable<RenderModel>`. The factory will be invoked
+when the user enters this destination.
+```kotlin
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        FormulaAndroid.init(this) {
+            activity(MyActivity::class) {
                 store {
-                    bind(ItemListContract::class) { _, key ->
-                       TODO("return an RxJava state stream that drives the UI")
-                    }
-                    
-                    bind(ItemDetailContract::class) { _, key ->
-                       TODO("return an RxJava state stream that drives the UI")
+                    // Bind function provides type safety - given a TimerContract,
+                    // it expects Observable<TimerRenderModel> from the factory
+                    bind(TimerContract::class) { _, contract ->
+                        val resetRelay = PublishRelay.create<Unit>()
+                        
+                        resetRelay.startWith(Unit).switchMap { 
+                            Observable
+                                .interval(0, 1, TimeUnit.SECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                        }
+                        .map {
+                            TimerRenderModel(
+                                time = "$it seconds passed.",
+                                onResetSelected = {
+                                    resetRelay.accept(Unit)
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
-    }   
+    }
 }
 ```
 
-To support Formula within your activity, you can extend `FormulaAppCompatActivity`.
+For the sake of simplicity, I've inlined the state management logic into the `bind` function. In a real world example,
+this logic would live within `Formula` or `RenderFormula` classes.
+
+### The only thing left is navigating to this screen
 ```kotlin
-class LoginActivity : FormulaAppCompatActivity() {
+class MyActivity : FormulaAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login_activity)
+        setContentView(R.layout.my_activity)
         
         if (savedInstanceState == null) {
-            // Initialize FormulaFragment with a contract 
-            // and use fragment transactions to add it.
-            val contract = LoginContract()
+            val contract = TimerContract()
             val fragment = FormulaFragment.newInstance(contract)
+            
+            // Add the fragment using the fragment transaction API.
             supportFragmentManager.beginTransaction()
                 .add(R.id.activity_content, fragment, contract.tag)
                 .commit()    
@@ -67,168 +113,10 @@ class LoginActivity : FormulaAppCompatActivity() {
 
 If your `Activity` has another base class, you can just copy logic from `FormulaAppCompatActivity` into your `Activity`.
 
+### And that's it
+Formula takes care of the rest. The RxJava state stream is instantiated and subscribed to when the user enters 
+declared navigation destination. We dispose of the stream only when user exits the destination. 
 
-### Lifecycle of individual state streams is managed for you
-The RxJava state stream is instantiated and subscribed to when the user enters declared navigation destination. We 
-dispose of the stream only when user exits the destination. As long as the `FragmentFlowStore.state()` is subscribed to 
-within a surface that survives configuration changes such as Android Components ViewModel, all of the state streams will
-survive configuration changes.
-
-```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val store: FragmentFlowStore = ... 
-
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
-    }
-
-    // The activity will pass fragment lifecycle events so we 
-    // could figure out what state management needs to run.
-    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
-        store.onLifecycleEffect(event)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
-}
-```
-
-
-## Defining the first fragment contract
-FragmentContract defines how a fragment should bind a specific type of render model to Android views. It is also
-used as a key to instantiate the state management. 
-
-```kotlin
-// Fragment contract has to provide Parcelable implementation because it is passed to the fragment as an argument.
-// Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
-@Parcelize 
-data class TaskDetailContract(
-    val taskId: Int,
-    override val tag: String = "task ${taskId}",
-    override val layoutId: Int = R.layout.task_detail
-) : FragmentContract<TaskDetailRenderModel>() {
-
-    override fun createComponent(view: View): FragmentComponent<TaskDetailRenderModel> {
-        val taskDescriptionView = view.findViewById(R.id.task_description_view)
-        val deleteButton = view.findViewById(R.id.task_delete_button)
-        
-        return FragmentComponent.create { renderModel ->
-            taskDescriptionView.text = renderModel.taskDescription
-            deleteButton.setOnClickListener {
-                renderModel.onDeleteSelected()
-            }
-        }
-    }
-}
-```
-
-When we want to navigate to task detail, we create `FormulaFragment` using this contract.
-```kotlin
-val contract = TaskDetailContract(taskId = 1)
-val fragment = FormulaFragment.newInstance(contract)
-
-// Add the fragment using the fragment transaction API.
-supportFragmentManager.beginTransaction()
-    .add(R.id.activity_content, fragment, contract.tag)
-    .commit()
-
-```
-
-Now let's bind the fragment contract to the state management. We create a `FragmentFlowStore` that
-enables us to bind various fragment contracts to their state management.
-```kotlin
-val component: TaskAppComponent = ...
-
-// Declaring fragment store with all the fragment contracts we handle.
-val store = FragmentFlowStore.init(component) {
-    bind(TaskDetailContract::class) { component: TaskAppComponent, key: TaskDetailContract ->
-        // When a fragment is added as part of a fragment transaction,
-        // this lambda function is called to instantiate the state management 
-        // for that fragment. The specific fragment contract is passed to this
-        // function from which we we can get the task id.
-        val taskId = key.taskId
-        
-        // This function needs to return Observable<TaskDetailRenderModel>
-        component.taskRepo.findTask(taskId).map { task ->
-            TaskDetailRenderModel(
-                description = task.description,
-                onDeleteSelected = {
-                    component.taskRepo.delete(taskId)
-                }
-            )
-        }
-    }
-    
-    bind(AnotherFragmentContract::class) { component, key ->
-        Observable.error(Throwable("not implemented yet."))
-    }
-}
-``` 
- 
-The store should live outside of the activity so that it would survive configuration changes. One option is to place it 
-inside of the android architecture component ViewModel.
-```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val store = /* see previous example how to create a store */
-
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
-    }
-
-    // The activity will pass fragment lifecycle events so we 
-    // could figure out what state management needs to run.
-    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
-        store.onLifecycleEffect(event)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
-}
-```
-
-Finally, we need to wire everything up in our activity 
-```kotlin
-class MyActivity : FragmentActivity() {
-     private lateinit var fragmentRenderView: FragmentFlowRenderView
- 
-     val disposables = CompositeDisposable()
- 
-     override fun onCreate(savedInstanceState: Bundle?) {
-         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
-         // We need to initialize this before Activity.super.onCreate(). We want to listen to all
-         // fragment lifecycle events and pass them to the FragmentFlowStore.
-         fragmentRenderView = FragmentFlowRenderView(this, onLifecycleEvent = viewModel::onLifecycleEvent)
- 
-         super.onCreate(savedInstanceState)
-         setContentView(R.layout.my_activity)
-         
-         // We listen for fragment state changes and pass them to the FragmentFlowRenderView to render. 
-         disposables.add(viewModel.state.subscribe(fragmentRenderView.renderer::render))
-     }
- 
-     override fun onDestroy() {
-         disposables.clear()
-         fragmentRenderView.dispose()
-         super.onDestroy()
-     }
- 
-     override fun onBackPressed() {
-         if (!fragmentRenderView.onBackPressed()) {
-             super.onBackPressed()
-         }
-     }
-}
-```
 
 ## How to pass arguments such as item id to the fragment?
 Arguments can be passed using the Fragment contract.
