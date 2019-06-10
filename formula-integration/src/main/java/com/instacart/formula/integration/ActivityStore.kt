@@ -15,10 +15,9 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
  * @param onRenderFragmentState - this is invoked after [FragmentFlowState] has been updated.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    internal val onInitActivity: ((Activity) -> Unit)? = null,
-    internal val onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
     internal val proxy: ActivityProxy<Activity>,
-    internal val fragmentFlowStore: FragmentFlowStore
+    internal val fragmentFlowStore: FragmentFlowStore,
+    internal val eventCallbacks: EventCallbacks<Activity>
 ) {
 
     internal val state = fragmentFlowStore.state().replay(1)
@@ -26,5 +25,6 @@ class ActivityStore<Activity : FragmentActivity>(
 
     internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         fragmentFlowStore.onLifecycleEffect(event)
+        eventCallbacks.onFragmentLifecycleEvent?.invoke(event)
     }
 }

@@ -16,22 +16,20 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
      * Creates an [ActivityStore].
      */
     fun store(
-        onInitActivity: ((A) -> Unit)? = null,
-        onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        eventCallbacks: EventCallbacks<A>? = null,
         store: FragmentFlowStore
     ) : ActivityStore<A>  {
-        return ActivityStore(onInitActivity, onRenderFragmentState, proxy, store)
+        return ActivityStore(proxy, store, eventCallbacks ?: EventCallbacks())
     }
 
     /**
      * Creates an [ActivityStore].
      */
     inline fun store(
-        noinline onInitActivity: ((A) -> Unit)? = null,
-        noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        eventCallbacks: EventCallbacks<A>? = null,
         crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
     ): ActivityStore<A> {
-        return store(Unit, onInitActivity, onRenderFragmentState, init)
+        return store(Unit, eventCallbacks, init)
     }
 
     /**
@@ -39,11 +37,10 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
      */
     inline fun <Component> store(
         rootComponent: Component,
-        noinline onInitActivity: ((A) -> Unit)? = null,
-        noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        eventCallbacks: EventCallbacks<A>? = null,
         crossinline init: FragmentBindingBuilder<Component>.() -> Unit
     ) : ActivityStore<A> {
         val fragmentFlowStore = FragmentFlowStore.init(rootComponent, init)
-        return store(onInitActivity, onRenderFragmentState, fragmentFlowStore)
+        return store(eventCallbacks, fragmentFlowStore)
     }
 }
