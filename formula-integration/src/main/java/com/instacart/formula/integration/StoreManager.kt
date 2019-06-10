@@ -28,22 +28,12 @@ internal class StoreManager(
     private val subscriptions = mutableMapOf<Activity, Disposable>()
 
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
-        // Find store
-        val store: ActivityStore<FragmentActivity>? = findOrInitActivityStore(activity, savedInstance)
-        if (store == null) {
-            /**
-             * TODO:
-             * This activity doesn't have a valid FragmentFlowStore. Should we use no-op store instead
-             * of null for such scenarios instead and crash if it's missing completely?
-             */
-            return
-        }
+        val store: ActivityStore<FragmentActivity> = findOrInitActivityStore(activity, savedInstance)
 
         // Initialize render view
         val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store::onLifecycleEvent)
         renderViewMap[activity] = renderView
     }
-
 
     fun onActivityCreated(activity: FragmentActivity) {
         val storeHolder: ActivityStore<FragmentActivity>? = findStore(activity)
@@ -79,7 +69,6 @@ internal class StoreManager(
 
         val key = activityToKeyMap.remove(activity)
         if (key != null && activity.isFinishing) {
-//            Timber.d("finishing $activity, $key")
             clearActivityStore(key)
         }
     }
@@ -102,7 +91,7 @@ internal class StoreManager(
     @Suppress("UNCHECKED_CAST")
     private fun <A : FragmentActivity> findOrInitActivityStore(
         activity: FragmentActivity, savedState: Bundle?
-    ): ActivityStore<A>? {
+    ): ActivityStore<A> {
         val key = findOrGenerateActivityKey(activity, savedState) // generate new key
         activityToKeyMap[activity] = key
 
@@ -113,13 +102,12 @@ internal class StoreManager(
 
         val component = factory.init(activity) as ActivityStore<A>?
         if (component != null) {
-//            Timber.d("initialized a new component for $activity, $key")
             // let's store the flow to the map
             componentMap[key] = component as ActivityStore<FragmentActivity>
             return component
         }
-//        Timber.d("couldn't find component for $activity, $key")
-        return null
+
+        throw IllegalStateException("no store was found for: ${activity::class.java.simpleName}")
     }
 
     private fun clearActivityStore(key: String) {
@@ -137,7 +125,10 @@ internal class StoreManager(
     }
 
     private fun renderViewOrThrow(activity: FragmentActivity): FragmentFlowRenderView {
-        return renderViewMap[activity]
-            ?: throw IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): $activity")
+        return renderViewMap[activity] ?: throw callOnPreCreateException(activity)
+    }
+
+    private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
+        return IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): ${activity::class.java.simpleName}")
     }
 }

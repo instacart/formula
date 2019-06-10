@@ -15,7 +15,7 @@ class AppStoreFactory internal constructor(
 
         fun <A : FragmentActivity> activity(
             type: KClass<A>,
-            init: ActivityStoreContext<A>.() -> ActivityStore<A>?
+            init: ActivityStoreContext<A>.() -> ActivityStore<A>
         ) {
             bindings[type] = Binding(init)
         }
