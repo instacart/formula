@@ -20,7 +20,11 @@ class FragmentAndroidEventTest {
         initFormula = { app ->
             FormulaAndroid.init(app) {
                 activity(TestFragmentActivity::class) {
-                    store {
+                    store(
+                        onInitActivity = {
+                            it.initialContract = TestLifecycleContract()
+                        }
+                    ) {
                         bind(TestLifecycleContract::class) { _ ->
                             proxy.activityResults().flatMap {
                                 activityResults.add(it)

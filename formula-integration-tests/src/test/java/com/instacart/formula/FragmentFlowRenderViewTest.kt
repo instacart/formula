@@ -27,8 +27,11 @@ class FragmentFlowRenderViewTest {
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
-                activity(TestFlowViewActivity::class) {
+                activity(TestFragmentActivity::class) {
                     store(
+                        onInitActivity = {
+                            it.initialContract = TestContract()
+                        },
                         onRenderFragmentState = { a, state ->
                             lastState = state
                         }
@@ -49,10 +52,10 @@ class FragmentFlowRenderViewTest {
             lastState = null
         })
 
-    private val activityRule = ActivityScenarioRule(TestFlowViewActivity::class.java)
+    private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
 
     @get:Rule val rule = RuleChain.outerRule(formulaRule).around(activityRule)
-    lateinit var scenario: ActivityScenario<TestFlowViewActivity>
+    lateinit var scenario: ActivityScenario<TestFragmentActivity>
 
     @Before fun setup() {
         scenario = activityRule.scenario
@@ -187,7 +190,7 @@ class FragmentFlowRenderViewTest {
         }
     }
 
-    private fun activity(): TestFlowViewActivity {
+    private fun activity(): TestFragmentActivity {
         return scenario.activity()
     }
 

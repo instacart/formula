@@ -11,7 +11,7 @@ object TestFragmentComponent {
         return FragmentComponent.create(
             renderView = object : RenderView<T> {
                 override val renderer: Renderer<T> = Renderer.create {
-                    (view.context as TestFlowViewActivity).renderCalls.add(Pair(contract, it))
+                    (view.context as TestFragmentActivity).renderCalls.add(Pair(contract, it))
                 }
             },
             lifecycleCallbacks = object : FragmentLifecycleCallback {

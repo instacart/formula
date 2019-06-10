@@ -23,7 +23,12 @@ class FragmentLifecycleTest {
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
             activity(TestFragmentActivity::class) {
-                store {
+                store(
+                    onInitActivity = {
+                        contract = TestLifecycleContract()
+                        it.initialContract = contract
+                    }
+                ) {
                     bind(TestLifecycleContract::class) { _ ->
                         Observable.empty()
                     }
@@ -40,7 +45,6 @@ class FragmentLifecycleTest {
             .setup()
 
         this.activityController = activityController
-        this.contract = activityController.get().contract
     }
 
     @Test fun `creation callbacks`() {
