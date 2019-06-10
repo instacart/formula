@@ -61,8 +61,8 @@ class ActivityProxy<A : FragmentActivity> {
      *
      * [Event] - type of event
      */
-    fun <Event> selectActivityEvents(select: (A) -> Observable<Event>): Observable<Event> {
-        return latestActivity().flatMap {
+    fun <Event> selectActivityEvents(select: A.() -> Observable<Event>): Observable<Event> {
+        return latestActivity().switchMap {
             val activity = it.orNull()
             if (activity == null) {
                 Observable.empty<Event>()
