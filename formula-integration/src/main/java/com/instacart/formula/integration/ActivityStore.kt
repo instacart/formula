@@ -14,10 +14,10 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
  *                         user this callback to inject the activity.
  * @param onRenderFragmentState - this is invoked after [FragmentFlowState] has been updated.
  */
-class ActivityStore<A : FragmentActivity>(
-    internal val onInitActivity: ((A) -> Unit)? = null,
-    internal val onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
-    internal val proxy: ActivityProxy<A>,
+class ActivityStore<Activity : FragmentActivity>(
+    internal val onInitActivity: ((Activity) -> Unit)? = null,
+    internal val onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
+    internal val proxy: ActivityProxy<Activity>,
     internal val fragmentFlowStore: FragmentFlowStore
 ) {
 
