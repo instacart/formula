@@ -1,45 +1,23 @@
 package com.instacart.formula
 
 import android.os.Bundle
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProviders
 import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.integration.FragmentFlowRenderView
-import io.reactivex.disposables.CompositeDisposable
+import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.integration.FormulaAppCompatActivity
 
-class TestFlowViewActivity : FragmentActivity() {
-    private val disposables = CompositeDisposable()
-
+class TestFlowViewActivity : FormulaAppCompatActivity() {
     // Exposed for testing purposes.
-    lateinit var fragmentFlowRenderView: FragmentFlowRenderView
-    lateinit var viewModel: TestFragmentFlowViewModel
+    val renderCalls = mutableListOf<Pair<FragmentContract<*>, *>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        viewModel = ViewModelProviders.of(this).get(TestFragmentFlowViewModel::class.java)
-        fragmentFlowRenderView = FragmentFlowRenderView(this, onLifecycleEvent = viewModel::onLifecycleEvent)
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_activity)
 
-        disposables.add(viewModel.state.subscribe(fragmentFlowRenderView.renderer::render))
-
         if (savedInstanceState == null) {
-            val contract = TaskListContract()
+            val contract = TestContract()
             supportFragmentManager.beginTransaction()
                 .add(R.id.activity_content, FormulaFragment.newInstance(contract), contract.tag)
                 .commit()
-        }
-    }
-
-    override fun onDestroy() {
-        disposables.clear()
-        fragmentFlowRenderView.dispose()
-        super.onDestroy()
-    }
-
-    override fun onBackPressed() {
-        if (!fragmentFlowRenderView.onBackPressed()) {
-            super.onBackPressed()
         }
     }
 }

@@ -8,188 +8,115 @@ Some of the goals for this module are:
 - Ability to group multiple fragments into a flow and share state between them.
 - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
 
-### Declarative API
-This module provides a declarative API where you define state management for each of 
-your navigation destinations (we call them contracts). You define a store and bind
-individual contract types to the state management.
+## Getting Started
+For the getting started guide, we will build a timer which you can reset. This is a simple example, but 
+it will be sufficient to display some of the concepts around this module.
+
+### Defining the render model
+When working with Formula, usually the first thing we define is what our UI will be rendering and what actions it will
+perform. Render Model is a class that defines this.
 
 ```kotlin
-val store = FragmentFlowStore.init(...) {
-    bind(LoginContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-    }
-
-    bind(ItemListContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-    } 
-    
-    bind(ItemDetailContract::class) { _, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-    }
-}
+class TimerRenderModel(
+    val time: String,
+    val onResetSelected: () -> Unit
+)
 ```
 
-### Lifecycle of individual state streams is managed for you
-The RxJava state stream is instantiated and subscribed to when the user enters declared navigation destination. We 
-dispose of the stream only when user exits the destination. As long as the `FragmentFlowStore.state()` is subscribed to 
-within a surface that survives configuration changes such as Android Components ViewModel, all of the state streams will
-survive configuration changes.
-
-```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val store: FragmentFlowStore = ... 
-
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
-    }
-
-    // The activity will pass fragment lifecycle events so we 
-    // could figure out what state management needs to run.
-    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
-        store.onLifecycleEffect(event)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
-}
-```
-
-
-## Defining the first fragment contract
-FragmentContract defines how a fragment should bind a specific type of render model to Android views. It is also
-used as a key to instantiate the state management. 
-
+### Let's apply this render model to android views
+We define a fragment contract for how a render model is applied to Android views.
 ```kotlin
 // Fragment contract has to provide Parcelable implementation because it is passed to the fragment as an argument.
 // Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
-@Parcelize 
-data class TaskDetailContract(
-    val taskId: Int,
-    override val tag: String = "task ${taskId}",
-    override val layoutId: Int = R.layout.task_detail
-) : FragmentContract<TaskDetailRenderModel>() {
+@Parcelize
+data class TimerContract(
+    override val tag: String = "timer",
+    override val layoutId: Int = R.layout.timer
+) : FragmentContract<TimerRenderModel>() {
 
-    override fun createComponent(view: View): FragmentComponent<TaskDetailRenderModel> {
-        val taskDescriptionView = view.findViewById(R.id.task_description_view)
-        val deleteButton = view.findViewById(R.id.task_delete_button)
+    // A layout is automatically inflated and the view is passed to this callback.
+    override fun createComponent(view: View): FragmentComponent<TimerRenderModel> {
+        val timerTextView = view.findViewById(R.id.timer_text_view)
+        val resetButton = view.findViewById(R.id.timer_reset_button)
         
         return FragmentComponent.create { renderModel ->
-            taskDescriptionView.text = renderModel.taskDescription
-            deleteButton.setOnClickListener {
-                renderModel.onDeleteSelected()
+            timerTextView.text = renderModel.time
+            resetButton.setOnClickListener {
+                renderModel.onResetSelected()
             }
         }
     }
 }
 ```
 
-When we want to navigate to task detail, we create `FormulaFragment` using this contract.
+### Register state management for this screen
+Fragment contract is used as a navigation destination key. For each of the fragment contract types, we provide 
+a state management factory. This factory has to return an `Observable<RenderModel>`. The factory will be invoked
+when the user enters this destination.
 ```kotlin
-val contract = TaskDetailContract(taskId = 1)
-val fragment = FormulaFragment.newInstance(contract)
-
-// Add the fragment using the fragment transaction API.
-supportFragmentManager.beginTransaction()
-    .add(R.id.activity_content, fragment, contract.tag)
-    .commit()
-
-```
-
-Now let's bind the fragment contract to the state management. We create a `FragmentFlowStore` that
-enables us to bind various fragment contracts to their state management.
-```kotlin
-val component: TaskAppComponent = ...
-
-// Declaring fragment store with all the fragment contracts we handle.
-val store = FragmentFlowStore.init(component) {
-    bind(TaskDetailContract::class) { component: TaskAppComponent, key: TaskDetailContract ->
-        // When a fragment is added as part of a fragment transaction,
-        // this lambda function is called to instantiate the state management 
-        // for that fragment. The specific fragment contract is passed to this
-        // function from which we we can get the task id.
-        val taskId = key.taskId
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
         
-        // This function needs to return Observable<TaskDetailRenderModel>
-        component.taskRepo.findTask(taskId).map { task ->
-            TaskDetailRenderModel(
-                description = task.description,
-                onDeleteSelected = {
-                    component.taskRepo.delete(taskId)
+        FormulaAndroid.init(this) {
+            activity(MyActivity::class) {
+                store {
+                    // Bind function provides type safety - given a TimerContract,
+                    // it expects Observable<TimerRenderModel> from the factory
+                    bind(TimerContract::class) { _, contract ->
+                        val resetRelay = PublishRelay.create<Unit>()
+                        
+                        resetRelay.startWith(Unit).switchMap { 
+                            Observable
+                                .interval(0, 1, TimeUnit.SECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                        }
+                        .map {
+                            TimerRenderModel(
+                                time = "$it seconds passed.",
+                                onResetSelected = {
+                                    resetRelay.accept(Unit)
+                                }
+                            )
+                        }
+                    }
                 }
-            )
+            }
         }
     }
-    
-    bind(AnotherFragmentContract::class) { component, key ->
-        Observable.error(Throwable("not implemented yet."))
-    }
 }
-``` 
- 
-The store should live outside of the activity so that it would survive configuration changes. One option is to place it 
-inside of the android architecture component ViewModel.
+```
+
+For the sake of simplicity, I've inlined the state management logic into the `bind` function. In a real world example,
+this logic would live within `Formula` or `RenderFormula` classes.
+
+### The only thing left is navigating to this screen
 ```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val store = /* see previous example how to create a store */
-
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
-    }
-
-    // The activity will pass fragment lifecycle events so we 
-    // could figure out what state management needs to run.
-    fun onLifecycleEvent(event: LifecycleEvent<FragmentContract<*>>) {
-        store.onLifecycleEffect(event)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
+class MyActivity : FormulaAppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.my_activity)
+        
+        if (savedInstanceState == null) {
+            val contract = TimerContract()
+            val fragment = FormulaFragment.newInstance(contract)
+            
+            // Add the fragment using the fragment transaction API.
+            supportFragmentManager.beginTransaction()
+                .add(R.id.activity_content, fragment, contract.tag)
+                .commit()    
+        }
     }
 }
 ```
 
-Finally, we need to wire everything up in our activity 
-```kotlin
-class MyActivity : FragmentActivity() {
-     private lateinit var fragmentRenderView: FragmentFlowRenderView
- 
-     val disposables = CompositeDisposable()
- 
-     override fun onCreate(savedInstanceState: Bundle?) {
-         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
-         // We need to initialize this before Activity.super.onCreate(). We want to listen to all
-         // fragment lifecycle events and pass them to the FragmentFlowStore.
-         fragmentRenderView = FragmentFlowRenderView(this, onLifecycleEvent = viewModel::onLifecycleEvent)
- 
-         super.onCreate(savedInstanceState)
-         setContentView(R.layout.my_activity)
-         
-         // We listen for fragment state changes and pass them to the FragmentFlowRenderView to render. 
-         disposables.add(viewModel.state.subscribe(fragmentRenderView.renderer::render))
-     }
- 
-     override fun onDestroy() {
-         disposables.clear()
-         fragmentRenderView.dispose()
-         super.onDestroy()
-     }
- 
-     override fun onBackPressed() {
-         if (!fragmentRenderView.onBackPressed()) {
-             super.onBackPressed()
-         }
-     }
-}
-```
+If your `Activity` has another base class, you can just copy logic from `FormulaAppCompatActivity` into your `Activity`.
+
+### And that's it
+Formula takes care of the rest. The RxJava state stream is instantiated and subscribed to when the user enters 
+declared navigation destination. We dispose of the stream only when user exits the destination. 
+
 
 ## How to pass arguments such as item id to the fragment?
 Arguments can be passed using the Fragment contract.
@@ -233,97 +160,74 @@ class MyFragment : Fragment() {
 
 Instead of a listener with methods, we define a sealed class of possible actions that activity can perform.
 ```kotlin
-sealed class ActivityEffect {
-    class ShowToast(val message: String): ActivityEffect()
-    class CloseFragment(val tag: String): ActivityEffect()
+sealed class MyActivityEffect {
+    class ShowToast(val message: String): MyActivityEffect()
+    class CloseFragment(val tag: String): MyActivityEffect()
 }
 ```
 
-We then create a PublishRelay that we use for pub-sub messaging with the Activity.
 ```kotlin
-class MyActivityViewModel : ViewModel() {
-    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
-    
-    private val store = FragmentFlowStore.init(...) {
-        bind(ItemDetailContract::class) { component, contract ->
+class MyActivity : FragmentActivity() {
+
+    fun onActivityEffect(effect: MyActivityEffect) {
+        when (effect) {
+            is ShowToast -> {
+                Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
+            } 
+            is CloseFragment -> {
+                supportFragmentManager.popBackStack()
+            }
+        }
+    }
+}
+```
+
+We can then use a `ActivityProxy<MyActivity>` to trigger this effect.
+```kotlin
+activity(MyActivity::class) {
+    store {
+        bind(ItemDetailContract::class) { _, contract ->
             val input = ItemDetailFormula.Input(
                 onItemFavorited = {
-                    effectRelay.accept(ActivityEffect.ShowToast("Item was added to your favorites."))
+                    proxy.send {
+                        onActivityEffect(MyActivityEffect.ShowToast("Item was added to your favorites."))
+                    }
                 },
                 onItemDeleted = {
-                    effectRelay.accept(ActivityEffect.CloseFragment(contract.tag))        
+                    proxy.send {
+                        onActivityEffect(MyActivityEffect.CloseFragment(contract.tag))
+                    }
                 }
             )
         
             val formula: ItemDetailFormula = component.createItemDetailFormula()
             formula.state(input)
         }
-    }    
-    
-    private val disposables = CompositeDisposable()
-
-    // We use replay + connect so this stream survives configuration changes.
-    val state: Observable<FragmentFlowState> =  store.state().replay(1).apply {
-        connect { disposables.add(it) }
     }
-
-    // Expose effects to the activity
-    val effects: Observable<ActivityEffect> = effectRelay.hide()
-}
-```
-
-In the activity, we then listen to `effects` stream and do a pattern match
-```kotlin
-class MyActivity : FragmentActivity() {
-     val disposables = CompositeDisposable()
- 
-     override fun onCreate(savedInstanceState: Bundle?) {
-         val viewModel = ViewModelProviders.of(this).get(MyActivityViewModel::class.java)
- 
-         super.onCreate(savedInstanceState)
-         setContentView(R.layout.my_activity)
-         
-         disposables.add(viewModel.effects.subscribe { effect ->
-            when (effect) {
-                is ShowToast -> {
-                    Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show();
-                } 
-                is CloseFragment -> {
-                    supportFragmentManager.popBackStack()
-                }
-            }
-         })
-     }
- 
-     override fun onDestroy() {
-         disposables.clear()
-         super.onDestroy()
-     }
 }
 ```
 
 ## Navigation
-To trigger navigation from one screen to another, we add a new type to the `ActivityEffect` sealed class.
+To trigger navigation from one screen to another, we add a new type to the `MyActivityEffect` sealed class.
 ```kotlin
-sealed class ActivityEffect {
+sealed class MyActivityEffect {
     ... 
-    class NavigateToFragmentContract(val contract: FragmentContract<*>): ActivityEffect()
+    class NavigateToFragmentContract(val contract: FragmentContract<*>): MyActivityEffect()
 }
 ```
 
 Now, we can trigger it from event callback such as `onItemSelected`
 ```kotlin
-class MyActivityViewModel : ViewModel() {
-
-    private val effectRelay: PublishRelay<ActivityEffect> = PublishRelay.create()
-    
-    private val store = FragmentFlowStore.init(...) {
-        bind(ItemListContract::class) { component, contract ->
+activity(MyActivity::class) {
+    store {
+        bind(ItemListContract::class) { _, contract ->
             // Provide callbacks to item list feature events.
             val input = ItemListFormula.Input(
                 onItemSelected = { item ->
                     val contract = ItemDetailContract(id = item.id)
-                    effectRelay.accept(ActivityEffect.NavigateToFragmentContract(contract))        
+                    proxy.send {
+                        onActivityEffect(ActivityEffect.NavigateToFragmentContract(contract))
+                    }
                 }
             )
         
@@ -331,15 +235,15 @@ class MyActivityViewModel : ViewModel() {
             val formula: ItemListFormula = ...
             formula.state(input)
         }
-    }    
+    }
 }
 ```
 
-In our activity, we can re-act to this effect and perform the navigation
+In our activity, we can react to this effect and perform the navigation
 ```kotlin
-class MyActivity : FragmentActivity() {
+class MyActivity : FormulaAppCompatActivity() {
      
-     private fun handleActivityEffect(effect: ActivityEffect) {
+     fun onActivityEffect(effect: MyActivityEffect) {
         when(effect) {
             is NavigateToFragmentContract -> {
                 // Perform navigation using fragment transaction
@@ -424,14 +328,13 @@ data class FormRenderModel(
 }
 ```
 
-Your `Activity` needs to call `FragmentFlowRenderView.onBackPressed()`. It will check if your current screen
+Your `Activity` needs to call `FormulaAndroid.onBackPressed()`. It will check if your current screen
 implements `BackCallback` and will invoke it.
 ```kotlin
 class MyActivity : FragmentActivity() {
-     private lateinit var fragmentRenderView: FragmentFlowRenderView
- 
+
      override fun onBackPressed() {
-         if (!fragmentRenderView.onBackPressed()) {
+         if (!FormulaAndroid.onBackPressed(this)) {
              super.onBackPressed()
          }
      }

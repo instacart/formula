@@ -91,6 +91,8 @@ class FragmentFlowRenderView(
     }
 
     fun onBackPressed(): Boolean {
+        // TODO: only visible fragments should handle back presses.
+        // currentFragmentRenderModel might not be currently visible fragment.
         val state = currentFragmentRenderModel
         if (state is BackCallback) {
             state.onBackPressed()
@@ -109,7 +111,7 @@ class FragmentFlowRenderView(
 
     private fun updateVisibleFragments(state: FragmentFlowState) {
         state.states.forEach { entry ->
-            val fragment = visibleFragments.get(entry.key.tag)
+            val fragment = visibleFragments[entry.key.tag]
             if (fragment != null && fragment is BaseFormulaFragment<*>) {
                 (fragment as BaseFormulaFragment<Any>).setState(entry.value.renderModel)
             }
