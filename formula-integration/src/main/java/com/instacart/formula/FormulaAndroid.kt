@@ -74,7 +74,7 @@ object FormulaAndroid {
     /**
      * Used in testing to clear current store manager.
      */
-    @VisibleForTesting fun tearDown() {
+    @VisibleForTesting fun reset() {
         val app = application ?: throw IllegalStateException("not initialized")
         app.unregisterActivityLifecycleCallbacks(callbacks)
 

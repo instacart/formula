@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import io.reactivex.Observable
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -19,7 +20,17 @@ class FragmentLifecycleTest {
     private lateinit var activityController: ActivityController<TestFragmentActivity>
     private lateinit var contract: TestLifecycleContract
 
-    @get:Rule val formulaRule = TestFormulaRule(TestFragmentActivity::class)
+    @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
+        FormulaAndroid.init(app) {
+            activity(TestFragmentActivity::class) {
+                store {
+                    bind(TestLifecycleContract::class) { _ ->
+                        Observable.empty()
+                    }
+                }
+            }
+        }
+    })
 
     @Before
     fun setup() {
@@ -27,9 +38,9 @@ class FragmentLifecycleTest {
         val intent = Intent(context, TestFragmentActivity::class.java)
         val activityController = Robolectric.buildActivity(TestFragmentActivity::class.java, intent)
             .setup()
-        val contract = activityController.get().contract
+
         this.activityController = activityController
-        this.contract = contract
+        this.contract = activityController.get().contract
     }
 
     @Test fun `creation callbacks`() {

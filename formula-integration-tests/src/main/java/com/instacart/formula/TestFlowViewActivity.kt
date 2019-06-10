@@ -14,7 +14,7 @@ class TestFlowViewActivity : FormulaAppCompatActivity() {
         setContentView(R.layout.test_activity)
 
         if (savedInstanceState == null) {
-            val contract = TaskListContract()
+            val contract = TestContract()
             supportFragmentManager.beginTransaction()
                 .add(R.id.activity_content, FormulaFragment.newInstance(contract), contract.tag)
                 .commit()
