@@ -65,17 +65,17 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `render model is passed to visible fragment`() {
-        val viewModel = activity()
+        val activity = activity()
         sendStateUpdate(TaskListContract(), "update")
-        assertThat(viewModel.renderCalls).containsExactly(TaskListContract() to "update")
+        assertThat(activity.renderCalls).containsExactly(TaskListContract() to "update")
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
         navigateToTaskDetail()
 
-        val viewModel = activity()
+        val activity = activity()
         sendStateUpdate(TaskListContract(), "update")
-        assertThat(viewModel.renderCalls).isEqualTo(emptyList<Any>())
+        assertThat(activity.renderCalls).isEqualTo(emptyList<Any>())
     }
 
     @Test fun `visible fragments are updated when navigating`() {
@@ -83,14 +83,14 @@ class FragmentFlowRenderViewTest {
 
         val contract = TaskDetailContract(1)
 
-        val viewModel = activity()
+        val activity = activity()
         sendStateUpdate(contract, "update")
-        assertThat(viewModel.renderCalls).containsExactly(contract to "update")
+        assertThat(activity.renderCalls).containsExactly(contract to "update")
 
         navigateBack()
 
         sendStateUpdate(contract, "update-two")
-        assertThat(viewModel.renderCalls).containsExactly(contract to "update")
+        assertThat(activity.renderCalls).containsExactly(contract to "update")
     }
 
     @Test fun `delegates back press to current render model`() {
@@ -118,7 +118,7 @@ class FragmentFlowRenderViewTest {
 
         scenario.recreate()
 
-        // Verify that view models have changed
+        // Verify that activity has changed
         val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
@@ -134,7 +134,7 @@ class FragmentFlowRenderViewTest {
 
         scenario.recreate()
 
-        // Verify that view models have changed
+        // Verify that activity has changed
         val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
