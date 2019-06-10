@@ -1,14 +1,14 @@
 package com.instacart.formula
 
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.FormulaAppCompatActivity
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
-    // Exposed for testing purposes.
-    lateinit var initialContract: FragmentContract<*>
-    val renderCalls = mutableListOf<Pair<FragmentContract<*>, *>>()
+    @VisibleForTesting lateinit var initialContract: FragmentContract<*>
+    @VisibleForTesting val renderCalls = mutableListOf<Pair<FragmentContract<*>, *>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
