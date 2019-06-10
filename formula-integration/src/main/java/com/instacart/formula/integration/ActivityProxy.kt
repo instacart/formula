@@ -21,7 +21,7 @@ class ActivityProxy<A : FragmentActivity> {
 
     @PublishedApi internal var activity: A? = null
 
-    private fun latestActivity(): Observable<Option<A>> {
+    @PublishedApi internal fun latestActivity(): Observable<Option<A>> {
         return lifecycleEventRelay.startWith(Unit).map {
             activity.toOption()
         }
@@ -61,7 +61,7 @@ class ActivityProxy<A : FragmentActivity> {
      *
      * [Event] - type of event
      */
-    fun <Event> selectActivityEvents(select: A.() -> Observable<Event>): Observable<Event> {
+    inline fun <Event> selectActivityEvents(crossinline select: A.() -> Observable<Event>): Observable<Event> {
         return latestActivity().switchMap {
             val activity = it.orNull()
             if (activity == null) {
