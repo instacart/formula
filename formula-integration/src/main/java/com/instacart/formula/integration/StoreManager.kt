@@ -30,6 +30,9 @@ internal class StoreManager(
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
         val store: ActivityStore<FragmentActivity> = findOrInitActivityStore(activity, savedInstance)
 
+        // Give store a chance to initialize the activity.
+        store.onInitActivity?.invoke(activity)
+
         // Initialize render view
         val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store::onLifecycleEvent)
         renderViewMap[activity] = renderView
