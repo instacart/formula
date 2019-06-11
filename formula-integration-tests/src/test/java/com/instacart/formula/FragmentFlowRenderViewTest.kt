@@ -9,6 +9,7 @@ import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.integration.BackCallback
+import com.instacart.formula.integration.EventCallbacks
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import org.junit.Before
@@ -29,12 +30,14 @@ class FragmentFlowRenderViewTest {
             FormulaAndroid.init(app) {
                 activity(TestFragmentActivity::class) {
                     store(
-                        onInitActivity = {
-                            it.initialContract = TestContract()
-                        },
-                        onRenderFragmentState = { a, state ->
-                            lastState = state
-                        }
+                        eventCallbacks = EventCallbacks(
+                            onInitActivity = {
+                                it.initialContract = TestContract()
+                            },
+                            onRenderFragmentState = { a, state ->
+                                lastState = state
+                            }
+                        )
                     ) {
                         bind { key: TestContract ->
                             stateChanges(key)

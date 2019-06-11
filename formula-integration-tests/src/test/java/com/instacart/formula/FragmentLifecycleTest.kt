@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.integration.EventCallbacks
 import io.reactivex.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -24,10 +25,12 @@ class FragmentLifecycleTest {
         FormulaAndroid.init(app) {
             activity(TestFragmentActivity::class) {
                 store(
-                    onInitActivity = {
-                        contract = TestLifecycleContract()
-                        it.initialContract = contract
-                    }
+                    eventCallbacks = EventCallbacks(
+                        onInitActivity = {
+                            contract = TestLifecycleContract()
+                            it.initialContract = contract
+                        }
+                    )
                 ) {
                     bind(TestLifecycleContract::class) { _ ->
                         Observable.empty()

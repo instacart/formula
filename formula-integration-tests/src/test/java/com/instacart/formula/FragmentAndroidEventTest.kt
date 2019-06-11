@@ -5,6 +5,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.activity.ActivityResult
+import com.instacart.formula.integration.EventCallbacks
 import io.reactivex.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -21,9 +22,11 @@ class FragmentAndroidEventTest {
             FormulaAndroid.init(app) {
                 activity(TestFragmentActivity::class) {
                     store(
-                        onInitActivity = {
-                            it.initialContract = TestLifecycleContract()
-                        }
+                        eventCallbacks = EventCallbacks(
+                            onInitActivity = {
+                                it.initialContract = TestLifecycleContract()
+                            }
+                        )
                     ) {
                         bind(TestLifecycleContract::class) { _ ->
                             proxy.activityResults().flatMap {
