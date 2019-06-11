@@ -3,6 +3,8 @@ package com.instacart.formula.integration
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
+import com.jakewharton.rxrelay2.BehaviorRelay
+import io.reactivex.Observable
 
 /**
  * This class provides ability to create [ActivityStore]. It provides access to the
@@ -11,6 +13,11 @@ import com.instacart.formula.fragment.FragmentFlowStore
  * @param A - type of activity that this class provides context for.
  */
 class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
+    private val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
+
+    fun fragmentFlowState(): Observable<FragmentFlowState> {
+        return fragmentFlowStateRelay
+    }
 
     /**
      * Creates an [ActivityStore].
@@ -19,7 +26,12 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
         eventCallbacks: EventCallbacks<A>? = null,
         store: FragmentFlowStore
     ) : ActivityStore<A>  {
-        return ActivityStore(proxy, store, eventCallbacks ?: EventCallbacks())
+        return ActivityStore(
+            onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
+            proxy = proxy,
+            fragmentFlowStore = store,
+            eventCallbacks = eventCallbacks ?: EventCallbacks()
+        )
     }
 
     /**

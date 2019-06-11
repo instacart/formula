@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
+import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 
@@ -10,12 +11,17 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
  * management stream.
  */
 class ActivityStore<Activity : FragmentActivity>(
+    private val onFragmentFlowStateChanged: (FragmentFlowState) -> Unit,
     internal val proxy: ActivityProxy<Activity>,
     internal val fragmentFlowStore: FragmentFlowStore,
     internal val eventCallbacks: EventCallbacks<Activity>
 ) {
 
-    internal val state = fragmentFlowStore.state().replay(1)
+    internal val state = fragmentFlowStore
+        .state()
+        .doOnNext(onFragmentFlowStateChanged)
+        .replay(1)
+
     internal val subscription = state.connect()
 
     internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
