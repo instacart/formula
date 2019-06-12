@@ -39,18 +39,18 @@ internal class StoreManager(
     }
 
     fun onActivityCreated(activity: FragmentActivity) {
-        val storeHolder: ActivityStore<FragmentActivity>? = findStore(activity)
-        if (storeHolder == null) {
+        val store: ActivityStore<FragmentActivity>? = findStore(activity)
+        if (store == null) {
             // TODO log missing store
             return
         }
 
-        storeHolder.proxy.attachActivity(activity)
+        store.context.holder.attachActivity(activity)
 
         val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
-        val disposable = storeHolder.state.subscribe {
+        val disposable = store.state.subscribe {
             renderView.renderer.render(it)
-            storeHolder.onRenderFragmentState?.invoke(activity, it)
+            store.onRenderFragmentState?.invoke(activity, it)
 
         }
         subscriptions[activity] = disposable
@@ -68,7 +68,7 @@ internal class StoreManager(
         renderViewMap.remove(activity)?.dispose()
 
         val store = findStore(activity)
-        store?.proxy?.detachActivity(activity)
+        store?.context?.holder?.detachActivity(activity)
 
         val key = activityToKeyMap.remove(activity)
         if (key != null && activity.isFinishing) {
@@ -77,7 +77,7 @@ internal class StoreManager(
     }
 
     fun onActivityResult(activity: FragmentActivity, result: ActivityResult) {
-        findStore(activity)?.proxy?.onActivityResult(result)
+        findStore(activity)?.context?.onActivityResult(result)
     }
 
     fun onBackPressed(activity: FragmentActivity): Boolean {

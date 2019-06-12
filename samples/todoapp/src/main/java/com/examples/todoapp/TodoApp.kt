@@ -17,7 +17,7 @@ class TodoApp : Application() {
                     contracts = contracts(component) {
                         bind(TaskListContract::class) { component, key ->
                             val input = TaskListFormula.Input(showToast = { message ->
-                                proxy.send {
+                                send {
                                     onEffect(TodoActivityEffect.ShowToast(message))
                                 }
                             })

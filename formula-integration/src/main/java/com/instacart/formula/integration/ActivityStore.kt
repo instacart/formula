@@ -18,7 +18,7 @@ import io.reactivex.disposables.Disposable
  * @param onFragmentLifecycleEvent - this is callback for when a fragment is added or removed.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    internal val proxy: ActivityProxy<Activity>,
+    internal val context: ActivityStoreContext<Activity>,
     internal val fragmentFlowStore: FragmentFlowStore,
     internal val start: (() -> Disposable)? = null,
     internal val configureActivity: ((Activity) -> Unit)? = null,

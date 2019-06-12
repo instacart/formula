@@ -38,7 +38,7 @@ class ActivityUpdateTest {
                 activity<TestActivity> {
                     store(
                         start = {
-                            proxy.update(updateRelay, TestActivity::applyUpdate)
+                            update(updateRelay, TestActivity::applyUpdate)
                         },
                         contracts = {}
                     )

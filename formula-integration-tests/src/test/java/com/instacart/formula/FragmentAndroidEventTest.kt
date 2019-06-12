@@ -26,7 +26,7 @@ class FragmentAndroidEventTest {
                         },
                         contracts = {
                             bind(TestLifecycleContract::class) { _ ->
-                                proxy.activityResults().flatMap {
+                                activityResults().flatMap {
                                     activityResults.add(it)
                                     Observable.empty<Any>()
                                 }

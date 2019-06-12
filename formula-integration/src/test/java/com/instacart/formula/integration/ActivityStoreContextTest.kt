@@ -8,20 +8,22 @@ import io.reactivex.Observable
 import org.junit.Before
 import org.junit.Test
 
-class ActivityProxyTest {
+class ActivityStoreContextTest {
     class FakeActivity : FragmentActivity() {
         fun fakeEvents(): Observable<String> = Observable.empty()
     }
 
-    lateinit var proxy: ActivityProxy<FakeActivity>
+    lateinit var holder: ActivityHolder<FakeActivity>
+    lateinit var context: ActivityStoreContext<FakeActivity>
     val fakeEventRelay = PublishRelay.create<String>()
 
     @Before fun setup() {
-        proxy = ActivityProxy()
+        holder = ActivityHolder()
+        context = ActivityStoreContext(holder)
     }
 
     @Test fun `select activity events only runs when activity is attached`() {
-        val fakeEvents = proxy.selectActivityEvents { fakeEvents() }
+        val fakeEvents = context.selectActivityEvents { fakeEvents() }
 
         fakeEvents
             .test()
@@ -31,12 +33,12 @@ class ActivityProxyTest {
             .assertEmpty()
             .apply {
                 val activity = createFakeActivity()
-                proxy.attachActivity(activity)
+                holder.attachActivity(activity)
 
                 fakeEventRelay.accept("first")
                 fakeEventRelay.accept("second")
 
-                proxy.detachActivity(activity)
+                holder.detachActivity(activity)
 
                 fakeEventRelay.accept("third")
             }
