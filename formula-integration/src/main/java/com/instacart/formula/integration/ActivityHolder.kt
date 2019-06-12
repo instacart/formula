@@ -11,6 +11,7 @@ import io.reactivex.Observable
  */
 class ActivityHolder<A : FragmentActivity> {
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
+    private val startedRelay = PublishRelay.create<Unit>()
 
     private var activity: A? = null
 
@@ -20,9 +21,17 @@ class ActivityHolder<A : FragmentActivity> {
         }
     }
 
+    fun activityStartedEvents(): Observable<Unit> {
+        return startedRelay
+    }
+
     fun attachActivity(activity: A) {
         this.activity = activity
         lifecycleEventRelay.accept(Unit)
+    }
+
+    fun onActivityStarted(activity: A) {
+        startedRelay.accept(Unit)
     }
 
     fun detachActivity(activity: A) {

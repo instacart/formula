@@ -121,8 +121,8 @@ class ActivityStoreContext<A : FragmentActivity>(
         // To keep activity & state in sync, we re-emit state on every activity change.
         val stateEmissions = Observable.combineLatest(
             state,
-            holder.latestActivity(),
-            BiFunction<State, Option<A>, State> { state, activity ->
+            holder.activityStartedEvents(),
+            BiFunction<State, Unit, State> { state, event ->
                 state
             }
         )

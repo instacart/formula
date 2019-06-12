@@ -56,6 +56,16 @@ internal class StoreManager(
         subscriptions[activity] = disposable
     }
 
+    fun onActivityStarted(activity: FragmentActivity) {
+        val store: ActivityStore<FragmentActivity>? = findStore(activity)
+        if (store == null) {
+            // TODO log missing store
+            return
+        }
+
+        store.context.holder.onActivityStarted(activity)
+    }
+
     fun onSaveInstanceState(activity: FragmentActivity, outState: Bundle?) {
         val key = activityToKeyMap[activity]
         if (key != null) {
