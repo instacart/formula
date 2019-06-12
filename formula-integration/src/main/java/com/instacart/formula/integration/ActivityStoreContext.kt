@@ -6,6 +6,7 @@ import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 
 /**
  * This class provides ability to create [ActivityStore]. It provides access to the
@@ -27,6 +28,7 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
         configureActivity: (A.() -> Unit)? = null,
         onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
+        start: (() -> Disposable)? = null,
         contracts: FragmentFlowStore
     ) : ActivityStore<A> {
         return ActivityStore(
@@ -35,7 +37,8 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
             fragmentFlowStore = contracts,
             configureActivity = configureActivity,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
-            onRenderFragmentState = onRenderFragmentState
+            onRenderFragmentState = onRenderFragmentState,
+            start = start
         )
     }
 
@@ -46,12 +49,14 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
         noinline configureActivity: (A.() -> Unit)? = null,
         noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
+        noinline start: (() -> Disposable)? = null,
         crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
     ) : ActivityStore<A> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
+            start = start,
             contracts = contracts(contracts)
         )
     }

@@ -6,6 +6,8 @@ import arrow.core.toOption
 import com.instacart.formula.activity.ActivityResult
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
 
 /**
  * A proxy for two-way communication with an activity. Since, activity can
@@ -46,6 +48,29 @@ class ActivityProxy<A : FragmentActivity> {
     inline fun send(effect: A.() -> Unit) {
         activity?.effect() ?: run {
             // Log missing activity.
+        }
+    }
+
+    /**
+     * Keeps activity in-sync with state observable updates. On activity configuration
+     * changes, the last update is applied to new activity instance.
+     *
+     * @param state - a state observable
+     * @param update - an update function
+     */
+    fun <State> update(state: Observable<State>, update: (A, State) -> Unit): Disposable {
+        // To keep activity & state in sync, we re-emit state on every activity change.
+        val stateEmissions = Observable.combineLatest(
+            state,
+            latestActivity(),
+            BiFunction<State, Option<A>, State> { state, activity ->
+                state
+            }
+        )
+        return stateEmissions.subscribe { state ->
+            activity?.let {
+                update(it, state)
+            }
         }
     }
 
