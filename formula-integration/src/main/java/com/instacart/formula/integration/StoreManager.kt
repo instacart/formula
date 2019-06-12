@@ -31,7 +31,7 @@ internal class StoreManager(
         val store: ActivityStore<FragmentActivity> = findOrInitActivityStore(activity, savedInstance)
 
         // Give store a chance to initialize the activity.
-        store.eventCallbacks.onInitActivity?.invoke(activity)
+        store.configureActivity?.invoke(activity)
 
         // Initialize render view
         val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store::onLifecycleEvent)
@@ -50,7 +50,7 @@ internal class StoreManager(
         val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
         val disposable = storeHolder.state.subscribe {
             renderView.renderer.render(it)
-            storeHolder.eventCallbacks.onRenderFragmentState?.invoke(activity, it)
+            storeHolder.onRenderFragmentState?.invoke(activity, it)
 
         }
         subscriptions[activity] = disposable

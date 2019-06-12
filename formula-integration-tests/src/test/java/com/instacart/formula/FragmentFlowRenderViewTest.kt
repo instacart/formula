@@ -9,7 +9,6 @@ import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.integration.BackCallback
-import com.instacart.formula.integration.EventCallbacks
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import org.junit.Before
@@ -28,25 +27,24 @@ class FragmentFlowRenderViewTest {
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
-                activity(TestFragmentActivity::class) {
+                activity<TestFragmentActivity> {
                     store(
-                        eventCallbacks = EventCallbacks(
-                            onInitActivity = {
-                                it.initialContract = TestContract()
-                            },
-                            onRenderFragmentState = { a, state ->
-                                lastState = state
+                        configureActivity = {
+                            initialContract = TestContract()
+                        },
+                        onRenderFragmentState = { a, state ->
+                            lastState = state
+                        },
+                        contracts = {
+                            bind { key: TestContract ->
+                                stateChanges(key)
                             }
-                        )
-                    ) {
-                        bind { key: TestContract ->
-                            stateChanges(key)
-                        }
 
-                        bind { key: TestContractWithId ->
-                            stateChanges(key)
+                            bind { key: TestContractWithId ->
+                                stateChanges(key)
+                            }
                         }
-                    }
+                    )
                 }
 
             }

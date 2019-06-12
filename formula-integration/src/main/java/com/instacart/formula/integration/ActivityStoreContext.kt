@@ -33,11 +33,9 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
             onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
             proxy = proxy,
             fragmentFlowStore = contracts,
-            eventCallbacks = EventCallbacks(
-                onInitActivity = configureActivity,
-                onFragmentLifecycleEvent = onFragmentLifecycleEvent,
-                onRenderFragmentState = onRenderFragmentState
-            )
+            configureActivity = configureActivity,
+            onFragmentLifecycleEvent = onFragmentLifecycleEvent,
+            onRenderFragmentState = onRenderFragmentState
         )
     }
 
