@@ -11,20 +11,21 @@ class TodoApp : Application() {
         super.onCreate()
 
         FormulaAndroid.init(this) {
-            activity(TodoActivity::class) {
+            activity<TodoActivity> {
                 val component = TodoAppComponent()
+                store(
+                    contracts = contracts(component) {
+                        bind(TaskListContract::class) { component, key ->
+                            val input = TaskListFormula.Input(showToast = { message ->
+                                proxy.send {
+                                    onEffect(TodoActivityEffect.ShowToast(message))
+                                }
+                            })
 
-                store(component) {
-                    bind(TaskListContract::class) { component, key ->
-                        val input = TaskListFormula.Input(showToast = { message ->
-                            proxy.send {
-                                onEffect(TodoActivityEffect.ShowToast(message))
-                            }
-                        })
-
-                        component.createTaskListFormula().state(input)
+                            component.createTaskListFormula().state(input)
+                        }
                     }
-                }
+                )
             }
         }
     }

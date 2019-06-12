@@ -20,6 +20,12 @@ class AppStoreFactory internal constructor(
             bindings[type] = Binding(init)
         }
 
+        inline fun <reified A : FragmentActivity> activity(
+            noinline init: ActivityStoreContext<A>.() -> ActivityStore<A>
+        ) {
+            activity(A::class, init)
+        }
+
         fun build(): AppStoreFactory {
             return AppStoreFactory(bindings)
         }

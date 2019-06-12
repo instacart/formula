@@ -3,6 +3,7 @@ package com.instacart.formula.integration
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
+import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
 
@@ -23,14 +24,20 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
      * Creates an [ActivityStore].
      */
     fun store(
-        eventCallbacks: EventCallbacks<A>? = null,
-        store: FragmentFlowStore
-    ) : ActivityStore<A>  {
+        configureActivity: (A.() -> Unit)? = null,
+        onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
+        contracts: FragmentFlowStore
+    ) : ActivityStore<A> {
         return ActivityStore(
             onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
             proxy = proxy,
-            fragmentFlowStore = store,
-            eventCallbacks = eventCallbacks ?: EventCallbacks()
+            fragmentFlowStore = contracts,
+            eventCallbacks = EventCallbacks(
+                onInitActivity = configureActivity,
+                onFragmentLifecycleEvent = onFragmentLifecycleEvent,
+                onRenderFragmentState = onRenderFragmentState
+            )
         )
     }
 
@@ -38,21 +45,36 @@ class ActivityStoreContext<A : FragmentActivity>(val proxy: ActivityProxy<A>) {
      * Creates an [ActivityStore].
      */
     inline fun store(
-        eventCallbacks: EventCallbacks<A>? = null,
-        crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
-    ): ActivityStore<A> {
-        return store(Unit, eventCallbacks, init)
+        noinline configureActivity: (A.() -> Unit)? = null,
+        noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
+        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
+    ) : ActivityStore<A> {
+        return store(
+            configureActivity = configureActivity,
+            onRenderFragmentState = onRenderFragmentState,
+            onFragmentLifecycleEvent = onFragmentLifecycleEvent,
+            contracts = contracts(contracts)
+        )
+    }
+
+
+    /**
+     * Creates an [ActivityStore].
+     */
+    inline fun contracts(
+        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
+    ): FragmentFlowStore {
+        return contracts(Unit, contracts)
     }
 
     /**
      * Creates an [ActivityStore].
      */
-    inline fun <Component> store(
+    inline fun <Component> contracts(
         rootComponent: Component,
-        eventCallbacks: EventCallbacks<A>? = null,
-        crossinline init: FragmentBindingBuilder<Component>.() -> Unit
-    ) : ActivityStore<A> {
-        val fragmentFlowStore = FragmentFlowStore.init(rootComponent, init)
-        return store(eventCallbacks, fragmentFlowStore)
+        crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
+    ) : FragmentFlowStore {
+        return FragmentFlowStore.init(rootComponent, contracts)
     }
 }
