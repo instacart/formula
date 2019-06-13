@@ -1,7 +1,6 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
-import arrow.core.Option
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
@@ -14,13 +13,13 @@ import io.reactivex.functions.BiFunction
 
 /**
  * This class provides context within which you can create [ActivityStore]. It provides
- * ability to safely communicate with the current activity instance [A] and listen for
+ * ability to safely communicate with the current activity instance [Activity] and listen for
  * activity events.
  *
- * @param A - type of activity that this class provides context for.
+ * @param Activity - type of activity that this class provides context for.
  */
-class ActivityStoreContext<A : FragmentActivity>(
-    @PublishedApi internal val holder: ActivityHolder<A>
+class ActivityStoreContext<Activity : FragmentActivity>(
+    @PublishedApi internal val holder: ActivityHolder<Activity>
 ) {
     private val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
@@ -44,12 +43,12 @@ class ActivityStoreContext<A : FragmentActivity>(
      * Creates an [ActivityStore].
      */
     fun store(
-        configureActivity: (A.() -> Unit)? = null,
-        onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        configureActivity: (Activity.() -> Unit)? = null,
+        onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         start: (() -> Disposable)? = null,
         contracts: FragmentFlowStore
-    ) : ActivityStore<A> {
+    ) : ActivityStore<Activity> {
         return ActivityStore(
             onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
             context = this,
@@ -65,12 +64,12 @@ class ActivityStoreContext<A : FragmentActivity>(
      * Creates an [ActivityStore].
      */
     inline fun store(
-        noinline configureActivity: (A.() -> Unit)? = null,
-        noinline onRenderFragmentState: ((A, FragmentFlowState) -> Unit)? = null,
+        noinline configureActivity: (Activity.() -> Unit)? = null,
+        noinline onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         noinline start: (() -> Disposable)? = null,
         crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
-    ) : ActivityStore<A> {
+    ) : ActivityStore<Activity> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
@@ -104,8 +103,9 @@ class ActivityStoreContext<A : FragmentActivity>(
      * Performs an [effect] on the current activity instance. If there is no activity connected,
      * it will do nothing.
      */
-    inline fun send(effect: A.() -> Unit) {
-        holder.currentActivity()?.effect() ?: run {
+    inline fun send(effect: Activity.() -> Unit) {
+        // We allow emitting effects only after activity has started
+        holder.startedActivity()?.effect() ?: run {
             // Log missing activity.
         }
     }
@@ -117,7 +117,7 @@ class ActivityStoreContext<A : FragmentActivity>(
      * @param state - a state observable
      * @param update - an update function
      */
-    fun <State> update(state: Observable<State>, update: (A, State) -> Unit): Disposable {
+    fun <State> update(state: Observable<State>, update: (Activity, State) -> Unit): Disposable {
         // To keep activity & state in sync, we re-emit state on every activity change.
         val stateEmissions = Observable.combineLatest(
             state,
@@ -138,7 +138,7 @@ class ActivityStoreContext<A : FragmentActivity>(
      *
      * [Event] - type of event
      */
-    inline fun <Event> selectActivityEvents(crossinline select: A.() -> Observable<Event>): Observable<Event> {
+    inline fun <Event> selectActivityEvents(crossinline select: Activity.() -> Observable<Event>): Observable<Event> {
         return holder.latestActivity().switchMap {
             val activity = it.orNull()
             if (activity == null) {

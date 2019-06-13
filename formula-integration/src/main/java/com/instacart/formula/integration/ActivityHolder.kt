@@ -14,6 +14,7 @@ class ActivityHolder<A : FragmentActivity> {
     private val startedRelay = PublishRelay.create<Unit>()
 
     private var activity: A? = null
+    private var hasStarted: Boolean = false
 
     fun latestActivity(): Observable<Option<A>> {
         return lifecycleEventRelay.startWith(Unit).map {
@@ -26,11 +27,13 @@ class ActivityHolder<A : FragmentActivity> {
     }
 
     fun attachActivity(activity: A) {
+        hasStarted = false
         this.activity = activity
         lifecycleEventRelay.accept(Unit)
     }
 
     fun onActivityStarted(activity: A) {
+        hasStarted = true
         startedRelay.accept(Unit)
     }
 
@@ -43,5 +46,9 @@ class ActivityHolder<A : FragmentActivity> {
 
     fun currentActivity(): A? {
         return activity
+    }
+
+    fun startedActivity(): A? {
+        return activity.takeIf { hasStarted }
     }
 }

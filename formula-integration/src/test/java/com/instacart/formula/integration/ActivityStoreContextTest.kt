@@ -3,6 +3,8 @@ package com.instacart.formula.integration
 import androidx.fragment.app.FragmentActivity
 import com.jakewharton.rxrelay2.PublishRelay
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Observable
 import org.junit.Before
@@ -11,6 +13,8 @@ import org.junit.Test
 class ActivityStoreContextTest {
     class FakeActivity : FragmentActivity() {
         fun fakeEvents(): Observable<String> = Observable.empty()
+
+        fun doSomething() {}
     }
 
     lateinit var holder: ActivityHolder<FakeActivity>
@@ -43,6 +47,29 @@ class ActivityStoreContextTest {
                 fakeEventRelay.accept("third")
             }
             .assertValues("first", "second")
+    }
+
+    @Test fun `send drops events if activity is not started`() {
+        val activity = createFakeActivity()
+        holder.attachActivity(activity)
+
+        context.send {
+            doSomething()
+        }
+
+        verifyZeroInteractions(activity)
+    }
+
+    @Test fun `send event success`() {
+        val activity = createFakeActivity()
+        holder.attachActivity(activity)
+        holder.onActivityStarted(activity)
+
+        context.send {
+            doSomething()
+        }
+
+        verify(activity).doSomething()
     }
 
     private fun createFakeActivity(): FakeActivity {
