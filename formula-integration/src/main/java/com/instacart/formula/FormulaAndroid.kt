@@ -8,14 +8,12 @@ import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.integration.AppStoreFactory
 import com.instacart.formula.integration.StoreManager
-import com.instacart.formula.internal.FormulaActivityCallbacks
 import java.lang.IllegalStateException
 
 object FormulaAndroid {
 
     private var application: Application? = null
     private var storeManager: StoreManager? = null
-    private var callbacks: FormulaActivityCallbacks? = null
 
     fun init(application: Application, init: AppStoreFactory.Builder.() -> Unit) {
         // Should we allow re-initialization?
@@ -25,12 +23,10 @@ object FormulaAndroid {
 
         val factory = AppStoreFactory.Builder().apply { init() }.build()
         val manager = StoreManager(factory)
-        val activityLifecycleCallbacks = FormulaActivityCallbacks(manager)
-        application.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        application.registerActivityLifecycleCallbacks(manager)
 
         this.application = application
         this.storeManager = manager
-        this.callbacks = activityLifecycleCallbacks
     }
 
     /**
@@ -76,10 +72,9 @@ object FormulaAndroid {
      */
     @VisibleForTesting fun reset() {
         val app = application ?: throw IllegalStateException("not initialized")
-        app.unregisterActivityLifecycleCallbacks(callbacks)
+        app.unregisterActivityLifecycleCallbacks(storeManager)
 
         application = null
         storeManager = null
-        callbacks = null
     }
 }
