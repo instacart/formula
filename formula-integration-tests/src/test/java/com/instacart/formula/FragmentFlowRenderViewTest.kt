@@ -27,23 +27,24 @@ class FragmentFlowRenderViewTest {
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
-                activity(TestFragmentActivity::class) {
+                activity<TestFragmentActivity> {
                     store(
-                        onInitActivity = {
-                            it.initialContract = TestContract()
+                        configureActivity = {
+                            initialContract = TestContract()
                         },
                         onRenderFragmentState = { a, state ->
                             lastState = state
-                        }
-                    ) {
-                        bind { key: TestContract ->
-                            stateChanges(key)
-                        }
+                        },
+                        contracts = {
+                            bind { key: TestContract ->
+                                stateChanges(key)
+                            }
 
-                        bind { key: TestContractWithId ->
-                            stateChanges(key)
+                            bind { key: TestContractWithId ->
+                                stateChanges(key)
+                            }
                         }
-                    }
+                    )
                 }
 
             }

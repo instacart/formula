@@ -19,19 +19,20 @@ class FragmentAndroidEventTest {
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
-                activity(TestFragmentActivity::class) {
+                activity<TestFragmentActivity> {
                     store(
-                        onInitActivity = {
-                            it.initialContract = TestLifecycleContract()
-                        }
-                    ) {
-                        bind(TestLifecycleContract::class) { _ ->
-                            proxy.activityResults().flatMap {
-                                activityResults.add(it)
-                                Observable.empty<Any>()
+                        configureActivity = {
+                            initialContract = TestLifecycleContract()
+                        },
+                        contracts = {
+                            bind(TestLifecycleContract::class) { _ ->
+                                activityResults().flatMap {
+                                    activityResults.add(it)
+                                    Observable.empty<Any>()
+                                }
                             }
                         }
-                    }
+                    )
                 }
             }
         },

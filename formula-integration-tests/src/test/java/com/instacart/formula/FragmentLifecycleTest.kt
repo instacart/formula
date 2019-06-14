@@ -22,17 +22,18 @@ class FragmentLifecycleTest {
 
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
-            activity(TestFragmentActivity::class) {
+            activity<TestFragmentActivity> {
                 store(
-                    onInitActivity = {
+                    configureActivity = {
                         contract = TestLifecycleContract()
-                        it.initialContract = contract
+                        initialContract = contract
+                    },
+                    contracts = {
+                        bind(TestLifecycleContract::class) { _ ->
+                            Observable.empty()
+                        }
                     }
-                ) {
-                    bind(TestLifecycleContract::class) { _ ->
-                        Observable.empty()
-                    }
-                }
+                )
             }
         }
     })
