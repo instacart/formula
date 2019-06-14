@@ -7,16 +7,16 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
 /**
- * This class holds the current instance of the activity of type [A].
+ * This class holds the current instance of the activity of type [Activity].
  */
-class ActivityHolder<A : FragmentActivity> {
+class ActivityHolder<Activity : FragmentActivity> {
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
 
-    private var activity: A? = null
+    private var activity: Activity? = null
     private var hasStarted: Boolean = false
 
-    fun latestActivity(): Observable<Option<A>> {
+    fun latestActivity(): Observable<Option<Activity>> {
         return lifecycleEventRelay.startWith(Unit).map {
             activity.toOption()
         }
@@ -26,29 +26,29 @@ class ActivityHolder<A : FragmentActivity> {
         return startedRelay
     }
 
-    fun attachActivity(activity: A) {
+    fun attachActivity(activity: Activity) {
         hasStarted = false
         this.activity = activity
         lifecycleEventRelay.accept(Unit)
     }
 
-    fun onActivityStarted(activity: A) {
+    fun onActivityStarted(activity: Activity) {
         hasStarted = true
         startedRelay.accept(Unit)
     }
 
-    fun detachActivity(activity: A) {
+    fun detachActivity(activity: Activity) {
         if (this.activity == activity) {
             this.activity = null
         }
         lifecycleEventRelay.accept(Unit)
     }
 
-    fun currentActivity(): A? {
+    fun currentActivity(): Activity? {
         return activity
     }
 
-    fun startedActivity(): A? {
+    fun startedActivity(): Activity? {
         return activity.takeIf { hasStarted }
     }
 }

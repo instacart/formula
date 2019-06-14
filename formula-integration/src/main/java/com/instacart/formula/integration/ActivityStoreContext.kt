@@ -35,6 +35,9 @@ class ActivityStoreContext<Activity : FragmentActivity>(
         return activityResultRelay
     }
 
+    /**
+     * Returns RxJava stream that emits [FragmentFlowStore] state changes.
+     */
     fun fragmentFlowState(): Observable<FragmentFlowState> {
         return fragmentFlowStateRelay
     }
@@ -100,7 +103,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
-     * Creates an [ActivityStore].
+     * Creates [FragmentFlowStore] with a [Component] instance.
      */
     inline fun <Component> contracts(
         rootComponent: Component,
