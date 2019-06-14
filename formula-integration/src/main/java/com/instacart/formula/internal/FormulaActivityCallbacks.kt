@@ -12,7 +12,6 @@ internal class FormulaActivityCallbacks(
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (activity is FragmentActivity) {
-            activity.lifecycle
             storeManager.onActivityCreated(activity)
         }
     }
