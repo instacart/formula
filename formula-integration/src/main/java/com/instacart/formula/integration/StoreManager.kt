@@ -1,12 +1,13 @@
 package com.instacart.formula.integration
 
 import android.app.Activity
+import android.app.Application
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowStore
 import io.reactivex.disposables.Disposable
-import java.lang.IllegalStateException
 import java.util.UUID
 
 /**
@@ -15,7 +16,7 @@ import java.util.UUID
  */
 internal class StoreManager(
     private val factory: AppStoreFactory
-) {
+) : Application.ActivityLifecycleCallbacks {
 
     companion object {
         private const val BUNDLE_KEY = "formula::activity::key"
@@ -38,50 +39,97 @@ internal class StoreManager(
         renderViewMap[activity] = renderView
     }
 
-    fun onActivityCreated(activity: FragmentActivity) {
-        val store: ActivityStore<FragmentActivity>? = findStore(activity)
-        if (store == null) {
-            // TODO log missing store
-            return
-        }
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        if (activity is FragmentActivity) {
+            val store: ActivityStore<FragmentActivity>? = findStore(activity)
+            if (store == null) {
+                // TODO log missing store
+                return
+            }
 
-        store.context.holder.attachActivity(activity)
+            store.context.holder.attachActivity(activity)
+            store.context.holder.lifecycleEvents.accept(Lifecycle.Event.ON_CREATE)
 
-        val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
-        val disposable = store.state.subscribe {
-            renderView.renderer.render(it)
-            store.onRenderFragmentState?.invoke(activity, it)
-        }
-        subscriptions[activity] = disposable
-    }
-
-    fun onActivityStarted(activity: FragmentActivity) {
-        val store: ActivityStore<FragmentActivity>? = findStore(activity)
-        if (store == null) {
-            // TODO log missing store
-            return
-        }
-
-        store.context.holder.onActivityStarted(activity)
-    }
-
-    fun onSaveInstanceState(activity: FragmentActivity, outState: Bundle?) {
-        val key = activityToKeyMap[activity]
-        if (key != null) {
-            outState?.putString(BUNDLE_KEY, key)
+            val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
+            val disposable = store.state.subscribe {
+                renderView.renderer.render(it)
+                store.onRenderFragmentState?.invoke(activity, it)
+            }
+            subscriptions[activity] = disposable
         }
     }
 
-    fun onActivityDestroyed(activity: FragmentActivity) {
-        subscriptions.remove(activity)?.dispose()
-        renderViewMap.remove(activity)?.dispose()
+    override fun onActivityStarted(activity: Activity) {
+        if (activity is FragmentActivity) {
+            val store: ActivityStore<FragmentActivity>? = findStore(activity)
+            if (store == null) {
+                // TODO log missing store
+                return
+            }
 
-        val store = findStore(activity)
-        store?.context?.holder?.detachActivity(activity)
+            store.context.holder.onActivityStarted(activity)
+            store.context.holder.lifecycleEvents.accept(Lifecycle.Event.ON_START)
+        }
+    }
 
-        val key = activityToKeyMap.remove(activity)
-        if (key != null && activity.isFinishing) {
-            clearActivityStore(key)
+    override fun onActivityResumed(activity: Activity) {
+        if (activity is FragmentActivity) {
+            val store: ActivityStore<FragmentActivity>? = findStore(activity)
+            if (store == null) {
+                // TODO log missing store
+                return
+            }
+
+            store.context.holder.lifecycleEvents.accept(Lifecycle.Event.ON_RESUME)
+        }
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+        if (activity is FragmentActivity) {
+            val key = activityToKeyMap[activity]
+            if (key != null) {
+                outState.putString(BUNDLE_KEY, key)
+            }
+        }
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+        if (activity is FragmentActivity) {
+            val store: ActivityStore<FragmentActivity>? = findStore(activity)
+            if (store == null) {
+                // TODO log missing store
+                return
+            }
+
+            store.context.holder.lifecycleEvents.accept(Lifecycle.Event.ON_PAUSE)
+        }
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+        if (activity is FragmentActivity) {
+            val store: ActivityStore<FragmentActivity>? = findStore(activity)
+            if (store == null) {
+                // TODO log missing store
+                return
+            }
+
+            store.context.holder.lifecycleEvents.accept(Lifecycle.Event.ON_STOP)
+        }
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+        if (activity is FragmentActivity) {
+            subscriptions.remove(activity)?.dispose()
+            renderViewMap.remove(activity)?.dispose()
+
+            val store = findStore(activity)
+            store?.context?.holder?.detachActivity(activity)
+            store?.context?.holder?.lifecycleEvents?.accept(Lifecycle.Event.ON_DESTROY)
+
+            val key = activityToKeyMap.remove(activity)
+            if (key != null && activity.isFinishing) {
+                clearActivityStore(key)
+            }
         }
     }
 

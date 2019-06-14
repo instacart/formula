@@ -1,8 +1,10 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import arrow.core.Option
 import arrow.core.toOption
+import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
@@ -10,6 +12,7 @@ import io.reactivex.Observable
  * This class holds the current instance of the activity of type [Activity].
  */
 class ActivityHolder<Activity : FragmentActivity> {
+    internal val lifecycleEvents = BehaviorRelay.create<Lifecycle.Event>()
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
 

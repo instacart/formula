@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
@@ -33,6 +34,13 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      */
     fun activityResults(): Observable<ActivityResult> {
         return activityResultRelay
+    }
+
+    /**
+     * Returns RxJava stream that emits Activity lifecycle events [Lifecycle.Event].
+     */
+    fun lifecycleEvents(): Observable<Lifecycle.Event> {
+        return holder.lifecycleEvents
     }
 
     /**
