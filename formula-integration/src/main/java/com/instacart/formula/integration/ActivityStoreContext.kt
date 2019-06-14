@@ -41,6 +41,14 @@ class ActivityStoreContext<Activity : FragmentActivity>(
 
     /**
      * Creates an [ActivityStore].
+     *
+     * @param configureActivity - this is called when activity is created before view inflation. You can use this to
+     *                            configure / inject the activity.
+     * @param onRenderFragmentState - this is called after [FragmentFlowState] is applied to UI.
+     * @param onFragmentLifecycleEvent - this is called after each [FragmentLifecycleEvent].
+     * @param streams - this provides ability to configure arbitrary RxJava streams that survive
+     *                  configuration changes. Check [StreamConfigurator] for utility methods.
+     * @param contracts - [FragmentFlowStore] used to provide state management for individual screens.
      */
     fun store(
         configureActivity: (Activity.() -> Unit)? = null,
@@ -66,6 +74,14 @@ class ActivityStoreContext<Activity : FragmentActivity>(
 
     /**
      * Creates an [ActivityStore].
+     *
+     * @param configureActivity - this is called when activity is created before view inflation. You can use this to
+     *                            configure / inject the activity.
+     * @param onRenderFragmentState - this is called after [FragmentFlowState] is applied to UI.
+     * @param onFragmentLifecycleEvent - this is called after each [FragmentLifecycleEvent].
+     * @param streams - this provides ability to configure arbitrary RxJava streams that survive
+     *                  configuration changes. Check [StreamConfigurator] for utility methods.
+     * @param contracts - builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
      */
     inline fun store(
         noinline configureActivity: (Activity.() -> Unit)? = null,
@@ -79,18 +95,8 @@ class ActivityStoreContext<Activity : FragmentActivity>(
             onRenderFragmentState = onRenderFragmentState,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             streams = streams,
-            contracts = contracts(contracts)
+            contracts = contracts(Unit, contracts)
         )
-    }
-
-
-    /**
-     * Creates an [ActivityStore].
-     */
-    inline fun contracts(
-        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
-    ): FragmentFlowStore {
-        return contracts(Unit, contracts)
     }
 
     /**
