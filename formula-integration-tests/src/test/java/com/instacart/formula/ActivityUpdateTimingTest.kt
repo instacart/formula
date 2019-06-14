@@ -39,7 +39,7 @@ class ActivityUpdateTimingTest {
             FormulaAndroid.init(app) {
                 activity<TestActivity> {
                     store(
-                        start = {
+                        streams = {
                             update(updateRelay, TestActivity::applyUpdate)
                         },
                         contracts = {}

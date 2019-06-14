@@ -5,7 +5,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.integration.FormulaAppCompatActivity
 import com.jakewharton.rxrelay2.PublishRelay
 import org.junit.Before
@@ -37,7 +36,7 @@ class ActivityUpdateTest {
             FormulaAndroid.init(app) {
                 activity<TestActivity> {
                     store(
-                        start = {
+                        streams = {
                             update(updateRelay, TestActivity::applyUpdate)
                         },
                         contracts = {}

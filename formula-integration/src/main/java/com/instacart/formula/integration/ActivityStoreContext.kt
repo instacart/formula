@@ -46,9 +46,11 @@ class ActivityStoreContext<Activity : FragmentActivity>(
         configureActivity: (Activity.() -> Unit)? = null,
         onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
-        start: (() -> Disposable)? = null,
+        streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
         contracts: FragmentFlowStore
     ) : ActivityStore<Activity> {
+        val streamStart = createStreamStartFunction(streams)
+
         return ActivityStore(
             onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
             context = this,
@@ -56,9 +58,11 @@ class ActivityStoreContext<Activity : FragmentActivity>(
             configureActivity = configureActivity,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             onRenderFragmentState = onRenderFragmentState,
-            start = start
+            start = streamStart
         )
     }
+
+
 
     /**
      * Creates an [ActivityStore].
@@ -67,14 +71,14 @@ class ActivityStoreContext<Activity : FragmentActivity>(
         noinline configureActivity: (Activity.() -> Unit)? = null,
         noinline onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
-        noinline start: (() -> Disposable)? = null,
+        noinline streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
         crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
     ) : ActivityStore<Activity> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
-            start = start,
+            streams = streams,
             contracts = contracts(contracts)
         )
     }
@@ -111,29 +115,6 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
-     * Keeps activity in-sync with state observable updates. On activity configuration
-     * changes, the last update is applied to new activity instance.
-     *
-     * @param state - a state observable
-     * @param update - an update function
-     */
-    fun <State> update(state: Observable<State>, update: (Activity, State) -> Unit): Disposable {
-        // To keep activity & state in sync, we re-emit state on every activity change.
-        val stateEmissions = Observable.combineLatest(
-            state,
-            holder.activityStartedEvents(),
-            BiFunction<State, Unit, State> { state, event ->
-                state
-            }
-        )
-        return stateEmissions.subscribe { state ->
-            holder.currentActivity()?.let {
-                update(it, state)
-            }
-        }
-    }
-
-    /**
      * This enables you to select specific events from the activity.
      *
      * [Event] - type of event
@@ -145,6 +126,45 @@ class ActivityStoreContext<Activity : FragmentActivity>(
                 Observable.empty<Event>()
             } else {
                 select(activity)
+            }
+        }
+    }
+
+    private fun createStreamStartFunction(
+        stream: (StreamConfigurator<Activity>.() -> Disposable)?
+    ): (() -> Disposable)? {
+        return stream?.let { configure ->
+            {
+                StreamConfigurator(this).configure()
+            }
+        }
+    }
+
+    /**
+     * Provides ability to configure RxJava streams that will survive configuration changes.
+     */
+    class StreamConfigurator<Activity : FragmentActivity>(private val context: ActivityStoreContext<Activity>) {
+
+        /**
+         * Keeps activity in-sync with state observable updates. On activity configuration
+         * changes, the last update is applied to new activity instance.
+         *
+         * @param state - a state observable
+         * @param update - an update function
+         */
+        fun <State> update(state: Observable<State>, update: (Activity, State) -> Unit): Disposable {
+            // To keep activity & state in sync, we re-emit state on every activity change.
+            val stateEmissions = Observable.combineLatest(
+                state,
+                context.holder.activityStartedEvents(),
+                BiFunction<State, Unit, State> { state, event ->
+                    state
+                }
+            )
+            return stateEmissions.subscribe { state ->
+                context.holder.currentActivity()?.let {
+                    update(it, state)
+                }
             }
         }
     }
