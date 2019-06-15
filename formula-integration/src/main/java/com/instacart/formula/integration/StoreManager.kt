@@ -35,7 +35,13 @@ internal class StoreManager(
         store.configureActivity?.invoke(activity)
 
         // Initialize render view
-        val renderView = FragmentFlowRenderView(activity, onLifecycleEvent = store::onLifecycleEvent)
+        val renderView = FragmentFlowRenderView(
+            activity = activity,
+            onLifecycleEvent = store::onLifecycleEvent,
+            onLifecycleState = { contract, state ->
+                store.context.holder.updateFragmentLifecycleState(contract, state)
+            })
+
         renderViewMap[activity] = renderView
     }
 

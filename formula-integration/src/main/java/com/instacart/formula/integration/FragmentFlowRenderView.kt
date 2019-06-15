@@ -12,6 +12,7 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.fragment.FragmentLifecycleState
 import io.reactivex.disposables.CompositeDisposable
 
 /**
@@ -24,7 +25,8 @@ import io.reactivex.disposables.CompositeDisposable
  */
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,
-    private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit
+    private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
+    private val onLifecycleState: ((FragmentContract<*>, FragmentLifecycleState) -> Unit)? = null
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
@@ -55,6 +57,28 @@ class FragmentFlowRenderView(
                 fragmentState?.let {
                     updateVisibleFragments(it)
                 }
+
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.CREATED)
+            }
+
+            override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+                super.onFragmentStarted(fm, f)
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.STARTED)
+            }
+
+            override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+                super.onFragmentResumed(fm, f)
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.RESUMED)
+            }
+
+            override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+                super.onFragmentPaused(fm, f)
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.PAUSED)
+            }
+
+            override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+                super.onFragmentStopped(fm, f)
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.STOPPED)
             }
 
             override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
@@ -63,6 +87,7 @@ class FragmentFlowRenderView(
 
                 recordBackstackChange()
 
+                notifyLifecycleStateChanged(f, FragmentLifecycleState.DESTROYED)
                 // This means that fragment is removed due to backstack change.
                 if (backstackPopped) {
                     // Reset
@@ -107,6 +132,14 @@ class FragmentFlowRenderView(
      */
     fun dispose() {
         disposables.dispose()
+    }
+
+    private fun notifyLifecycleStateChanged(fragment: Fragment, newState: FragmentLifecycleState) {
+        if (fragment is BaseFormulaFragment<*>) {
+            onLifecycleState?.let {
+                it.invoke(fragment.getFragmentContract(), newState)
+            }
+        }
     }
 
     private fun updateVisibleFragments(state: FragmentFlowState) {

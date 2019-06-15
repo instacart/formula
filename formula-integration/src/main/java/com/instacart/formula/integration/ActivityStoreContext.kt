@@ -3,9 +3,11 @@ package com.instacart.formula.integration
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
+import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.fragment.FragmentLifecycleState
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
@@ -51,6 +53,13 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
+     * Returns RxJava stream that emits the latest [FragmentLifecycleState].
+     */
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<FragmentLifecycleState> {
+        return holder.fragmentLifecycleState(contract)
+    }
+
+    /**
      * Creates an [ActivityStore].
      *
      * @param configureActivity - this is called when activity is created before view inflation. You can use this to
@@ -80,8 +89,6 @@ class ActivityStoreContext<Activity : FragmentActivity>(
             start = streamStart
         )
     }
-
-
 
     /**
      * Creates an [ActivityStore].
