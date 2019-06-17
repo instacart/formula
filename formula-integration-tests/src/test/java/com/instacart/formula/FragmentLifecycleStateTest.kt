@@ -1,12 +1,12 @@
 package com.instacart.formula
 
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.fragment.FragmentLifecycleState
 import com.instacart.formula.integration.ActivityStoreContext
 import io.reactivex.Observable
 import org.junit.Before
@@ -18,7 +18,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {
 
-    private lateinit var lifecycleEvents: MutableList<Pair<FragmentContract<*>, FragmentLifecycleState>>
+    private lateinit var lifecycleEvents: MutableList<Pair<FragmentContract<*>, Lifecycle.Event>>
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
@@ -60,14 +60,14 @@ class FragmentLifecycleStateTest {
     fun `initial lifecycle`() {
         val events = selectEvents(TestContract())
         assertThat(events).containsExactly(
-            FragmentLifecycleState.CREATED,
-            FragmentLifecycleState.STARTED,
-            FragmentLifecycleState.RESUMED
+            Lifecycle.Event.ON_CREATE,
+            Lifecycle.Event.ON_START,
+            Lifecycle.Event.ON_RESUME
         )
     }
 
     @Test
-    fun `delegates back press to current render model`() {
+    fun `navigate forward`() {
         navigateToTaskDetail()
 
         val contract = TestContract()
@@ -75,19 +75,19 @@ class FragmentLifecycleStateTest {
 
         val firstScreenEvents = selectEvents(contract)
         assertThat(firstScreenEvents).containsExactly(
-            FragmentLifecycleState.CREATED,
-            FragmentLifecycleState.STARTED,
-            FragmentLifecycleState.RESUMED,
-            FragmentLifecycleState.PAUSED,
-            FragmentLifecycleState.STOPPED,
-            FragmentLifecycleState.DESTROYED
+            Lifecycle.Event.ON_CREATE,
+            Lifecycle.Event.ON_START,
+            Lifecycle.Event.ON_RESUME,
+            Lifecycle.Event.ON_PAUSE,
+            Lifecycle.Event.ON_STOP,
+            Lifecycle.Event.ON_DESTROY
         )
 
         val detailEvents = selectEvents(detail)
         assertThat(detailEvents).containsExactly(
-            FragmentLifecycleState.CREATED,
-            FragmentLifecycleState.STARTED,
-            FragmentLifecycleState.RESUMED
+            Lifecycle.Event.ON_CREATE,
+            Lifecycle.Event.ON_START,
+            Lifecycle.Event.ON_RESUME
         )
     }
 

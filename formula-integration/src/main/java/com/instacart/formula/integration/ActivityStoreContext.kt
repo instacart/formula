@@ -7,7 +7,6 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import com.instacart.formula.fragment.FragmentLifecycleState
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
@@ -53,9 +52,9 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
-     * Returns RxJava stream that emits the latest [FragmentLifecycleState].
+     * Returns RxJava stream that emits the latest [Lifecycle.Event] for a fragment that matches [FragmentContract].
      */
-    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<FragmentLifecycleState> {
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.Event> {
         return holder.fragmentLifecycleState(contract)
     }
 

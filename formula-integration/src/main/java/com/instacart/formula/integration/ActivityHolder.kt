@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import arrow.core.Option
 import arrow.core.toOption
 import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.fragment.FragmentLifecycleState
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
@@ -18,7 +17,7 @@ class ActivityHolder<Activity : FragmentActivity> {
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
 
-    private val fragmentLifecycleStates = mutableMapOf<String, FragmentLifecycleState>()
+    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.Event>()
     private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
     private val fragmentDestroyed: PublishRelay<String> = PublishRelay.create()
 
@@ -61,8 +60,8 @@ class ActivityHolder<Activity : FragmentActivity> {
         return activity.takeIf { hasStarted }
     }
 
-    fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: FragmentLifecycleState) {
-        if (newState == FragmentLifecycleState.DESTROYED) {
+    fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: Lifecycle.Event) {
+        if (newState == Lifecycle.Event.ON_DESTROY) {
             fragmentLifecycleStates.remove(contract.tag)
             fragmentDestroyed.accept(contract.tag)
         } else {
@@ -71,9 +70,9 @@ class ActivityHolder<Activity : FragmentActivity> {
         }
     }
 
-    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<FragmentLifecycleState> {
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.Event> {
         val key = contract.tag
-        val destroyedEvents = fragmentDestroyed.filter { it == key }.map { FragmentLifecycleState.DESTROYED }
+        val destroyedEvents = fragmentDestroyed.filter { it == key }.map { Lifecycle.Event.ON_DESTROY }
         return fragmentStateUpdated
             .filter { it == key }
             .startWith(key)
