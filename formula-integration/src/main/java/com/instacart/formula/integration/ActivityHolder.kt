@@ -4,6 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import arrow.core.Option
 import arrow.core.toOption
+import com.instacart.formula.fragment.FragmentContract
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
@@ -15,6 +16,10 @@ class ActivityHolder<Activity : FragmentActivity> {
     internal val lifecycleEvents = BehaviorRelay.create<Lifecycle.Event>()
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
+
+    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.Event>()
+    private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
+    private val fragmentDestroyed: PublishRelay<String> = PublishRelay.create()
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
@@ -53,5 +58,32 @@ class ActivityHolder<Activity : FragmentActivity> {
 
     fun startedActivity(): Activity? {
         return activity.takeIf { hasStarted }
+    }
+
+    fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: Lifecycle.Event) {
+        if (newState == Lifecycle.Event.ON_DESTROY) {
+            fragmentLifecycleStates.remove(contract.tag)
+            fragmentDestroyed.accept(contract.tag)
+        } else {
+            fragmentLifecycleStates[contract.tag] = newState
+            fragmentStateUpdated.accept(contract.tag)
+        }
+    }
+
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.Event> {
+        val key = contract.tag
+        val destroyedEvents = fragmentDestroyed.filter { it == key }.map { Lifecycle.Event.ON_DESTROY }
+        return fragmentStateUpdated
+            .filter { it == key }
+            .startWith(key)
+            .flatMap {
+                val state = fragmentLifecycleStates[key]
+                if (state == null) {
+                    Observable.empty()
+                } else {
+                    Observable.just(state)
+                }
+            }
+            .mergeWith(destroyedEvents)
     }
 }
