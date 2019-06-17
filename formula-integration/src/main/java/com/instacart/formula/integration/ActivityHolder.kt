@@ -20,6 +20,7 @@ class ActivityHolder<Activity : FragmentActivity> {
 
     private val fragmentLifecycleStates = mutableMapOf<String, FragmentLifecycleState>()
     private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
+    private val fragmentDestroyed: PublishRelay<String> = PublishRelay.create()
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
@@ -61,13 +62,18 @@ class ActivityHolder<Activity : FragmentActivity> {
     }
 
     fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: FragmentLifecycleState) {
-        // TODO: to avoid leaks, remove the entry from the map when fragment is removed
-        fragmentLifecycleStates[contract.tag] = newState
-        fragmentStateUpdated.accept(contract.tag)
+        if (newState == FragmentLifecycleState.DESTROYED) {
+            fragmentLifecycleStates.remove(contract.tag)
+            fragmentDestroyed.accept(contract.tag)
+        } else {
+            fragmentLifecycleStates[contract.tag] = newState
+            fragmentStateUpdated.accept(contract.tag)
+        }
     }
 
     fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<FragmentLifecycleState> {
         val key = contract.tag
+        val destroyedEvents = fragmentDestroyed.filter { it == key }.map { FragmentLifecycleState.DESTROYED }
         return fragmentStateUpdated
             .filter { it == key }
             .startWith(key)
@@ -79,5 +85,6 @@ class ActivityHolder<Activity : FragmentActivity> {
                     Observable.just(state)
                 }
             }
+            .mergeWith(destroyedEvents)
     }
 }
