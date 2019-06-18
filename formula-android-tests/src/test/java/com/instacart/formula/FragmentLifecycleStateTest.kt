@@ -18,7 +18,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {
 
-    private lateinit var lifecycleEvents: MutableList<Pair<FragmentContract<*>, Lifecycle.Event>>
+    private lateinit var lifecycleEvents: MutableList<Pair<FragmentContract<*>, Lifecycle.State>>
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
@@ -60,9 +60,10 @@ class FragmentLifecycleStateTest {
     fun `initial lifecycle`() {
         val events = selectEvents(TestContract())
         assertThat(events).containsExactly(
-            Lifecycle.Event.ON_CREATE,
-            Lifecycle.Event.ON_START,
-            Lifecycle.Event.ON_RESUME
+            Lifecycle.State.DESTROYED,
+            Lifecycle.State.CREATED,
+            Lifecycle.State.STARTED,
+            Lifecycle.State.RESUMED
         )
     }
 
@@ -75,27 +76,26 @@ class FragmentLifecycleStateTest {
 
         val firstScreenEvents = selectEvents(contract)
         assertThat(firstScreenEvents).containsExactly(
-            Lifecycle.Event.ON_CREATE,
-            Lifecycle.Event.ON_START,
-            Lifecycle.Event.ON_RESUME,
-            Lifecycle.Event.ON_PAUSE,
-            Lifecycle.Event.ON_STOP,
-            Lifecycle.Event.ON_DESTROY
+            Lifecycle.State.DESTROYED,
+            Lifecycle.State.CREATED,
+            Lifecycle.State.STARTED,
+            Lifecycle.State.RESUMED,
+            Lifecycle.State.STARTED,
+            Lifecycle.State.CREATED,
+            Lifecycle.State.DESTROYED
         )
 
         val detailEvents = selectEvents(detail)
         assertThat(detailEvents).containsExactly(
-            Lifecycle.Event.ON_CREATE,
-            Lifecycle.Event.ON_START,
-            Lifecycle.Event.ON_RESUME
+            Lifecycle.State.DESTROYED,
+            Lifecycle.State.CREATED,
+            Lifecycle.State.STARTED,
+            Lifecycle.State.RESUMED
         )
     }
 
-    private fun selectEvents(contract: FragmentContract<*>) =
-        lifecycleEvents.filter { it.first == contract }.map { it.second }
-
-    private fun navigateBack() {
-        scenario.onActivity { it.onBackPressed() }
+    private fun selectEvents(contract: FragmentContract<*>): List<Lifecycle.State> {
+        return lifecycleEvents.filter { it.first == contract }.map { it.second }
     }
 
     private fun navigateToTaskDetail() {

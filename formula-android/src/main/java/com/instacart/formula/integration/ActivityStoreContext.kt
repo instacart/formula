@@ -52,9 +52,9 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
-     * Returns RxJava stream that emits the latest [Lifecycle.Event] for a fragment that matches [FragmentContract].
+     * Returns RxJava stream that emits the latest [Lifecycle.State] for a fragment that matches [FragmentContract].
      */
-    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.Event> {
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.State> {
         return holder.fragmentLifecycleState(contract)
     }
 
