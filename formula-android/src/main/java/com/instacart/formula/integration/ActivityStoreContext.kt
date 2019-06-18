@@ -1,8 +1,10 @@
 package com.instacart.formula.integration
 
+import android.os.Parcelable
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
+import com.instacart.formula.android.persistence.PersistedState
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
@@ -12,6 +14,7 @@ import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.BiFunction
+import kotlin.reflect.KClass
 
 /**
  * This class provides context within which you can create [ActivityStore]. It provides
@@ -28,6 +31,12 @@ class ActivityStoreContext<Activity : FragmentActivity>(
 
     internal fun onActivityResult(result: ActivityResult) {
         activityResultRelay.accept(result)
+    }
+
+    inline fun <reified State : Parcelable> withState(): PersistedState<State> = withState(State::class)
+
+    fun <State : Parcelable> withState(type: KClass<State>): PersistedState<State> {
+        return TODO()
     }
 
     /**
@@ -75,7 +84,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
         contracts: FragmentFlowStore
-    ) : ActivityStore<Activity> {
+    ): ActivityStore<Activity> {
         val streamStart = createStreamStartFunction(streams)
 
         return ActivityStore(
@@ -106,7 +115,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         noinline streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
         crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
-    ) : ActivityStore<Activity> {
+    ): ActivityStore<Activity> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
@@ -122,7 +131,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     inline fun <Component> contracts(
         rootComponent: Component,
         crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
-    ) : FragmentFlowStore {
+    ): FragmentFlowStore {
         return FragmentFlowStore.init(rootComponent, contracts)
     }
 

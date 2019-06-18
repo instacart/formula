@@ -13,6 +13,7 @@ class TodoApp : Application() {
         FormulaAndroid.init(this) {
             activity<TodoActivity> {
                 val component = TodoAppComponent()
+
                 store(
                     contracts = contracts(component) {
                         bind(TaskListContract::class) { component, key ->
