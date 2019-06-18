@@ -34,7 +34,7 @@ android {
 
 dependencies {
     implementation project(":formula")
-    implementation project(":formula-integration")
+    implementation project(":formula-android")
 
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat
