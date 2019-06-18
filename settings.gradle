@@ -1,6 +1,6 @@
 include ':formula'
 include ':formula-compiler'
-include ':formula-integration'
+include ':formula-android'
 include ':formula-integration-tests'
 include ':samples:counter'
 include ':samples:todoapp'

@@ -5,8 +5,8 @@ deterministic, composable, testable applications.
 To learn more, see our [Gettting Started Guide](docs/Getting-Started.md). Also, take a look at the [samples](samples) 
 folder.
 
-## Integration
-The integration module provides declarative API to connect reactive state management to Android Fragments. 
+## Android Module
+The Android module provides declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
 To learn more, see our [Integration Guide](docs/Integration.md).
@@ -28,7 +28,7 @@ dependencies {
     implementation 'com.github.instacart:formula:0.2.4'
     kapt 'com.github.instacart:formula-compiler:0.2.4'
     
-    implementation 'com.github.instacart:formula-integration:0.2.4'
+    implementation 'com.github.instacart:formula-android:0.2.4'
 }
 ```
 

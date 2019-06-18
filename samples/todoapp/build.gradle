@@ -34,7 +34,7 @@ android {
 
 dependencies {
     implementation project(":formula")
-    implementation project(":formula-integration")
+    implementation project(":formula-android")
 
     implementation libraries.androidx.appcompat
     implementation libraries.androidx.recyclerview

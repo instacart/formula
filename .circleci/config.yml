@@ -62,11 +62,11 @@ commands:
           command: |
             ./gradlew :formula:test
       - run:
-          name: Run Integration Tests
+          name: Run Formula Android Unit Tests
           command: |
-            ./gradlew :formula-integration:testRelease
+            ./gradlew :formula-android:testRelease
       - run:
-          name: Run Integration Android Tests
+          name: Run Formula Android Instrumentation Tests
           command: |
             ./gradlew :formula-integration-tests:testRelease
       - run:
