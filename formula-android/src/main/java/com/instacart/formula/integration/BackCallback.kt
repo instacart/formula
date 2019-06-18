@@ -5,5 +5,9 @@ package com.instacart.formula.integration
  * handles back presses.
  */
 interface BackCallback {
-    fun onBackPressed()
+
+    /**
+     * Returns true if it handles back press.
+     */
+    fun onBackPressed(): Boolean
 }
