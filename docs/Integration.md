@@ -342,5 +342,51 @@ class MyActivity : FragmentActivity() {
 ```
 
 
-## Using with dagger (TODO)
+## Managing dependencies
+Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity, 
+you can create your activity specific dependencies or Dagger components. These objects will survive configuration changes.
+```kotlin
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        val appComponent: AppComponent = ...
+        
+        FormulaAndroid.init(this) {
+            activity(MyActivity::class) {
+                // This component will survive configuration changes.
+                val activityComponent = appComponent.createMyActivityComponent()
+                
+                store { }
+            }
+        }
+    }
+}
+```
 
+To inject the activity or create activity dependencies that don't survive configuration changes such as ones that need direct
+activity reference, you can use `configureActivity` callback.
+```kotlin
+val appComponent: AppComponent = ...
+
+FormulaAndroid.init(this) {
+    activity(MyActivity::class) {
+        // This component will survive configuration changes.
+        val activityComponent = appComponent.createMyActivityComponent()
+        
+        store(
+            configureActivity = {
+                // in this callback `this` is the instance of MyActivity
+                // so we can use it to inject dependencies
+                activityComponent.inject(this)
+                
+                // Or you can use setters to provide dependencies to your activity.
+                // This dependency object won't survive configuration changes.
+                val dependency = MyActivityDependency(activity = this)
+                this.setDependency(dependency)
+            }
+        )
+    }
+}
+```
