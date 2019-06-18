@@ -341,6 +341,57 @@ class MyActivity : FragmentActivity() {
 }
 ```
 
+## Activity state management
+One of the goals of Formula is to make doing the right thing easy. As part of that we wanted to provide an easy
+way for state streams to survive configuration changes by default. 
+
+Let's define a basic activity that has a `renderTime` method.
+```kotlin
+class MyActivity : FormulaAppCompatActivity() {
+
+    fun renderTime(time: String) {
+        // implementation left to the reader
+    }
+}
+```
+
+To connect an RxJava Observable to `renderTime`, we define `streams` parameter which expects a `Disposable`
+back. Within this method you can subscribe to any number of RxJava streams.    
+```kotlin
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        FormulaAndroid.init(this) {
+            activity<MyActivity> {
+            
+                store(
+                    streams = {
+                        // You can subscribe to your RxJava streams here.
+                        val timerState =  Observable
+                            .interval(0, 1, TimeUnit.SECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .map { time ->
+                                "$time seconds"
+                            }
+                            
+                        // update ensures that if configuration changes happen that
+                        // we send the last state to the new activity instance.    
+                        update(timerState, MyActivity::renderTime)
+                    }
+                )
+            }
+        }
+    }
+}
+```
+
+You might be confused about the `update` function called there. It is provided within the context of `streams` function
+using Kotlin receiver parameter `StreamConfigurator`. The `update` function ensures that state changes only arrive after
+`Activity` has started and that last state is applied if `Activity` is re-created due to configuration changes. It returns
+a `Disposable`.
+
 
 ## Managing dependencies
 Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity, 
