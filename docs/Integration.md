@@ -189,12 +189,12 @@ activity(MyActivity::class) {
         bind(ItemDetailContract::class) { _, contract ->
             val input = ItemDetailFormula.Input(
                 onItemFavorited = {
-                    proxy.send {
+                    send {
                         onActivityEffect(MyActivityEffect.ShowToast("Item was added to your favorites."))
                     }
                 },
                 onItemDeleted = {
-                    proxy.send {
+                    send {
                         onActivityEffect(MyActivityEffect.CloseFragment(contract.tag))
                     }
                 }
@@ -225,7 +225,7 @@ activity(MyActivity::class) {
             val input = ItemListFormula.Input(
                 onItemSelected = { item ->
                     val contract = ItemDetailContract(id = item.id)
-                    proxy.send {
+                    send {
                         onActivityEffect(ActivityEffect.NavigateToFragmentContract(contract))
                     }
                 }
