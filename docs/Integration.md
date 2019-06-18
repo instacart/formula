@@ -1,5 +1,5 @@
-## Formula Integration
-The integration module provides a declarative API to connect reactive state management to Android Fragments. 
+## Formula Android
+The Android module provides a declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
 Some of the goals for this module are:

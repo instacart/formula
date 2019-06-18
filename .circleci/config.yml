@@ -68,7 +68,7 @@ commands:
       - run:
           name: Run Formula Android Instrumentation Tests
           command: |
-            ./gradlew :formula-integration-tests:testRelease
+            ./gradlew :formula-android-tests:testRelease
       - run:
           name: Generate Jacoco Report
           command: |
