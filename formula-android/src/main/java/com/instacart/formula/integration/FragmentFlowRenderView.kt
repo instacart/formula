@@ -26,7 +26,7 @@ import io.reactivex.disposables.CompositeDisposable
 class FragmentFlowRenderView(
     private val activity: FragmentActivity,
     private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
-    private val onLifecycleState: ((FragmentContract<*>, Lifecycle.Event) -> Unit)? = null
+    private val onLifecycleState: ((FragmentContract<*>, Lifecycle.State) -> Unit)? = null
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
@@ -58,27 +58,27 @@ class FragmentFlowRenderView(
                     updateVisibleFragments(it)
                 }
 
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_CREATE)
+                notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
             }
 
             override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
                 super.onFragmentStarted(fm, f)
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_START)
+                notifyLifecycleStateChanged(f, Lifecycle.State.STARTED)
             }
 
             override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
                 super.onFragmentResumed(fm, f)
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_RESUME)
+                notifyLifecycleStateChanged(f, Lifecycle.State.RESUMED)
             }
 
             override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
                 super.onFragmentPaused(fm, f)
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_PAUSE)
+                notifyLifecycleStateChanged(f, Lifecycle.State.STARTED)
             }
 
             override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
                 super.onFragmentStopped(fm, f)
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_STOP)
+                notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
             }
 
             override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
@@ -87,7 +87,7 @@ class FragmentFlowRenderView(
 
                 recordBackstackChange()
 
-                notifyLifecycleStateChanged(f, Lifecycle.Event.ON_DESTROY)
+                notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
                 // This means that fragment is removed due to backstack change.
                 if (backstackPopped) {
                     // Reset
@@ -134,7 +134,7 @@ class FragmentFlowRenderView(
         disposables.dispose()
     }
 
-    private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.Event) {
+    private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
         if (fragment is BaseFormulaFragment<*>) {
             onLifecycleState?.let {
                 it.invoke(fragment.getFragmentContract(), newState)

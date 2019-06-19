@@ -17,9 +17,8 @@ class ActivityHolder<Activity : FragmentActivity> {
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
 
-    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.Event>()
+    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
     private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
-    private val fragmentDestroyed: PublishRelay<String> = PublishRelay.create()
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
@@ -60,30 +59,23 @@ class ActivityHolder<Activity : FragmentActivity> {
         return activity.takeIf { hasStarted }
     }
 
-    fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: Lifecycle.Event) {
-        if (newState == Lifecycle.Event.ON_DESTROY) {
+    fun updateFragmentLifecycleState(contract: FragmentContract<*>, newState: Lifecycle.State) {
+        if (newState == Lifecycle.State.DESTROYED) {
             fragmentLifecycleStates.remove(contract.tag)
-            fragmentDestroyed.accept(contract.tag)
         } else {
             fragmentLifecycleStates[contract.tag] = newState
-            fragmentStateUpdated.accept(contract.tag)
         }
+
+        fragmentStateUpdated.accept(contract.tag)
     }
 
-    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.Event> {
+    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.State> {
         val key = contract.tag
-        val destroyedEvents = fragmentDestroyed.filter { it == key }.map { Lifecycle.Event.ON_DESTROY }
         return fragmentStateUpdated
             .filter { it == key }
             .startWith(key)
-            .flatMap {
-                val state = fragmentLifecycleStates[key]
-                if (state == null) {
-                    Observable.empty()
-                } else {
-                    Observable.just(state)
-                }
+            .map {
+                fragmentLifecycleStates[key] ?: Lifecycle.State.DESTROYED
             }
-            .mergeWith(destroyedEvents)
     }
 }
