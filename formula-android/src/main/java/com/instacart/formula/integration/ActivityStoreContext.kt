@@ -41,7 +41,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      * Returns RxJava stream that emits Activity lifecycle state [Lifecycle.State].
      */
     fun activityLifecycleState(): Observable<Lifecycle.State> {
-        return holder.lifecycleEvents
+        return holder.lifecycleStates
     }
 
     /**

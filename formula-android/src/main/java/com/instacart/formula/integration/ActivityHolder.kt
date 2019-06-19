@@ -13,7 +13,7 @@ import io.reactivex.Observable
  * This class holds the current instance of the activity of type [Activity].
  */
 class ActivityHolder<Activity : FragmentActivity> {
-    internal val lifecycleEvents = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
+    internal val lifecycleStates = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
     private val lifecycleEventRelay = PublishRelay.create<Unit>()
     private val startedRelay = PublishRelay.create<Unit>()
 

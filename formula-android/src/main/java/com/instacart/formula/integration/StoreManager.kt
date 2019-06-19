@@ -54,7 +54,7 @@ internal class StoreManager(
             }
 
             store.context.holder.attachActivity(activity)
-            store.context.holder.lifecycleEvents.accept(Lifecycle.State.CREATED)
+            store.context.holder.lifecycleStates.accept(Lifecycle.State.CREATED)
 
             val renderView: FragmentFlowRenderView = renderViewOrThrow(activity)
             val disposable = store.state.subscribe {
@@ -74,7 +74,7 @@ internal class StoreManager(
             }
 
             store.context.holder.onActivityStarted(activity)
-            store.context.holder.lifecycleEvents.accept(Lifecycle.State.STARTED)
+            store.context.holder.lifecycleStates.accept(Lifecycle.State.STARTED)
         }
     }
 
@@ -86,7 +86,7 @@ internal class StoreManager(
                 return
             }
 
-            store.context.holder.lifecycleEvents.accept(Lifecycle.State.RESUMED)
+            store.context.holder.lifecycleStates.accept(Lifecycle.State.RESUMED)
         }
     }
 
@@ -107,7 +107,7 @@ internal class StoreManager(
                 return
             }
 
-            store.context.holder.lifecycleEvents.accept(Lifecycle.State.STARTED)
+            store.context.holder.lifecycleStates.accept(Lifecycle.State.STARTED)
         }
     }
 
@@ -119,7 +119,7 @@ internal class StoreManager(
                 return
             }
 
-            store.context.holder.lifecycleEvents.accept(Lifecycle.State.CREATED)
+            store.context.holder.lifecycleStates.accept(Lifecycle.State.CREATED)
         }
     }
 
@@ -130,7 +130,7 @@ internal class StoreManager(
 
             val store = findStore(activity)
             store?.context?.holder?.detachActivity(activity)
-            store?.context?.holder?.lifecycleEvents?.accept(Lifecycle.State.DESTROYED)
+            store?.context?.holder?.lifecycleStates?.accept(Lifecycle.State.DESTROYED)
 
             val key = activityToKeyMap.remove(activity)
             if (key != null && activity.isFinishing) {
