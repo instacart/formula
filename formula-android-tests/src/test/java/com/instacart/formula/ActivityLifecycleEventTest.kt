@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Lifecycle.Event.*
+import androidx.lifecycle.Lifecycle.State.*
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -18,7 +18,7 @@ class ActivityLifecycleEventTest {
 
     class TestActivity : FormulaAppCompatActivity()
 
-    private lateinit var events: MutableList<Lifecycle.Event>
+    private lateinit var events: MutableList<Lifecycle.State>
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
@@ -27,7 +27,7 @@ class ActivityLifecycleEventTest {
                     events = mutableListOf()
                     store(
                         streams = {
-                            lifecycleEvents().subscribe {
+                            activityLifecycleState().subscribe {
                                 events.add(it)
                             }
                         },
@@ -52,9 +52,9 @@ class ActivityLifecycleEventTest {
         scenario.recreate()
         scenario.close()
 
-        val lifecycle = listOf(ON_CREATE, ON_START, ON_RESUME, ON_PAUSE, ON_STOP, ON_DESTROY)
+        val lifecycle = listOf(CREATED, STARTED, RESUMED, STARTED, CREATED, DESTROYED)
         // We expect two full lifecycles
-        val expected = lifecycle + lifecycle
+        val expected = listOf(INITIALIZED) + lifecycle + lifecycle
         assertThat(events).containsExactlyElementsIn(expected)
     }
 }
