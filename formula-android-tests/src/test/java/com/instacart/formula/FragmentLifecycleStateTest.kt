@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -18,13 +17,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {
 
-    private lateinit var lifecycleEvents: MutableList<Pair<FragmentContract<*>, Lifecycle.State>>
+    private lateinit var started: MutableList<Pair<FragmentContract<*>, Boolean>>
+    private lateinit var resumed: MutableList<Pair<FragmentContract<*>, Boolean>>
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
                 activity<TestFragmentActivity> {
-                    lifecycleEvents = mutableListOf()
+                    started = mutableListOf()
+                    resumed = mutableListOf()
 
                     store(
                         configureActivity = {
@@ -56,46 +57,35 @@ class FragmentLifecycleStateTest {
         scenario = activityRule.scenario
     }
 
-    @Test
-    fun `initial lifecycle`() {
-        val events = selectEvents(TestContract())
-        assertThat(events).containsExactly(
-            Lifecycle.State.DESTROYED,
-            Lifecycle.State.CREATED,
-            Lifecycle.State.STARTED,
-            Lifecycle.State.RESUMED
-        )
+    @Test fun `is fragment started`() {
+        val events = selectStartedEvents(TestContract())
+        assertThat(events).containsExactly(false, true)
     }
 
-    @Test
-    fun `navigate forward`() {
+    @Test fun `is fragment resumed`() {
+        val events = selectResumedEvents(TestContract())
+        assertThat(events).containsExactly(false, true)
+    }
+
+    @Test fun `navigate forward`() {
         navigateToTaskDetail()
 
         val contract = TestContract()
         val detail = TestContractWithId(1)
 
-        val firstScreenEvents = selectEvents(contract)
-        assertThat(firstScreenEvents).containsExactly(
-            Lifecycle.State.DESTROYED,
-            Lifecycle.State.CREATED,
-            Lifecycle.State.STARTED,
-            Lifecycle.State.RESUMED,
-            Lifecycle.State.STARTED,
-            Lifecycle.State.CREATED,
-            Lifecycle.State.DESTROYED
-        )
+        assertThat(selectStartedEvents(contract)).containsExactly(false, true, false)
+        assertThat(selectResumedEvents(contract)).containsExactly(false, true, false)
 
-        val detailEvents = selectEvents(detail)
-        assertThat(detailEvents).containsExactly(
-            Lifecycle.State.DESTROYED,
-            Lifecycle.State.CREATED,
-            Lifecycle.State.STARTED,
-            Lifecycle.State.RESUMED
-        )
+        assertThat(selectStartedEvents(detail)).containsExactly(false, true)
+        assertThat(selectResumedEvents(detail)).containsExactly(false, true)
     }
 
-    private fun selectEvents(contract: FragmentContract<*>): List<Lifecycle.State> {
-        return lifecycleEvents.filter { it.first == contract }.map { it.second }
+    private fun selectStartedEvents(contract: FragmentContract<*>): List<Boolean> {
+        return started.filter { it.first == contract }.map { it.second }
+    }
+
+    private fun selectResumedEvents(contract: FragmentContract<*>): List<Boolean> {
+        return resumed.filter { it.first == contract }.map { it.second }
     }
 
     private fun navigateToTaskDetail() {
@@ -109,14 +99,17 @@ class FragmentLifecycleStateTest {
         }
     }
 
-    private fun activity(): TestFragmentActivity {
-        return scenario.activity()
-    }
-
     private fun ActivityStoreContext<*>.stateChanges(contract: FragmentContract<*>): Observable<Any> {
-        return fragmentLifecycleState(contract).flatMap {
-            lifecycleEvents.add(contract to it)
+        val started = isFragmentStarted(contract).flatMap {
+            started.add(contract to it)
             Observable.empty<Any>()
         }
+
+        val resumed = isFragmentResumed(contract).flatMap {
+            resumed.add(contract to it)
+            Observable.empty<Any>()
+        }
+
+        return started.mergeWith(resumed)
     }
 }

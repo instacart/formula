@@ -52,10 +52,25 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     }
 
     /**
-     * Returns RxJava stream that emits the latest [Lifecycle.State] for a fragment that matches [FragmentContract].
+     * Returns RxJava stream that emits true if fragment with [FragmentContract] has either [Lifecycle.State.STARTED]
+     * or [Lifecycle.State.RESUMED] lifecycle state.
      */
-    fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.State> {
-        return holder.fragmentLifecycleState(contract)
+    fun isFragmentStarted(contract: FragmentContract<*>): Observable<Boolean> {
+        return holder
+            .fragmentLifecycleState(contract)
+            .map { it.isAtLeast(Lifecycle.State.STARTED) }
+            .distinctUntilChanged()
+    }
+
+    /**
+     * Returns RxJava stream that emits true if fragment with [FragmentContract]
+     * has [Lifecycle.State.RESUMED] lifecycle state.
+     */
+    fun isFragmentResumed(contract: FragmentContract<*>): Observable<Boolean> {
+        return holder
+            .fragmentLifecycleState(contract)
+            .map { it.isAtLeast(Lifecycle.State.RESUMED) }
+            .distinctUntilChanged()
     }
 
     /**

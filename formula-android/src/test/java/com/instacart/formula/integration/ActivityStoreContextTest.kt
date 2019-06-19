@@ -1,6 +1,8 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import com.instacart.formula.fragment.FragmentContract
 import com.jakewharton.rxrelay2.PublishRelay
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
@@ -70,6 +72,32 @@ class ActivityStoreContextTest {
         }
 
         verify(activity).doSomething()
+    }
+
+    @Test fun `is fragment started`() {
+        val contract = createContract()
+        context.isFragmentStarted(contract)
+            .test()
+            .apply {
+                holder.updateFragmentLifecycleState(contract, Lifecycle.State.STARTED)
+            }
+            .assertValues(false, true)
+    }
+
+    @Test fun `is fragment resumed`() {
+        val contract = createContract()
+        context.isFragmentResumed(contract)
+            .test()
+            .apply {
+                holder.updateFragmentLifecycleState(contract, Lifecycle.State.RESUMED)
+            }
+            .assertValues(false, true)
+    }
+
+    private fun createContract(): FragmentContract<*> {
+        val contract = mock<FragmentContract<*>>()
+        whenever(contract.tag).thenReturn("fake tag")
+        return contract
     }
 
     private fun createFakeActivity(): FakeActivity {
