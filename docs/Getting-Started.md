@@ -118,45 +118,46 @@ class MyScreenRenderFormula(
 Render formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
 it would be placed within a surface that survives configuration changes such as Android Components ViewModel.
 
-In this example, we keep the stream running until the view model is cleared.
+In this example, I'll show how to connect RenderFormula using Formula Android module. Let's first define our Activity.
 ```kotlin
-class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
-  private val disposables = CompositeDisposable()
-    
-  val renderModels = formula.state(Unit).replay(1).apply {
-    connect { disposables.add(it) }
-  }
-
-  override fun onCleared() {
-    super.onCleared()
-    disposables.clear()
-  }
-}
-```
-
-In our activity, we then subscribe to the Render Model changes and pass them to the Render View.
-```kotlin
-class MyActivity : AppCompatActivity() {
-  private val disposables = CompositeDisposable()
+class MyActivity : FormulaAppCompatActivity() {
+  lateinit var footerButtonRenderView: FooterButtonRenderView  
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(state)
     setContentView(R.string.my_screen)
         
-    val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
-    val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
-        
-    disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
+    footerButtonRenderView = FooterButtonRenderView(findViewById(R.id.activity_content))
   }
-    
-  override fun onDestroy() {
-    disposables.clear()
-    super.onDestroy()
+  
+  fun render(model: FooterButtonRenderModel) {
+    footerButtonRenderView.renderer.render(model)
   }
 }
 ```
 
-Formula also comes with a module that provides declarative API to connect state management to Android Fragments. To learn more, see our [Integration Guide](Integration.md).
+Now, let's connect` MyScreenRenderFormula` to `MyActivity.render` function.
+```kotlin
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        FormulaAndroid.init(this) {
+            activity<MyActivity> {
+                store(
+                    streams = {
+                        val formula: MyScreenRenderFormula = ... 
+                        update(formula.state(Unit), MyActivity::render)
+                    }
+                )
+            }
+        }
+    }
+}
+```
+
+And that's it. To learn more, see our [Formula Android Guide](Integration.md).
 
 ### Input
 Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
