@@ -127,7 +127,7 @@ class MyActivity : FormulaAppCompatActivity() {
     super.onCreate(state)
     setContentView(R.string.my_screen)
         
-    footerButtonRenderView = FooterButtonRenderView(findViewById(R.id.activity_content))
+    footerButtonRenderView = FooterButtonRenderView(findViewById(R.id.footer))
   }
   
   fun render(model: FooterButtonRenderModel) {
@@ -158,6 +158,45 @@ class MyApp : Application() {
 ```
 
 And that's it. To learn more, see our [Formula Android Guide](Integration.md).
+
+### Using Render Formula with Android View Model
+Defining `ViewModel` which runs `Formula.state` stream until `onCleared` is called.
+```kotlin
+class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
+  private val disposables = CompositeDisposable()
+    
+  val renderModels = formula.state(Unit).replay(1).apply {
+    connect { disposables.add(it) }
+  }
+
+  override fun onCleared() {
+    super.onCleared()
+    disposables.clear()
+  }
+}
+```
+
+In our activity, we then subscribe to the Render Model changes and pass them to the Render View.
+```kotlin
+class MyActivity : AppCompatActivity() {
+  private val disposables = CompositeDisposable()
+
+  override fun onCreate(state: Bundle?) {
+    super.onCreate(state)
+    setContentView(R.string.my_screen)
+        
+    val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
+    val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
+        
+    disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
+  }
+    
+  override fun onDestroy() {
+    disposables.clear()
+    super.onDestroy()
+  }
+}
+```
 
 ### Input
 Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
