@@ -119,12 +119,7 @@ class FragmentFlowRenderView(
         // TODO: only visible fragments should handle back presses.
         // currentFragmentRenderModel might not be currently visible fragment.
         val state = currentFragmentRenderModel
-        if (state is BackCallback) {
-            state.onBackPressed()
-            return true
-        }
-
-        return false
+        return state is BackCallback && state.onBackPressed()
     }
 
     /**

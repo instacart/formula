@@ -319,11 +319,19 @@ To override how the back button works for a particular navigation destination, y
 
 ```kotlin
 data class FormRenderModel(
+    private val confirmBeforeExiting: Boolean,
     private val confirmUserWantsToExit: () -> Unit
 ): BackCallback {
 
-    fun onBackPressed() {
-        confirmUserWantsToExit()
+    fun onBackPressed(): Boolean {
+        // Check if we need to override back handling
+        if (confirmBeforeExiting) {
+            confirmUserWantsToExit()
+            return true
+        }
+        
+        // Use default behavior (which closes the screen)
+        return false 
     }
 }
 ```
