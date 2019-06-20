@@ -118,7 +118,49 @@ class MyScreenRenderFormula(
 Render formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
 it would be placed within a surface that survives configuration changes such as Android Components ViewModel.
 
-In this example, we keep the stream running until the view model is cleared.
+In this example, I'll show how to connect RenderFormula using Formula Android module. Let's first define our Activity.
+```kotlin
+class MyActivity : FormulaAppCompatActivity() {
+  lateinit var footerButtonRenderView: FooterButtonRenderView  
+
+  override fun onCreate(state: Bundle?) {
+    super.onCreate(state)
+    setContentView(R.string.my_screen)
+        
+    footerButtonRenderView = FooterButtonRenderView(findViewById(R.id.footer))
+  }
+  
+  fun render(model: FooterButtonRenderModel) {
+    footerButtonRenderView.renderer.render(model)
+  }
+}
+```
+
+Now, let's connect` MyScreenRenderFormula` to `MyActivity.render` function.
+```kotlin
+class MyApp : Application() {
+    
+    override fun onCreate() {
+        super.onCreate()
+        
+        FormulaAndroid.init(this) {
+            activity<MyActivity> {
+                store(
+                    streams = {
+                        val formula: MyScreenRenderFormula = ... 
+                        update(formula.state(Unit), MyActivity::render)
+                    }
+                )
+            }
+        }
+    }
+}
+```
+
+And that's it. To learn more, see our [Formula Android Guide](Integration.md).
+
+### Using Render Formula with Android View Model
+Defining `ViewModel` which runs `Formula.state` stream until `onCleared` is called.
 ```kotlin
 class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
   private val disposables = CompositeDisposable()
@@ -155,8 +197,6 @@ class MyActivity : AppCompatActivity() {
   }
 }
 ```
-
-Formula also comes with a module that provides declarative API to connect state management to Android Fragments. To learn more, see our [Integration Guide](Integration.md).
 
 ### Input
 Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
