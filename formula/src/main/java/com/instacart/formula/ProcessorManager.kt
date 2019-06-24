@@ -2,6 +2,9 @@ package com.instacart.formula
 
 import kotlin.reflect.KClass
 
+/**
+ * Handles state processing.
+ */
 class ProcessorManager<State, Effect>(
     state: State,
     private val onTransition: (Effect?) -> Unit
@@ -19,10 +22,19 @@ class ProcessorManager<State, Effect>(
         val tag: String
     )
 
+    private fun handleTransition(transition: Transition<State, Effect>) {
+        transitionNumber += 1
+        this.state = transition.state
+        onTransition(transition.effect)
+    }
+
+    /**
+     * Used to indicate if we the [nextFrame] has triggered a transition change. We want
+     */
     internal fun hasTransitioned(transitionNumber: Long) = this.transitionNumber != transitionNumber
 
     /**
-     * Creates a next frame that will need to be stepped through.
+     * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     fun <Input, RenderModel> process(
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
@@ -30,30 +42,30 @@ class ProcessorManager<State, Effect>(
     ): ProcessResult<RenderModel> {
         // TODO: assert main thread.
 
+        var canRun = false
         var invoked = false
 
         val context = RealRxFormulaContext(this, onChange = {
             // TODO assert main thread
+
+            if (!canRun) {
+                throw IllegalStateException("Transitions are not allowed while processing")
+            }
+
             if (invoked) {
                 // Some event already won the race
                 throw IllegalStateException("event won the race, this shouldn't happen: $it")
             } else {
                 invoked = true
-//                transitioned = true
-                transitionNumber += 1
 
-                state = it.state
-                onTransition(it.effect)
+                handleTransition(it)
             }
         })
 
         val result = formula.process(input, state, context)
         frame = Frame(result.workers, context.children)
 
-        if (invoked) {
-            throw IllegalStateException("Should not transition while processing")
-        }
-
+        canRun = true
         return result
     }
 
@@ -100,6 +112,7 @@ class ProcessorManager<State, Effect>(
             val initial = formula.initialState(input)
             val new = ProcessorManager<ChildState, ChildEffect>(initial, onTransition = {
                 // TODO assert main thread
+
                 val effect = if (it != null) {
                     val result = onEffect(it)
                     this.state = result.state
