@@ -1,9 +1,11 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.ProcessorManager
 import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.subjects.PublishSubject
 
+/**
+ * Takes a [ProcessorFormula] and creates an Observable<RenderModel> from it.
+ */
 object ProcessorFormulaRxRuntime {
     fun <Input, State, Effect, RenderModel> start(
         input: Input,
@@ -29,16 +31,17 @@ object ProcessorFormulaRxRuntime {
                     }
                 }
 
-                val processorManager: ProcessorManager<State, Effect> = ProcessorManager(
-                    state = formula.initialState(input),
-                    onTransition = {
-                        if (it != null) {
-                            onEffect(it)
-                        }
+                val processorManager: ProcessorManager<State, Effect> =
+                    ProcessorManager(
+                        state = formula.initialState(input),
+                        onTransition = {
+                            if (it != null) {
+                                onEffect(it)
+                            }
 
-                        process()
-                    }
-                )
+                            process()
+                        }
+                    )
                 manager = processorManager
 
                 emitter.setCancellable {

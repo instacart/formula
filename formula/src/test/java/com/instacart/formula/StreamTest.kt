@@ -12,7 +12,7 @@ import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 
-class WorkerTest {
+class StreamTest {
     lateinit var scheduler: TestScheduler
     lateinit var subject: TestObserver<TimerRenderModel>
 

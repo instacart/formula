@@ -1,5 +1,8 @@
-package com.instacart.formula
+package com.instacart.formula.internal
 
+import com.instacart.formula.ProcessResult
+import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Transition
 import kotlin.reflect.KClass
 
 /**
@@ -10,7 +13,7 @@ class ProcessorManager<State, Effect>(
     private val onTransition: (Effect?) -> Unit
 ) : RealRxFormulaContext.Delegate<State, Effect> {
 
-    private val workerManager = WorkerManager(this)
+    private val workerManager = StreamManager(this)
     internal val children: MutableMap<FormulaKey, ProcessorManager<*, *>> = mutableMapOf()
     internal var frame: Frame? = null
     internal var transitionNumber: Long = 0
@@ -63,7 +66,7 @@ class ProcessorManager<State, Effect>(
         })
 
         val result = formula.process(input, state, context)
-        frame = Frame(result.workers, context.children)
+        frame = Frame(result.streams, context.children)
 
         canRun = true
         return result

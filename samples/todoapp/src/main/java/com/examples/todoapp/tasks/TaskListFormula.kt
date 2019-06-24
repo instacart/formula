@@ -1,13 +1,10 @@
 package com.examples.todoapp.tasks
 
-import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.ProcessResult
 import com.instacart.formula.ProcessorFormula
-import com.instacart.formula.RxProcessor
 import com.instacart.formula.Transition
-import io.reactivex.disposables.Disposable
 
 class TaskListFormula(
     private val repo: TaskRepo
@@ -16,14 +13,6 @@ class TaskListFormula(
     class Input(
         val showToast: (String) -> Unit
     )
-
-    internal class TaskListProcessor(
-        private val repo: TaskRepo
-    ) : RxProcessor<Unit, List<Task>>() {
-        override fun subscribe(input: Unit, onEvent: (List<Task>) -> Unit): Disposable {
-            return repo.tasks().subscribe(onEvent)
-        }
-    }
 
     override fun initialState(input: Input): TaskListState {
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
@@ -42,11 +31,11 @@ class TaskListFormula(
         )
 
         return ProcessResult(
-            workers = listOf(
-                context.worker(TaskListProcessor(repo), Unit) {
+            streams = context.streams {
+                stream(TaskListStream(repo), Unit) {
                     Transition(state.copy(taskState = it))
                 }
-            ),
+            },
             renderModel = TaskListRenderModel(
                 items = items,
                 filterOptions = TasksFilterType.values().map { type ->

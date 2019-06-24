@@ -1,11 +1,13 @@
-package com.instacart.formula
+package com.instacart.formula.internal
 
-class WorkerManager(
+import com.instacart.formula.StreamConnection
+
+class StreamManager(
     private val processManager: ProcessorManager<*, *>
 ) {
-    private var lastWorkers: MutableMap<Worker.Key, Worker<*, *>> = mutableMapOf()
+    private var lastWorkers: MutableMap<StreamKey, StreamConnection<*, *>> = mutableMapOf()
 
-    fun updateWorkers(workers: List<Worker<*, *>>, transitionNumber: Long) {
+    fun updateWorkers(workers: List<StreamConnection<*, *>>, transitionNumber: Long) {
         lastWorkers.forEach { existingWorker ->
             val update = workers.firstOrNull { it == existingWorker.value }
             if (update == null) {

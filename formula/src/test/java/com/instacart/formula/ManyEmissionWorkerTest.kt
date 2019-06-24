@@ -24,17 +24,17 @@ class ManyEmissionWorkerTest {
         ): ProcessResult<Int> {
 
             return ProcessResult(
-                workers = listOf(
-                    context.worker(MyProcessor(), Unit) {
+                streams = context.streams {
+                    stream(MyStream(), Unit) {
                         Transition(state + 1)
                     }
-                ),
+                },
                 renderModel = state
             )
         }
     }
 
-    class MyProcessor : RxProcessor<Unit, Int>() {
+    class MyStream : Stream<Unit, Int> {
         override fun subscribe(input: Unit, onEvent: (Int) -> Unit): Disposable {
             val values = 1..100000
             return Observable.fromIterable(values).subscribe(onEvent)

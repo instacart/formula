@@ -1,8 +1,10 @@
 package com.instacart.formula
 
 import io.reactivex.Observable
-import io.reactivex.subjects.BehaviorSubject
 
+/**
+ * TODO: would be good to rename to `Formula` and remove `state()`.
+ */
 interface ProcessorFormula<Input, State, Effect, RenderModel> : Formula<Input, RenderModel> {
 
     fun onEffect(input: Input, effect: Effect) = Unit
@@ -21,5 +23,3 @@ interface ProcessorFormula<Input, State, Effect, RenderModel> : Formula<Input, R
         })
     }
 }
-
-

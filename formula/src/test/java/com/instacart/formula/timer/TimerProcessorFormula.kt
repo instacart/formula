@@ -4,7 +4,6 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.ProcessResult
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
-import com.instacart.formula.Worker
 
 class TimerProcessorFormula(
     private val timer: Timer
@@ -17,15 +16,14 @@ class TimerProcessorFormula(
         state: TimerState,
         context: FormulaContext<TimerState, TimerEffect>
     ): ProcessResult<TimerRenderModel> {
-        val workers = mutableListOf<Worker<*, *>>()
-        if (state.runTimer) {
-            workers.add(context.worker(timer, Unit, onEvent = {
-                Transition(state.copy(time = state.time + 1))
-            }))
-        }
-
         return ProcessResult(
-            workers = workers,
+            streams = context.streams {
+                if (state.runTimer) {
+                    stream(timer, onEvent = {
+                        Transition(state.copy(time = state.time + 1))
+                    })
+                }
+            },
             renderModel = TimerRenderModel(
                 time = "Time: ${state.time}",
                 onResetSelected = {
