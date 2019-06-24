@@ -12,9 +12,12 @@ object ProcessorFormulaRxRuntime {
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
         onEffect: (Effect) -> Unit
     ): Observable<RenderModel> {
-
+        val threadName = Thread.currentThread().name
+        val id = Thread.currentThread().id
         return Observable
             .create<RenderModel> { emitter ->
+                checkThread(id, threadName)
+
                 var manager: ProcessorManager<State, Effect>? = null
                 var hasInitialFinished = false
                 var lastRenderModel: RenderModel? = null
@@ -35,6 +38,8 @@ object ProcessorFormulaRxRuntime {
                     ProcessorManager(
                         state = formula.initialState(input),
                         onTransition = {
+                            checkThread(id, threadName)
+
                             if (it != null) {
                                 onEffect(it)
                             }
@@ -56,5 +61,12 @@ object ProcessorFormulaRxRuntime {
                 }
             }
             .distinctUntilChanged()
+    }
+
+    private fun checkThread(id: Long, name: String) {
+        val thread = Thread.currentThread()
+        if(thread.id != id) {
+            throw IllegalStateException("Only thread that created it can trigger transitions. Expected: $name, Was: ${thread.name}")
+        }
     }
 }

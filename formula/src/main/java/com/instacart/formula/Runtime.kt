@@ -6,5 +6,9 @@ fun <Input, State, Effect, RenderModel> ProcessorFormula<Input, State, Effect, R
     input: Input,
     onEffect: (Effect) -> Unit = {}
 ): Observable<RenderModel> {
-    return ProcessorFormulaRxRuntime.start(input, this, onEffect = onEffect)
+    return ProcessorFormulaRxRuntime.start(
+        input = input,
+        formula = this,
+        onEffect = onEffect
+    )
 }
