@@ -1,25 +1,21 @@
 package com.instacart.formula
 
-import io.reactivex.Observable
-
 /**
- * TODO: would be good to rename to `Formula` and remove `state()`.
+ * TODO: would be good to rename to `Formula` and rename existing `Formula` to `RxFormula`.
  */
-interface ProcessorFormula<Input, State, Effect, RenderModel> : Formula<Input, RenderModel> {
-
-    fun onEffect(input: Input, effect: Effect) = Unit
+interface ProcessorFormula<Input, State, Effect, RenderModel> {
 
     fun initialState(input: Input): State
 
+    /**
+     * This method is called any time [State] changes. Use this method to
+     * 1. Create the [RenderModel]
+     * 2. Define what [Stream]s should run.
+     * 3. Define children Formulas.
+     */
     fun process(
         input: Input,
         state: State,
         context: FormulaContext<State, Effect>
     ): ProcessResult<RenderModel>
-
-    override fun state(input: Input): Observable<RenderModel> {
-        return ProcessorFormulaRxRuntime.start(input, this, onEffect = {
-            onEffect(input, it)
-        })
-    }
 }

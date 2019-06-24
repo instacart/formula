@@ -4,8 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.timer.Timer
 import com.instacart.formula.timer.TimerProcessorFormula
 import com.instacart.formula.timer.TimerRenderModel
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.TestScheduler
 import org.junit.Before
