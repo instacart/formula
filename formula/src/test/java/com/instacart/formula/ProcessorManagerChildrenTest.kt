@@ -23,6 +23,6 @@ class ProcessorManagerChildrenTest {
         val next = manager.process(formula, Unit)
         assertThat(next.renderModel.timer).isNull()
 
-        assertThat(manager.children[ProcessorManager.FormulaKey(TimerProcessorFormula::class, "")]).isNull()
+        assertThat(manager.frame!!.children[ProcessorManager.FormulaKey(TimerProcessorFormula::class, "")]).isNull()
     }
 }

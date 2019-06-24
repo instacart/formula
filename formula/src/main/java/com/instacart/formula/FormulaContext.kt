@@ -16,7 +16,8 @@ interface FormulaContext<State, Effect> {
             input = input,
             processor = processor,
             onEvent = {
-                transition(onEvent(it).state)
+                val value = onEvent(it)
+                transition(value.state, value.effect)
             }
         )
     }

@@ -7,8 +7,11 @@ class ProcessorManager<State, Effect>(
     private val onTransition: (Effect?) -> Unit
 ) : RealRxFormulaContext.Delegate<State, Effect> {
 
-    private val workerManager = WorkerManager()
+    private val workerManager = WorkerManager(this)
     internal val children: MutableMap<FormulaKey, ProcessorManager<*, *>> = mutableMapOf()
+    internal var frame: Frame? = null
+    internal var transitionNumber: Long = 0
+
     private var state: State = state
 
     data class FormulaKey(
@@ -16,6 +19,11 @@ class ProcessorManager<State, Effect>(
         val tag: String
     )
 
+    internal fun hasTransitioned(transitionNumber: Long) = this.transitionNumber != transitionNumber
+
+    /**
+     * Creates a next frame that will need to be stepped through.
+     */
     fun <Input, RenderModel> process(
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
         input: Input
@@ -28,30 +36,58 @@ class ProcessorManager<State, Effect>(
             // TODO assert main thread
             if (invoked) {
                 // Some event already won the race
+                throw IllegalStateException("event won the race, this shouldn't happen: $it")
             } else {
                 invoked = true
+//                transitioned = true
+                transitionNumber += 1
 
                 state = it.state
-
                 onTransition(it.effect)
             }
         })
 
         val result = formula.process(input, state, context)
+        frame = Frame(result.workers, context.children)
+
+        if (invoked) {
+            throw IllegalStateException("Should not transition while processing")
+        }
+
+        return result
+    }
+
+    /**
+     * Returns true if has transition while moving to next frame.
+     */
+    fun nextFrame(): Boolean {
+        val newFrame = frame ?: throw IllegalStateException("call process before calling nextFrame()")
+
+        val thisTransition = transitionNumber
+
+        // Need to perform units of work.
 
         // Tear down old children
-        children.keys.forEach {
-            if (!context.children.containsKey(it)) {
-                val processor = children.remove(it)
+        children.forEach {
+            if (!newFrame.children.containsKey(it.key)) {
+                val processor = children.remove(it.key)
+                processor?.terminate()
 
+                if (hasTransitioned(thisTransition)) {
+                    return true
+                }
             }
         }
 
+        children.forEach {
+            if (it.value.nextFrame()) {
+                return true
+            }
+        }
 
-        workerManager.updateWorkers(result.workers)
-
-
-        return result.copy()
+        // Should parents workers have priority?
+        workerManager.updateWorkers(newFrame.workers, thisTransition)
+        return hasTransitioned(thisTransition)
     }
 
     override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
@@ -72,6 +108,7 @@ class ProcessorManager<State, Effect>(
                     null
                 }
 
+                transitionNumber += 1;
                 onTransition(effect)
             })
             children[key] = new

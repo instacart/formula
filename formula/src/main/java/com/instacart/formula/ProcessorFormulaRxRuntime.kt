@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
 import io.reactivex.subjects.PublishSubject
 
 object ProcessorFormulaRxRuntime {
@@ -9,28 +10,48 @@ object ProcessorFormulaRxRuntime {
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
         onEffect: (Effect) -> Unit
     ): Observable<RenderModel> {
-        val relay = PublishSubject.create<Unit>()
 
-        val processorManager: ProcessorManager<State, Effect> = ProcessorManager(
-            state = formula.initialState(input),
-            onTransition = {
-                if (it != null) {
-                    onEffect(it)
+        return Observable
+            .create<RenderModel> { emitter ->
+                var manager: ProcessorManager<State, Effect>? = null
+                var hasInitialFinished = false
+                var lastRenderModel: RenderModel? = null
+
+                /**
+                 * Processes the next frame.
+                 */
+                fun process() {
+                    val localManager = manager!!
+                    val result: ProcessResult<RenderModel> = localManager.process(formula, input)
+                    lastRenderModel = result.renderModel
+                    if (!localManager.nextFrame() && hasInitialFinished) {
+                        emitter.onNext(result.renderModel)
+                    }
                 }
 
-                relay.onNext(Unit)
-            }
-        )
+                val processorManager: ProcessorManager<State, Effect> = ProcessorManager(
+                    state = formula.initialState(input),
+                    onTransition = {
+                        if (it != null) {
+                            onEffect(it)
+                        }
 
-        return relay
-            .startWith(Unit)
-            .map {
-                processorManager.process(formula, input)
+                        process()
+                    }
+                )
+                manager = processorManager
+
+                emitter.setCancellable {
+                    processorManager.terminate()
+                }
+
+                process()
+                hasInitialFinished = true
+
+                lastRenderModel?.let {
+                    emitter.onNext(it)
+                }
             }
-            .map { it.renderModel }
             .distinctUntilChanged()
-            .doFinally {
-                processorManager.terminate()
-            }
     }
 }

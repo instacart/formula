@@ -6,7 +6,8 @@ class Worker<InputT : Any, OutputT>(
     val key: Key,
     val input: InputT,
     val processor: Processor<InputT, OutputT>,
-    onEvent: (OutputT) -> Unit) {
+    onEvent: (OutputT) -> Unit
+) {
 
     internal var handler: (OutputT) -> Unit = onEvent
 

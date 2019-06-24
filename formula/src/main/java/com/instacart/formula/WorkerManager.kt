@@ -1,35 +1,43 @@
 package com.instacart.formula
 
-class WorkerManager {
-    private var workers: Map<Worker.Key, Worker<*, *>> = mapOf()
+class WorkerManager(
+    private val processManager: ProcessorManager<*, *>
+) {
+    private var lastWorkers: MutableMap<Worker.Key, Worker<*, *>> = mutableMapOf()
 
-    fun updateWorkers(workers: List<Worker<*, *>>) {
-        val updated = mutableMapOf<Worker.Key, Worker<*, *>>()
-        this.workers.forEach { existingWorker ->
+    fun updateWorkers(workers: List<Worker<*, *>>, transitionNumber: Long) {
+        lastWorkers.forEach { existingWorker ->
             val update = workers.firstOrNull { it == existingWorker.value }
             if (update == null) {
+                lastWorkers.remove(existingWorker.key)
+
                 existingWorker.value.handler = {}
                 existingWorker.value.tearDown()
             } else {
                 existingWorker.value.handler = update.handler as (Any?) -> Unit
-                updated[existingWorker.key] = existingWorker.value
+            }
+
+            if (processManager.hasTransitioned(transitionNumber)) {
+                return
             }
         }
 
         workers.forEach {
-            if (!this.workers.containsKey(it.key)) {
-                updated[it.key] = it
+            if (!lastWorkers.containsKey(it.key)) {
+                lastWorkers[it.key] = it
                 it.start()
+
+                if (processManager.hasTransitioned(transitionNumber)) {
+                    return
+                }
             }
         }
-
-        this.workers = updated
     }
 
     fun terminate() {
-        workers.values.forEach {
+        lastWorkers.values.forEach {
             it.tearDown()
         }
-        workers = emptyMap()
+        lastWorkers.clear()
     }
 }
