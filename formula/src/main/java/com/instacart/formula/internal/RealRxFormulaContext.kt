@@ -31,7 +31,7 @@ class RealRxFormulaContext<State, Effect>(
     }
 
     override fun streams(init: FormulaContext.StreamBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>> {
-        val builder = FormulaContext.StreamBuilder(this)
+        val builder = FormulaContext.StreamBuilder(onChange)
         builder.init()
         return builder.streams
     }

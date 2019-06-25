@@ -3,7 +3,7 @@ package com.instacart.formula
 import io.reactivex.Observable
 import org.junit.Test
 
-class ManyEmissionWorkerTest {
+class ManyEmissionStreamTest {
 
     @Test fun `all increment events go through`() {
         TestFormula()

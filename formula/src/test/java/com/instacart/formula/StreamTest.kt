@@ -37,7 +37,7 @@ class StreamTest {
             }
     }
 
-    @Test fun `worker is removed`() {
+    @Test fun `stream is removed`() {
         subject
             .apply {
                 scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
