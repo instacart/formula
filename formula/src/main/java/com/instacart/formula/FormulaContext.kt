@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.StreamKey
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 
 interface FormulaContext<State, Effect> {
     fun transition(state: State)
@@ -15,7 +16,6 @@ interface FormulaContext<State, Effect> {
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel
 
-
     fun streams(init: StreamBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>>
 
     class StreamBuilder<State, Effect>(
@@ -23,18 +23,21 @@ interface FormulaContext<State, Effect> {
     ) {
         internal val streams = mutableListOf<StreamConnection<*, *>>()
 
+        private fun <Input : Any, Output> add(connection: StreamConnection<Input, Output>) {
+            if (streams.contains(connection)) {
+                throw IllegalStateException("duplicate stream with key: ${connection.key}")
+            }
+
+            streams.add(connection)
+        }
+
         fun <Input : Any, Output> stream(
             stream: Stream<Input, Output>,
             input: Input,
             key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ) {
-            val connection = createConnection(stream, input, key, onEvent)
-            if (streams.contains(connection)) {
-                throw IllegalStateException("duplicate stream with key: ${connection.key}")
-            }
-
-            streams.add(connection)
+            add(createConnection(stream, input, key, onEvent))
         }
 
         fun <Output> stream(
@@ -57,6 +60,42 @@ interface FormulaContext<State, Effect> {
             }
 
             stream(stream, key, onEvent)
+        }
+
+        fun effect(key: String, action: () -> Unit) {
+            val stream = object : Stream<Unit, Unit> {
+                override fun subscribe(input: Unit, onEvent: (Unit) -> Unit): Disposable {
+                    action()
+                    return Stream.DISPOSED
+                }
+            }
+
+            val connection = StreamConnection(
+                key = StreamKey(Unit, stream::class, key),
+                input = Unit,
+                stream = stream,
+                onEvent = {}
+            )
+
+            add(connection)
+        }
+
+        fun <Input : Any> effect(input: Input, key: String = "", action: (Input) -> Unit) {
+            val stream = object : Stream<Input, Unit> {
+                override fun subscribe(input: Input, onEvent: (Unit) -> Unit): Disposable {
+                    action(input)
+                    return Stream.DISPOSED
+                }
+            }
+
+            val connection = StreamConnection(
+                key = StreamKey(input, stream::class, key),
+                input = input,
+                stream = stream,
+                onEvent = {}
+            )
+
+            add(connection)
         }
 
         private fun <Input : Any, Output> createConnection(

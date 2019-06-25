@@ -36,6 +36,7 @@ class ObservableStreamTest {
         builder: FormulaContext.StreamBuilder<Int, Unit>.(state: Int) -> Unit
     ): ProcessorFormula<Unit, Int, Unit, Int> {
         return object : ProcessorFormula<Unit, Int, Unit, Int> {
+
             override fun initialState(input: Unit): Int = 0
 
             override fun process(input: Unit, state: Int, context: FormulaContext<Int, Unit>): ProcessResult<Int> {

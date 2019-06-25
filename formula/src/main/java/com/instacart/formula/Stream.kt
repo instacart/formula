@@ -9,6 +9,13 @@ import io.reactivex.disposables.Disposable
  * @param Output - Event type that the stream produces.
  */
 interface Stream<Input, Output> {
+    companion object {
+        val DISPOSED = object : Disposable {
+            override fun isDisposed(): Boolean = true
+
+            override fun dispose() = Unit
+        }
+    }
 
     fun subscribe(input: Input, onEvent: (Output) -> Unit): Disposable
 }
