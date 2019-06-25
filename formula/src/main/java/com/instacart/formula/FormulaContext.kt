@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.StreamKey
+import io.reactivex.Observable
 
 interface FormulaContext<State, Effect> {
     fun transition(state: State)
@@ -25,10 +26,10 @@ interface FormulaContext<State, Effect> {
         fun <Input : Any, Output> stream(
             stream: Stream<Input, Output>,
             input: Input,
-            tag: String = "",
+            key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ) {
-            val connection = createConnection(stream, input, tag, onEvent)
+            val connection = createConnection(stream, input, key, onEvent)
             if (streams.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.key}")
             }
@@ -38,21 +39,34 @@ interface FormulaContext<State, Effect> {
 
         fun <Output> stream(
             stream: Stream<Unit, Output>,
-            tag: String = "",
+            key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ) {
-            stream(stream, Unit, tag, onEvent)
+            stream(stream, Unit, key, onEvent)
         }
 
+        fun <Output> events(
+            key: String,
+            observable: Observable<Output>,
+            onEvent: (Output) -> Transition<State, Effect>
+        ) {
+            val stream = object : RxStream<Unit, Output> {
+                override fun observable(input: Unit): Observable<Output> {
+                    return observable
+                }
+            }
+
+            stream(stream, key, onEvent)
+        }
 
         private fun <Input : Any, Output> createConnection(
             stream: Stream<Input, Output>,
             input: Input,
-            tag: String = "",
+            key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ): StreamConnection<Input, Output> {
             return StreamConnection(
-                key = StreamKey(input, stream::class, tag),
+                key = StreamKey(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {

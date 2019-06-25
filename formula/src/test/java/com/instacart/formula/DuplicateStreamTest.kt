@@ -22,7 +22,7 @@ class DuplicateStreamTest {
         }
     }
 
-    fun duplicateStream(
+    private fun duplicateStream(
         build: FormulaContext.StreamBuilder<Unit, Unit>.() -> Unit
     ): ProcessorFormula<Unit, Unit, Unit, Unit> {
         return object : ProcessorFormula<Unit, Unit, Unit, Unit> {
