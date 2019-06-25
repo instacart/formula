@@ -1,9 +1,16 @@
 package com.instacart.formula
 
 /**
+ * A Processor Formula interface defines render model management.
+ *
+ * @param Input - defines data that the parent/host can pass to this formula.
+ * @param State - internal state that is used for this formula.
+ * @param Output - a type of message that can be passed to the parent/host.
+ * @param RenderModel - a type that is used to render this formula UI.
+ *
  * TODO: would be good to rename to `Formula` and rename existing `Formula` to `RxFormula`.
  */
-interface ProcessorFormula<Input, State, Effect, RenderModel> {
+interface ProcessorFormula<Input, State, Output, RenderModel> {
 
     fun initialState(input: Input): State
 
@@ -16,6 +23,6 @@ interface ProcessorFormula<Input, State, Effect, RenderModel> {
     fun process(
         input: Input,
         state: State,
-        context: FormulaContext<State, Effect>
+        context: FormulaContext<State, Output>
     ): ProcessResult<RenderModel>
 }
