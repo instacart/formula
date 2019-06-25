@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.internal.StreamKey
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.Disposables
 
 interface FormulaContext<State, Effect> {
     fun transition(state: State)
@@ -31,7 +32,7 @@ interface FormulaContext<State, Effect> {
             streams.add(connection)
         }
 
-        fun <Input : Any, Output> stream(
+        fun <Input : Any, Output> events(
             stream: Stream<Input, Output>,
             input: Input,
             key: String = "",
@@ -40,12 +41,12 @@ interface FormulaContext<State, Effect> {
             add(createConnection(stream, input, key, onEvent))
         }
 
-        fun <Output> stream(
+        fun <Output> events(
             stream: Stream<Unit, Output>,
             key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ) {
-            stream(stream, Unit, key, onEvent)
+            events(stream, Unit, key, onEvent)
         }
 
         fun <Output> events(
@@ -59,14 +60,14 @@ interface FormulaContext<State, Effect> {
                 }
             }
 
-            stream(stream, key, onEvent)
+            events(stream, key, onEvent)
         }
 
         fun effect(key: String, action: () -> Unit) {
             val stream = object : Stream<Unit, Unit> {
                 override fun subscribe(input: Unit, onEvent: (Unit) -> Unit): Disposable {
                     action()
-                    return Stream.DISPOSED
+                    return Disposables.disposed()
                 }
             }
 
@@ -84,7 +85,7 @@ interface FormulaContext<State, Effect> {
             val stream = object : Stream<Input, Unit> {
                 override fun subscribe(input: Input, onEvent: (Unit) -> Unit): Disposable {
                     action(input)
-                    return Stream.DISPOSED
+                    return Disposables.disposed()
                 }
             }
 

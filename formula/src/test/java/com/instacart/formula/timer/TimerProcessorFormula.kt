@@ -19,7 +19,7 @@ class TimerProcessorFormula(
         return ProcessResult(
             streams = context.streams {
                 if (state.runTimer) {
-                    stream(timer, onEvent = {
+                    events(timer, onEvent = {
                         Transition(state.copy(time = state.time + 1))
                     })
                 }

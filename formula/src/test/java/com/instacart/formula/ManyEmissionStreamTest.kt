@@ -24,7 +24,7 @@ class ManyEmissionStreamTest {
 
             return ProcessResult(
                 streams = context.streams {
-                    stream(MyStream(), Unit) {
+                    events(MyStream(), Unit) {
                         Transition(state + 1)
                     }
                 },
