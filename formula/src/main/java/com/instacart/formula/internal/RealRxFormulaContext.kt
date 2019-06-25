@@ -5,6 +5,7 @@ import com.instacart.formula.ProcessResult
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
 import com.instacart.formula.StreamConnection
+import java.lang.IllegalStateException
 
 class RealRxFormulaContext<State, Effect>(
     private val delegate: Delegate<State, Effect>,
@@ -39,10 +40,14 @@ class RealRxFormulaContext<State, Effect>(
     override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
         formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
-        tag: String,
+        key: String,
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel {
-        val key = FormulaKey(formula::class, tag)
+        val key = FormulaKey(formula::class, key)
+        if (children.containsKey(key)) {
+            throw IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
+        }
+
         val result = delegate.child(formula, input, key, onEffect)
         children[key] = result.streams
         return result.renderModel
