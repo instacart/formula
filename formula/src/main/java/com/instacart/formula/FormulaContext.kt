@@ -7,7 +7,7 @@ interface FormulaContext<State, Effect> {
 
     fun transition(state: State, effect: Effect?)
 
-    fun <Input : Any, Output> worker(
+    fun <Input : Any, Output> stream(
         stream: Stream<Input, Output>,
         input: Input,
         tag: String = "",
@@ -45,7 +45,7 @@ interface FormulaContext<State, Effect> {
             tag: String = "",
             onEvent: (Output) -> Transition<State, Effect>
         ) {
-            streams.add(context.worker(stream, input, tag, onEvent))
+            streams.add(context.stream(stream, input, tag, onEvent))
         }
 
         fun <Output> stream(

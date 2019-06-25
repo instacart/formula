@@ -1,15 +1,13 @@
 package com.instacart.formula.timer
 
-import com.instacart.formula.Stream
+import com.instacart.formula.RxStream
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.TestScheduler
 import java.util.concurrent.TimeUnit
 
-class Timer(
-    private val scheduler: TestScheduler
-) : Stream<Unit, Long> {
-    override fun subscribe(input: Unit, onEvent: (Long) -> Unit): Disposable {
-        return Observable.interval(1, 1, TimeUnit.SECONDS, scheduler).subscribe(onEvent)
+class Timer(private val scheduler: TestScheduler) : RxStream<Unit, Long> {
+
+    override fun observable(input: Unit): Observable<Long> {
+        return Observable.interval(1, 1, TimeUnit.SECONDS, scheduler)
     }
 }

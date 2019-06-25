@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
 import org.junit.Test
 
 class ManyEmissionWorkerTest {
@@ -34,10 +33,10 @@ class ManyEmissionWorkerTest {
         }
     }
 
-    class MyStream : Stream<Unit, Int> {
-        override fun subscribe(input: Unit, onEvent: (Int) -> Unit): Disposable {
+    class MyStream : RxStream<Unit, Int> {
+        override fun observable(input: Unit): Observable<Int> {
             val values = 1..100000
-            return Observable.fromIterable(values).subscribe(onEvent)
+            return Observable.fromIterable(values)
         }
     }
 }
