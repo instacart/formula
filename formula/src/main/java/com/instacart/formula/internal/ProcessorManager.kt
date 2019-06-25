@@ -3,7 +3,6 @@ package com.instacart.formula.internal
 import com.instacart.formula.ProcessResult
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
-import kotlin.reflect.KClass
 
 /**
  * Handles state processing.
@@ -20,11 +19,6 @@ class ProcessorManager<State, Effect>(
     internal var transitionNumber: Long = 0
 
     private var state: State = state
-
-    data class FormulaKey(
-        val type: KClass<*>,
-        val tag: String
-    )
 
     private fun handleTransition(transition: Transition<State, Effect>) {
         transitionNumber += 1

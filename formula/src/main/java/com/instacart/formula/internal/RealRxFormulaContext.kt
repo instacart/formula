@@ -11,13 +11,13 @@ class RealRxFormulaContext<State, Effect>(
     private val onChange: (Transition<State, Effect>) -> Unit
 ) : FormulaContext<State, Effect> {
 
-    var children = mutableMapOf<ProcessorManager.FormulaKey, List<StreamConnection<*, *>>>()
+    var children = mutableMapOf<FormulaKey, List<StreamConnection<*, *>>>()
 
     interface Delegate<State, Effect> {
         fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
             formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
             input: ChildInput,
-            key: ProcessorManager.FormulaKey,
+            key: FormulaKey,
             onEffect: (ChildEffect) -> Transition<State, Effect>
         ): ProcessResult<ChildRenderModel>
     }
@@ -42,7 +42,7 @@ class RealRxFormulaContext<State, Effect>(
         tag: String,
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel {
-        val key = ProcessorManager.FormulaKey(formula::class, tag)
+        val key = FormulaKey(formula::class, tag)
         val result = delegate.child(formula, input, key, onEffect)
         children[key] = result.streams
         return result.renderModel

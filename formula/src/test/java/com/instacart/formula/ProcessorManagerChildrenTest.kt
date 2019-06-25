@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.ProcessorManager
 import com.instacart.formula.timer.Timer
 import com.instacart.formula.timer.TimerProcessorFormula
@@ -26,6 +27,6 @@ class ProcessorManagerChildrenTest {
         val next = manager.process(formula, Unit)
         assertThat(next.renderModel.timer).isNull()
 
-        assertThat(manager.frame!!.children[ProcessorManager.FormulaKey(TimerProcessorFormula::class, "")]).isNull()
+        assertThat(manager.frame!!.children[FormulaKey(TimerProcessorFormula::class, "")]).isNull()
     }
 }
