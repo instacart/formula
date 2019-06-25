@@ -13,7 +13,7 @@ interface FormulaContext<State, Effect> {
     fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
         formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
-        tag: String = "",
+        key: String = "",
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel
 

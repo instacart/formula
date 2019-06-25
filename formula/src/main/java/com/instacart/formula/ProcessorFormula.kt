@@ -12,7 +12,21 @@ package com.instacart.formula
  */
 interface ProcessorFormula<Input, State, Output, RenderModel> {
 
+    /**
+     * Instantiate initial [State].
+     */
     fun initialState(input: Input): State
+
+    /**
+     * This method is called if [Input] changes while [ProcessorFormula] is already running. It
+     * is called before invoking [process]. You can use this method to change the [State]
+     * in response to [Input] change.
+     */
+    fun onInputChanged(
+        oldInput: Input,
+        input: Input,
+        state: State
+    ): State = state
 
     /**
      * This method is called any time [State] changes. Use this method to

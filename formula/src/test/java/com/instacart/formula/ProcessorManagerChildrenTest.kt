@@ -15,7 +15,7 @@ class ProcessorManagerChildrenTest {
 
         val scheduler = TestScheduler()
         val formula = RootFormula(TimerProcessorFormula(Timer(scheduler)))
-        val manager = ProcessorManager<RootFormula.State, Unit>(
+        val manager = ProcessorManager<Unit, RootFormula.State, Unit>(
             RootFormula.State(),
             onTransition = {
                 // TODO

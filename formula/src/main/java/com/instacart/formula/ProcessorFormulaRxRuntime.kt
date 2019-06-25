@@ -18,7 +18,7 @@ object ProcessorFormulaRxRuntime {
             .create<RenderModel> { emitter ->
                 checkThread(id, threadName)
 
-                var manager: ProcessorManager<State, Effect>? = null
+                var manager: ProcessorManager<Input, State, Effect>? = null
                 var hasInitialFinished = false
                 var lastRenderModel: RenderModel? = null
 
@@ -34,7 +34,7 @@ object ProcessorFormulaRxRuntime {
                     }
                 }
 
-                val processorManager: ProcessorManager<State, Effect> =
+                val processorManager: ProcessorManager<Input, State, Effect> =
                     ProcessorManager(
                         state = formula.initialState(input),
                         onTransition = {

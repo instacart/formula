@@ -3,7 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.StreamConnection
 
 class StreamManager(
-    private val processManager: ProcessorManager<*, *>
+    private val processManager: ProcessorManager<*, *, *>
 ) {
     private var lastWorkers: MutableMap<StreamKey, StreamConnection<*, *>> = mutableMapOf()
 

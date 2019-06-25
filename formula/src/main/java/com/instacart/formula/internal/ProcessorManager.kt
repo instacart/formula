@@ -7,18 +7,19 @@ import com.instacart.formula.Transition
 /**
  * Handles state processing.
  */
-class ProcessorManager<State, Effect>(
+class ProcessorManager<Input, State, Effect>(
     state: State,
     private val onTransition: (Effect?) -> Unit
 ) : RealRxFormulaContext.Delegate<State, Effect> {
 
     private val workerManager = StreamManager(this)
 
-    internal val children: MutableMap<FormulaKey, ProcessorManager<*, *>> = mutableMapOf()
+    internal val children: MutableMap<FormulaKey, ProcessorManager<*, *, *>> = mutableMapOf()
     internal var frame: Frame? = null
     internal var transitionNumber: Long = 0
 
     private var state: State = state
+    private var lastInput: Input? = null
 
     private fun handleTransition(transition: Transition<State, Effect>) {
         transitionNumber += 1
@@ -34,7 +35,7 @@ class ProcessorManager<State, Effect>(
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
-    fun <Input, RenderModel> process(
+    fun <RenderModel> process(
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
         input: Input
     ): ProcessResult<RenderModel> {
@@ -60,9 +61,17 @@ class ProcessorManager<State, Effect>(
             }
         })
 
+        val prevInput = lastInput
+        val state = if (prevInput != null && prevInput != input) {
+            formula.onInputChanged(prevInput, input, state)
+        } else {
+            state
+        }
+
         val result = formula.process(input, state, context)
         frame = Frame(result.streams, context.children)
 
+        this.lastInput = input
         canRun = true
         return result
     }
@@ -108,7 +117,7 @@ class ProcessorManager<State, Effect>(
     ): ProcessResult<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildState, ChildEffect>(initial, onTransition = {
+            val new = ProcessorManager<ChildInput, ChildState, ChildEffect>(initial, onTransition = {
                 // TODO assert main thread
 
                 val effect = if (it != null) {
@@ -124,7 +133,7 @@ class ProcessorManager<State, Effect>(
             })
             children[key] = new
             new
-        }) as ProcessorManager<ChildState, ChildEffect>
+        }) as ProcessorManager<ChildInput, ChildState, ChildEffect>
 
         return processorManager.process(formula, input)
     }
