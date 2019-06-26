@@ -1,27 +1,24 @@
-# Getting Started
-A functional reactive framework for managing state and side effects based on RxJava. It enables building 
+## Getting Started
+A functional reactive framework for managing state and side effects. It enables building 
 deterministic, composable, testable applications.
 
 ## Core concepts
 ### State 
 State is a Kotlin data class that contains all the necessary information to render your view. 
 ```kotlin
-data class MyScreenState(
-  val userInfoRequest: Lce<UserInfo>,
-  val isSaving: Boolean = false
-)
+data class CounterState(val count: Int)
 ```
 
-Note: for info about `Lce`, please check [this article](https://tech.instacart.com/lce-modeling-data-loading-in-rxjava-b798ac98d80).  
+Given, this is a simple state, you could also use `Int` directly.
 
 ### Render Model
 Render Model is an immutable representation of your view. It will be used to update the Android views. Typically,
 it will also contain callbacks that will be invoked when user interacts with the UI.
 ```kotlin
-data class FooterButtonRenderModel(
+data class CounterRenderModel(
   val title: String,
-  val isEnabled: Boolean,
-  val onClick: () -> Unit
+  val onDecrement: () -> Unit,
+  val onIncrement: () -> Unit 
 )
 ```
 
@@ -29,109 +26,70 @@ data class FooterButtonRenderModel(
 Render view is responsible for taking the Render Model and applying it to the Android views.
 
 ```kotlin
-class FooterButtonRenderView(private val root: View) : RenderView<FooterButtonRenderModel> {
-  private val footerButton: Button = root.findViewById(R.id.footer_button)
-  
-  override val renderer: Renderer<FooterButtonRenderModel> = Renderer.create { model ->
-    footerButton.text = model.title
-    footerButton.isEnabled = model.isEnabled
-    footerButton.setOnClickListener {
-      model.onClick()
-    }
-  } 
-}
-```
+class CounterRenderView(private val root: ViewGroup): RenderView<CounterRenderModel> {
+    private val decrementButton: Button = root.findViewById(R.id.decrement_button)
+    private val incrementButton: Button = root.findViewById(R.id.increment_button)
+    private val countTextView: TextView = root.findViewById(R.id.count_text_view)
 
-### Render Model Generator
-Render Model Generator takes a State and creates a Render Model from it. 
-```kotlin
-class MyScreenRenderModelGenerator(
-  private val onSaveUserInfoSelected: () -> Unit
-) : RenderModelGenerator<MyScreenState, FooterButtonRenderModel> {
-  override fun toRenderModel(state: MyScreenState): FooterButtonRenderModel {
-    return FooterButtonRenderModel(
-      title = "Save User Info",
-      isEnabled = state.userInfoRequest.isData() && !state.isSaving,
-      onClick = onSaveUserInfoSelected
-    )
-  }
-}
-```
-
-### Reducers 
-Reducers class defines all the possible State transformations. It defines methods that take an event object and 
-return a transformation. Instead of of mutating properties when an event happens, we create a new version of the
-State class. To accomplish that, we use data class `copy` method.
-
-```kotlin
-class MyScreenReducers : Reducers<MyScreenState, Unit>() {
-
-  fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-    state.copy(userInfoRequest = event)
-  }
-    
-  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
-    state.copy(isSaving = event.isLoading())
-  }
-}
-```
-
-### Render Formula
-Render Formula is responsible for state management. It combines various RxJava event streams and maps them to 
-state transformations.
- 
-```kotlin
-class MyScreenRenderFormula(
-  private val userRepo: UserRepo
-) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
-
-  override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
-    val reducers = MyScreenReducers()
-       
-    val userInfoRequestChanges = userRepo.fetchUserInfo().map(reducers::onUserInfoRequest)
-       
-    // We use a RxRelay library to turn user events into an RxJava stream
-    val saveUserInfoRelay = PublishRelay.create<Unit>()
-    val saveUserInfoChanges = saveUserInfoRelay
-      .switchMap { userRepo.saveUserInfo() }
-      .map(reducers::onSaveUserInfoRequest)
-        
-    return RenderLoop(
-      initialState = MyScreenState(
-        userInfoRequest = Lce.loading()
-      ),
-      reducers = Observable.merge(
-        userInfoRequestChanges,
-        saveUserInfoChanges
-      ),
-      renderModelGenerator = MyScreeenRenderModelGenerator(
-        onSaveUserInfoSelected = {
-          saveUserInfoRelay.accept(Unit)
+    override val renderer: Renderer<CounterRenderModel> = Renderer.create { model ->
+        countTextView.setText(model.title)
+        decrementButton.setOnClickListener {
+            model.onDecrement()
         }
-      )
-    )
-  }
+        incrementButton.setOnClickListener {
+            model.onIncrement()
+        }
+    }
 }
 ```
 
-### Using Render Formula
-Render formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
+### Formula
+Creating a counter widget that has increment/decrement buttons.
+
+```kotlin
+class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
+
+    override fun initialState(input: Unit): Int = CounterState(count = 0)
+
+    override fun evaluate(
+        input: Unit,
+        state: CounterState,
+        context: FormulaContext<Int, Unit>
+    ): Evaluation<CounterRenderModel> {
+        val count = state.count
+        return Evaluation(
+            renderModel = CounterRenderModel(
+                count = "Count: $count",
+                onDecrement = {
+                    context.transition(state.copy(count = count - 1))
+                },
+                onIncrement = {
+                    context.transition(state.copy(count = count + 1))
+                }
+            )
+        )
+    }
+}
+```
+
+### Using Formula
+Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
 it would be placed within a surface that survives configuration changes such as Android Components ViewModel.
 
-In this example, I'll show how to connect RenderFormula using Formula Android module. Let's first define our Activity.
+In this example, I'll show how to connect Formula using Formula Android module. Let's first define our Activity.
 ```kotlin
 class MyActivity : FormulaAppCompatActivity() {
-  lateinit var footerButtonRenderView: FooterButtonRenderView  
+  lateinit var counterRenderView: CounterRenderView
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(state)
     setContentView(R.string.my_screen)
         
-    footerButtonRenderView = FooterButtonRenderView(findViewById(R.id.footer))
+    counterRenderView = CounterRenderView(findViewById(R.id.counter))
   }
   
-  fun render(model: FooterButtonRenderModel) {
-    footerButtonRenderView.renderer.render(model)
+  fun render(model: CounterRenderView) {
+    counterRenderView.renderer.render(model)
   }
 }
 ```
@@ -147,7 +105,7 @@ class MyApp : Application() {
             activity<MyActivity> {
                 store(
                     streams = {
-                        val formula: MyScreenRenderFormula = ... 
+                        val formula = CounterFormula()
                         update(formula.state(Unit), MyActivity::render)
                     }
                 )
@@ -159,10 +117,10 @@ class MyApp : Application() {
 
 And that's it. To learn more, see our [Formula Android Guide](Integration.md).
 
-### Using Render Formula with Android View Model
-Defining `ViewModel` which runs `Formula.state` stream until `onCleared` is called.
+### Using Formula with Android View Model
+Defining `ViewModel` which runs `state` stream until `onCleared` is called.
 ```kotlin
-class MyViewModel(private val formula: MyScreenRenderFormula) : ViewModel {
+class CounterViewModel(private val formula: CounterFormula) : ViewModel {
   private val disposables = CompositeDisposable()
     
   val renderModels = formula.state(Unit).replay(1).apply {
@@ -185,8 +143,8 @@ class MyActivity : AppCompatActivity() {
     super.onCreate(state)
     setContentView(R.string.my_screen)
         
-    val renderView = FooterButtonRenderView(findViewById(R.id.activity_content))
-    val viewModel = ViewModelProviders.of(this).get(MyViewModel::class.java)
+    val renderView = CounterRenderView(findViewById(R.id.counter))
+    val viewModel = ViewModelProviders.of(this).get(CounterViewModel::class.java)
         
     disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
   }
@@ -198,77 +156,50 @@ class MyActivity : AppCompatActivity() {
 }
 ```
 
-### Input
-Input is used to pass information when creating a state stream. Typically it will contain data necessary to initialize the state streams,
-and callbacks for events that the parent should be aware of. 
+### Listening for events
+We use RxJava for listening to events.
 ```kotlin
-class ItemDetailRenderFormula() : RenderFormula<Input, ..., ..., ...> {
+class MyFormula(
+    private val someObservable: Observable<MyData>
+) : Formula<...> {
 
-  class Input(
-    val itemId: String,
-    val onItemDeleted: () -> Unit
-  )
-
-  override fun createRenderLoop(input: Input): RenderLoop<...> {
-    // We can use the input here to fetch the item from the repo.
-    // We can also notify the parent when the item is deleted using input.onItemDeleted()
-  }
-}
-```
-
-### Effects
-Effects are message objects used to request the execution of impure code. Operations such as firing a network request,
-reading / writing to disk, navigation or updating global state are considered side-effects. Instead of performing those
-operations within the Reducers class, we return the Effect object and let the caller execute the side effect.
- 
-Typically, we define all possible side-effects as a sealed Kotlin class.
-```kotlin
-sealed class MyScreenEffect {
-  data class ShowErrorModal(val errorMessage: String): MyScreenEffect()
-  data class Exit(val savedUserInfo: Boolean): MyScreenEffect()
-}
-```
-
-To emit effect 
-```kotlin
-class MyScreenReducers : Reducers<..., MyScreenEffect>() {
-
-  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = reduce {
-    val updated = it.copy(isSaving = event.isLoading())
-        
-    // Check if there are side effects
-    val effect = if (event.isData()) {
-      // We want to close the screen when user info is saved.
-      MyScreenEffect.Exit(savedUserInfo = true)
-    } else if (event.isError()) {
-      MyScreenEffect.ShowErrorModal(errorMessage = event.error.getMessage())
-    } else {
-      null
+    override fun evaluate(
+        input: Unit,
+        state: MyState,
+        context: FormulaContext<MyState, ...>
+    ): Evaluation<TimerRenderModel> {
+        return Evaluation(
+            // You can declaratively define what streams should run.
+            updates = context.updates {
+                // We use a key "data" to make sure that 
+                // internal diffing mechanism can distinguish
+                // between differen streams.
+                events("data", someObservable) { update: MyData ->
+                    // onEvent will always be scoped to the current `MyState` instance.
+                    Transition(state.copy(myData = update))
+                }
+            },
+            renderModel = ...
+        )
     }
-        
-    updated.withOptionalEffect(effect)
-  }
-}
+} 
 ```
 
-Within the Render Formula, we can decide how to handle the effects.
+### Side effects
+It is very easy to define side-effects.
 ```kotlin
-class MyScreenRenderFormula : RenderFormula<..., ..., MyScreenEffect, ...> {
-    
-    override fun createRenderLoop(input: ...): RenderLoop<..., MyScreenEffect, ...> {
-        return RenderLoop(
-            ...,
-            onEffect = { effect ->
-                // We decide here how to execute the effect. We can
-                // 1. bubble it to the parent using the callbacks passed by the Input object
-                // 2. handle it internally by passing it to a RxRelay or RxJava Subject
-                when(effect) {
-                    is ShowErrorModal -> {
-                    
-                    }
-                    is Exit -> {
-                        
-                    }
+class UserProfileFormula(
+    val userAnalyticsService: UserAnalyticsService
+) : ProcessorFormula<...> {
+
+
+    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
+        return Evaluation(
+            renderModel = state.name,
+            streams = context.streams {
+                // This will be invoked first time this formula runs.
+                effect("view analytics") { 
+                    userAnalyticsService.trackProfileView()
                 }
             }
         )
@@ -276,119 +207,52 @@ class MyScreenRenderFormula : RenderFormula<..., ..., MyScreenEffect, ...> {
 }
 ```
 
-## Handling User UI Actions
-To handle user UI actions, we set listeners on Android Views and delegate to the callbacks on the Render Model. 
+### Input
+Input is used to pass information/data from the parent to the child. 
 ```kotlin
-data class MyRenderModel(
-  // Defining a callback for a user action. 
-  // Usually, callback will not take any parameters. 
-  val onSaveButtonClicked: () -> Unit
-)
+class ItemDetailFormula() : Formula<Input, ..., ..., ...> {
 
-class MyRenderView(...) : RenderView<MyRenderModel> {
-  val saveButton: TextView = ...
-    
-  override val renderer: Renderer<MyRenderModel> = Renderer.create { model ->
-    // We just set a click listener and delegate to the callback on the Render Model.
-    saveButton.setOnClickListener {
-      model.onSaveButtonClicked()
-    }
-  }  
-}
-```
+  data class Input(val itemId: String)
 
-The Render Model creation will be scoped to the current state object, so we can use it to decide how we should bubble it up.
-```kotlin
-class MyRenderModelGenerator(
-  // We splitting save button click into two options
-  private val showValidationError: (String) -> Unit,
-  private val saveUserInfo: (UserInfo) -> Unit
-) : RenderModelGenerator<State, MyRenderModel> {
-
-  override fun toRenderModel(state: State): MyRenderModel {
-    return RenderModel(
-      onSaveButtonClicked = {
-        // We use the current state to decide which callback to invoke
-        if (state.isValid) {
-          saveUserInfo(state.userInfo)
-        } else {
-          showValidationError("Email field is empty.")
-        }        
-      }
-    )
+  override fun evaluate(
+    input: Input,
+    state: ..,
+    context: ..
+  ): Evaluation<...> {
+    val itemId = input.itemId
+    // We can use the input here to fetch the item from the repo.
   }
 }
 ```
 
-We will provide those callbacks in the Render Formula.
+### Passing events to the parent / host
+You can define a sealed class for outputs that the parent needs to handle.
 ```kotlin
-class MyRenderFormula : RenderFormula<Input, State, .., RenderModel> {
-
-  class Input(
-    val showToast: (String) -> Unit
-  )
-
-  override fun createRenderLoop(input: Input): RenderLoop<...> {
-    return RenderLoop(
-      renderModelGenerator = MyRenderModelGenerator(
-        // There are many options here what to do with a user action. You can:
-        // 1. Escalate it up to the parent by adding a callback to Input 
-        // 2. Delegate to another class that was injected through the constructor
-        // 3. Handle it internally by passing the event to a PublishRelay
-        showValidationError = { error ->
-          // Let's bubble up this event to the parent of this formula using the Input class
-          input.showToast(error)
-        },
-        saveUserInfo = { info ->
-
-        }
-      )
-    )
-  }  
+sealed class ItemOutput {
+    class ItemSelected(val itemId: String) : ItemOutput()
 }
 ```
 
-## Handling User Action Internally
-
-This is continuation on the above section. We want to trigger save user info request and update the UI according to request state. 
-
 ```kotlin
-// Let's define the repository abstraction for saving user info
-class SaveUserInfoRepo {
-  fun saveUserInfo(info: UserInfo): Observable<Lce<UserInfoResponse>>
-} 
+class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
 
-class MyRenderFormula(
-  private val repo: SaveUserInfoRepo
-) : RenderFormula<Input, State, .., RenderModel> {
-
-  override fun createRenderLoop(input: Input): RenderLoop<...> {
-    // We use a RxRelay library to turn user events into an RxJava stream. You could also use RxJava subjects.
-    val saveUserInfoRelay = PublishRelay.create<UserInfo>()
-
-    val saveUserInfoReducer = saveUserInfoRelay
-      // We use switch map to cancel previous computation.
-      // This means if new save info action happens, we 
-      // cancel the previous request and create a new one. 
-      .switchMap { info ->
-        repo.saveUserInfo(info)
-      }
-      .map { responseEvent ->
-        // We should create a reduce a.k.a. state transformation function here.
-        // How to accomplish that will be shown in a different example.
-      }
-      
-    return RenderLoop(
-      // Since we only have a single reducer here, we pass it directly.
-      reducers = saveUserInfoReducer,
-      renderModelGenerator = MyRenderModelGenerator(
-        saveUserInfo = { info ->
-          // We pass the action to the relay
-          saveUserInfoRelay.accept(info)
-        }
-      )
+  override fun evaluate(
+    input: ..,
+    state: ..,
+    context: ..
+  ): Evaluation<...> {
+    return Evaluation(
+        renderModel = state.items.map { item ->
+            ItemRow(
+                item = item,
+                onItemSelected = {
+                    // We send the `ItemSelected` event to the parent.
+                    context.transition(state, ItemOutput.ItemSelected(item.id))   
+                }  
+            )
+        }   
     )
-  }  
+  }
 }
 ```
 
@@ -438,140 +302,55 @@ class NotificationSettingsRenderView(private val root: View) : RenderView<Notifi
 }
 ```
 
-## Annotation processor
-There is an optional annotation processor to remove some of the boiler plate code. It is primarily driven by
-`@State` annotation placed on the State data class.
+## Composing formulas
+One of the primary goals when making `ProcessorFormula` was easy composability of features and widgets. Previously,
+we had to listen to `Observable<ChildrenRenderModel>` and add it to our `State` and `RenderModel` classes. Also, we 
+would have to use observables to pass information from parent to the child. 
+
 ```kotlin
-@State(reducers = MyScreenReducers::class)
-data class MyScreenState(
-  val userInfoRequest: Lce<UserInfo>,
-  val isSaving: Boolean = false
-)
-
-class MyScreenReducers : Reducers<MyScreenState, Unit>() {
-
-  fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-    state.copy(userInfoRequest = event)
-  }
+class MainPageFormula(
+    val headerFormula: HeaderFormula,
+    val listFormula: ListFormula,
+    val dialogFormula: DialogFormula
+) : Formula<> {
     
-  fun onSaveUserInfoRequest(event: Lce<SaveUserInfoResponse>) = withoutEffects { state ->
-    state.copy(isSaving = event.isLoading())
-  }
-}
-```
-
-
-This will generate an Events class that handles binding the RxJava streams to the appropriate event methods defined 
-in the Reducers class.
-```kotlin
-@Generated
-class MyScreenStateEvents(private val reducers: MyScreenReducers) {
-
-  fun bind(
-    onUserInfoRequest: Observable<Lce<UserInfo>>,
-    onSaveUserInfoRequest: Observable<Lce<SaveUserInfoResponse>>
-  ): Observable<...> {
-    val list = ArrayList<Observable<...>>()
-    list.add(onUserInfoRequest.map(reducers::onUserInfoRequest))
-    list.add(onSaveUserInfoRequest.map(reducers::onSaveUserInfoRequest))
-    return Observable.merge(list)
-  }
-}
-``` 
-
-You can use this Events class within the Render Formula.
-```kotlin
-class MyScreenRenderFormula(
-  private val userRepo: UserRepo
-) : RenderFormula<Unit, MyScreenState, FooterButtonRenderModel, Unit> {
-
-  override fun createRenderLoop(input: Unit): RenderLoop<MyScreenState, Unit, FooterButtonRenderModel> {
-    val events = MyScreenStateEvents(MyScreenReducers())
+    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
+        // "context.child" returns a RenderModel 
+        val listRenderModel = context.child(listFormula, createListInput(state)) { listEvent ->
+            // We can perform state transition here.
+        }
         
-    return RenderLoop(
-      ...,
-      reducers = events.bind(
-        onUserInfoRequest = userRepo.fetchUserInfo(),
-        onSaveUserInfoRequest = ... 
-      )
-    )
-  }
+        val headerRenderModel = context.child(headerFormula, createHeaderInput(state)) { headerEvent ->
+            // perform header events
+        }
+        
+        // We can make decisions using the current `state` about 
+        // what children to show
+        val dialog = if (state.showDialog) {
+            context.child(dialogFormula, Unit) { dialogEvent ->
+                // perform dialog event
+            }
+        } else {
+            null
+        }
+    
+        return Evaluation(
+            renderModel = MainRenderModel(
+                header = headerRenderModel,
+                list = listRenderModel,
+                dialog = dialog
+            )
+        )
+    }
 }
 ```
 
-### Using @ExportedProperty
-Exported Property annotation generates a transformation that updates a single property.
-```kotlin
-@State(reducers = MyScreenReducers::class)
-data class MyScreenState(
-  @ExportedProperty val userInfoRequest: Lce<UserInfo>,
-  ...
-)
-```
+### Diffing
+Given that we recompute everything with each state change, there is an internal diffing mechanism with Formula. This
+mechanism ensures that:
+1. RxJava streams are only subscribed to once.
+2. Side effects are only invoked once.
+2. Children state is persisted across every processing pass.
 
-The generated code is equivalent to this snippet, so we can delete it completely from MyScreenReducers.
-```kotlin
-fun onUserInfoRequest(event: Lce<UserInfo>) = withoutEffects { state ->
-  state.copy(userInfoRequest = event)
-}
-```
-
-### Using isDirectInput (@ExportedProperty)
-Direct input generates a method on Events class that can directly cause a state transformation.
-```kotlin
-@State
-data class NotificationSettingsState(
-  @ExportedProperty(isDirectInput = true) val isPushNotificationsEnabled: Boolean
-)
-```
-
-Now you can update this property through the NotificationSettingsStateEvents class.
-```kotlin
-class NotificationSettingsRenderModelGenerator(
-  private val events: NotificationSettingsStateEvents
-): RenderModelGenerator<NotificationSettingsState, CheckboxRenderModel> {
-
-  override fun toRenderModel(state: NotificationSettingsState): CheckboxRenderModel {
-    return CheckboxRenderModel(
-      text = "Push notifications",
-      isChecked = state.isPushNotificationsEnabled,
-      onToggle = {
-        // We are invoking a generated method.
-        events.onIsPushNotificationsEnabledChanged(!state.isPushNotificationEnabled)
-      }
-    )
-  }
-}
-```
-
-### Using @DirectInput
-Direct Input annotation works in similar manner as `@ExportedProperty(isDirectInput = true)` except you mark
-transformation methods within the Reducers class instead of properties on State class.
-```kotlin
-class TaskListReducers : Reducers<TaskListState, Unit>() {
-
-  @DirectInput fun onTaskCompleted(taskId: String) = withoutEffects { state ->
-    state.tasks.map {
-      if (it.id == taskId) {
-        it.copy(completed = true)
-      } else {
-        it
-      }
-    } 
-  }
-}
-
-@State(reducers = TaskListReducers::class)
-data class TaskListState(
-  val tasks: List<Task>
-)
-```
-
-This will generated a method `TaskListStateEvents.onTaskCompleted`. You can now invoke this method on user input
-and it will update the state.
-
-
-## Navigation
-TODO
-
-
+### Testing
+TODO:
