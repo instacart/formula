@@ -7,10 +7,10 @@ import com.instacart.formula.Transition
 import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
-class FormulaContextImpl<State, Effect>(
-    private val delegate: Delegate<State, Effect>,
-    private val onChange: (Transition<State, Effect>) -> Unit
-) : FormulaContext<State, Effect> {
+class FormulaContextImpl<State, Output>(
+    private val delegate: Delegate<State, Output>,
+    private val onChange: (Transition<State, Output>) -> Unit
+) : FormulaContext<State, Output> {
 
     var children = mutableMapOf<FormulaKey, List<Update>>()
 
@@ -27,11 +27,11 @@ class FormulaContextImpl<State, Effect>(
         onChange(Transition(state))
     }
 
-    override fun transition(state: State, effect: Effect?) {
-        onChange(Transition(state, effect))
+    override fun transition(state: State, output: Output?) {
+        onChange(Transition(state, output))
     }
 
-    override fun updates(init: FormulaContext.UpdateBuilder<State, Effect>.() -> Unit): List<Update> {
+    override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
         val builder = FormulaContext.UpdateBuilder(onChange)
         builder.init()
         return builder.updates
@@ -41,7 +41,7 @@ class FormulaContextImpl<State, Effect>(
         formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: String,
-        onEffect: (ChildEffect) -> Transition<State, Effect>
+        onEffect: (ChildEffect) -> Transition<State, Output>
     ): ChildRenderModel {
         val key = FormulaKey(formula::class, key)
         if (children.containsKey(key)) {

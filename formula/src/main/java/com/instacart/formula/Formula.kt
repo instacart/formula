@@ -27,10 +27,18 @@ interface Formula<Input, State, Output, RenderModel> {
     ): State = state
 
     /**
-     * This method is called any time [State] changes. Use this method to
-     * 1. Create the [RenderModel]
-     * 2. Define what [Stream]s should run.
-     * 3. Define children Formulas.
+     * This method is called any time there is:
+     * 1. A [State] change
+     * 2. A parent [Formula] calls [FormulaContext.child] with a new [Input].
+     * 3. A child [Formula] has an internal state change or produces an output.
+     *
+     * As part of this method:
+     * 1. Use [FormulaContext.child] to define children formulas.
+     * 2. Use [FormulaContext.updates] to define side effects and asynchronous event listeners.
+     * 3. Return an [Evaluation] with the current [RenderModel].
+     *
+     * Do not emit side-effects internally before returning [Evaluation]. All side-effects should happen as part of
+     * event callbacks or [Evaluation.updates].
      */
     fun evaluate(
         input: Input,
