@@ -12,7 +12,7 @@ class ProcessorManager<Input, State, Effect>(
     private val onTransition: (Effect?) -> Unit
 ) : RealRxFormulaContext.Delegate<State, Effect> {
 
-    private val workerManager = StreamManager(this)
+    private val workerManager = UpdateManager(this)
 
     internal val children: MutableMap<FormulaKey, ProcessorManager<*, *, *>> = mutableMapOf()
     internal var frame: Frame? = null
@@ -128,7 +128,7 @@ class ProcessorManager<Input, State, Effect>(
                     null
                 }
 
-                transitionNumber += 1;
+                transitionNumber += 1
                 onTransition(effect)
             })
             children[key] = new

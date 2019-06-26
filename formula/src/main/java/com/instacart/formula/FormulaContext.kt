@@ -2,8 +2,6 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.UpdateKey
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
-import io.reactivex.disposables.Disposables
 
 interface FormulaContext<State, Effect> {
     fun transition(state: State)
@@ -17,16 +15,17 @@ interface FormulaContext<State, Effect> {
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel
 
-    fun updates(init: UpdateBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>>
+    fun updates(init: UpdateBuilder<State, Effect>.() -> Unit): List<Update>
+
 
     class UpdateBuilder<State, Effect>(
         private val transition: (Transition<State, Effect>) -> Unit
     ) {
-        internal val updates = mutableListOf<StreamConnection<*, *>>()
+        internal val updates = mutableListOf<Update>()
 
-        private fun <Input : Any, Output> add(connection: StreamConnection<Input, Output>) {
+        private fun add(connection: Update) {
             if (updates.contains(connection)) {
-                throw IllegalStateException("duplicate stream with key: ${connection.key}")
+                throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
             }
 
             updates.add(connection)
@@ -63,37 +62,29 @@ interface FormulaContext<State, Effect> {
             events(stream, key, onEvent)
         }
 
+        /**
+         * Define a side effect for which the uniqueness is tied only to [key].
+         */
         fun effect(key: String, action: () -> Unit) {
-            val stream = object : Stream<Unit, Unit> {
-                override fun subscribe(input: Unit, onEvent: (Unit) -> Unit): Disposable {
-                    action()
-                    return Disposables.disposed()
-                }
-            }
-
-            val connection = StreamConnection(
-                key = UpdateKey(Unit, stream::class, key),
+            val connection = Update.Effect(
                 input = Unit,
-                stream = stream,
-                onEvent = {}
+                key = key,
+                action = action
             )
 
             add(connection)
         }
 
+        /**
+         * Define a side effect for which the uniqueness is tied to [key] and [input].
+         */
         fun <Input : Any> effect(key: String, input: Input, action: (Input) -> Unit) {
-            val stream = object : Stream<Input, Unit> {
-                override fun subscribe(input: Input, onEvent: (Unit) -> Unit): Disposable {
-                    action(input)
-                    return Disposables.disposed()
-                }
-            }
-
-            val connection = StreamConnection(
-                key = UpdateKey(input, stream::class, key),
+            val connection = Update.Effect(
                 input = input,
-                stream = stream,
-                onEvent = {}
+                key = key,
+                action = {
+                    action(input)
+                }
             )
 
             add(connection)
@@ -104,8 +95,8 @@ interface FormulaContext<State, Effect> {
             input: Input,
             key: String = "",
             onEvent: (Output) -> Transition<State, Effect>
-        ): StreamConnection<Input, Output> {
-            return StreamConnection(
+        ): Update.Stream<Input, Output> {
+            return Update.Stream(
                 key = UpdateKey(input, stream::class, key),
                 input = input,
                 stream = stream,

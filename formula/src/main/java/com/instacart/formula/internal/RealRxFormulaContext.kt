@@ -4,7 +4,7 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Transition
-import com.instacart.formula.StreamConnection
+import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
 class RealRxFormulaContext<State, Effect>(
@@ -12,7 +12,7 @@ class RealRxFormulaContext<State, Effect>(
     private val onChange: (Transition<State, Effect>) -> Unit
 ) : FormulaContext<State, Effect> {
 
-    var children = mutableMapOf<FormulaKey, List<StreamConnection<*, *>>>()
+    var children = mutableMapOf<FormulaKey, List<Update>>()
 
     interface Delegate<State, Effect> {
         fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
@@ -31,7 +31,7 @@ class RealRxFormulaContext<State, Effect>(
         onChange(Transition(state, effect))
     }
 
-    override fun updates(init: FormulaContext.UpdateBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>> {
+    override fun updates(init: FormulaContext.UpdateBuilder<State, Effect>.() -> Unit): List<Update> {
         val builder = FormulaContext.UpdateBuilder(onChange)
         builder.init()
         return builder.updates

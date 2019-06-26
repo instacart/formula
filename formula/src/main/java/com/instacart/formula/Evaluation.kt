@@ -5,5 +5,5 @@ package com.instacart.formula
  */
 data class Evaluation<RenderModel>(
     val renderModel: RenderModel,
-    val updates: List<StreamConnection<*, *>> = emptyList()
+    val updates: List<Update> = emptyList()
 )
