@@ -11,12 +11,12 @@ class UpdateManager(
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
-    private var updates: MutableMap<Update, Update> = mutableMapOf()
+    private var updates: LinkedHashSet<Update> = LinkedHashSet()
 
     fun updateConnections(new: List<Update>, transitionNumber: Long) {
         val iterator = updates.iterator()
         while(iterator.hasNext()) {
-            val existing = iterator.next().key
+            val existing = iterator.next()
 
             val update = new.firstOrNull { it == existing }
             if (update == null) {
@@ -42,8 +42,8 @@ class UpdateManager(
         }
 
         new.forEach { update ->
-            if (!updates.containsKey(update)) {
-                updates[update] = update
+            if (!updates.contains(update)) {
+                updates.add(update)
                 when (update) {
                     is Update.Stream<*, *> -> update.start()
                     is Update.Effect -> update.action()
@@ -57,7 +57,7 @@ class UpdateManager(
     }
 
     fun terminate() {
-        updates.values.forEach { update ->
+        updates.forEach { update ->
             when(update) {
                 is Update.Stream<*, *> -> update.tearDown()
             }
