@@ -2,6 +2,7 @@ package com.instacart.formula.counter
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Formula
+import com.instacart.formula.state
 import io.reactivex.Observable
 import org.junit.Test
 
