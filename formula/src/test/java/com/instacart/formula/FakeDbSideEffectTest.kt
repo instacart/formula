@@ -39,7 +39,7 @@ class FakeDbSideEffectTest {
                     }
 
                     if (state.saveToDb != null) {
-                        effect(input = state.saveToDb, action = saveToDb)
+                        effect("db updates", state.saveToDb, saveToDb)
                     }
                 }
             )

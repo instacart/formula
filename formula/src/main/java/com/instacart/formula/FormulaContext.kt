@@ -81,7 +81,7 @@ interface FormulaContext<State, Effect> {
             add(connection)
         }
 
-        fun <Input : Any> effect(input: Input, key: String = "", action: (Input) -> Unit) {
+        fun <Input : Any> effect(key: String, input: Input, action: (Input) -> Unit) {
             val stream = object : Stream<Input, Unit> {
                 override fun subscribe(input: Input, onEvent: (Unit) -> Unit): Disposable {
                     action(input)
