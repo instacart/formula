@@ -6,7 +6,7 @@ import com.instacart.formula.Update
  * Handles [Update] changes.
  */
 class UpdateManager(
-    private val processManager: ProcessorManager<*, *, *>
+    private val transitionLock: TransitionLock
 ) {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
@@ -14,12 +14,13 @@ class UpdateManager(
     private var updates: MutableMap<Update, Update> = mutableMapOf()
 
     fun updateConnections(new: List<Update>, transitionNumber: Long) {
-        updates.forEach { existingUpdate ->
-            val existing = existingUpdate.key
+        val iterator = updates.iterator()
+        while(iterator.hasNext()) {
+            val existing = iterator.next().key
 
             val update = new.firstOrNull { it == existing }
             if (update == null) {
-                updates.remove(existing)
+                iterator.remove()
 
                 when (existing) {
                     is Update.Stream<*, *> -> {
@@ -35,7 +36,7 @@ class UpdateManager(
                 }
             }
 
-            if (processManager.hasTransitioned(transitionNumber)) {
+            if (transitionLock.hasTransitioned(transitionNumber)) {
                 return
             }
         }
@@ -48,7 +49,7 @@ class UpdateManager(
                     is Update.Effect -> update.action()
                 }
 
-                if (processManager.hasTransitioned(transitionNumber)) {
+                if (transitionLock.hasTransitioned(transitionNumber)) {
                     return
                 }
             }

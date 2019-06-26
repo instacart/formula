@@ -1,7 +1,7 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.UpdateKey
 import io.reactivex.disposables.Disposable
+import kotlin.reflect.KClass
 
 sealed class Update {
 
@@ -36,11 +36,21 @@ sealed class Update {
     }
 
     class Stream<Input : Any, Output>(
-        val key: UpdateKey,
+        val key: Key,
         val input: Input,
         val stream: com.instacart.formula.Stream<Input, Output>,
         onEvent: (Output) -> Unit
     ): Update() {
+
+        /**
+         * A way to ensure uniqueness and equality between [Stream]s.
+         */
+        data class Key(
+            val input: Any,
+            val processorType: KClass<*>,
+            val tag: String = ""
+        )
+
         internal var handler: (Output) -> Unit = onEvent
         internal var disposable: Disposable? = null
 

@@ -10,7 +10,7 @@ import com.instacart.formula.Transition
 class ProcessorManager<Input, State, Effect>(
     state: State,
     private val onTransition: (Effect?) -> Unit
-) : RealRxFormulaContext.Delegate<State, Effect> {
+) : RealRxFormulaContext.Delegate<State, Effect>, TransitionLock {
 
     private val workerManager = UpdateManager(this)
 
@@ -30,7 +30,7 @@ class ProcessorManager<Input, State, Effect>(
     /**
      * Used to indicate if we the [nextFrame] has triggered a transition change. We want
      */
-    internal fun hasTransitioned(transitionNumber: Long) = this.transitionNumber != transitionNumber
+    override fun hasTransitioned(transitionNumber: Long) = this.transitionNumber != transitionNumber
 
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.

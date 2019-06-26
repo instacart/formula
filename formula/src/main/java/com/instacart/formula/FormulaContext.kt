@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.UpdateKey
 import io.reactivex.Observable
 
 interface FormulaContext<State, Effect> {
@@ -97,7 +96,7 @@ interface FormulaContext<State, Effect> {
             onEvent: (Output) -> Transition<State, Effect>
         ): Update.Stream<Input, Output> {
             return Update.Stream(
-                key = UpdateKey(input, stream::class, key),
+                key = Update.Stream.Key(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {
