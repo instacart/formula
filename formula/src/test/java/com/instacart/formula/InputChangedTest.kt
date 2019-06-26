@@ -21,12 +21,12 @@ class InputChangedTest {
 
         override fun initialState(input: Unit): String = "default"
 
-        override fun process(
+        override fun evaluate(
             input: Unit,
             state: String,
             context: FormulaContext<String, Unit>
-        ): ProcessResult<RenderModel> {
-            return ProcessResult(
+        ): Evaluation<RenderModel> {
+            return Evaluation(
                 renderModel = RenderModel(
                     childName = context.child(childFormula, state) {
                         Transition(state)
@@ -47,12 +47,12 @@ class InputChangedTest {
             return input
         }
 
-        override fun process(
+        override fun evaluate(
             input: String,
             state: String,
             context: FormulaContext<String, Unit>
-        ): ProcessResult<String> {
-            return ProcessResult(
+        ): Evaluation<String> {
+            return Evaluation(
                 renderModel = state
             )
         }

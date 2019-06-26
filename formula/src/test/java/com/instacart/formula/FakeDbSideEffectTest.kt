@@ -30,8 +30,8 @@ class FakeDbSideEffectTest {
 
         override fun initialState(input: Unit): State = State(name = "")
 
-        override fun process(input: Unit, state: State, context: FormulaContext<State, Unit>): ProcessResult<String> {
-            return ProcessResult(
+        override fun evaluate(input: Unit, state: State, context: FormulaContext<State, Unit>): Evaluation<String> {
+            return Evaluation(
                 renderModel = state.name,
                 updates = context.updates {
                     events("nameChanges", nameChanges) {

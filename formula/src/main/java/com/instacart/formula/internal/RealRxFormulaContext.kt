@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.ProcessResult
+import com.instacart.formula.Evaluation
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
 import com.instacart.formula.StreamConnection
@@ -20,7 +20,7 @@ class RealRxFormulaContext<State, Effect>(
             input: ChildInput,
             key: FormulaKey,
             onEffect: (ChildEffect) -> Transition<State, Effect>
-        ): ProcessResult<ChildRenderModel>
+        ): Evaluation<ChildRenderModel>
     }
 
     override fun transition(state: State) {

@@ -16,13 +16,13 @@ class ManyEmissionStreamTest {
     class TestFormula : ProcessorFormula<Unit, Int, Unit, Int> {
         override fun initialState(input: Unit): Int = 0
 
-        override fun process(
+        override fun evaluate(
             input: Unit,
             state: Int,
             context: FormulaContext<Int, Unit>
-        ): ProcessResult<Int> {
+        ): Evaluation<Int> {
 
-            return ProcessResult(
+            return Evaluation(
                 updates = context.updates {
                     events(MyStream(), Unit) {
                         Transition(state + 1)

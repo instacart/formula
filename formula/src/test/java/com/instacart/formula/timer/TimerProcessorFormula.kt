@@ -1,7 +1,7 @@
 package com.instacart.formula.timer
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.ProcessResult
+import com.instacart.formula.Evaluation
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
 
@@ -11,12 +11,12 @@ class TimerProcessorFormula(
 
     override fun initialState(input: Unit): TimerState = TimerState()
 
-    override fun process(
+    override fun evaluate(
         input: Unit,
         state: TimerState,
         context: FormulaContext<TimerState, TimerEffect>
-    ): ProcessResult<TimerRenderModel> {
-        return ProcessResult(
+    ): Evaluation<TimerRenderModel> {
+        return Evaluation(
             updates = context.updates {
                 if (state.runTimer) {
                     events(timer, onEvent = {

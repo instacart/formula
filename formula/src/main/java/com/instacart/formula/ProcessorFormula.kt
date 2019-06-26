@@ -19,7 +19,7 @@ interface ProcessorFormula<Input, State, Output, RenderModel> {
 
     /**
      * This method is called if [Input] changes while [ProcessorFormula] is already running. It
-     * is called before invoking [process]. You can use this method to change the [State]
+     * is called before invoking [evaluate]. You can use this method to change the [State]
      * in response to [Input] change.
      */
     fun onInputChanged(
@@ -34,9 +34,9 @@ interface ProcessorFormula<Input, State, Output, RenderModel> {
      * 2. Define what [Stream]s should run.
      * 3. Define children Formulas.
      */
-    fun process(
+    fun evaluate(
         input: Input,
         state: State,
         context: FormulaContext<State, Output>
-    ): ProcessResult<RenderModel>
+    ): Evaluation<RenderModel>
 }

@@ -27,7 +27,7 @@ object ProcessorFormulaRxRuntime {
                  */
                 fun process() {
                     val localManager = manager!!
-                    val result: ProcessResult<RenderModel> = localManager.process(formula, input)
+                    val result: Evaluation<RenderModel> = localManager.process(formula, input)
                     lastRenderModel = result.renderModel
                     if (!localManager.nextFrame() && hasInitialFinished) {
                         emitter.onNext(result.renderModel)

@@ -30,8 +30,8 @@ class SimpleSideEffectTest {
 
         override fun initialState(input: Unit): State = State(count = 0)
 
-        override fun process(input: Unit, state: State, context: FormulaContext<State, Unit>): ProcessResult<Int> {
-            return ProcessResult(
+        override fun evaluate(input: Unit, state: State, context: FormulaContext<State, Unit>): Evaluation<Int> {
+            return Evaluation(
                 renderModel = state.count,
                 updates = context.updates {
                     events("increment", increment) {

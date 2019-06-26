@@ -19,11 +19,11 @@ class RootFormula(
 
     override fun initialState(input: Unit): State = State()
 
-    override fun process(
+    override fun evaluate(
         input: Unit,
         state: State,
         context: FormulaContext<State, Unit>
-    ): ProcessResult<RenderModel> {
+    ): Evaluation<RenderModel> {
 
         val timer = if (state.showTimer) {
             context.child(timerFormula, Unit, onEffect = {
@@ -39,7 +39,7 @@ class RootFormula(
             null
         }
 
-        return ProcessResult(
+        return Evaluation(
             renderModel = RenderModel(
                 timer = timer,
                 count = "Count: ${state.count}",

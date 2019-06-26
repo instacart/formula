@@ -1,19 +1,19 @@
 package com.instacart.formula.counter
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.ProcessResult
+import com.instacart.formula.Evaluation
 import com.instacart.formula.ProcessorFormula
 
 class CounterProcessorFormula : ProcessorFormula<Unit, Int, Unit, CounterRenderModel> {
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun process(
+    override fun evaluate(
         input: Unit,
         state: Int,
         context: FormulaContext<Int, Unit>
-    ): ProcessResult<CounterRenderModel> {
-        return ProcessResult(
+    ): Evaluation<CounterRenderModel> {
+        return Evaluation(
             renderModel = CounterRenderModel(
                 count = "Count: $state",
                 onDecrement = {

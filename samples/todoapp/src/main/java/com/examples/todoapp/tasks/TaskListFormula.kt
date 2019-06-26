@@ -2,7 +2,7 @@ package com.examples.todoapp.tasks
 
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.ProcessResult
+import com.instacart.formula.Evaluation
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
 
@@ -18,11 +18,11 @@ class TaskListFormula(
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
     }
 
-    override fun process(
+    override fun evaluate(
         input: Input,
         state: TaskListState,
         context: FormulaContext<TaskListState, Unit>
-    ): ProcessResult<TaskListRenderModel> {
+    ): Evaluation<TaskListRenderModel> {
 
         val items = createTaskList(
             state,
@@ -30,7 +30,7 @@ class TaskListFormula(
             showToast = input.showToast
         )
 
-        return ProcessResult(
+        return Evaluation(
             updates = context.updates {
                 events("task changes", repo.tasks()) {
                     Transition(state.copy(taskState = it))

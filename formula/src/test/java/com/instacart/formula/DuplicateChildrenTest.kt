@@ -14,8 +14,8 @@ class DuplicateChildrenTest {
     class ParentFormula : ProcessorFormula<Unit, Unit, Unit, List<Unit>> {
         override fun initialState(input: Unit) = Unit
 
-        override fun process(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): ProcessResult<List<Unit>> {
-            return ProcessResult(
+        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<List<Unit>> {
+            return Evaluation(
                 renderModel = listOf(1, 2, 3).map {
                     context.child(ChildFormula(), Unit) {
                         Transition(state)
@@ -28,8 +28,8 @@ class DuplicateChildrenTest {
     class ChildFormula: ProcessorFormula<Unit, Unit, Unit, Unit> {
         override fun initialState(input: Unit) = Unit
 
-        override fun process(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): ProcessResult<Unit> {
-            return ProcessResult(
+        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {
+            return Evaluation(
                 renderModel = Unit
             )
         }

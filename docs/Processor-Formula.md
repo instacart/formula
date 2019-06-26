@@ -10,12 +10,12 @@ class CounterProcessorFormula : ProcessorFormula<Unit, Int, Unit, CounterRenderM
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun process(
+    override fun evaluate(
         input: Unit,
         state: Int,
         context: FormulaContext<Int, Unit>
-    ): ProcessResult<CounterRenderModel> {
-        return ProcessResult(
+    ): Evaluation<CounterRenderModel> {
+        return Evaluation(
             renderModel = CounterRenderModel(
                 count = "Count: $state",
                 onDecrement = {
@@ -37,12 +37,12 @@ class MyFormula(
     private val someObservable: Observable<MyData>
 ) : ProcessorFormula<...> {
 
-    override fun process(
+    override fun evaluate(
         input: Unit,
         state: MyState,
         context: FormulaContext<MyState, ...>
-    ): ProcessResult<TimerRenderModel> {
-        return ProcessResult(
+    ): Evaluation<TimerRenderModel> {
+        return Evaluation(
             // You can declaratively define what streams should run.
             streams = context.streams {
                 // We use a key "data" to make sure that 
@@ -67,8 +67,8 @@ class UserProfileFormula(
 ) : ProcessorFormula<...> {
 
 
-    override fun process(input: Unit, state: MyState, context: FormulaContext<...>): ProcessResult<...> {
-        return ProcessResult(
+    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
+        return Evaluation(
             renderModel = state.name,
             streams = context.streams {
                 // This will be invoked first time this formula runs.
@@ -93,7 +93,7 @@ class MainPageFormula(
     val dialogFormula: DialogFormula
 ) : ProcessorFormula<> {
     
-    override fun process(input: Unit, state: MyState, context: FormulaContext<...>): ProcessResult<...> {
+    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         // "context.child" returns a RenderModel 
         val listRenderModel = context.child(listFormula, createListInput(state)) { listEvent ->
             // We can perform state transition here.
@@ -113,7 +113,7 @@ class MainPageFormula(
             null
         }
     
-        return ProcessResult(
+        return Evaluation(
             renderModel = MainRenderModel(
                 header = headerRenderModel,
                 list = listRenderModel,

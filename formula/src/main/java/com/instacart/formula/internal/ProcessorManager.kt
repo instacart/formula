@@ -1,6 +1,6 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.ProcessResult
+import com.instacart.formula.Evaluation
 import com.instacart.formula.ProcessorFormula
 import com.instacart.formula.Transition
 
@@ -38,7 +38,7 @@ class ProcessorManager<Input, State, Effect>(
     fun <RenderModel> process(
         formula: ProcessorFormula<Input, State, Effect, RenderModel>,
         input: Input
-    ): ProcessResult<RenderModel> {
+    ): Evaluation<RenderModel> {
         // TODO: assert main thread.
 
         var canRun = false
@@ -68,7 +68,7 @@ class ProcessorManager<Input, State, Effect>(
             state
         }
 
-        val result = formula.process(input, state, context)
+        val result = formula.evaluate(input, state, context)
         frame = Frame(result.updates, context.children)
 
         this.lastInput = input
@@ -80,7 +80,7 @@ class ProcessorManager<Input, State, Effect>(
      * Returns true if has transition while moving to next frame.
      */
     fun nextFrame(): Boolean {
-        val newFrame = frame ?: throw IllegalStateException("call process before calling nextFrame()")
+        val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         val thisTransition = transitionNumber
 
@@ -114,7 +114,7 @@ class ProcessorManager<Input, State, Effect>(
         input: ChildInput,
         key: FormulaKey,
         onEffect: (ChildEffect) -> Transition<State, Effect>
-    ): ProcessResult<ChildRenderModel> {
+    ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
             val new = ProcessorManager<ChildInput, ChildState, ChildEffect>(initial, onTransition = {

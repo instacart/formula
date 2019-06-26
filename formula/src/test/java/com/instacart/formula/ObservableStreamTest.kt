@@ -39,9 +39,9 @@ class ObservableStreamTest {
 
             override fun initialState(input: Unit): Int = 0
 
-            override fun process(input: Unit, state: Int, context: FormulaContext<Int, Unit>): ProcessResult<Int> {
+            override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int, Unit>): Evaluation<Int> {
 
-                return ProcessResult(
+                return Evaluation(
                     renderModel = state,
                     updates = context.updates {
                         builder(state)
