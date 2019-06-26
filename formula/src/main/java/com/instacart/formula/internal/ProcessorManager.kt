@@ -10,7 +10,7 @@ import com.instacart.formula.Transition
 class ProcessorManager<Input, State, Effect>(
     state: State,
     private val onTransition: (Effect?) -> Unit
-) : RealRxFormulaContext.Delegate<State, Effect>, TransitionLock {
+) : FormulaContextImpl.Delegate<State, Effect>, TransitionLock {
 
     private val workerManager = UpdateManager(this)
 
@@ -44,7 +44,7 @@ class ProcessorManager<Input, State, Effect>(
         var canRun = false
         var invoked = false
 
-        val context = RealRxFormulaContext(this, onChange = {
+        val context = FormulaContextImpl(this, onChange = {
             // TODO assert main thread
 
             if (!canRun) {

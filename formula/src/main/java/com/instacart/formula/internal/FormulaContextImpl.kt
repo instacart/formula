@@ -7,7 +7,7 @@ import com.instacart.formula.Transition
 import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
-class RealRxFormulaContext<State, Effect>(
+class FormulaContextImpl<State, Effect>(
     private val delegate: Delegate<State, Effect>,
     private val onChange: (Transition<State, Effect>) -> Unit
 ) : FormulaContext<State, Effect> {
