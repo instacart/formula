@@ -23,7 +23,7 @@ class ManyEmissionStreamTest {
         ): ProcessResult<Int> {
 
             return ProcessResult(
-                streams = context.streams {
+                updates = context.updates {
                     events(MyStream(), Unit) {
                         Transition(state + 1)
                     }

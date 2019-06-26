@@ -17,7 +17,7 @@ class TimerProcessorFormula(
         context: FormulaContext<TimerState, TimerEffect>
     ): ProcessResult<TimerRenderModel> {
         return ProcessResult(
-            streams = context.streams {
+            updates = context.updates {
                 if (state.runTimer) {
                     events(timer, onEvent = {
                         Transition(state.copy(time = state.time + 1))

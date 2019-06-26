@@ -29,11 +29,11 @@ class ObservableStreamTest {
     }
 
     private fun test(
-        builder: FormulaContext.StreamBuilder<Int, Unit>.(state: Int) -> Unit
+        builder: FormulaContext.UpdateBuilder<Int, Unit>.(state: Int) -> Unit
     ) = formula(builder).state(Unit).test()
 
     private fun formula(
-        builder: FormulaContext.StreamBuilder<Int, Unit>.(state: Int) -> Unit
+        builder: FormulaContext.UpdateBuilder<Int, Unit>.(state: Int) -> Unit
     ): ProcessorFormula<Unit, Int, Unit, Int> {
         return object : ProcessorFormula<Unit, Int, Unit, Int> {
 
@@ -43,7 +43,7 @@ class ObservableStreamTest {
 
                 return ProcessResult(
                     renderModel = state,
-                    streams = context.streams {
+                    updates = context.updates {
                         builder(state)
                     }
                 )

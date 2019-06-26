@@ -23,7 +23,7 @@ class DuplicateStreamTest {
     }
 
     private fun duplicateStream(
-        build: FormulaContext.StreamBuilder<Unit, Unit>.() -> Unit
+        build: FormulaContext.UpdateBuilder<Unit, Unit>.() -> Unit
     ): ProcessorFormula<Unit, Unit, Unit, Unit> {
         return object : ProcessorFormula<Unit, Unit, Unit, Unit> {
             override fun initialState(input: Unit) = Unit
@@ -31,7 +31,7 @@ class DuplicateStreamTest {
             override fun process(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): ProcessResult<Unit> {
                 return ProcessResult(
                     renderModel = Unit,
-                    streams = context.streams(build)
+                    updates = context.updates(build)
                 )
             }
         }

@@ -5,5 +5,5 @@ package com.instacart.formula
  */
 data class ProcessResult<RenderModel>(
     val renderModel: RenderModel,
-    val streams: List<StreamConnection<*, *>> = emptyList()
+    val updates: List<StreamConnection<*, *>> = emptyList()
 )

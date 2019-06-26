@@ -31,10 +31,10 @@ class RealRxFormulaContext<State, Effect>(
         onChange(Transition(state, effect))
     }
 
-    override fun streams(init: FormulaContext.StreamBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>> {
-        val builder = FormulaContext.StreamBuilder(onChange)
+    override fun updates(init: FormulaContext.UpdateBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>> {
+        val builder = FormulaContext.UpdateBuilder(onChange)
         builder.init()
-        return builder.streams
+        return builder.updates
     }
 
     override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
@@ -49,7 +49,7 @@ class RealRxFormulaContext<State, Effect>(
         }
 
         val result = delegate.child(formula, input, key, onEffect)
-        children[key] = result.streams
+        children[key] = result.updates
         return result.renderModel
     }
 }

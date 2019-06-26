@@ -33,7 +33,7 @@ class SimpleSideEffectTest {
         override fun process(input: Unit, state: State, context: FormulaContext<State, Unit>): ProcessResult<Int> {
             return ProcessResult(
                 renderModel = state.count,
-                streams = context.streams {
+                updates = context.updates {
                     events("increment", increment) {
                         Transition(state.copy(count = state.count + 1))
                     }

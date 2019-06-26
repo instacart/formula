@@ -69,7 +69,7 @@ class ProcessorManager<Input, State, Effect>(
         }
 
         val result = formula.process(input, state, context)
-        frame = Frame(result.streams, context.children)
+        frame = Frame(result.updates, context.children)
 
         this.lastInput = input
         canRun = true

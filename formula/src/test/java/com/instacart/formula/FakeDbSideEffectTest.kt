@@ -33,7 +33,7 @@ class FakeDbSideEffectTest {
         override fun process(input: Unit, state: State, context: FormulaContext<State, Unit>): ProcessResult<String> {
             return ProcessResult(
                 renderModel = state.name,
-                streams = context.streams {
+                updates = context.updates {
                     events("nameChanges", nameChanges) {
                         Transition(state.copy(name = it, saveToDb = it))
                     }

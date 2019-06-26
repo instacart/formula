@@ -17,19 +17,19 @@ interface FormulaContext<State, Effect> {
         onEffect: (ChildEffect) -> Transition<State, Effect>
     ): ChildRenderModel
 
-    fun streams(init: StreamBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>>
+    fun updates(init: UpdateBuilder<State, Effect>.() -> Unit): List<StreamConnection<*, *>>
 
-    class StreamBuilder<State, Effect>(
+    class UpdateBuilder<State, Effect>(
         private val transition: (Transition<State, Effect>) -> Unit
     ) {
-        internal val streams = mutableListOf<StreamConnection<*, *>>()
+        internal val updates = mutableListOf<StreamConnection<*, *>>()
 
         private fun <Input : Any, Output> add(connection: StreamConnection<Input, Output>) {
-            if (streams.contains(connection)) {
+            if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.key}")
             }
 
-            streams.add(connection)
+            updates.add(connection)
         }
 
         fun <Input : Any, Output> events(

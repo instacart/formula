@@ -31,7 +31,7 @@ class TaskListFormula(
         )
 
         return ProcessResult(
-            streams = context.streams {
+            updates = context.updates {
                 events("task changes", repo.tasks()) {
                     Transition(state.copy(taskState = it))
                 }
