@@ -7,9 +7,9 @@ class StreamManager(
 ) {
     private var updates: MutableMap<UpdateKey, StreamConnection<*, *>> = mutableMapOf()
 
-    fun updateWorkers(workers: List<StreamConnection<*, *>>, transitionNumber: Long) {
+    fun updateConnections(new: List<StreamConnection<*, *>>, transitionNumber: Long) {
         updates.forEach { existingWorker ->
-            val update = workers.firstOrNull { it == existingWorker.value }
+            val update = new.firstOrNull { it == existingWorker.value }
             if (update == null) {
                 updates.remove(existingWorker.key)
 
@@ -24,7 +24,7 @@ class StreamManager(
             }
         }
 
-        workers.forEach {
+        new.forEach {
             if (!updates.containsKey(it.key)) {
                 updates[it.key] = it
                 it.start()
