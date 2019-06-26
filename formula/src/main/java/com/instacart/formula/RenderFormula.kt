@@ -5,7 +5,7 @@ import io.reactivex.Observable
 /**
  * Defines a factory for [RenderLoop]
  */
-interface RenderFormula<in Input, State, Effect, RenderModel> : Formula<Input, RenderModel> {
+interface RenderFormula<in Input, State, Effect, RenderModel> : RxFormula<Input, RenderModel> {
 
     /**
      * Creates the render loop, using the given input

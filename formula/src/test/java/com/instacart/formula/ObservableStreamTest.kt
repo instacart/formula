@@ -34,8 +34,8 @@ class ObservableStreamTest {
 
     private fun formula(
         builder: FormulaContext.UpdateBuilder<Int, Unit>.(state: Int) -> Unit
-    ): ProcessorFormula<Unit, Int, Unit, Int> {
-        return object : ProcessorFormula<Unit, Int, Unit, Int> {
+    ): Formula<Unit, Int, Unit, Int> {
+        return object : Formula<Unit, Int, Unit, Int> {
 
             override fun initialState(input: Unit): Int = 0
 

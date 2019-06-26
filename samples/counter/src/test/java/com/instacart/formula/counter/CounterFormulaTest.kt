@@ -1,15 +1,15 @@
 package com.instacart.formula.counter
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 import io.reactivex.Observable
 import org.junit.Test
 
-class CounterProcessorFormulaTest {
+class CounterFormulaTest {
 
     @Test fun `increment 5 times`() {
 
-        CounterProcessorFormula()
+        CounterFormula()
             .test(Unit)
             .call { onIncrement() }
             .call { onIncrement() }
@@ -21,7 +21,7 @@ class CounterProcessorFormulaTest {
             }
     }
 
-    fun <Input, RenderModel> ProcessorFormula<Input, *, *, RenderModel>.test(
+    fun <Input, RenderModel> Formula<Input, *, *, RenderModel>.test(
         input: Input
     ): ProcessorFormulaTestSubject<RenderModel> {
         return ProcessorFormulaTestSubject(state(input))

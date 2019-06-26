@@ -24,8 +24,8 @@ class DuplicateStreamTest {
 
     private fun duplicateStream(
         build: FormulaContext.UpdateBuilder<Unit, Unit>.() -> Unit
-    ): ProcessorFormula<Unit, Unit, Unit, Unit> {
-        return object : ProcessorFormula<Unit, Unit, Unit, Unit> {
+    ): Formula<Unit, Unit, Unit, Unit> {
+        return object : Formula<Unit, Unit, Unit, Unit> {
             override fun initialState(input: Unit) = Unit
 
             override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {

@@ -24,7 +24,7 @@ class FakeDbSideEffectTest {
     class TestFormula(
         private val nameChanges: Observable<String>,
         private val saveToDb: (name: String) -> Unit
-    ) : ProcessorFormula<Unit, TestFormula.State, Unit, String> {
+    ) : Formula<Unit, TestFormula.State, Unit, String> {
 
         data class State(val name: String, val saveToDb: String? = null)
 

@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.timer.Timer
-import com.instacart.formula.timer.TimerProcessorFormula
+import com.instacart.formula.timer.TimerFormula
 import com.instacart.formula.timer.TimerRenderModel
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.TestScheduler
@@ -16,7 +16,7 @@ class StreamTest {
 
     @Before fun setup() {
         scheduler = TestScheduler()
-        subject = TimerProcessorFormula(Timer(scheduler)).state(Unit).test()
+        subject = TimerFormula(Timer(scheduler)).state(Unit).test()
     }
 
     @Test fun `updates time`() {

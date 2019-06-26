@@ -2,9 +2,9 @@ package com.instacart.formula.counter
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 
-class CounterProcessorFormula : ProcessorFormula<Unit, Int, Unit, CounterRenderModel> {
+class CounterFormula : Formula<Unit, Int, Unit, CounterRenderModel> {
 
     override fun initialState(input: Unit): Int = 0
 

@@ -2,7 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 import com.instacart.formula.Transition
 import com.instacart.formula.StreamConnection
 import java.lang.IllegalStateException
@@ -16,7 +16,7 @@ class RealRxFormulaContext<State, Effect>(
 
     interface Delegate<State, Effect> {
         fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-            formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+            formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
             input: ChildInput,
             key: FormulaKey,
             onEffect: (ChildEffect) -> Transition<State, Effect>
@@ -38,7 +38,7 @@ class RealRxFormulaContext<State, Effect>(
     }
 
     override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: String,
         onEffect: (ChildEffect) -> Transition<State, Effect>

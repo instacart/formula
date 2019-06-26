@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 /**
- * Represents the result of [ProcessorFormula.evaluate].
+ * Represents the result of [Formula.evaluate].
  */
 data class Evaluation<RenderModel>(
     val renderModel: RenderModel,

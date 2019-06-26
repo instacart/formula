@@ -11,7 +11,7 @@ interface FormulaContext<State, Effect> {
     fun transition(state: State, effect: Effect?)
 
     fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: String = "",
         onEffect: (ChildEffect) -> Transition<State, Effect>

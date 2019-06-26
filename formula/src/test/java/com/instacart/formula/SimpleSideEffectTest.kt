@@ -25,7 +25,7 @@ class SimpleSideEffectTest {
     class TestFormula(
         private val increment: Observable<Unit>,
         private val onGameOver: () -> Unit
-    ) : ProcessorFormula<Unit, TestFormula.State, Unit, Int> {
+    ) : Formula<Unit, TestFormula.State, Unit, Int> {
         data class State(val count: Int)
 
         override fun initialState(input: Unit): State = State(count = 0)

@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 import com.instacart.formula.Transition
 
 /**
@@ -36,7 +36,7 @@ class ProcessorManager<Input, State, Effect>(
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     fun <RenderModel> process(
-        formula: ProcessorFormula<Input, State, Effect, RenderModel>,
+        formula: Formula<Input, State, Effect, RenderModel>,
         input: Input
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
@@ -110,7 +110,7 @@ class ProcessorManager<Input, State, Effect>(
     }
 
     override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: ProcessorFormula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
         onEffect: (ChildEffect) -> Transition<State, Effect>

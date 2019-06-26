@@ -3,12 +3,12 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 import com.instacart.formula.Transition
 
 class TaskListFormula(
     private val repo: TaskRepo
-) : ProcessorFormula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
+) : Formula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
 
     class Input(
         val showToast: (String) -> Unit

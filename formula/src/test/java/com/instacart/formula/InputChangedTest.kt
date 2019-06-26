@@ -14,7 +14,7 @@ class InputChangedTest {
         }
     }
 
-    class ParentFormula : ProcessorFormula<Unit, String, Unit, ParentFormula.RenderModel> {
+    class ParentFormula : Formula<Unit, String, Unit, ParentFormula.RenderModel> {
         private val childFormula = ChildFormula()
 
         class RenderModel(val childName: String, val onChildNameChanged: (String) -> Unit)
@@ -39,7 +39,7 @@ class InputChangedTest {
         }
     }
 
-    class ChildFormula : ProcessorFormula<String, String, Unit, String> {
+    class ChildFormula : Formula<String, String, Unit, String> {
         override fun initialState(input: String): String = input
 
         override fun onInputChanged(oldInput: String, input: String, state: String): String {

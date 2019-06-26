@@ -4,12 +4,12 @@ import com.instacart.formula.internal.ProcessorManager
 import io.reactivex.Observable
 
 /**
- * Takes a [ProcessorFormula] and creates an Observable<RenderModel> from it.
+ * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
 object ProcessorFormulaRxRuntime {
     fun <Input, State, Effect, RenderModel> start(
         input: Input,
-        formula: ProcessorFormula<Input, State, Effect, RenderModel>,
+        formula: Formula<Input, State, Effect, RenderModel>,
         onEffect: (Effect) -> Unit
     ): Observable<RenderModel> {
         val threadName = Thread.currentThread().name

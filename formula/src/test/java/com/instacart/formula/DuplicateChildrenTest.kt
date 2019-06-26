@@ -11,7 +11,7 @@ class DuplicateChildrenTest {
         }
     }
 
-    class ParentFormula : ProcessorFormula<Unit, Unit, Unit, List<Unit>> {
+    class ParentFormula : Formula<Unit, Unit, Unit, List<Unit>> {
         override fun initialState(input: Unit) = Unit
 
         override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<List<Unit>> {
@@ -25,7 +25,7 @@ class DuplicateChildrenTest {
         }
     }
 
-    class ChildFormula: ProcessorFormula<Unit, Unit, Unit, Unit> {
+    class ChildFormula: Formula<Unit, Unit, Unit, Unit> {
         override fun initialState(input: Unit) = Unit
 
         override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {

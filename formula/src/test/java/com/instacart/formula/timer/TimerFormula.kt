@@ -2,12 +2,12 @@ package com.instacart.formula.timer
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
-import com.instacart.formula.ProcessorFormula
+import com.instacart.formula.Formula
 import com.instacart.formula.Transition
 
-class TimerProcessorFormula(
+class TimerFormula(
     private val timer: Timer
-) : ProcessorFormula<Unit, TimerState, TimerEffect, TimerRenderModel> {
+) : Formula<Unit, TimerState, TimerEffect, TimerRenderModel> {
 
     override fun initialState(input: Unit): TimerState = TimerState()
 

@@ -2,20 +2,20 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.timer.Timer
-import com.instacart.formula.timer.TimerProcessorFormula
+import com.instacart.formula.timer.TimerFormula
 import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.TestScheduler
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 
-class ChildProcessorFormulaTest {
+class ChildFormulaTest {
     lateinit var scheduler: TestScheduler
     lateinit var subject: TestObserver<RootFormula.RenderModel>
 
     @Before fun setup() {
         scheduler = TestScheduler()
-        val timerProcessorFormula = TimerProcessorFormula(Timer(scheduler))
+        val timerProcessorFormula = TimerFormula(Timer(scheduler))
         subject = RootFormula(timerProcessorFormula).state(Unit).test()
     }
 

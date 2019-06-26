@@ -1,12 +1,12 @@
 package com.instacart.formula
 
 import com.instacart.formula.timer.TimerEffect
-import com.instacart.formula.timer.TimerProcessorFormula
+import com.instacart.formula.timer.TimerFormula
 import com.instacart.formula.timer.TimerRenderModel
 
 class RootFormula(
-    private val timerFormula: TimerProcessorFormula
-) : ProcessorFormula<Unit, RootFormula.State, Unit, RootFormula.RenderModel> {
+    private val timerFormula: TimerFormula
+) : Formula<Unit, RootFormula.State, Unit, RootFormula.RenderModel> {
 
     data class State(val count: Int = 0, val showTimer: Boolean = true)
 

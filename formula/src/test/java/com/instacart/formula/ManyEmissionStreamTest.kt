@@ -13,7 +13,7 @@ class ManyEmissionStreamTest {
             .assertValues(100000)
     }
 
-    class TestFormula : ProcessorFormula<Unit, Int, Unit, Int> {
+    class TestFormula : Formula<Unit, Int, Unit, Int> {
         override fun initialState(input: Unit): Int = 0
 
         override fun evaluate(
