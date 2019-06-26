@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.StreamKey
+import com.instacart.formula.internal.UpdateKey
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
@@ -72,7 +72,7 @@ interface FormulaContext<State, Effect> {
             }
 
             val connection = StreamConnection(
-                key = StreamKey(Unit, stream::class, key),
+                key = UpdateKey(Unit, stream::class, key),
                 input = Unit,
                 stream = stream,
                 onEvent = {}
@@ -90,7 +90,7 @@ interface FormulaContext<State, Effect> {
             }
 
             val connection = StreamConnection(
-                key = StreamKey(input, stream::class, key),
+                key = UpdateKey(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {}
@@ -106,7 +106,7 @@ interface FormulaContext<State, Effect> {
             onEvent: (Output) -> Transition<State, Effect>
         ): StreamConnection<Input, Output> {
             return StreamConnection(
-                key = StreamKey(input, stream::class, key),
+                key = UpdateKey(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {

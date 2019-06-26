@@ -105,7 +105,7 @@ class ProcessorManager<Input, State, Effect>(
         }
 
         // Should parents workers have priority?
-        workerManager.updateWorkers(newFrame.workers, thisTransition)
+        workerManager.updateWorkers(newFrame.updates, thisTransition)
         return hasTransitioned(thisTransition)
     }
 

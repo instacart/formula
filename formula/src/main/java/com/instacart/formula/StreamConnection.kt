@@ -1,10 +1,10 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.StreamKey
+import com.instacart.formula.internal.UpdateKey
 import io.reactivex.disposables.Disposable
 
 class StreamConnection<Input : Any, Output>(
-    val key: StreamKey,
+    val key: UpdateKey,
     val input: Input,
     val stream: Stream<Input, Output>,
     onEvent: (Output) -> Unit
@@ -14,8 +14,8 @@ class StreamConnection<Input : Any, Output>(
     internal var disposable: Disposable? = null
 
     internal fun start() {
-        disposable = stream.subscribe(input) {
-            handler.invoke(it)
+        disposable = stream.subscribe(input) { next ->
+            handler.invoke(next)
         }
     }
 

@@ -5,13 +5,13 @@ import com.instacart.formula.StreamConnection
 class StreamManager(
     private val processManager: ProcessorManager<*, *, *>
 ) {
-    private var lastWorkers: MutableMap<StreamKey, StreamConnection<*, *>> = mutableMapOf()
+    private var updates: MutableMap<UpdateKey, StreamConnection<*, *>> = mutableMapOf()
 
     fun updateWorkers(workers: List<StreamConnection<*, *>>, transitionNumber: Long) {
-        lastWorkers.forEach { existingWorker ->
+        updates.forEach { existingWorker ->
             val update = workers.firstOrNull { it == existingWorker.value }
             if (update == null) {
-                lastWorkers.remove(existingWorker.key)
+                updates.remove(existingWorker.key)
 
                 existingWorker.value.handler = {}
                 existingWorker.value.tearDown()
@@ -25,8 +25,8 @@ class StreamManager(
         }
 
         workers.forEach {
-            if (!lastWorkers.containsKey(it.key)) {
-                lastWorkers[it.key] = it
+            if (!updates.containsKey(it.key)) {
+                updates[it.key] = it
                 it.start()
 
                 if (processManager.hasTransitioned(transitionNumber)) {
@@ -37,9 +37,9 @@ class StreamManager(
     }
 
     fun terminate() {
-        lastWorkers.values.forEach {
+        updates.values.forEach {
             it.tearDown()
         }
-        lastWorkers.clear()
+        updates.clear()
     }
 }
