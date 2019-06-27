@@ -135,7 +135,7 @@ class MyFormula(
         context: FormulaContext<MyState, ...>
     ): Evaluation<TimerRenderModel> {
         return Evaluation(
-            // You can declaratively define what streams should run.
+            // You can declaratively define what event streams should run.
             updates = context.updates {
                 // We use a key "data" to make sure that 
                 // internal diffing mechanism can distinguish
@@ -162,7 +162,7 @@ class UserProfileFormula(
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
             renderModel = state.name,
-            streams = context.streams {
+            updates = context.updates {
                 // This will be invoked first time this formula runs.
                 effect("view analytics") { 
                     userAnalyticsService.trackProfileView()
@@ -211,9 +211,9 @@ class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
         renderModel = state.items.map { item ->
             ItemRow(
                 item = item,
-                onItemSelected = {
+                onItemSelected = context.callback {
                     // We send the `ItemSelected` event to the parent.
-                    context.output(ItemOutput.ItemSelected(item.id))   
+                    output(ItemOutput.ItemSelected(item.id))   
                 }  
             )
         }   
