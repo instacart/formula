@@ -29,6 +29,21 @@ interface FormulaContext<State, Output> {
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel
 
+
+    /**
+     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
+     * of child Formula is managed by the runtime.
+     */
+    fun <ChildInput, ChildState, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, Unit, ChildRenderModel>,
+        input: ChildInput,
+        key: String = ""
+    ): ChildRenderModel  {
+        return child(formula, input, key, onEvent = {
+            none()
+        })
+    }
+
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
