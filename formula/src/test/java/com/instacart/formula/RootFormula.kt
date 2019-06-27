@@ -12,9 +12,7 @@ class RootFormula(
 
     class RenderModel(
         val timer: TimerRenderModel?,
-        val count: String,
-        val increment: () -> Unit,
-        val decrement: () -> Unit
+        val openTimer: () -> Unit
     )
 
     override fun initialState(input: Unit): State = State()
@@ -38,12 +36,8 @@ class RootFormula(
         return Evaluation(
             renderModel = RenderModel(
                 timer = timer,
-                count = "Count: ${state.count}",
-                increment = context.callback {
-                    transition(state.copy(count = state.count + 1))
-                },
-                decrement = context.callback {
-                    transition(state.copy(count = state.count - 1))
+                openTimer = context.callback {
+                    transition(state.copy(showTimer = true))
                 }
             )
         )
