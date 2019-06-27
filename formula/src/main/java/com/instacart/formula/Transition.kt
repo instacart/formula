@@ -5,7 +5,7 @@ package com.instacart.formula
  */
 data class Transition<out State, out Output> internal constructor(
     val state: State? = null,
-    val effect: Output? = null
+    val output: Output? = null
 ) {
     object Factory {
         fun <State, Output> output(output: Output): Transition<State, Output> {

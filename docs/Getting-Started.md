@@ -142,7 +142,7 @@ class MyFormula(
                 // between differen streams.
                 events("data", someObservable) { update: MyData ->
                     // onEvent will always be scoped to the current `MyState` instance.
-                    Transition(state.copy(myData = update))
+                    transition(state.copy(myData = update))
                 }
             },
             renderModel = ...
@@ -213,7 +213,7 @@ class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
                 item = item,
                 onItemSelected = {
                     // We send the `ItemSelected` event to the parent.
-                    context.transition(state, ItemOutput.ItemSelected(item.id))   
+                    context.output(ItemOutput.ItemSelected(item.id))   
                 }  
             )
         }   

@@ -24,7 +24,7 @@ class ProcessorManager<Input, State, Effect>(
     private fun handleTransition(transition: Transition<State, Effect>) {
         transitionNumber += 1
         this.state = transition.state ?: this.state
-        onTransition(transition.effect)
+        onTransition(transition.output)
     }
 
     /**
@@ -89,15 +89,20 @@ class ProcessorManager<Input, State, Effect>(
         // Need to perform units of work.
 
         // Tear down old children
-        children.forEach {
-            if (!newFrame.children.containsKey(it.key)) {
-                val processor = children.remove(it.key)
-                processor?.terminate()
+        val iterator = children.iterator()
+        while(iterator.hasNext()) {
+            val child = iterator.next()
+            if (!newFrame.children.containsKey(child.key)) {
+                iterator.remove()
+
+                val processor = child.value
+                processor.terminate()
 
                 if (hasTransitioned(thisTransition)) {
                     return true
                 }
             }
+
         }
 
         children.forEach {
@@ -111,31 +116,31 @@ class ProcessorManager<Input, State, Effect>(
         return hasTransitioned(thisTransition)
     }
 
-    override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Effect>
+        onEffect: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildInput, ChildState, ChildEffect>(initial, onTransition = {
+            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, onTransition = {
                 // TODO assert main thread
 
-                val effect = if (it != null) {
+                val output = if (it != null) {
                     val result = onEffect(Transition.Factory, it)
                     this.state = result.state ?: this.state
-                    result.effect
+                    result.output
                 } else {
                     null
                 }
 
                 transitionNumber += 1
-                onTransition(effect)
+                onTransition(output)
             })
             children[key] = new
             new
-        }) as ProcessorManager<ChildInput, ChildState, ChildEffect>
+        }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
 
         return processorManager.process(formula, input)
     }
