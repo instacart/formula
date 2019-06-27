@@ -39,11 +39,11 @@ class RootFormula(
             renderModel = RenderModel(
                 timer = timer,
                 count = "Count: ${state.count}",
-                increment = {
-                    context.transition(state.copy(count = state.count + 1))
+                increment = context.callback {
+                    transition(state.copy(count = state.count + 1))
                 },
-                decrement = {
-                    context.transition(state.copy(count = state.count - 1))
+                decrement = context.callback {
+                    transition(state.copy(count = state.count - 1))
                 }
             )
         )

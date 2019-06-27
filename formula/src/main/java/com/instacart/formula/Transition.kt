@@ -13,14 +13,23 @@ data class Transition<out State, out Output> internal constructor(
     val sideEffects: List<SideEffect> = emptyList()
 ) {
     object Factory {
+        /**
+         * A transition that does nothing.
+         */
+        fun <State, Output> none(): Transition<State, Output> {
+            return Transition()
+        }
+
+        /**
+         * Emits an [Output] event to the parent [Formula].
+         */
         fun <State, Output> output(output: Output): Transition<State, Output> {
             return Transition(null, output)
         }
 
-        fun <State, Output> transition(state: State, output: Output? = null): Transition<State, Output> {
-            return Transition(state, output)
-        }
-
+        /**
+         * Triggers a transition to new [State] that also can have an optional [Output].
+         */
         fun <State, Output> transition(
             state: State,
             output: Output? = null,
@@ -29,16 +38,18 @@ data class Transition<out State, out Output> internal constructor(
             return Transition(state, output, sideEffects)
         }
 
-        fun <State, Output> transition(
-            state: State,
-            output: Output? = null,
-            sideEffect: SideEffect? = null
-        ): Transition<State, Output> {
+        fun <State, Output> State.withOutput(output: Output?): Transition<State, Output> {
+            return Transition(this, output)
+        }
+
+        fun <State, Output> State.withSideEffect(sideEffect: SideEffect?): Transition<State, Output> {
             val effects = sideEffect?.let {
                 listOf(it)
             } ?: emptyList()
 
-            return Transition(state, output, effects)
+            return Transition(this, null, effects)
         }
+
+
     }
 }

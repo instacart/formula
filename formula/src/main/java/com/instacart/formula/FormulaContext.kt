@@ -9,19 +9,14 @@ import io.reactivex.Observable
 interface FormulaContext<State, Output> {
 
     /**
-     * Triggers a transition to new [State].
+     * Creates a callback to be used for handling UI event transitions.
      */
-    fun transition(state: State)
+    fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
 
     /**
-     * Triggers a transition to new [State] that also can have an optional [Output].
+     * Creates a callback that takes a [UIEvent] and performs a [Transition].
      */
-    fun transition(state: State, output: Output?)
-
-    /**
-     * Sends an [Output] event to the parent [Formula].
-     */
-    fun output(output: Output)
+    fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
 
     /**
      * Declares a child [Formula] which returns the [ChildRenderModel]. The state management

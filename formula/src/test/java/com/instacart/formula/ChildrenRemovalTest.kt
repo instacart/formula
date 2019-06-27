@@ -34,8 +34,8 @@ class ChildrenRemovalTest {
                             transition(state)
                         }
                     },
-                    onClearAll = {
-                        context.transition(emptyList())
+                    onClearAll = context.callback {
+                        transition(emptyList())
                     }
                 )
             )

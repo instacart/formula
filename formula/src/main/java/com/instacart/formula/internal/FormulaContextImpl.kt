@@ -23,16 +23,16 @@ class FormulaContextImpl<State, Output>(
         ): Evaluation<ChildRenderModel>
     }
 
-    override fun transition(state: State) {
-        onChange(Transition.Factory.transition(state))
+    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        return {
+            onChange(wrap(Transition.Factory))
+        }
     }
 
-    override fun transition(state: State, output: Output?) {
-        onChange(Transition.Factory.transition(state, output))
-    }
-
-    override fun output(output: Output) {
-        onChange(Transition.Factory.output(output))
+    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+        return {
+            onChange(wrap(Transition.Factory, it))
+        }
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {

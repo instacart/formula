@@ -35,14 +35,15 @@ class SimpleSideEffectTest {
                 renderModel = state.count,
                 updates = context.updates {
                     events("increment", increment) {
-                        val newCount = state.count + 1
-                        val effect = if (newCount == 5) {
+                        val updated = state.copy(count = state.count + 1)
+
+                        val effect = if (updated.count == 5) {
                             SideEffect("result", onGameOver)
                         } else {
                             null
                         }
 
-                        transition(state.copy(count = newCount), sideEffect = effect)
+                        updated.withSideEffect(effect)
                     }
                 }
             )
