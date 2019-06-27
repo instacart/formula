@@ -152,7 +152,7 @@ class MyFormula(
 ```
 
 ### Side effects
-It is very easy to define side-effects.
+It is very easy to emit side-effects.
 ```kotlin
 class UserProfileFormula(
     val userAnalyticsService: UserAnalyticsService
@@ -161,13 +161,13 @@ class UserProfileFormula(
 
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
-            renderModel = state.name,
-            updates = context.updates {
-                // This will be invoked first time this formula runs.
-                effect("view analytics") { 
-                    userAnalyticsService.trackProfileView()
+            renderModel = UserProfileRenderModel(
+                onSaveSelected = context.callback {
+                    sideEffect("save selected analytics") {
+                        userAnalyticsService.trackSaveSelected()
+                    }
                 }
-            }
+            )
         )
     }
 }
