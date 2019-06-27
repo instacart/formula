@@ -1,0 +1,187 @@
+package com.instacart.formula
+
+import io.reactivex.Observable
+
+/**
+ * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create
+ * child formulas.
+ */
+interface FormulaContext<State, Output> {
+
+    /**
+     * Triggers a transition to new [State].
+     */
+    fun transition(state: State)
+
+    /**
+     * Triggers a transition to new [State] that also can have an optional [Output].
+     */
+    fun transition(state: State, output: Output?)
+
+    /**
+     * Sends an [Output] event to the parent [Formula].
+     */
+    fun output(output: Output)
+
+    /**
+     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
+     * of child Formula is managed by the runtime.
+     */
+    fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+        input: ChildInput,
+        key: String = "",
+        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Output>
+    ): ChildRenderModel
+
+    /**
+     * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
+     */
+    fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
+
+    /**
+     * Provides methods to declare various events and effects.
+     */
+    class UpdateBuilder<State, Output>(
+        private val transition: (Transition<State, Output>) -> Unit
+    ) {
+        internal val updates = mutableListOf<Update>()
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
+         * @param input An object passed to the [Stream] for instantiation. This can
+         * @param onEvent - a callback invoked when [Stream] produces an
+         */
+        fun <StreamInput : Any, StreamOutput> events(
+            stream: Stream<StreamInput, StreamOutput>,
+            input: StreamInput,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            events("", stream, input, onEvent)
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
+         * @param input An object passed to the [Stream] for instantiation. This can
+         * @param key - an extra parameter used to distinguish between different streams.
+         * @param onEvent - a callback invoked when [Stream] produces an
+         */
+        fun <StreamInput : Any, StreamOutput> events(
+            key: String = "",
+            stream: Stream<StreamInput, StreamOutput>,
+            input: StreamInput,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            add(createConnection(stream, input, key, onEvent))
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         */
+        fun <StreamOutput> events(
+            stream: Stream<Unit, StreamOutput>,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            events("", stream, onEvent)
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         */
+        fun <StreamOutput> events(
+            key: String,
+            stream: Stream<Unit, StreamOutput>,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            events(key, stream, Unit, onEvent)
+        }
+
+        /**
+         * Adds an [Observable] as part of this [Evaluation]. Observable will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param key Primary way to distinguish between different observables.
+         */
+        fun <StreamOutput> events(
+            key: String,
+            observable: Observable<StreamOutput>,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            val stream = object : RxStream<Unit, StreamOutput> {
+                override fun observable(input: Unit): Observable<StreamOutput> {
+                    return observable
+                }
+            }
+
+            events(key, stream, onEvent)
+        }
+
+        /**
+         * Define a side effect for which the uniqueness is tied only to [key]. It will be invoked once when it is initially added.
+         *
+         * @param key Used to distinguish between different types of effects.
+         * @param action A callback that will be invoked once.
+         */
+        fun effect(key: String, action: () -> Unit) {
+            val connection = Update.Effect(
+                input = Unit,
+                key = key,
+                action = action
+            )
+
+            add(connection)
+        }
+
+        /**
+         * Define a side effect for which the uniqueness is tied to [key] and [input]. It will be invoked once when it is initially added.
+         *
+         * @param key Used to distinguish between different types of effects.
+         * @param input Will be passed to [action]. It is also used as key to distinguish different types of effects.
+         * @param action A callback that will be invoked once.
+         */
+        fun <EffectInput : Any> effect(key: String, input: EffectInput, action: (EffectInput) -> Unit) {
+            val connection = Update.Effect(
+                input = input,
+                key = key,
+                action = {
+                    action(input)
+                }
+            )
+
+            add(connection)
+        }
+
+        private fun add(connection: Update) {
+            if (updates.contains(connection)) {
+                throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
+            }
+
+            updates.add(connection)
+        }
+
+        private fun <StreamInput : Any, StreamOutput> createConnection(
+            stream: Stream<StreamInput, StreamOutput>,
+            input: StreamInput,
+            key: String = "",
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ): Update.Stream<StreamInput, StreamOutput> {
+            return Update.Stream(
+                key = Update.Stream.Key(input, stream::class, key),
+                input = input,
+                stream = stream,
+                onEvent = {
+                    val value = onEvent(Transition.Factory, it)
+                    transition(value)
+                }
+            )
+        }
+    }
+}

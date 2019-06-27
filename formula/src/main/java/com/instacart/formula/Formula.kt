@@ -1,32 +1,48 @@
 package com.instacart.formula
 
-import io.reactivex.Observable
-
 /**
- * The Formula interface defines a protocol for render model management.
+ * Formula interface defines render model management.
  *
- * Ex:
- * ```
- * class MyFeatureFormula @Inject constructor(val someUseCase: SomeUseCase) : Formula<MyFeatureFormula.Input, MyFeatureRenderModel> {
- *   data class Input(val id: String, val onSomeActionTaken: (Action) -> Unit)
- *
- *   override fun state(input: Input): Observable<MyFeatureRenderModel> {
- *     return state().map { state ->
- *       createRenderModel(input, state)
- *     }
- *   }
- * }
- * ```
- * See also [RenderFormula]
- *
- * @param Input data + callbacks passed by parent to the view model to help construct the RenderModel stream
- * @param RenderModel is data class that defines how a particular view component should be rendered
+ * @param Input - defines data that the parent/host can pass to this formula.
+ * @param State - internal state that is used for this formula.
+ * @param Output - a type of message that can be passed to the parent/host.
+ * @param RenderModel - a type that is used to render this formula UI.
  */
-interface Formula<in Input, RenderModel> {
+interface Formula<Input, State, Output, RenderModel> {
 
     /**
-     * Creates the render model stream, using the given input
-     * @param input The input (callbacks, initial values, etc.) needed to create a stream of render models
+     * Instantiate initial [State].
      */
-    fun state(input: Input): Observable<RenderModel>
+    fun initialState(input: Input): State
+
+    /**
+     * This method is called if [Input] changes while [Formula] is already running. It
+     * is called before invoking [evaluate]. You can use this method to change the [State]
+     * in response to [Input] change.
+     */
+    fun onInputChanged(
+        oldInput: Input,
+        input: Input,
+        state: State
+    ): State = state
+
+    /**
+     * This method is called any time there is:
+     * 1. A [State] change
+     * 2. A parent [Formula] calls [FormulaContext.child] with a new [Input].
+     * 3. A child [Formula] has an internal state change or produces an output.
+     *
+     * As part of this method:
+     * 1. Use [FormulaContext.child] to define children formulas.
+     * 2. Use [FormulaContext.updates] to define side effects and asynchronous event listeners.
+     * 3. Return an [Evaluation] with the current [RenderModel].
+     *
+     * Do not emit side-effects internally before returning [Evaluation]. All side-effects should happen as part of
+     * event callbacks or [Evaluation.updates].
+     */
+    fun evaluate(
+        input: Input,
+        state: State,
+        context: FormulaContext<State, Output>
+    ): Evaluation<RenderModel>
 }

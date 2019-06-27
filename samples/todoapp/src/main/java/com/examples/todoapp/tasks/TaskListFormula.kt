@@ -1,52 +1,47 @@
 package com.examples.todoapp.tasks
 
-import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
-import com.instacart.formula.Reducers
-import com.instacart.formula.RenderFormula
-import com.instacart.formula.RenderLoop
-import com.instacart.formula.RenderModelGenerator
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
+import com.instacart.formula.FormulaContext
+import com.instacart.formula.Evaluation
+import com.instacart.formula.Formula
 
 class TaskListFormula(
     private val repo: TaskRepo
-) : RenderFormula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
+) : Formula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
 
     class Input(
         val showToast: (String) -> Unit
     )
 
-    override fun createRenderLoop(input: Input): RenderLoop<TaskListState, Unit, TaskListRenderModel> {
-        val modifications = Modifications()
+    override fun initialState(input: Input): TaskListState {
+        return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
+    }
 
-        val filterTypeRelay: PublishRelay<TasksFilterType> = PublishRelay.create()
+    override fun evaluate(
+        input: Input,
+        state: TaskListState,
+        context: FormulaContext<TaskListState, Unit>
+    ): Evaluation<TaskListRenderModel> {
 
-        val changes = Observable.merge(
-            listOf(
-                repo.tasks().map(modifications::onTaskListChanged),
-                filterTypeRelay.map(modifications::onFilterTypeChanged)
-            )
+        val items = createTaskList(
+            state,
+            onTaskCompletedEvent = repo::onTaskCompleted,
+            showToast = input.showToast
         )
 
-        return RenderLoop(
-            initialState = TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS),
-            reducers = changes,
-            renderModelGenerator = RenderModelGenerator.create {
-                val items = createTaskList(
-                    it,
-                    onTaskCompletedEvent = repo::onTaskCompleted,
-                    showToast = input.showToast
-                )
-
-                TaskListRenderModel(
-                    items = items,
-                    filterOptions = TasksFilterType.values().map { type ->
-                        TaskFilterRenderModel(title = type.name, onSelected = {
-                            filterTypeRelay.accept(type)
-                        })
+        return Evaluation(
+            updates = context.updates {
+                events("task changes", repo.tasks()) {
+                    transition(state.copy(taskState = it))
+                }
+            },
+            renderModel = TaskListRenderModel(
+                items = items,
+                filterOptions = TasksFilterType.values().map { type ->
+                    TaskFilterRenderModel(title = type.name, onSelected = {
+                        context.transition(state.copy(filterType = type))
                     })
-            }
+                })
         )
     }
 
@@ -80,16 +75,6 @@ class TaskListFormula(
                     )
                 }
             )
-        }
-    }
-
-    class Modifications : Reducers<TaskListState, Unit>() {
-        fun onTaskListChanged(newList: List<Task>) = withoutEffects {
-            it.copy(taskState = newList)
-        }
-
-        fun onFilterTypeChanged(filterType: TasksFilterType) = withoutEffects {
-            it.copy(filterType = filterType)
         }
     }
 }
