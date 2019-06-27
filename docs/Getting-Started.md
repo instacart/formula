@@ -76,7 +76,10 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
 Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. Ideally, 
 it would be placed within a surface that survives configuration changes such as Android Components ViewModel.
 
-In this example, I'll show how to connect Formula using Formula Android module. Let's first define our Activity.
+In this example, I'll show how to connect Formula using Formula Android module. For using Formula with AndroidX ViewModel 
+take a look at [AndroidX Guide](Using-Android-View-Model.md).
+ 
+Let's first define our Activity.
 ```kotlin
 class MyActivity : FormulaAppCompatActivity() {
   lateinit var counterRenderView: CounterRenderView
@@ -115,46 +118,9 @@ class MyApp : Application() {
 }
 ```
 
-And that's it. To learn more, see our [Formula Android Guide](Integration.md).
+And that's it. To learn more, see our [Formula Android Guide](Integration.md). 
 
-### Using Formula with Android View Model
-Defining `ViewModel` which runs `state` stream until `onCleared` is called.
-```kotlin
-class CounterViewModel(private val formula: CounterFormula) : ViewModel {
-  private val disposables = CompositeDisposable()
-    
-  val renderModels = formula.state(Unit).replay(1).apply {
-    connect { disposables.add(it) }
-  }
 
-  override fun onCleared() {
-    super.onCleared()
-    disposables.clear()
-  }
-}
-```
-
-In our activity, we then subscribe to the Render Model changes and pass them to the Render View.
-```kotlin
-class MyActivity : AppCompatActivity() {
-  private val disposables = CompositeDisposable()
-
-  override fun onCreate(state: Bundle?) {
-    super.onCreate(state)
-    setContentView(R.string.my_screen)
-        
-    val renderView = CounterRenderView(findViewById(R.id.counter))
-    val viewModel = ViewModelProviders.of(this).get(CounterViewModel::class.java)
-        
-    disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
-  }
-    
-  override fun onDestroy() {
-    disposables.clear()
-    super.onDestroy()
-  }
-}
-```
 
 ### Listening for events
 We use RxJava for listening to events.
