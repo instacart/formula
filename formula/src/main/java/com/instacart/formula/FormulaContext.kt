@@ -27,11 +27,11 @@ interface FormulaContext<State, Output> {
      * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
      * of child Formula is managed by the runtime.
      */
-    fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: String = "",
-        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Output>
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel
 
     /**

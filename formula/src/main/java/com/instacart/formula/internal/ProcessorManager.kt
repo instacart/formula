@@ -2,6 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.SideEffect
 import com.instacart.formula.Transition
 
 /**
@@ -21,7 +22,11 @@ class ProcessorManager<Input, State, Effect>(
     private var state: State = state
     private var lastInput: Input? = null
 
+    private var pendingSideEffects = mutableListOf<SideEffect>()
+
     private fun handleTransition(transition: Transition<State, Effect>) {
+        pendingSideEffects.addAll(transition.sideEffects)
+
         transitionNumber += 1
         this.state = transition.state ?: this.state
         onTransition(transition.output)
@@ -86,8 +91,6 @@ class ProcessorManager<Input, State, Effect>(
 
         val thisTransition = transitionNumber
 
-        // Need to perform units of work.
-
         // Tear down old children
         val iterator = children.iterator()
         while(iterator.hasNext()) {
@@ -105,8 +108,21 @@ class ProcessorManager<Input, State, Effect>(
 
         }
 
+        // Step through children frames
         children.forEach {
             if (it.value.nextFrame()) {
+                return true
+            }
+        }
+
+        // Perform pending side-effects
+        val sideEffectIterator = pendingSideEffects.iterator()
+        while (sideEffectIterator.hasNext()) {
+            val sideEffect = sideEffectIterator.next()
+            sideEffectIterator.remove()
+            sideEffect.effect()
+
+            if (hasTransitioned(transitionNumber)) {
                 return true
             }
         }
@@ -120,7 +136,7 @@ class ProcessorManager<Input, State, Effect>(
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEffect: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
@@ -128,8 +144,9 @@ class ProcessorManager<Input, State, Effect>(
                 // TODO assert main thread
 
                 val output = if (it != null) {
-                    val result = onEffect(Transition.Factory, it)
+                    val result = onEvent(Transition.Factory, it)
                     this.state = result.state ?: this.state
+                    pendingSideEffects.addAll(result.sideEffects)
                     result.output
                 } else {
                     null

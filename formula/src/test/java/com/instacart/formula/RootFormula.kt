@@ -26,7 +26,7 @@ class RootFormula(
     ): Evaluation<RenderModel> {
 
         val timer = if (state.showTimer) {
-            context.child(timerFormula, Unit, onEffect = {
+            context.child(timerFormula, Unit, onEvent = {
                 when (it) {
                     is TimerEffect.Exit -> transition(state.copy(showTimer = false))
                 }
