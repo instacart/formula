@@ -29,6 +29,7 @@ class ProcessorManager<Input, State, Effect>(
 
         transitionNumber += 1
         this.state = transition.state ?: this.state
+
         onTransition(transition.output)
     }
 
@@ -93,7 +94,7 @@ class ProcessorManager<Input, State, Effect>(
 
         // Tear down old children
         val iterator = children.iterator()
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             val child = iterator.next()
             if (!newFrame.children.containsKey(child.key)) {
                 iterator.remove()
@@ -105,7 +106,6 @@ class ProcessorManager<Input, State, Effect>(
                     return true
                 }
             }
-
         }
 
         // Step through children frames
@@ -163,8 +163,22 @@ class ProcessorManager<Input, State, Effect>(
     }
 
     fun terminate() {
-        children.forEach { it.value.terminate() }
-        children.clear()
+        // First terminate the children
+        val childIterator = children.iterator()
+        while (childIterator.hasNext()) {
+            val child = childIterator.next()
+            childIterator.remove()
+            child.value.terminate()
+        }
+
+        // Clear side-effect queue
+        val sideEffectIterator = pendingSideEffects.iterator()
+        while (sideEffectIterator.hasNext()) {
+            val sideEffect = sideEffectIterator.next()
+            sideEffectIterator.remove()
+            sideEffect.effect()
+        }
+
         workerManager.terminate()
     }
 }

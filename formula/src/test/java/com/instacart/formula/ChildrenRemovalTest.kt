@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class ChildrenRemovalTest {
@@ -14,9 +15,24 @@ class ChildrenRemovalTest {
             .assertNoErrors()
     }
 
-    class ParentFormula : Formula<Unit, List<Int>, Unit, ParentFormula.RenderModel> {
+    @Test fun `child side effects are performed after removal`() {
+        var timesLoggedCalled = 0
+        ParentFormula(logExit = { timesLoggedCalled += 1 })
+            .state(Unit)
+            .test()
+            .apply {
+                values().last().children.first().onExit()
+            }
+            .apply {
+                assertThat(timesLoggedCalled).isEqualTo(1)
+            }
+    }
+
+    class ParentFormula(
+        private val logExit: () -> Unit = {}
+    ) : Formula<Unit, List<Int>, Unit, ParentFormula.RenderModel> {
         class RenderModel(
-            val children: List<Unit>,
+            val children: List<ChildFormula.RenderModel>,
             val onClearAll: () -> Unit
         )
 
@@ -30,8 +46,8 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     children = state.map { id ->
-                        context.child(ChildFormula(), Unit, "child-$id") {
-                            transition(state)
+                        context.child(ChildFormula(logExit), Unit, "child-$id") {
+                            transition(state.minus(id))
                         }
                     },
                     onClearAll = context.callback {
@@ -42,12 +58,26 @@ class ChildrenRemovalTest {
         }
     }
 
-    class ChildFormula : Formula<Unit, Unit, Unit, Unit> {
+    class ChildFormula(
+        val logExit: () -> Unit
+    ) : Formula<Unit, Unit, ChildFormula.Exit, ChildFormula.RenderModel> {
+        class RenderModel(
+            val onExit: () -> Unit
+        )
+
+        class Exit
+
         override fun initialState(input: Unit) = Unit
 
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {
+        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Exit>): Evaluation<RenderModel> {
             return Evaluation(
-                renderModel = Unit
+                renderModel = RenderModel(
+                    onExit = context.callback {
+                        transition(state, Exit(), sideEffects = listOf(
+                            SideEffect("log exit", logExit)
+                        ))
+                    }
+                )
             )
         }
     }
