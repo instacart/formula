@@ -53,13 +53,29 @@ interface FormulaContext<State, Output> {
          *
          * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
          * @param input An object passed to the [Stream] for instantiation. This can
-         * @param key - an extra parameter used to distinguish between different streams.
          * @param onEvent - a callback invoked when [Stream] produces an
          */
         fun <StreamInput : Any, StreamOutput> events(
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            events("", stream, input, onEvent)
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
+         * @param input An object passed to the [Stream] for instantiation. This can
+         * @param key - an extra parameter used to distinguish between different streams.
+         * @param onEvent - a callback invoked when [Stream] produces an
+         */
+        fun <StreamInput : Any, StreamOutput> events(
             key: String = "",
+            stream: Stream<StreamInput, StreamOutput>,
+            input: StreamInput,
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
             add(createConnection(stream, input, key, onEvent))
@@ -71,10 +87,21 @@ interface FormulaContext<State, Output> {
          */
         fun <StreamOutput> events(
             stream: Stream<Unit, StreamOutput>,
-            key: String = "",
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
-            events(stream, Unit, key, onEvent)
+            events("", stream, onEvent)
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         */
+        fun <StreamOutput> events(
+            key: String,
+            stream: Stream<Unit, StreamOutput>,
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+        ) {
+            events(key, stream, Unit, onEvent)
         }
 
         /**
@@ -94,7 +121,7 @@ interface FormulaContext<State, Output> {
                 }
             }
 
-            events(stream, key, onEvent)
+            events(key, stream, onEvent)
         }
 
         /**

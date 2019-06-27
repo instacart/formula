@@ -4,7 +4,6 @@ import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.Transition
 
 class TaskListFormula(
     private val repo: TaskRepo

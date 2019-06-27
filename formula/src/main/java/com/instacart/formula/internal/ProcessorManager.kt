@@ -50,7 +50,7 @@ class ProcessorManager<Input, State, Effect>(
             // TODO assert main thread
 
             if (!canRun) {
-                throw IllegalStateException("Transitions are not allowed while processing")
+                throw IllegalStateException("Transitions are not allowed during evaluation")
             }
 
             if (invoked) {
