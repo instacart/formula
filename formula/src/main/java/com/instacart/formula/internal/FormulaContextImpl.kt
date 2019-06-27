@@ -19,16 +19,20 @@ class FormulaContextImpl<State, Output>(
             formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
             input: ChildInput,
             key: FormulaKey,
-            onEffect: (ChildEffect) -> Transition<State, Effect>
+            onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Effect>
         ): Evaluation<ChildRenderModel>
     }
 
     override fun transition(state: State) {
-        onChange(Transition(state))
+        onChange(Transition.Factory.transition(state))
     }
 
     override fun transition(state: State, output: Output?) {
-        onChange(Transition(state, output))
+        onChange(Transition.Factory.transition(state, output))
+    }
+
+    override fun output(output: Output) {
+        onChange(Transition.Factory.output(output))
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
@@ -41,7 +45,7 @@ class FormulaContextImpl<State, Output>(
         formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: String,
-        onEffect: (ChildEffect) -> Transition<State, Output>
+        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Output>
     ): ChildRenderModel {
         val key = FormulaKey(formula::class, key)
         if (children.containsKey(key)) {

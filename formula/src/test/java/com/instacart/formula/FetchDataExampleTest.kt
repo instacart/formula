@@ -60,7 +60,7 @@ class FetchDataExampleTest {
                 updates = context.updates {
                     if (state.selectedId != null) {
                         events(fetchStream, FetchDataStream.Request(state.selectedId)) { response ->
-                            Transition(state.copy(response = response))
+                            transition(state.copy(response = response))
                         }
                     }
                 }

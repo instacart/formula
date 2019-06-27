@@ -29,10 +29,10 @@ class InputChangedTest {
             return Evaluation(
                 renderModel = RenderModel(
                     childName = context.child(childFormula, state) {
-                        Transition(state)
+                        transition(state)
                     },
-                    onChildNameChanged = {
-                        context.transition(it)
+                    onChildNameChanged = { name ->
+                        context.transition(name)
                     }
                 )
             )

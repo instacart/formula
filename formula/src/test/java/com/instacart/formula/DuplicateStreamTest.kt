@@ -9,11 +9,11 @@ class DuplicateStreamTest {
     @Test fun `duplicate streams throw exception`() {
         val formula = duplicateStream {
             events(FakeStream()) {
-                Transition(Unit)
+                transition(Unit)
             }
 
             events(FakeStream()) {
-                Transition(Unit)
+                transition(Unit)
             }
         }
 

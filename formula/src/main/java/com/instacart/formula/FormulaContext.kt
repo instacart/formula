@@ -19,6 +19,11 @@ interface FormulaContext<State, Output> {
     fun transition(state: State, output: Output?)
 
     /**
+     * Sends an [Output] event to the parent [Formula].
+     */
+    fun output(output: Output)
+
+    /**
      * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
      * of child Formula is managed by the runtime.
      */
@@ -26,7 +31,7 @@ interface FormulaContext<State, Output> {
         formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: String = "",
-        onEffect: (ChildEffect) -> Transition<State, Output>
+        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Output>
     ): ChildRenderModel
 
     /**
@@ -55,7 +60,7 @@ interface FormulaContext<State, Output> {
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
             key: String = "",
-            onEvent: (StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
             add(createConnection(stream, input, key, onEvent))
         }
@@ -67,7 +72,7 @@ interface FormulaContext<State, Output> {
         fun <StreamOutput> events(
             stream: Stream<Unit, StreamOutput>,
             key: String = "",
-            onEvent: (StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
             events(stream, Unit, key, onEvent)
         }
@@ -81,7 +86,7 @@ interface FormulaContext<State, Output> {
         fun <StreamOutput> events(
             key: String,
             observable: Observable<StreamOutput>,
-            onEvent: (StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
             val stream = object : RxStream<Unit, StreamOutput> {
                 override fun observable(input: Unit): Observable<StreamOutput> {
@@ -139,14 +144,14 @@ interface FormulaContext<State, Output> {
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
             key: String = "",
-            onEvent: (StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ): Update.Stream<StreamInput, StreamOutput> {
             return Update.Stream(
                 key = Update.Stream.Key(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {
-                    val value = onEvent(it)
+                    val value = onEvent(Transition.Factory, it)
                     transition(value)
                 }
             )

@@ -33,7 +33,7 @@ class TaskListFormula(
         return Evaluation(
             updates = context.updates {
                 events("task changes", repo.tasks()) {
-                    Transition(state.copy(taskState = it))
+                    transition(state.copy(taskState = it))
                 }
             },
             renderModel = TaskListRenderModel(

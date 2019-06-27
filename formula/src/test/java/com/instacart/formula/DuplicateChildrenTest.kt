@@ -18,7 +18,7 @@ class DuplicateChildrenTest {
             return Evaluation(
                 renderModel = listOf(1, 2, 3).map {
                     context.child(ChildFormula(), Unit) {
-                        Transition(state)
+                        transition(state)
                     }
                 }
             )

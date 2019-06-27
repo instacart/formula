@@ -9,7 +9,7 @@ class ObservableStreamTest {
     @Test fun `pass observable directly`() {
         test { state ->
             events("increment", Observable.just(1)) {
-                Transition(state + 1)
+                transition(state + 1)
             }
         }.assertNoErrors().assertValues(1)
     }
@@ -17,11 +17,11 @@ class ObservableStreamTest {
     @Test fun `same key crashes`() {
         test { state ->
             events("same", Observable.just(1)) {
-                Transition(state)
+                transition(state)
             }
 
             events("same", Observable.just(1)) {
-                Transition(state)
+                transition(state)
             }
         }.assertError {
             it is IllegalStateException

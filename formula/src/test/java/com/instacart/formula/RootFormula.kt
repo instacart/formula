@@ -28,11 +28,7 @@ class RootFormula(
         val timer = if (state.showTimer) {
             context.child(timerFormula, Unit, onEffect = {
                 when (it) {
-                    is TimerEffect.Exit -> Transition(
-                        state.copy(
-                            showTimer = false
-                        )
-                    )
+                    is TimerEffect.Exit -> transition(state.copy(showTimer = false))
                 }
             })
         } else {

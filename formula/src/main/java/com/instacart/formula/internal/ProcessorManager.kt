@@ -23,7 +23,7 @@ class ProcessorManager<Input, State, Effect>(
 
     private fun handleTransition(transition: Transition<State, Effect>) {
         transitionNumber += 1
-        this.state = transition.state
+        this.state = transition.state ?: this.state
         onTransition(transition.effect)
     }
 
@@ -115,7 +115,7 @@ class ProcessorManager<Input, State, Effect>(
         formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEffect: (ChildEffect) -> Transition<State, Effect>
+        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Effect>
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
@@ -123,8 +123,8 @@ class ProcessorManager<Input, State, Effect>(
                 // TODO assert main thread
 
                 val effect = if (it != null) {
-                    val result = onEffect(it)
-                    this.state = result.state
+                    val result = onEffect(Transition.Factory, it)
+                    this.state = result.state ?: this.state
                     result.effect
                 } else {
                     null

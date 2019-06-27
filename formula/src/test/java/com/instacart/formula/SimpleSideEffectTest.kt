@@ -35,7 +35,7 @@ class SimpleSideEffectTest {
                 renderModel = state.count,
                 updates = context.updates {
                     events("increment", increment) {
-                        Transition(state.copy(count = state.count + 1))
+                        transition(state.copy(count = state.count + 1))
                     }
 
                     if (state.count == 5) {

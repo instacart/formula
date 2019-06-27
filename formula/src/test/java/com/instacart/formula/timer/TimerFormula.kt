@@ -20,7 +20,7 @@ class TimerFormula(
             updates = context.updates {
                 if (state.runTimer) {
                     events(timer, onEvent = {
-                        Transition(state.copy(time = state.time + 1))
+                        transition(state.copy(time = state.time + 1))
                     })
                 }
             },
@@ -35,7 +35,7 @@ class TimerFormula(
                     }
                 },
                 onClose = {
-                    context.transition(state, TimerEffect.Exit)
+                    context.output(TimerEffect.Exit)
                 }
             )
         )
