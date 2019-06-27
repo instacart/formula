@@ -135,14 +135,14 @@ class MyFormula(
         context: FormulaContext<MyState, ...>
     ): Evaluation<TimerRenderModel> {
         return Evaluation(
-            // You can declaratively define what streams should run.
+            // You can declaratively define what event streams should run.
             updates = context.updates {
                 // We use a key "data" to make sure that 
                 // internal diffing mechanism can distinguish
                 // between differen streams.
                 events("data", someObservable) { update: MyData ->
                     // onEvent will always be scoped to the current `MyState` instance.
-                    Transition(state.copy(myData = update))
+                    transition(state.copy(myData = update))
                 }
             },
             renderModel = ...
@@ -152,7 +152,7 @@ class MyFormula(
 ```
 
 ### Side effects
-It is very easy to define side-effects.
+It is very easy to emit side-effects.
 ```kotlin
 class UserProfileFormula(
     val userAnalyticsService: UserAnalyticsService
@@ -161,13 +161,13 @@ class UserProfileFormula(
 
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
-            renderModel = state.name,
-            streams = context.streams {
-                // This will be invoked first time this formula runs.
-                effect("view analytics") { 
-                    userAnalyticsService.trackProfileView()
+            renderModel = UserProfileRenderModel(
+                onSaveSelected = context.callback {
+                    sideEffect("save selected analytics") {
+                        userAnalyticsService.trackSaveSelected()
+                    }
                 }
-            }
+            )
         )
     }
 }
@@ -211,9 +211,9 @@ class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
         renderModel = state.items.map { item ->
             ItemRow(
                 item = item,
-                onItemSelected = {
+                onItemSelected = context.callback {
                     // We send the `ItemSelected` event to the parent.
-                    context.transition(state, ItemOutput.ItemSelected(item.id))   
+                    output(ItemOutput.ItemSelected(item.id))   
                 }  
             )
         }   

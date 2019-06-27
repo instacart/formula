@@ -1,8 +1,8 @@
 package com.instacart.formula.counter
 
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.FormulaContext
 
 class CounterFormula : Formula<Unit, Int, Unit, CounterRenderModel> {
 
@@ -16,11 +16,11 @@ class CounterFormula : Formula<Unit, Int, Unit, CounterRenderModel> {
         return Evaluation(
             renderModel = CounterRenderModel(
                 count = "Count: $state",
-                onDecrement = {
-                    context.transition(state - 1)
+                onDecrement = context.callback {
+                    transition(state - 1)
                 },
-                onIncrement = {
-                    context.transition(state + 1)
+                onIncrement = context.callback {
+                    transition(state + 1)
                 }
             )
         )

@@ -15,24 +15,24 @@ class FormulaContextImpl<State, Output>(
     var children = mutableMapOf<FormulaKey, List<Update>>()
 
     interface Delegate<State, Effect> {
-        fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-            formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+        fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+            formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
             input: ChildInput,
             key: FormulaKey,
-            onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Effect>
+            onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
         ): Evaluation<ChildRenderModel>
     }
 
-    override fun transition(state: State) {
-        onChange(Transition.Factory.transition(state))
+    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        return {
+            onChange(wrap(Transition.Factory))
+        }
     }
 
-    override fun transition(state: State, output: Output?) {
-        onChange(Transition.Factory.transition(state, output))
-    }
-
-    override fun output(output: Output) {
-        onChange(Transition.Factory.output(output))
+    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+        return {
+            onChange(wrap(Transition.Factory, it))
+        }
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
@@ -41,18 +41,18 @@ class FormulaContextImpl<State, Output>(
         return builder.updates
     }
 
-    override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: String,
-        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Output>
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel {
         val key = FormulaKey(formula::class, key)
         if (children.containsKey(key)) {
             throw IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
         }
 
-        val result = delegate.child(formula, input, key, onEffect)
+        val result = delegate.child(formula, input, key, onEvent)
         children[key] = result.updates
         return result.renderModel
     }

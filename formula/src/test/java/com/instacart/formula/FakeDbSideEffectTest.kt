@@ -18,7 +18,7 @@ class FakeDbSideEffectTest {
             .test()
             .assertNoErrors()
 
-        Truth.assertThat(saveCalls).containsExactly("first", "second", "third")
+        Truth.assertThat(saveCalls).containsExactly("first", "second", "third", "third")
     }
 
     class TestFormula(
@@ -26,7 +26,7 @@ class FakeDbSideEffectTest {
         private val saveToDb: (name: String) -> Unit
     ) : Formula<Unit, TestFormula.State, Unit, String> {
 
-        data class State(val name: String, val saveToDb: String? = null)
+        data class State(val name: String)
 
         override fun initialState(input: Unit): State = State(name = "")
 
@@ -34,12 +34,12 @@ class FakeDbSideEffectTest {
             return Evaluation(
                 renderModel = state.name,
                 updates = context.updates {
-                    events("nameChanges", nameChanges) {
-                        transition(state.copy(name = it, saveToDb = it))
-                    }
-
-                    if (state.saveToDb != null) {
-                        effect("db updates", state.saveToDb, saveToDb)
+                    events("nameChanges", nameChanges) { newName ->
+                        transition(state.copy(name = newName), sideEffects = listOf(
+                            SideEffect("db updates") {
+                                saveToDb(newName)
+                            }
+                        ))
                     }
                 }
             )

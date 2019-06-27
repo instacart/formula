@@ -26,16 +26,18 @@ class TimerFormula(
             },
             renderModel = TimerRenderModel(
                 time = "Time: ${state.time}",
-                onResetSelected = {
-                    context.transition(state.copy(time = 0, runTimer = false))
+                onResetSelected = context.callback {
+                    transition(state.copy(time = 0, runTimer = false))
                 },
-                onStart = {
+                onStart = context.callback {
                     if (!state.runTimer) {
-                        context.transition(state.copy(runTimer = true))
+                        transition(state.copy(runTimer = true))
+                    } else {
+                        none()
                     }
                 },
-                onClose = {
-                    context.output(TimerEffect.Exit)
+                onClose = context.callback {
+                    output(TimerEffect.Exit)
                 }
             )
         )

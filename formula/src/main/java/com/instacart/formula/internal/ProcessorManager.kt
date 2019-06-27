@@ -2,6 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.SideEffect
 import com.instacart.formula.Transition
 
 /**
@@ -21,10 +22,15 @@ class ProcessorManager<Input, State, Effect>(
     private var state: State = state
     private var lastInput: Input? = null
 
+    private var pendingSideEffects = mutableListOf<SideEffect>()
+
     private fun handleTransition(transition: Transition<State, Effect>) {
+        pendingSideEffects.addAll(transition.sideEffects)
+
         transitionNumber += 1
         this.state = transition.state ?: this.state
-        onTransition(transition.effect)
+
+        onTransition(transition.output)
     }
 
     /**
@@ -86,13 +92,15 @@ class ProcessorManager<Input, State, Effect>(
 
         val thisTransition = transitionNumber
 
-        // Need to perform units of work.
-
         // Tear down old children
-        children.forEach {
-            if (!newFrame.children.containsKey(it.key)) {
-                val processor = children.remove(it.key)
-                processor?.terminate()
+        val iterator = children.iterator()
+        while (iterator.hasNext()) {
+            val child = iterator.next()
+            if (!newFrame.children.containsKey(child.key)) {
+                iterator.remove()
+
+                val processor = child.value
+                processor.terminate()
 
                 if (hasTransitioned(thisTransition)) {
                     return true
@@ -100,8 +108,21 @@ class ProcessorManager<Input, State, Effect>(
             }
         }
 
+        // Step through children frames
         children.forEach {
             if (it.value.nextFrame()) {
+                return true
+            }
+        }
+
+        // Perform pending side-effects
+        val sideEffectIterator = pendingSideEffects.iterator()
+        while (sideEffectIterator.hasNext()) {
+            val sideEffect = sideEffectIterator.next()
+            sideEffectIterator.remove()
+            sideEffect.effect()
+
+            if (hasTransitioned(transitionNumber)) {
                 return true
             }
         }
@@ -111,38 +132,53 @@ class ProcessorManager<Input, State, Effect>(
         return hasTransitioned(thisTransition)
     }
 
-    override fun <ChildInput, ChildState, ChildEffect, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildEffect, ChildRenderModel>,
+    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEffect: Transition.Factory.(ChildEffect) -> Transition<State, Effect>
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildInput, ChildState, ChildEffect>(initial, onTransition = {
+            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, onTransition = {
                 // TODO assert main thread
 
-                val effect = if (it != null) {
-                    val result = onEffect(Transition.Factory, it)
+                val output = if (it != null) {
+                    val result = onEvent(Transition.Factory, it)
                     this.state = result.state ?: this.state
-                    result.effect
+                    pendingSideEffects.addAll(result.sideEffects)
+                    result.output
                 } else {
                     null
                 }
 
                 transitionNumber += 1
-                onTransition(effect)
+                onTransition(output)
             })
             children[key] = new
             new
-        }) as ProcessorManager<ChildInput, ChildState, ChildEffect>
+        }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
 
         return processorManager.process(formula, input)
     }
 
     fun terminate() {
-        children.forEach { it.value.terminate() }
-        children.clear()
+        // First terminate the children
+        val childIterator = children.iterator()
+        while (childIterator.hasNext()) {
+            val child = childIterator.next()
+            childIterator.remove()
+            child.value.terminate()
+        }
+
+        // Clear side-effect queue
+        val sideEffectIterator = pendingSideEffects.iterator()
+        while (sideEffectIterator.hasNext()) {
+            val sideEffect = sideEffectIterator.next()
+            sideEffectIterator.remove()
+            sideEffect.effect()
+        }
+
         workerManager.terminate()
     }
 }
