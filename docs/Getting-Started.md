@@ -59,12 +59,12 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
         val count = state.count
         return Evaluation(
             renderModel = CounterRenderModel(
-                count = "Count: $count",
-                onDecrement = {
-                    context.transition(state.copy(count = count - 1))
+                title = "Count: $count",
+                onDecrement = context.callback {
+                    transition(state.copy(count = count - 1))
                 },
-                onIncrement = {
-                    context.transition(state.copy(count = count + 1))
+                onIncrement = context.callback {
+                    transition(state.copy(count = count + 1))
                 }
             )
         )
