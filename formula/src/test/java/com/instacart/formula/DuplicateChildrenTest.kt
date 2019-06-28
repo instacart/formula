@@ -17,9 +17,7 @@ class DuplicateChildrenTest {
         override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<List<Unit>> {
             return Evaluation(
                 renderModel = listOf(1, 2, 3).map {
-                    context.child(ChildFormula(), Unit) {
-                        transition(state)
-                    }
+                    context.child(ChildFormula(), Unit)
                 }
             )
         }
