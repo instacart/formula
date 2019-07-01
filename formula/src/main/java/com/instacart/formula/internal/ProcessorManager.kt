@@ -10,14 +10,14 @@ import com.instacart.formula.Transition
  */
 class ProcessorManager<Input, State, Effect>(
     state: State,
+    private val transitionLock: TransitionLock,
     private val onTransition: (Effect?) -> Unit
-) : FormulaContextImpl.Delegate<State, Effect>, TransitionLock {
+) : FormulaContextImpl.Delegate<State, Effect> {
 
-    private val workerManager = UpdateManager(this)
+    private val workerManager = UpdateManager(transitionLock)
 
     internal val children: MutableMap<FormulaKey, ProcessorManager<*, *, *>> = mutableMapOf()
     internal var frame: Frame? = null
-    internal var transitionNumber: Long = 0
 
     private var state: State = state
     private var lastInput: Input? = null
@@ -26,45 +26,34 @@ class ProcessorManager<Input, State, Effect>(
 
     private fun handleTransition(transition: Transition<State, Effect>) {
         pendingSideEffects.addAll(transition.sideEffects)
-
-        transitionNumber += 1
         this.state = transition.state ?: this.state
 
         onTransition(transition.output)
     }
 
     /**
-     * Used within [nextFrame] to indicate if the [nextFrame] has triggered a transition change.
-     * Transition change means that the state has changed so we need to short circuit and do
-     * another processing round.
-     */
-    override fun hasTransitioned(transitionNumber: Long) = this.transitionNumber != transitionNumber
-
-    /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     fun <RenderModel> process(
         formula: Formula<Input, State, Effect, RenderModel>,
-        input: Input
+        input: Input,
+        currentTransition: Long
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
 
         var canRun = false
-        var invoked = false
 
-        val context = FormulaContextImpl(this, onChange = {
+        val context = FormulaContextImpl(currentTransition, this, onChange = {
             // TODO assert main thread
 
             if (!canRun) {
                 throw IllegalStateException("Transitions are not allowed during evaluation")
             }
 
-            if (invoked) {
+            if (transitionLock.hasTransitioned(currentTransition)) {
                 // Some event already won the race
                 throw IllegalStateException("event won the race, this shouldn't happen: $it")
             } else {
-                invoked = true
-
                 handleTransition(it)
             }
         })
@@ -87,10 +76,9 @@ class ProcessorManager<Input, State, Effect>(
     /**
      * Returns true if has transition while moving to next frame.
      */
-    fun nextFrame(): Boolean {
+    fun nextFrame(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
-        val thisTransition = transitionNumber
 
         // Tear down old children
         val iterator = children.iterator()
@@ -102,7 +90,7 @@ class ProcessorManager<Input, State, Effect>(
                 val processor = child.value
                 processor.terminate()
 
-                if (hasTransitioned(thisTransition)) {
+                if (transitionLock.hasTransitioned(currentTransition)) {
                     return true
                 }
             }
@@ -110,7 +98,7 @@ class ProcessorManager<Input, State, Effect>(
 
         // Step through children frames
         children.forEach {
-            if (it.value.nextFrame()) {
+            if (it.value.nextFrame(currentTransition)) {
                 return true
             }
         }
@@ -122,25 +110,26 @@ class ProcessorManager<Input, State, Effect>(
             sideEffectIterator.remove()
             sideEffect.effect()
 
-            if (hasTransitioned(transitionNumber)) {
+            if (transitionLock.hasTransitioned(currentTransition)) {
                 return true
             }
         }
 
         // Should parents workers have priority?
-        workerManager.updateConnections(newFrame.updates, thisTransition)
-        return hasTransitioned(thisTransition)
+        workerManager.updateConnections(newFrame.updates, currentTransition)
+        return transitionLock.hasTransitioned(currentTransition)
     }
 
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
+        currentTransition: Long
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, onTransition = {
+            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, transitionLock, onTransition = {
                 // TODO assert main thread
 
                 val output = if (it != null) {
@@ -152,14 +141,13 @@ class ProcessorManager<Input, State, Effect>(
                     null
                 }
 
-                transitionNumber += 1
                 onTransition(output)
             })
             children[key] = new
             new
         }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
 
-        return processorManager.process(formula, input)
+        return processorManager.process(formula, input, currentTransition)
     }
 
     fun terminate() {

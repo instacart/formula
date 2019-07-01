@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.ProcessorManager
+import com.instacart.formula.internal.TransitionLockImpl
 import com.instacart.formula.timer.Timer
 import com.instacart.formula.timer.TimerFormula
 import io.reactivex.schedulers.TestScheduler
@@ -15,16 +16,18 @@ class ProcessorManagerChildrenTest {
 
         val scheduler = TestScheduler()
         val formula = RootFormula(TimerFormula(Timer(scheduler)))
+        val transitionLock = TransitionLockImpl()
         val manager = ProcessorManager<Unit, RootFormula.State, Unit>(
             RootFormula.State(),
+            transitionLock = transitionLock,
             onTransition = {
-                // TODO
+                transitionLock.next()
             })
 
-        val result = manager.process(formula, Unit)
+        val result = manager.process(formula, Unit, transitionLock.processingPass)
         result.renderModel.timer!!.onClose()
 
-        val next = manager.process(formula, Unit)
+        val next = manager.process(formula, Unit, transitionLock.processingPass)
         assertThat(next.renderModel.timer).isNull()
 
         assertThat(manager.frame!!.children[FormulaKey(TimerFormula::class, "")]).isNull()
