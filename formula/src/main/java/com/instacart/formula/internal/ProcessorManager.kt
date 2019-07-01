@@ -99,6 +99,9 @@ class ProcessorManager<Input, State, Effect>(
             }
         }
 
+        // Should parents workers have priority?
+        workerManager.updateConnections(newFrame.updates, currentTransition)
+
         // Perform pending side-effects
         val sideEffectIterator = pendingSideEffects.iterator()
         while (sideEffectIterator.hasNext()) {
@@ -110,9 +113,6 @@ class ProcessorManager<Input, State, Effect>(
                 return true
             }
         }
-
-        // Should parents workers have priority?
-        workerManager.updateConnections(newFrame.updates, currentTransition)
         return transitionLock.hasTransitioned(currentTransition)
     }
 
