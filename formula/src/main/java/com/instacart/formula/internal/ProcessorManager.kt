@@ -44,8 +44,6 @@ class ProcessorManager<Input, State, Effect>(
         var canRun = false
 
         val context = FormulaContextImpl(currentTransition, this, onChange = {
-            // TODO assert main thread
-
             if (!canRun) {
                 throw IllegalStateException("Transitions are not allowed during evaluation")
             }
@@ -59,10 +57,8 @@ class ProcessorManager<Input, State, Effect>(
         })
 
         val prevInput = lastInput
-        val state = if (prevInput != null && prevInput != input) {
-            formula.onInputChanged(prevInput, input, state)
-        } else {
-            state
+        if (prevInput != null && prevInput != input) {
+            state = formula.onInputChanged(prevInput, input, state)
         }
 
         val result = formula.evaluate(input, state, context)
@@ -125,29 +121,19 @@ class ProcessorManager<Input, State, Effect>(
         input: ChildInput,
         key: FormulaKey,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
-        currentTransition: Long
+        processingPass: Long
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
             val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, transitionLock, onTransition = {
-                // TODO assert main thread
-
-                val output = if (it != null) {
-                    val result = onEvent(Transition.Factory, it)
-                    this.state = result.state ?: this.state
-                    pendingSideEffects.addAll(result.sideEffects)
-                    result.output
-                } else {
-                    null
-                }
-
-                onTransition(output)
+                val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
+                handleTransition(transition)
             })
             children[key] = new
             new
         }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
 
-        return processorManager.process(formula, input, currentTransition)
+        return processorManager.process(formula, input, processingPass)
     }
 
     fun terminate() {
