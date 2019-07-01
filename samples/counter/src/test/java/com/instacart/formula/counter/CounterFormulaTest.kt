@@ -25,7 +25,7 @@ class CounterFormulaTest {
     fun <Input, RenderModel> Formula<Input, *, *, RenderModel>.test(
         input: Input
     ): ProcessorFormulaTestSubject<RenderModel> {
-        return ProcessorFormulaTestSubject(state(input))
+        return ProcessorFormulaTestSubject(state(input, {}))
     }
 
 
