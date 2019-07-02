@@ -24,10 +24,10 @@ class ProcessorManagerChildrenTest {
                 transitionLock.next()
             })
 
-        val result = manager.process(formula, Unit, transitionLock.processingPass)
+        val result = manager.evaluate(formula, Unit, transitionLock.processingPass)
         result.renderModel.timer!!.onClose()
 
-        val next = manager.process(formula, Unit, transitionLock.processingPass)
+        val next = manager.evaluate(formula, Unit, transitionLock.processingPass)
         assertThat(next.renderModel.timer).isNull()
 
         assertThat(manager.frame!!.children[FormulaKey(TimerFormula::class, "")]).isNull()

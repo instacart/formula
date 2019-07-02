@@ -13,7 +13,7 @@ class FormulaContextImpl<State, Output>(
     private val onChange: (Transition<State, Output>) -> Unit
 ) : FormulaContext<State, Output> {
 
-    var children = mutableMapOf<FormulaKey, List<Update>>()
+    val children = mutableMapOf<FormulaKey, List<Update>>()
 
     interface Delegate<State, Effect> {
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(

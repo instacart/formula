@@ -34,7 +34,7 @@ object ProcessorFormulaRxRuntime {
                 fun process() {
                     val processingPass = lock.next()
                     val localManager = manager!!
-                    val result: Evaluation<RenderModel> = localManager.process(formula, input, processingPass)
+                    val result: Evaluation<RenderModel> = localManager.evaluate(formula, input, processingPass)
                     lastRenderModel = result.renderModel
 
                     if (localManager.nextFrame(processingPass)) {
