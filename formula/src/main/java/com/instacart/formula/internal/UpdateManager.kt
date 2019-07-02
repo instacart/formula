@@ -18,14 +18,33 @@ class UpdateManager(
      * Returns true if there was a transition while updating streams.
      */
     fun updateConnections(new: List<Update>, transitionNumber: Long): Boolean {
-        if (updateExisting(new, transitionNumber)) {
+        if (terminateOld(new, transitionNumber)) {
             return true
         }
 
         return startNew(new, transitionNumber)
     }
 
-    private fun updateExisting(new: List<Update>, transitionNumber: Long): Boolean {
+    /**
+     * Ensures that all updates will point to the correct listener. Also, disables listeners for
+     * terminated streams.
+     */
+    fun updateEventListeners(new: List<Update>) {
+        updates.forEach { existing ->
+            val update = new.firstOrNull { it == existing }
+            when (existing) {
+                is Update.Stream<*, *> -> {
+                    if (update != null) {
+                        existing.handler = (update as Update.Stream<*, *>).handler as (Any?) -> Unit
+                    } else {
+                        existing.handler = NO_OP
+                    }
+                }
+            }
+        }
+    }
+
+    fun terminateOld(new: List<Update>, transitionNumber: Long): Boolean {
         val iterator = updates.iterator()
         while (iterator.hasNext()) {
             val existing = iterator.next()
@@ -40,12 +59,6 @@ class UpdateManager(
                         tearDownStream(existing)
                     }
                 }
-            } else {
-                when (existing) {
-                    is Update.Stream<*, *> -> {
-                        existing.handler = (update as Update.Stream<*, *>).handler as (Any?) -> Unit
-                    }
-                }
             }
 
             if (transitionLock.hasTransitioned(transitionNumber)) {
@@ -55,7 +68,7 @@ class UpdateManager(
         return false
     }
 
-    private fun startNew(new: List<Update>, transitionNumber: Long): Boolean {
+    fun startNew(new: List<Update>, transitionNumber: Long): Boolean {
         new.forEach { update ->
             if (!updates.contains(update)) {
                 updates.add(update)
