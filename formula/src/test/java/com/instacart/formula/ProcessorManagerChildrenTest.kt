@@ -11,18 +11,20 @@ import org.junit.Test
 
 class ProcessorManagerChildrenTest {
 
-
-    @Test fun `children should be cleaned up`() {
+    @Test
+    fun `children should be cleaned up`() {
 
         val scheduler = TestScheduler()
         val formula = RootFormula(TimerFormula(Timer(scheduler)))
         val transitionLock = TransitionLockImpl()
         val manager = ProcessorManager<Unit, RootFormula.State, Unit>(
             RootFormula.State(),
-            transitionLock = transitionLock,
-            onTransition = {
-                transitionLock.next()
-            })
+            transitionLock = transitionLock
+        )
+
+        manager.onTransition = {
+            transitionLock.next()
+        }
 
         val result = manager.evaluate(formula, Unit, transitionLock.processingPass)
         result.renderModel.timer!!.onClose()

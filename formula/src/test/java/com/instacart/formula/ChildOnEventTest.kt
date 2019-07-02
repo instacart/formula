@@ -16,7 +16,6 @@ class ChildOnEventTest {
             .apply {
                 assertThat(values().last().state).isEqualTo(3)
             }
-
     }
 
     class ParentFormula : Formula<Unit, Int, Unit, ParentFormula.RenderModel> {
@@ -26,7 +25,6 @@ class ChildOnEventTest {
             val state: Int,
             val child: ChildFormula.RenderModel
         )
-
 
         override fun initialState(input: Unit) = 0
 
