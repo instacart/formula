@@ -72,4 +72,19 @@ class ChildFormulaTest {
                 assertThat(values().last().timer).isNull()
             }
     }
+
+    @Test fun `reopened timer should have initial state`() {
+        subject.apply {
+            scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+            scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+            assertThat(values().last().timer?.time).isEqualTo("Time: 2")
+
+            values().last().timer!!.onClose()
+
+            assertThat(values().last().timer).isEqualTo(null)
+
+            values().last().openTimer()
+            assertThat(values().last().timer?.time).isEqualTo("Time: 0")
+        }
+    }
 }
