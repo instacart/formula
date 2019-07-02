@@ -2,13 +2,23 @@ package com.instacart.formula
 
 import io.reactivex.Observable
 
-fun <Input, State, Effect, RenderModel> Formula<Input, State, Effect, RenderModel>.state(
+fun <Input, State, Output, RenderModel> Formula<Input, State, Output, RenderModel>.state(
     input: Input,
-    onEffect: (Effect) -> Unit = {}
+    onEvent: (Output) -> Unit
 ): Observable<RenderModel> {
     return ProcessorFormulaRxRuntime.start(
         input = input,
         formula = this,
-        onEffect = onEffect
+        onEvent = onEvent
+    )
+}
+
+fun <Input, State, RenderModel> Formula<Input, State, Unit, RenderModel>.state(
+    input: Input
+): Observable<RenderModel> {
+    return ProcessorFormulaRxRuntime.start(
+        input = input,
+        formula = this,
+        onEvent = {}
     )
 }

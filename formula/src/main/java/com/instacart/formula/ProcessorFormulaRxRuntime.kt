@@ -9,10 +9,10 @@ import java.util.LinkedList
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
 object ProcessorFormulaRxRuntime {
-    fun <Input, State, Effect, RenderModel> start(
+    fun <Input, State, Output, RenderModel> start(
         input: Input,
-        formula: Formula<Input, State, Effect, RenderModel>,
-        onEffect: (Effect) -> Unit
+        formula: Formula<Input, State, Output, RenderModel>,
+        onEvent: (Output) -> Unit
     ): Observable<RenderModel> {
         val threadName = Thread.currentThread().name
         val id = Thread.currentThread().id
@@ -21,12 +21,11 @@ object ProcessorFormulaRxRuntime {
                 checkThread(id, threadName)
 
                 val lock = TransitionLockImpl()
-
-                var manager: ProcessorManager<Input, State, Effect>? = null
+                var manager: ProcessorManager<Input, State, Output>? = null
                 var hasInitialFinished = false
                 var lastRenderModel: RenderModel? = null
 
-                val effects = LinkedList<Effect>()
+                val effects = LinkedList<Output>()
 
                 /**
                  * Processes the next frame.
@@ -44,7 +43,7 @@ object ProcessorFormulaRxRuntime {
                     while (effects.isNotEmpty()) {
                         val first = effects.pollFirst()
                         if (first != null) {
-                            onEffect(first)
+                            onEvent(first)
 
                             if (lock.hasTransitioned(processingPass)) {
                                 return
@@ -57,7 +56,7 @@ object ProcessorFormulaRxRuntime {
                     }
                 }
 
-                val processorManager: ProcessorManager<Input, State, Effect> = ProcessorManager(
+                val processorManager: ProcessorManager<Input, State, Output> = ProcessorManager(
                     state = formula.initialState(input),
                     transitionLock = lock,
                     onTransition = {

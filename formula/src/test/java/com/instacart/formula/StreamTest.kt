@@ -16,7 +16,7 @@ class StreamTest {
 
     @Before fun setup() {
         scheduler = TestScheduler()
-        subject = TimerFormula(Timer(scheduler)).state(Unit).test()
+        subject = TimerFormula(Timer(scheduler)).state(Unit, onEvent = {}).test()
     }
 
     @Test fun `updates time`() {
