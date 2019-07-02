@@ -10,7 +10,7 @@ import java.lang.IllegalStateException
 class FormulaContextImpl<State, Output>(
     private val processingPass: Long,
     private val delegate: Delegate<State, Output>,
-    private val onChange: (Transition<State, Output>) -> Unit
+    private val transitionCallback: (Transition<State, Output>) -> Unit
 ) : FormulaContext<State, Output> {
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
@@ -27,18 +27,18 @@ class FormulaContextImpl<State, Output>(
 
     override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
         return {
-            onChange(wrap(Transition.Factory))
+            transitionCallback(wrap(Transition.Factory))
         }
     }
 
     override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
         return {
-            onChange(wrap(Transition.Factory, it))
+            transitionCallback(wrap(Transition.Factory, it))
         }
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
-        val builder = FormulaContext.UpdateBuilder(onChange)
+        val builder = FormulaContext.UpdateBuilder(transitionCallback)
         builder.init()
         return builder.updates
     }
