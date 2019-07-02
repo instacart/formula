@@ -11,11 +11,23 @@ class UpdateManager(
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
+
     private var updates: LinkedHashSet<Update> = LinkedHashSet()
 
-    fun updateConnections(new: List<Update>, transitionNumber: Long) {
+    /**
+     * Returns true if there was a transition while updating streams.
+     */
+    fun updateConnections(new: List<Update>, transitionNumber: Long): Boolean {
+        if (updateExisting(new, transitionNumber)) {
+            return true
+        }
+
+        return startNew(new, transitionNumber)
+    }
+
+    private fun updateExisting(new: List<Update>, transitionNumber: Long): Boolean {
         val iterator = updates.iterator()
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             val existing = iterator.next()
 
             val update = new.firstOrNull { it == existing }
@@ -25,7 +37,7 @@ class UpdateManager(
                 when (existing) {
                     is Update.Stream<*, *> -> {
                         existing.handler = NO_OP
-                        existing.tearDown()
+                        tearDownStream(existing)
                     }
                 }
             } else {
@@ -37,10 +49,13 @@ class UpdateManager(
             }
 
             if (transitionLock.hasTransitioned(transitionNumber)) {
-                return
+                return true
             }
         }
+        return false
+    }
 
+    private fun startNew(new: List<Update>, transitionNumber: Long): Boolean {
         new.forEach { update ->
             if (!updates.contains(update)) {
                 updates.add(update)
@@ -50,19 +65,25 @@ class UpdateManager(
                 }
 
                 if (transitionLock.hasTransitioned(transitionNumber)) {
-                    return
+                    return true
                 }
             }
         }
+
+        return false
     }
 
     fun terminate() {
         updates.forEach { update ->
-            when(update) {
-                is Update.Stream<*, *> -> update.tearDown()
+            when (update) {
+                is Update.Stream<*, *> -> tearDownStream(update)
             }
         }
         updates.clear()
     }
 
+    private fun tearDownStream(existing: Update.Stream<*, *>) {
+        existing.handler = NO_OP
+        existing.tearDown()
+    }
 }
