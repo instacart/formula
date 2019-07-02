@@ -55,14 +55,14 @@ class ProcessorManager<Input, State, Output>(
 
         var canRun = false
 
-        val context = FormulaContextImpl(currentTransition, this, onChange = {
+        val context = FormulaContextImpl(currentTransition, this, transitionCallback = {
             if (!canRun) {
                 throw IllegalStateException("Transitions are not allowed during evaluation")
             }
 
             if (transitionLock.hasTransitioned(currentTransition)) {
-                // Some event already won the race
-                throw IllegalStateException("event won the race, this shouldn't happen: $it")
+                // We have already transitioned, this should not happen.
+                throw IllegalStateException("Transition already happened. This is using old transition callback: $it.")
             } else {
                 handleTransition(it)
             }

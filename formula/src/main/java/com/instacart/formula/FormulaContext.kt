@@ -53,7 +53,7 @@ interface FormulaContext<State, Output> {
      * Provides methods to declare various events and effects.
      */
     class UpdateBuilder<State, Output>(
-        private val transition: (Transition<State, Output>) -> Unit
+        private val transitionCallback: (Transition<State, Output>) -> Unit
     ) {
         internal val updates = mutableListOf<Update>()
 
@@ -189,7 +189,7 @@ interface FormulaContext<State, Output> {
                 stream = stream,
                 onEvent = {
                     val value = onEvent(Transition.Factory, it)
-                    transition(value)
+                    transitionCallback(value)
                 }
             )
         }
