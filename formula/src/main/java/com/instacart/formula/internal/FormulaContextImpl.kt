@@ -39,6 +39,21 @@ class FormulaContextImpl<State, Output> internal constructor(
         }
     }
 
+    override fun callback(name: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        val callback = Callback(name)
+        callback.callback = callback(wrap)
+        return callback
+    }
+
+    override fun <UIEvent> eventCallback(
+        name: String,
+        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): (UIEvent) -> Unit {
+        val callback = EventCallback<UIEvent>(name)
+        callback.callback = eventCallback(wrap)
+        return callback
+    }
+
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
         ensureNotRunning()
         val builder = FormulaContext.UpdateBuilder(transitionCallback)
