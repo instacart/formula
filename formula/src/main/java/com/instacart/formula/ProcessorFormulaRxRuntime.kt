@@ -58,17 +58,18 @@ object ProcessorFormulaRxRuntime {
 
                 val processorManager: ProcessorManager<Input, State, Output> = ProcessorManager(
                     state = formula.initialState(input),
-                    transitionLock = lock,
-                    onTransition = {
-                        checkThread(id, threadName)
-
-                        if (it != null) {
-                            effects.push(it)
-                        }
-
-                        process()
-                    }
+                    transitionLock = lock
                 )
+
+                processorManager.onTransition = {
+                    checkThread(id, threadName)
+
+                    if (it != null) {
+                        effects.push(it)
+                    }
+
+                    process()
+                }
 
                 manager = processorManager
 

@@ -15,11 +15,10 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class ProcessorManager<Input, State, Effect>(
+class ProcessorManager<Input, State, Output>(
     state: State,
-    private val transitionLock: TransitionLock,
-    private val onTransition: (Effect?) -> Unit
-) : FormulaContextImpl.Delegate<State, Effect> {
+    private val transitionLock: TransitionLock
+) : FormulaContextImpl.Delegate<State, Output> {
 
     private val updateManager = UpdateManager(transitionLock)
 
@@ -33,12 +32,14 @@ class ProcessorManager<Input, State, Effect>(
 
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
-    private fun handleTransition(transition: Transition<State, Effect>) {
+    var onTransition: ((Output?) -> Unit)? = null
+
+    private fun handleTransition(transition: Transition<State, Output>) {
         pendingSideEffects.addAll(transition.sideEffects)
         this.state = transition.state ?: this.state
 
         if (!terminated) {
-            onTransition(transition.output)
+            onTransition?.invoke(transition.output)
         }
     }
 
@@ -46,7 +47,7 @@ class ProcessorManager<Input, State, Effect>(
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     fun <RenderModel> evaluate(
-        formula: Formula<Input, State, Effect, RenderModel>,
+        formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
         currentTransition: Long
     ): Evaluation<RenderModel> {
@@ -172,18 +173,20 @@ class ProcessorManager<Input, State, Effect>(
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         key: FormulaKey,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
             val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, transitionLock, onTransition = {
-                val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
-                handleTransition(transition)
-            })
+            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, transitionLock)
             children[key] = new
             new
         }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
+
+        processorManager.onTransition = {
+            val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
+            handleTransition(transition)
+        }
 
         return processorManager.evaluate(formula, input, processingPass)
     }
