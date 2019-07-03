@@ -46,7 +46,7 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     children = state.map { id ->
-                        context.child(ChildFormula(logExit), Unit, "child-$id") {
+                        context.child("child-$id", ChildFormula(logExit), Unit) {
                             transition(state.minus(id))
                         }
                     },

@@ -23,12 +23,23 @@ interface FormulaContext<State, Output> {
      * of child Formula is managed by the runtime.
      */
     fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        key: String,
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
-        key: String = "",
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel
 
+    /**
+     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
+     * of child Formula is managed by the runtime.
+     */
+    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
+        input: ChildInput,
+        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
+    ): ChildRenderModel {
+        return child("", formula, input, onEvent)
+    }
 
     /**
      * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
@@ -36,10 +47,21 @@ interface FormulaContext<State, Output> {
      */
     fun <ChildInput, ChildState, ChildRenderModel> child(
         formula: Formula<ChildInput, ChildState, Unit, ChildRenderModel>,
-        input: ChildInput,
-        key: String = ""
+        input: ChildInput
     ): ChildRenderModel  {
-        return child(formula, input, key, onEvent = {
+        return child("", formula, input)
+    }
+
+    /**
+     * Declares a child [Formula] that has no Output. The state management
+     * of child Formula is managed by the runtime.
+     */
+    fun <ChildInput, ChildState, ChildRenderModel> child(
+        key: String,
+        formula: Formula<ChildInput, ChildState, Unit, ChildRenderModel>,
+        input: ChildInput
+    ): ChildRenderModel  {
+        return child(key, formula, input, onEvent = {
             none()
         })
     }
@@ -88,7 +110,7 @@ interface FormulaContext<State, Output> {
             input: StreamInput,
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ) {
-            add(createConnection(stream, input, key, onEvent))
+            add(createConnection(key, stream, input, onEvent))
         }
 
         /**
@@ -178,9 +200,9 @@ interface FormulaContext<State, Output> {
         }
 
         private fun <StreamInput : Any, StreamOutput> createConnection(
+            key: String = "",
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
-            key: String = "",
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
         ): Update.Stream<StreamInput, StreamOutput> {
             return Update.Stream(
