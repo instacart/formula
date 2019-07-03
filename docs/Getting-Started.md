@@ -319,7 +319,7 @@ mechanism ensures that:
 2. Children state is persisted across every processing pass.
 
 
-### FAQ
+## FAQ
 
 ### Threading
 The state management should be initialized on the main thread and all the transitions should also happen on the main thread. You 
