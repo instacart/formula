@@ -1,8 +1,11 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.ProcessorManager
+import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionLockImpl
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposables
 import java.util.LinkedList
 
 /**
@@ -10,59 +13,61 @@ import java.util.LinkedList
  */
 object ProcessorFormulaRxRuntime {
     fun <Input, State, Output, RenderModel> start(
-        input: Input,
+        input: Observable<Input>,
         formula: Formula<Input, State, Output, RenderModel>,
         onEvent: (Output) -> Unit
     ): Observable<RenderModel> {
-        val threadName = Thread.currentThread().name
-        val id = Thread.currentThread().id
+        val threadChecker = ThreadChecker()
         return Observable
             .create<RenderModel> { emitter ->
-                checkThread(id, threadName)
+                threadChecker.check("Need to subscribe on main thread.")
 
-                val lock = TransitionLockImpl()
-                var manager: ProcessorManager<Input, State, Output>? = null
-                var hasInitialFinished = false
-                var lastRenderModel: RenderModel? = null
+                val runtime = Runtime(threadChecker, formula, onEvent, emitter::onNext)
 
-                val effects = LinkedList<Output>()
+                val disposables = CompositeDisposable()
+                disposables.add(input.subscribe({ input ->
+                    threadChecker.check("Input arrived on a wrong thread.")
+                    runtime.onInput(input)
+                }, emitter::onError))
 
-                /**
-                 * Processes the next frame.
-                 */
-                fun process() {
-                    val processingPass = lock.next()
-                    val localManager = manager!!
-                    val result: Evaluation<RenderModel> = localManager.evaluate(formula, input, processingPass)
-                    lastRenderModel = result.renderModel
+                disposables.add(Disposables.fromRunnable {
+                    threadChecker.check("Need to unsubscribe on the main thread.")
+                    runtime.manager?.terminate()
+                })
 
-                    if (localManager.nextFrame(processingPass)) {
-                        return
-                    }
+                emitter.setDisposable(disposables)
+            }
+            .distinctUntilChanged()
+    }
 
-                    while (effects.isNotEmpty()) {
-                        val first = effects.pollFirst()
-                        if (first != null) {
-                            onEvent(first)
+    class Runtime<Input, State, Output, RenderModel>(
+        private val threadChecker: ThreadChecker,
+        private val formula: Formula<Input, State, Output, RenderModel>,
+        private val onEvent: (Output) -> Unit,
+        private val onRenderModel: (RenderModel) -> Unit
+    ) {
 
-                            if (lock.hasTransitioned(processingPass)) {
-                                return
-                            }
-                        }
-                    }
+        var manager: ProcessorManager<Input, State, Output>? = null
+        val lock = TransitionLockImpl()
+        var hasInitialFinished = false
+        var lastRenderModel: RenderModel? = null
 
-                    if (hasInitialFinished) {
-                        emitter.onNext(result.renderModel)
-                    }
-                }
+        val effects = LinkedList<Output>()
 
+        private var input: Input? = null
+
+        fun onInput(input: Input) {
+            val initialization = this.input == null
+            this.input = input
+
+            if (initialization) {
                 val processorManager: ProcessorManager<Input, State, Output> = ProcessorManager(
                     state = formula.initialState(input),
                     transitionLock = lock
                 )
 
                 processorManager.onTransition = {
-                    checkThread(id, threadName)
+                    threadChecker.check("Only thread that created it can trigger transitions.")
 
                     if (it != null) {
                         effects.push(it)
@@ -70,27 +75,48 @@ object ProcessorFormulaRxRuntime {
 
                     process()
                 }
-
                 manager = processorManager
-
-                emitter.setCancellable {
-                    processorManager.terminate()
-                }
 
                 process()
                 hasInitialFinished = true
 
                 lastRenderModel?.let {
-                    emitter.onNext(it)
+                    onRenderModel(it)
+                }
+            } else {
+                process()
+            }
+        }
+
+        /**
+         * Processes the next frame.
+         */
+        private fun process() {
+            val localManager = manager ?: throw IllegalStateException("manager not initialized")
+            val currentInput = input ?: throw IllegalStateException("input not initialized")
+
+            val processingPass = lock.next()
+            val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
+            lastRenderModel = result.renderModel
+
+            if (localManager.nextFrame(processingPass)) {
+                return
+            }
+
+            while (effects.isNotEmpty()) {
+                val first = effects.pollFirst()
+                if (first != null) {
+                    onEvent(first)
+
+                    if (lock.hasTransitioned(processingPass)) {
+                        return
+                    }
                 }
             }
-            .distinctUntilChanged()
-    }
 
-    private fun checkThread(id: Long, name: String) {
-        val thread = Thread.currentThread()
-        if (thread.id != id) {
-            throw IllegalStateException("Only thread that created it can trigger transitions. Expected: $name, Was: ${thread.name}")
+            if (hasInitialFinished) {
+                onRenderModel(result.renderModel)
+            }
         }
     }
 }
