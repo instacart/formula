@@ -44,9 +44,9 @@ class FormulaContextImpl<State, Output>(
     }
 
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        key: String,
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
-        key: String,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel {
         val key = FormulaKey(formula::class, key)
