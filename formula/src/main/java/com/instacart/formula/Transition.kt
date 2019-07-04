@@ -50,6 +50,11 @@ data class Transition<out State, out Output> internal constructor(
             return Transition(this, null, effects)
         }
 
+        fun <State, Output> State.withSideEffects(vararg sideEffect: SideEffect): Transition<State, Output> {
+            val effects = sideEffect.asList()
+            return Transition(this, null, effects)
+        }
+
         /**
          * Emits only a single [SideEffect] as part of this transition.
          */
