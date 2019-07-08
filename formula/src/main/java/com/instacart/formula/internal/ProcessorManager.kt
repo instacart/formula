@@ -75,7 +75,9 @@ class ProcessorManager<Input, State, Output>(
 
         val result = formula.evaluate(input, state, context)
         val frame = Frame(result.updates, context.children)
+        updateManager.updateEventListeners(frame.updates)
         this.frame = frame
+
 
         // Set pending removal of children.
         val childIterator = children.iterator()
@@ -94,17 +96,34 @@ class ProcessorManager<Input, State, Output>(
         return result
     }
 
-    private fun processUpdates(currentTransition: Long): Boolean {
+    private fun terminateOldUpdates(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
-        // Update parent workers so they are ready to handle events
-        if (updateManager.updateConnections(newFrame.updates, currentTransition)) {
+        if (updateManager.terminateOld(newFrame.updates, currentTransition)) {
             return true
         }
 
         // Step through children frames
         children.forEach {
-            if (it.value.processUpdates(currentTransition)) {
+            if (it.value.terminateOldUpdates(currentTransition)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun startNewUpdates(currentTransition: Long): Boolean {
+        val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
+
+        // Update parent workers so they are ready to handle events
+        if (updateManager.startNew(newFrame.updates, currentTransition)) {
+            return true
+        }
+
+        // Step through children frames
+        children.forEach {
+            if (it.value.startNewUpdates(currentTransition)) {
                 return true
             }
         }
@@ -154,7 +173,11 @@ class ProcessorManager<Input, State, Output>(
      * Returns true if has transition while moving to next frame.
      */
     fun nextFrame(currentTransition: Long): Boolean {
-        if (processUpdates(currentTransition)) {
+        if (terminateOldUpdates(currentTransition)) {
+            return true
+        }
+
+        if (startNewUpdates(currentTransition)) {
             return true
         }
 
