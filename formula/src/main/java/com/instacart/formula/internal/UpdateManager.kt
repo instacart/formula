@@ -5,7 +5,7 @@ import com.instacart.formula.Update
 /**
  * Handles [Update] changes.
  */
-internal class UpdateManager {
+internal class UpdateManager(private val logger: FormulaLogger) {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
@@ -53,11 +53,14 @@ internal class UpdateManager {
             val running = getOrInitRunningStreamList()
             if (!isRunning(update)) {
                 running.add(update)
+                logger.log { "stream:start ${update.toDisplayName()}" }
                 update.start()
 
                 if (transitionId.hasTransitioned()) {
                     return true
                 }
+            } else {
+                logger.log { "stream:skip (already running ${update.toDisplayName()})" }
             }
         }
 
@@ -81,6 +84,7 @@ internal class UpdateManager {
     }
 
     private fun tearDownStream(stream: Update<*>) {
+        logger.log { "stream:terminate ${stream.toDisplayName()}" }
         stream.tearDown()
         stream.handler = NO_OP
     }
@@ -91,5 +95,14 @@ internal class UpdateManager {
             this.running = initialized
             initialized
         }
+    }
+
+    /**
+     * Generates a display name to be used within logs.
+     */
+    private fun Update<*>.toDisplayName(): String {
+        return stream.javaClass.name
+            .replace("$$", "-")
+            .replace('$', '-')
     }
 }

@@ -18,16 +18,18 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val callbacks: ScopedCallbacks,
-    private val transitionListener: TransitionListener
+    private val transitionListener: TransitionListener,
+    val logger: FormulaLogger
 ) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
 
     constructor(
         formula: Formula<Input, State, Output>,
         input: Input,
-        transitionListener: TransitionListener
-    ): this(formula, input, ScopedCallbacks(formula), transitionListener)
+        transitionListener: TransitionListener,
+        logger: FormulaLogger
+    ): this(formula, input, ScopedCallbacks(formula), transitionListener, logger)
 
-    private val updateManager = UpdateManager()
+    private val updateManager = UpdateManager(logger)
 
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
@@ -37,6 +39,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
     private var childTransitionListener: TransitionListener? = null
+
+    init {
+        logger.log { "initialState" }
+    }
 
     private fun handleTransition(transition: Transition<State>) {
         if (terminated) {
@@ -51,6 +57,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val frame = this.frame
         frame?.updateStateValidity(state)
         val isValid = frame != null && frame.isValid()
+        logger.log { "transition:needsEvaluation:${!isValid}" }
         transitionListener.onTransition(transition, isValid)
     }
 
@@ -71,15 +78,18 @@ internal class FormulaManagerImpl<Input, State, Output>(
         // TODO: assert main thread.
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
+            logger.log { "evaluate:skip (no changes, returning cached output)" }
             updateTransitionId(transitionId)
             return lastFrame.evaluation
         }
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
+            logger.log { "onInputChanged" }
             state = formula.onInputChanged(prevInput, input, state)
         }
 
+        logger.log { "evaluate:run" }
         callbacks.evaluationStarted()
         val transitionCallback = TransitionCallbackWrapper(this::handleTransition, transitionId)
         val context = FormulaContextImpl(transitionId, callbacks, this, transitionCallback)
@@ -92,6 +102,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
+
             it.markAsTerminated()
             pendingRemoval?.add(it)
         }
@@ -164,7 +175,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
             .findOrInit(compositeKey) {
                 val childTransitionListener = getOrInitChildTransitionListener()
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener)
+                FormulaManagerImpl(
+                    formula = implementation,
+                    input = input,
+                    transitionListener = childTransitionListener,
+                    logger = logger.childLogger(formula, compositeKey.key)
+                )
             }
             .requestAccess {
                 throw IllegalStateException("There already is a child with same key: $compositeKey. Override [Formula.key] function.")
@@ -182,13 +198,14 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun performTerminationSideEffects() {
         children?.forEachValue { it.performTerminationSideEffects() }
+        logger.log { "terminating" }
         updateManager.terminate()
     }
 
     private fun <ChildInput, ChildOutput> constructKey(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput
-    ): Any {
+    ): FormulaKey {
         return FormulaKey(
             type = formula.type(),
             key = formula.key(input)

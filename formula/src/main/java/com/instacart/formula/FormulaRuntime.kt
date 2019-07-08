@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.FormulaLogger
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ThreadChecker
@@ -14,6 +15,7 @@ import java.util.LinkedList
 class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
+    private val loggerDelegate: Logger?,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit
 ) {
@@ -29,7 +31,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private var input: Input? = null
     private var key: Any? = null
+
     private var isExecuting: Boolean = false
+
 
     fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == implementation.key(input)
@@ -51,7 +55,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 run(shouldEvaluate = !isValid)
             }
 
-            manager = FormulaManagerImpl(implementation, input, transitionListener)
+            val logger = FormulaLogger(formula, key, loggerDelegate)
+            manager = FormulaManagerImpl(implementation, input, transitionListener, logger)
             forceRun()
             hasInitialFinished = true
 
@@ -83,6 +88,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
             val currentInput = checkNotNull(input)
 
             if (shouldEvaluate && !manager.terminated) {
+                if (isExecuting) {
+                    manager.logger.log { "execution:stopped (finished early due to a transition)"}
+                }
                 evaluationPhase(manager, currentInput)
             }
 
@@ -118,8 +126,11 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
         isExecuting = true
+
+        val logger = manager.logger
         while (executionRequested) {
             executionRequested = false
+            logger.log { "execution:started" }
 
             val transitionId = transitionIdManager.transitionId
             if (!manager.terminated) {
@@ -137,20 +148,24 @@ class FormulaRuntime<Input : Any, Output : Any>(
             }
 
             // We execute pending side-effects even after termination
-            if (executeEffects(transitionId)) {
+            if (executeEffects(logger, transitionId)) {
                 continue
             }
+
+            logger.log { "execution:finished" }
         }
+
         isExecuting = false
     }
 
     /**
      * Executes effects from the [effectQueue].
      */
-    private fun executeEffects(transitionId: TransitionId): Boolean {
+    private fun executeEffects(logger: FormulaLogger, transitionId: TransitionId): Boolean {
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
+                logger.log { "side-effects:execute ${toDisplayName(effects)}" }
                 effects()
 
                 if (transitionId.hasTransitioned()) {
@@ -158,6 +173,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 }
             }
         }
+
         return false
+    }
+
+    private fun toDisplayName(effects: Effects): String {
+        return effects.javaClass.name
+            .replace("$$", "-")
+            .replace('$', '-')
     }
 }
