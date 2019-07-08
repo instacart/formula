@@ -13,11 +13,14 @@ data class Transition<out State, out Output> internal constructor(
     val sideEffects: List<SideEffect> = emptyList()
 ) {
     object Factory {
+        private val NONE = Transition<Any, Any>()
+
         /**
          * A transition that does nothing.
          */
         fun <State, Output> none(): Transition<State, Output> {
-            return Transition()
+            @Suppress("UNCHECKED_CAST")
+            return NONE as Transition<State, Output>
         }
 
         /**
