@@ -3,7 +3,7 @@ package com.instacart.formula.test
 import com.instacart.formula.Formula
 import io.reactivex.Observable
 
-fun <Input, State, Output, RenderModel, F: Formula<Input, State, Output, RenderModel>> F.test(
+fun <Input : Any, State, Output, RenderModel, F: Formula<Input, State, Output, RenderModel>> F.test(
     input: Input,
     builder: ChildFormulaRegistryBuilder.() -> Unit = {}
 ): TestFormulaObserver<Input, Output, RenderModel> {
