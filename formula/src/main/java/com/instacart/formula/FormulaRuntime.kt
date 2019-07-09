@@ -11,7 +11,7 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class Runtime<Input, State, Output, RenderModel>(
+class FormulaRuntime<Input, State, Output, RenderModel>(
     private val threadChecker: ThreadChecker,
     private val formula: Formula<Input, State, Output, RenderModel>,
     private val onEvent: (Output) -> Unit,
@@ -31,7 +31,7 @@ class Runtime<Input, State, Output, RenderModel>(
             return Observable.create<RenderModel> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = Runtime(threadChecker, formula, onEvent, emitter::onNext)
+                val runtime = FormulaRuntime(threadChecker, formula, onEvent, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
@@ -49,12 +49,12 @@ class Runtime<Input, State, Output, RenderModel>(
         }
     }
 
-    var manager: ProcessorManager<Input, State, Output>? = null
-    val lock = TransitionLockImpl()
-    var hasInitialFinished = false
-    var lastRenderModel: RenderModel? = null
+    private var manager: ProcessorManager<Input, State, Output>? = null
+    private val lock = TransitionLockImpl()
+    private var hasInitialFinished = false
+    private var lastRenderModel: RenderModel? = null
 
-    val effects = LinkedList<Output>()
+    private val effects = LinkedList<Output>()
 
     private var input: Input? = null
 
