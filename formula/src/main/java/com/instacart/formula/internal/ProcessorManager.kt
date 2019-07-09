@@ -60,12 +60,16 @@ class ProcessorManager<Input, State, Output>(
                 throw IllegalStateException("Transitions are not allowed during evaluation")
             }
 
+            if (TransitionUtils.isEmpty(it)) {
+                return@FormulaContextImpl
+            }
+
             if (transitionLock.hasTransitioned(currentTransition)) {
                 // We have already transitioned, this should not happen.
                 throw IllegalStateException("Transition already happened. This is using old transition callback: $it.")
-            } else {
-                handleTransition(it)
             }
+
+            handleTransition(it)
         })
 
         val prevInput = lastInput
