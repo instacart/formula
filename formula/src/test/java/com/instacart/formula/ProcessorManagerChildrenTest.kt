@@ -22,7 +22,7 @@ class ProcessorManagerChildrenTest {
             transitionLock = transitionLock
         )
 
-        manager.onTransition = {
+        manager.setTransitionListener {
             transitionLock.next()
         }
 

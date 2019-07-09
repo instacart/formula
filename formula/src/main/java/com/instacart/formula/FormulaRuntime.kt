@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.FormulaManagerFactory
+import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.ProcessorManager
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionLockImpl
@@ -14,6 +16,7 @@ import java.util.LinkedList
 class FormulaRuntime<Input, State, Output, RenderModel>(
     private val threadChecker: ThreadChecker,
     private val formula: Formula<Input, State, Output, RenderModel>,
+    private val childManagerFactory: FormulaManagerFactory,
     private val onEvent: (Output) -> Unit,
     private val onRenderModel: (RenderModel) -> Unit
 ) {
@@ -25,13 +28,14 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
         fun <Input, State, Output, RenderModel> start(
             input: Observable<Input>,
             formula: Formula<Input, State, Output, RenderModel>,
-            onEvent: (Output) -> Unit
+            onEvent: (Output) -> Unit,
+            childManagerFactory: FormulaManagerFactory = FormulaManagerFactoryImpl()
         ): Observable<RenderModel> {
             val threadChecker = ThreadChecker()
             return Observable.create<RenderModel> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = FormulaRuntime(threadChecker, formula, onEvent, emitter::onNext)
+                val runtime = FormulaRuntime(threadChecker, formula, childManagerFactory, onEvent, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
@@ -66,10 +70,11 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
             val processorManager: ProcessorManager<Input, State, Output> =
                 ProcessorManager(
                     state = formula.initialState(input),
-                    transitionLock = lock
+                    transitionLock = lock,
+                    childManagerFactory = childManagerFactory
                 )
 
-            processorManager.onTransition = {
+            processorManager.setTransitionListener {
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
                 if (it != null) {
