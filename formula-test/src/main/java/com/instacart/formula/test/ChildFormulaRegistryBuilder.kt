@@ -15,4 +15,12 @@ class ChildFormulaRegistryBuilder {
     ) {
         testManagers[formula] = TestFormulaManager<Input, State, Output, RenderModel>(renderModel)
     }
+
+    /**
+     * Registers a child [RenderModel] that will always be returned.
+     */
+    fun <Input, State, Output, RenderModel> child(
+        formula: Formula<Input, State, Output, RenderModel>,
+        renderModel: RenderModel
+    ) = child(formula::class, renderModel)
 }
