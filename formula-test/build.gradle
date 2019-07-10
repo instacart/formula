@@ -24,6 +24,7 @@ artifacts {
 }
 
 dependencies {
+    implementation libraries.kotlin
     implementation project(":formula")
 
     testImplementation libraries.truth

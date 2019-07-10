@@ -15,16 +15,16 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class ProcessorManager<Input, State, Output>(
+class ProcessorManager<Input, State, Output, RenderModel>(
     state: State,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
-) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output> {
+) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: MutableMap<FormulaKey, FormulaManager<*, *, *>> = mutableMapOf()
-    internal val pendingTermination = mutableListOf<FormulaManager<*, *, *>>()
+    internal val children: MutableMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
+    internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame? = null
     private var terminated = false
 
@@ -51,7 +51,7 @@ class ProcessorManager<Input, State, Output>(
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
-    override fun <RenderModel> evaluate(
+    override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
         currentTransition: Long
@@ -209,10 +209,10 @@ class ProcessorManager<Input, State, Output>(
         processingPass: Long
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
-            val new = childManagerFactory.createChildManager(formula, input)
+            val new = childManagerFactory.createChildManager(formula, input, transitionLock)
             children[key] = new
             new
-        }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
+        }) as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
 
         processorManager.setTransitionListener {
             val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()

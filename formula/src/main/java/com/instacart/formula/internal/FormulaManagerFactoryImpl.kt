@@ -8,7 +8,7 @@ class FormulaManagerFactoryImpl : FormulaManagerFactory {
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
         transitionLock: TransitionLock
-    ): FormulaManager<Input, State, Output> {
+    ): FormulaManager<Input, State, Output, RenderModel> {
         val initial = formula.initialState(input)
         return ProcessorManager(initial, transitionLock, this)
     }

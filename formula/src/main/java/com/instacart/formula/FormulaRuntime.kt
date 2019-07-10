@@ -53,7 +53,7 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
         }
     }
 
-    private var manager: ProcessorManager<Input, State, Output>? = null
+    private var manager: ProcessorManager<Input, State, Output, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
     private var lastRenderModel: RenderModel? = null
@@ -67,7 +67,7 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
         this.input = input
 
         if (initialization) {
-            val processorManager: ProcessorManager<Input, State, Output> =
+            val processorManager: ProcessorManager<Input, State, Output, RenderModel> =
                 ProcessorManager(
                     state = formula.initialState(input),
                     transitionLock = lock,

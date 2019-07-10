@@ -8,5 +8,5 @@ interface FormulaManagerFactory {
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
         transitionLock: TransitionLock
-    ): FormulaManager<Input, State, Output>
+    ): FormulaManager<Input, State, Output, RenderModel>
 }
