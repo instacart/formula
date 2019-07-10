@@ -26,7 +26,7 @@ class TestFormulaTest {
         subject
             .output(ChildFormula::class, ChildFormula.ChangeNameTo("my name"))
             .renderModel {
-                assertThat(it.name).isEqualTo("my name")
+                assertThat(name).isEqualTo("my name")
             }
     }
 
@@ -34,8 +34,14 @@ class TestFormulaTest {
         subject
             .output(childFormula, ChildFormula.ChangeNameTo("my name"))
             .renderModel {
-                assertThat(it.name).isEqualTo("my name")
+                assertThat(name).isEqualTo("my name")
             }
+    }
+
+    @Test fun `input passed to formula`() {
+        subject.childInput(childFormula) {
+            assertThat(this).isEqualTo("")
+        }
     }
 
     class ParentFormula(

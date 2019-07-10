@@ -52,11 +52,26 @@ class TestFormulaObserver<Input, Output, RenderModel>(
 
     fun values() = observer.values()
 
-    inline fun renderModel(assert: (RenderModel) -> Unit) = apply {
+    inline fun <Input, State, Output, RenderModel> childInput(
+        childType: KClass<out Formula<Input, State, Output, RenderModel>>,
+        assert: Input.() -> Unit
+    ) = apply {
+        findManager(childType).lastInput().assert()
+    }
+
+    inline fun <Input, State, Output, RenderModel> childInput(
+        childFormula: Formula<Input, State, Output, RenderModel>,
+        assert: Input.() -> Unit
+    ) = apply {
+        findManager(childFormula::class).lastInput().assert()
+    }
+
+    inline fun renderModel(assert: RenderModel.() -> Unit) = apply {
         assert(values().last())
     }
 
-    private fun <Input, State, Output, RenderModel> findManager(
+    @PublishedApi
+    internal fun <Input, State, Output, RenderModel> findManager(
         type: KClass<out Formula<Input, State, Output, RenderModel>>
     ): TestFormulaManager<Input, State, Output, RenderModel> {
         val manager = checkNotNull(testManagers[type]) {
