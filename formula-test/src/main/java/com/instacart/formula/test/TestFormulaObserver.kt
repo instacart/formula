@@ -8,7 +8,7 @@ import com.instacart.formula.internal.TransitionLock
 import io.reactivex.Observable
 import kotlin.reflect.KClass
 
-class TestFormulaObserver<Input, Output, RenderModel>(
+class TestFormulaObserver<Input : Any, Output, RenderModel>(
     private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *, *>>,
     private val input: Observable<Input>,
     private val formula: Formula<Input, *, Output, RenderModel>

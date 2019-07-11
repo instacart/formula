@@ -13,7 +13,7 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class FormulaRuntime<Input, State, Output, RenderModel>(
+class FormulaRuntime<Input : Any, State, Output, RenderModel>(
     private val threadChecker: ThreadChecker,
     private val formula: Formula<Input, State, Output, RenderModel>,
     private val childManagerFactory: FormulaManagerFactory,
@@ -25,7 +25,7 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
         /**
          * RuntimeExtensions.kt [state] calls this method.
          */
-        fun <Input, State, Output, RenderModel> start(
+        fun <Input : Any, State, Output, RenderModel> start(
             input: Observable<Input>,
             formula: Formula<Input, State, Output, RenderModel>,
             onEvent: (Output) -> Unit,
@@ -100,8 +100,8 @@ class FormulaRuntime<Input, State, Output, RenderModel>(
      * Processes the next frame.
      */
     private fun process() {
-        val localManager = manager ?: throw IllegalStateException("manager not initialized")
-        val currentInput = input ?: throw IllegalStateException("input not initialized")
+        val localManager = checkNotNull(manager)
+        val currentInput = checkNotNull(input)
 
         val processingPass = lock.next()
         val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
