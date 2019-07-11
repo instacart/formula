@@ -15,15 +15,16 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class ProcessorManager<Input, State, Output>(
+class ProcessorManager<Input, State, Output, RenderModel>(
     state: State,
-    private val transitionLock: TransitionLock
-) : FormulaContextImpl.Delegate<State, Output> {
+    private val transitionLock: TransitionLock,
+    private val childManagerFactory: FormulaManagerFactory
+) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: MutableMap<FormulaKey, ProcessorManager<*, *, *>> = mutableMapOf()
-    internal val pendingTermination = mutableListOf<ProcessorManager<*, *, *>>()
+    internal val children: MutableMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
+    internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame? = null
     private var terminated = false
 
@@ -32,7 +33,7 @@ class ProcessorManager<Input, State, Output>(
 
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
-    var onTransition: ((Output?) -> Unit)? = null
+    private var onTransition: ((Output?) -> Unit)? = null
 
     private fun handleTransition(transition: Transition<State, Output>) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -43,10 +44,14 @@ class ProcessorManager<Input, State, Output>(
         }
     }
 
+    override fun setTransitionListener(listener: (Output?) -> Unit) {
+        onTransition = listener
+    }
+
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
-    fun <RenderModel> evaluate(
+    override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
         currentTransition: Long
@@ -100,7 +105,7 @@ class ProcessorManager<Input, State, Output>(
         return result
     }
 
-    private fun terminateOldUpdates(currentTransition: Long): Boolean {
+    override fun terminateOldUpdates(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         if (updateManager.terminateOld(newFrame.updates, currentTransition)) {
@@ -117,7 +122,7 @@ class ProcessorManager<Input, State, Output>(
         return false
     }
 
-    private fun startNewUpdates(currentTransition: Long): Boolean {
+    override fun startNewUpdates(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         // Update parent workers so they are ready to handle events
@@ -151,7 +156,7 @@ class ProcessorManager<Input, State, Output>(
         return false
     }
 
-    private fun processSideEffects(currentTransition: Long): Boolean {
+    override fun processSideEffects(currentTransition: Long): Boolean {
         children.forEach { child ->
             if (child.value.processSideEffects(currentTransition)) {
                 return true
@@ -204,13 +209,12 @@ class ProcessorManager<Input, State, Output>(
         processingPass: Long
     ): Evaluation<ChildRenderModel> {
         val processorManager = (children[key] ?: run {
-            val initial = formula.initialState(input)
-            val new = ProcessorManager<ChildInput, ChildState, ChildOutput>(initial, transitionLock)
+            val new = childManagerFactory.createChildManager(formula, input, transitionLock)
             children[key] = new
             new
-        }) as ProcessorManager<ChildInput, ChildState, ChildOutput>
+        }) as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
 
-        processorManager.onTransition = {
+        processorManager.setTransitionListener {
             val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
             handleTransition(transition)
         }
@@ -218,7 +222,7 @@ class ProcessorManager<Input, State, Output>(
         return processorManager.evaluate(formula, input, processingPass)
     }
 
-    private fun markAsTerminated() {
+    override fun markAsTerminated() {
         terminated = true
 
         // Terminate updates so no transitions happen
@@ -229,7 +233,7 @@ class ProcessorManager<Input, State, Output>(
         }
     }
 
-    private fun clearSideEffects() {
+    override fun clearSideEffects() {
         // Terminate children
         val childIterator = children.iterator()
         while (childIterator.hasNext()) {

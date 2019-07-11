@@ -34,7 +34,7 @@ fun <Input, State, Output, RenderModel> Formula<Input, State, Output, RenderMode
     input: Observable<Input>,
     onEvent: (Output) -> Unit
 ): Observable<RenderModel> {
-    return Runtime.start(
+    return FormulaRuntime.start(
         input = input,
         formula = this,
         onEvent = onEvent

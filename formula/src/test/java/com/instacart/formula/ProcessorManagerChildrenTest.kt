@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.FormulaKey
+import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.ProcessorManager
 import com.instacart.formula.internal.TransitionLockImpl
 import com.instacart.formula.timer.Timer
@@ -17,12 +18,13 @@ class ProcessorManagerChildrenTest {
         val scheduler = TestScheduler()
         val formula = RootFormula(TimerFormula(Timer(scheduler)))
         val transitionLock = TransitionLockImpl()
-        val manager = ProcessorManager<Unit, RootFormula.State, Unit>(
+        val manager = ProcessorManager<Unit, RootFormula.State, Unit, RootFormula.RenderModel>(
             RootFormula.State(),
-            transitionLock = transitionLock
+            transitionLock = transitionLock,
+            childManagerFactory = FormulaManagerFactoryImpl()
         )
 
-        manager.onTransition = {
+        manager.setTransitionListener {
             transitionLock.next()
         }
 

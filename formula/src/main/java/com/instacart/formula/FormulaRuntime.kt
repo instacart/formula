@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.FormulaManagerFactory
+import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.ProcessorManager
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionLockImpl
@@ -11,9 +13,10 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class Runtime<Input, State, Output, RenderModel>(
+class FormulaRuntime<Input, State, Output, RenderModel>(
     private val threadChecker: ThreadChecker,
     private val formula: Formula<Input, State, Output, RenderModel>,
+    private val childManagerFactory: FormulaManagerFactory,
     private val onEvent: (Output) -> Unit,
     private val onRenderModel: (RenderModel) -> Unit
 ) {
@@ -25,13 +28,14 @@ class Runtime<Input, State, Output, RenderModel>(
         fun <Input, State, Output, RenderModel> start(
             input: Observable<Input>,
             formula: Formula<Input, State, Output, RenderModel>,
-            onEvent: (Output) -> Unit
+            onEvent: (Output) -> Unit,
+            childManagerFactory: FormulaManagerFactory = FormulaManagerFactoryImpl()
         ): Observable<RenderModel> {
             val threadChecker = ThreadChecker()
             return Observable.create<RenderModel> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = Runtime(threadChecker, formula, onEvent, emitter::onNext)
+                val runtime = FormulaRuntime(threadChecker, formula, childManagerFactory, onEvent, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
@@ -49,12 +53,12 @@ class Runtime<Input, State, Output, RenderModel>(
         }
     }
 
-    var manager: ProcessorManager<Input, State, Output>? = null
-    val lock = TransitionLockImpl()
-    var hasInitialFinished = false
-    var lastRenderModel: RenderModel? = null
+    private var manager: ProcessorManager<Input, State, Output, RenderModel>? = null
+    private val lock = TransitionLockImpl()
+    private var hasInitialFinished = false
+    private var lastRenderModel: RenderModel? = null
 
-    val effects = LinkedList<Output>()
+    private val effects = LinkedList<Output>()
 
     private var input: Input? = null
 
@@ -63,13 +67,14 @@ class Runtime<Input, State, Output, RenderModel>(
         this.input = input
 
         if (initialization) {
-            val processorManager: ProcessorManager<Input, State, Output> =
+            val processorManager: ProcessorManager<Input, State, Output, RenderModel> =
                 ProcessorManager(
                     state = formula.initialState(input),
-                    transitionLock = lock
+                    transitionLock = lock,
+                    childManagerFactory = childManagerFactory
                 )
 
-            processorManager.onTransition = {
+            processorManager.setTransitionListener {
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
                 if (it != null) {
