@@ -41,6 +41,13 @@ data class Transition<out State, out Output> internal constructor(
             return Transition(state, output, sideEffects)
         }
 
+        /**
+         * Creates a transition to [State].
+         */
+        fun <State, Output> State.transition(): Transition<State, Output> {
+            return Transition(this)
+        }
+
         fun <State, Output> State.withOutput(output: Output?): Transition<State, Output> {
             return Transition(this, output)
         }
