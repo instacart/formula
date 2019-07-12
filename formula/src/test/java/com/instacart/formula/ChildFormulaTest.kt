@@ -1,33 +1,24 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.timer.Timer
-import com.instacart.formula.timer.TimerFormula
-import io.reactivex.observers.TestObserver
-import io.reactivex.schedulers.TestScheduler
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 
 class ChildFormulaTest {
-    lateinit var scheduler: TestScheduler
-    lateinit var subject: TestObserver<RootFormula.RenderModel>
+    lateinit var child: ChildTimer
 
     @Before fun setup() {
-        scheduler = TestScheduler()
-        val timerProcessorFormula = TimerFormula(Timer(scheduler))
-        subject = RootFormula(timerProcessorFormula).state(Unit).test()
+        child = ChildTimer()
     }
 
     @Test fun `child updates`() {
-        subject
+        child.subject
             .apply {
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+                child.step(seconds = 3)
             }
             .apply {
-                val timeValues = values().map { it.timer!!.time }
+                val timeValues = values().map { it.child!!.time }
                 assertThat(timeValues).containsExactly(
                     "Time: 0",
                     "Time: 1",
@@ -38,20 +29,17 @@ class ChildFormulaTest {
     }
 
     @Test fun `child worker is removed`() {
-        subject
+       child
+           .subject
             .apply {
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+                child.step(seconds = 2)
 
-                values().last().timer!!.onResetSelected()
+                values().last().child!!.onResetSelected()
 
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+                child.step(seconds = 4)
             }
             .apply {
-                val timeValues = values().map { it.timer!!.time }
+                val timeValues = values().map { it.child!!.time }
                 assertThat(timeValues).containsExactly(
                     "Time: 0",
                     "Time: 1",
@@ -62,29 +50,12 @@ class ChildFormulaTest {
     }
 
     @Test fun `child is removed through effects`() {
-        subject
+        child
+            .subject
             .apply {
-                scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-
-                values().last().timer!!.onClose()
+                child.step(seconds = 1)
             }
-            .apply {
-                assertThat(values().last().timer).isNull()
-            }
-    }
-
-    @Test fun `reopened timer should have initial state`() {
-        subject.apply {
-            scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-            scheduler.advanceTimeBy(1, TimeUnit.SECONDS)
-            assertThat(values().last().timer?.time).isEqualTo("Time: 2")
-
-            values().last().timer!!.onClose()
-
-            assertThat(values().last().timer).isEqualTo(null)
-
-            values().last().openTimer()
-            assertThat(values().last().timer?.time).isEqualTo("Time: 0")
-        }
+            .renderModel { child!!.onClose() }
+            .renderModel { assertThat(child).isNull() }
     }
 }

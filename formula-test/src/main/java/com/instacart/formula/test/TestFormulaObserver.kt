@@ -13,7 +13,7 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
     private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *, *>>,
     private val input: Observable<Input>,
     val formula: Formula<Input, *, Output, RenderModel>,
-    private val defaultToRealFormula: Boolean
+    private val defaultToRealFormula: Boolean = true
 ) {
 
     class ManagerFactory(private val observer: TestFormulaObserver<*, *, *>) : FormulaManagerFactory {
@@ -78,6 +78,16 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
 
     fun assertRenderModelCount(count: Int) = apply {
         assert(values().size == count)
+    }
+
+    fun outputs(): List<Output> = outputs
+
+    fun assertOutputCount(count: Int) = apply {
+        assert(outputs.size == count)
+    }
+
+    inline fun outputs(assert: List<Output>.() -> Unit) = apply {
+        assert(outputs())
     }
 
     @PublishedApi

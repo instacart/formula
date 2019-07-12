@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
 
@@ -7,10 +9,10 @@ class ManyEmissionStreamTest {
 
     @Test fun `all increment events go through`() {
         TestFormula()
-            .state(Unit)
             .test()
-            .assertNoErrors()
-            .assertValues(100000)
+            .apply {
+                assertThat(values()).containsExactly(100000)
+            }
     }
 
     class TestFormula : Formula<Unit, Int, Unit, Int> {

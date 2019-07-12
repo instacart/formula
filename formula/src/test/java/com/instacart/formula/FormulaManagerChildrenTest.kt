@@ -6,7 +6,9 @@ import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.TransitionLockImpl
 import com.instacart.formula.timer.Timer
+import com.instacart.formula.timer.TimerEffect
 import com.instacart.formula.timer.TimerFormula
+import com.instacart.formula.timer.TimerRenderModel
 import io.reactivex.schedulers.TestScheduler
 import org.junit.Test
 
@@ -16,10 +18,10 @@ class FormulaManagerChildrenTest {
     fun `children should be cleaned up`() {
 
         val scheduler = TestScheduler()
-        val formula = RootFormula(TimerFormula(Timer(scheduler)))
+        val formula = OptionalChildFormula(TimerFormula(Timer(scheduler)))
         val transitionLock = TransitionLockImpl()
-        val manager = FormulaManagerImpl<Unit, RootFormula.State, Unit, RootFormula.RenderModel>(
-            RootFormula.State(),
+        val manager = FormulaManagerImpl<Unit, OptionalChildFormula.State, TimerEffect, OptionalChildFormula.RenderModel<TimerRenderModel>>(
+            OptionalChildFormula.State(),
             transitionLock = transitionLock,
             childManagerFactory = FormulaManagerFactoryImpl()
         )
@@ -29,11 +31,13 @@ class FormulaManagerChildrenTest {
         }
 
         val result = manager.evaluate(formula, Unit, transitionLock.processingPass)
-        result.renderModel.timer!!.onClose()
+        assertThat(manager.children[FormulaKey(TimerFormula::class, "")]).isNotNull()
+
+        result.renderModel.toggleChild()
 
         val next = manager.evaluate(formula, Unit, transitionLock.processingPass)
-        assertThat(next.renderModel.timer).isNull()
+        assertThat(next.renderModel.child).isNull()
 
-        assertThat(manager.frame!!.children[FormulaKey(TimerFormula::class, "")]).isNull()
+        assertThat(manager.children[FormulaKey(TimerFormula::class, "")]).isNull()
     }
 }

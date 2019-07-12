@@ -7,13 +7,24 @@ import org.junit.Test
 class FormulaRuntimeTest {
 
     @Test
+    fun `each child event handler should be scoped to latest state`() {
+        MultipleChildEvents
+            .formula()
+            .test()
+            .renderModel { child.incrementAndOutput() }
+            .renderModel { child.incrementAndOutput() }
+            .renderModel { child.incrementAndOutput() }
+            .renderModel { assertThat(state).isEqualTo(3) }
+    }
+
+    @Test
     fun `transition after no re-evaluation pass`() {
         val sideEffectService = SideEffectService()
         TransitionAfterNoEvaluationPass
             .formula(sideEffectService)
             .test()
-            .renderModel { sideEffectTransition() }
-            .renderModel { sideEffectTransition() }
+            .renderModel { triggerSideEffect() }
+            .renderModel { triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
                 assertThat(sideEffectService.invoked).isEqualTo(2)
@@ -25,9 +36,9 @@ class FormulaRuntimeTest {
         val sideEffectService = SideEffectService()
         ChildTransitionAfterNoEvaluationPass
             .formula(sideEffectService)
-            .test(defaultToRealFormula = true)
-            .renderModel { child.sideEffectTransition() }
-            .renderModel { child.sideEffectTransition() }
+            .test()
+            .renderModel { child.triggerSideEffect() }
+            .renderModel { child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
                 assertThat(sideEffectService.invoked).isEqualTo(2)
@@ -39,12 +50,75 @@ class FormulaRuntimeTest {
         val sideEffectService = SideEffectService()
         NestedChildTransitionAfterNoEvaluationPass
             .formula(sideEffectService)
-            .test(defaultToRealFormula = true)
-            .renderModel { child.child.sideEffectTransition() }
-            .renderModel { child.child.sideEffectTransition() }
+            .test()
+            .renderModel { child.child.triggerSideEffect() }
+            .renderModel { child.child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
                 assertThat(sideEffectService.invoked).isEqualTo(2)
             }
+    }
+
+    @Test
+    fun `runtime emits output events`() {
+        OutputFormula()
+            .test()
+            .renderModel { triggerOutput() }
+            .assertOutputCount(1)
+            .assertRenderModelCount(1) // no state change, so no re-evaluation
+    }
+
+    @Test
+    fun `output after no re-evaluation pass`() {
+        OutputFormula()
+            .test()
+            .renderModel { triggerOutput() }
+            .renderModel { triggerOutput() }
+            .assertOutputCount(2)
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `child output with no parent state change`() {
+        ChildOutputNoParentStateChange
+            .formula()
+            .test()
+            .renderModel { child.triggerOutput() }
+            .assertOutputCount(1)
+            .assertRenderModelCount(1) // no state change, so no re-evaluation
+    }
+
+    @Test
+    fun `child output with parent state change`() {
+        ChildOutputWithParentStateChange
+            .formula()
+            .test()
+            .renderModel { child.triggerOutput() }
+            .assertOutputCount(1)
+            .assertRenderModelCount(2)
+    }
+
+    @Test fun `side effect triggers parent state transition`() {
+        SideEffectTriggersParentTransition
+            .formula()
+            .test()
+            .renderModel { child.triggerSideEffect() }
+            .renderModel {
+                assertThat(count).isEqualTo(1)
+            }
+    }
+
+    @Test
+    fun `child state is reset after toggle`() {
+        ChildStateResetAfterToggle
+            .formula()
+            .test()
+            .renderModel { child!!.incrementAndOutput() }
+            .renderModel { child!!.incrementAndOutput() }
+            .renderModel { assertThat(child!!.childState).isEqualTo(2) }
+            .renderModel { toggleChild() }
+            .renderModel { assertThat(child).isNull() }
+            .renderModel { toggleChild() }
+            .renderModel { assertThat(child!!.childState).isEqualTo(0) }
     }
 }
