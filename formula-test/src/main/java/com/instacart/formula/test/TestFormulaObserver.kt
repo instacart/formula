@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 class TestFormulaObserver<Input : Any, Output, RenderModel>(
     private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *, *>>,
     private val input: Observable<Input>,
-    private val formula: Formula<Input, *, Output, RenderModel>,
+    val formula: Formula<Input, *, Output, RenderModel>,
     private val defaultToRealFormula: Boolean
 ) {
 
@@ -76,7 +76,7 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
         assert(values().last())
     }
 
-    fun assertRenderModelCount(count: Int) {
+    fun assertRenderModelCount(count: Int) = apply {
         assert(values().size == count)
     }
 
