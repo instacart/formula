@@ -24,7 +24,7 @@ class FormulaManagerChildrenTest {
             childManagerFactory = FormulaManagerFactoryImpl()
         )
 
-        manager.setTransitionListener { output, isValid ->
+        manager.setTransitionListener { _, _ ->
             transitionLock.next()
         }
 

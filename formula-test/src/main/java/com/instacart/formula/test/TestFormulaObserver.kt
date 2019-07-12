@@ -70,6 +70,10 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
         assert(values().last())
     }
 
+    fun assertRenderModelCount(count: Int) {
+        assert(values().size == count)
+    }
+
     @PublishedApi
     internal fun <Input, State, Output, RenderModel> findManager(
         type: KClass<out Formula<Input, State, Output, RenderModel>>
@@ -78,6 +82,7 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
             "missing manager registration for $type"
         }
 
+        @Suppress("UNCHECKED_CAST")
         return manager as TestFormulaManager<Input, State, Output, RenderModel>
     }
 }

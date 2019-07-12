@@ -212,6 +212,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
     ): Evaluation<ChildRenderModel> {
+        @Suppress("UNCHECKED_CAST")
         val processorManager = (children[key] ?: run {
             val new = childManagerFactory.createChildManager(formula, input, transitionLock)
             children[key] = new

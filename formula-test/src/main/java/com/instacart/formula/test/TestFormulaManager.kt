@@ -19,6 +19,10 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
         transitionListener = listener
     }
 
+    override fun updateTransitionNumber(number: Long) {
+        // no-op
+    }
+
     override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
