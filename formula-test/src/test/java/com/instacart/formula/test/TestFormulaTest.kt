@@ -11,7 +11,7 @@ import org.junit.Test
 class TestFormulaTest {
     lateinit var childFormula: ChildFormula
     lateinit var parentFormula: ParentFormula
-    lateinit var subject: TestFormulaObserver<Unit, Unit, ParentFormula.RenderModel>
+    lateinit var subject: TestFormulaObserver<Unit, Unit, ParentFormula.RenderModel, ParentFormula>
 
     @Before fun setup() {
         childFormula = ChildFormula()

@@ -7,6 +7,33 @@ import org.junit.Test
 class FormulaRuntimeTest {
 
     @Test
+    fun `multiple event updates`() {
+        StreamFormula()
+            .test()
+            .renderModel { startListening() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 0, 1, 2, 3)
+            }
+    }
+
+    @Test
+    fun `no state changes after event stream is removed`() {
+        StreamFormula()
+            .test()
+            .renderModel { startListening() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .renderModel { stopListening() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 0, 1, 1)
+            }
+    }
+
+    @Test
     fun `each child event handler should be scoped to latest state`() {
         MultipleChildEvents
             .formula()

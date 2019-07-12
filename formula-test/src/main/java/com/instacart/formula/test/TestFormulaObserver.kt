@@ -9,14 +9,14 @@ import com.instacart.formula.internal.TransitionLock
 import io.reactivex.Observable
 import kotlin.reflect.KClass
 
-class TestFormulaObserver<Input : Any, Output, RenderModel>(
+class TestFormulaObserver<Input : Any, Output, RenderModel, F : Formula<Input, *, Output, RenderModel>>(
     private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *, *>>,
     private val input: Observable<Input>,
-    val formula: Formula<Input, *, Output, RenderModel>,
+    val formula: F,
     private val defaultToRealFormula: Boolean = true
 ) {
 
-    class ManagerFactory(private val observer: TestFormulaObserver<*, *, *>) : FormulaManagerFactory {
+    class ManagerFactory(private val observer: TestFormulaObserver<*, *, *, *>) : FormulaManagerFactory {
         override fun <Input, State, Output, RenderModel> createChildManager(
             formula: Formula<Input, State, Output, RenderModel>,
             input: Input,
@@ -56,7 +56,9 @@ class TestFormulaObserver<Input : Any, Output, RenderModel>(
         output: Output
     ) = output(formula::class, output)
 
-    fun values() = observer.values()
+    fun values(): List<RenderModel> {
+        return observer.values()
+    }
 
     inline fun <Input, State, Output, RenderModel> childInput(
         childType: KClass<out Formula<Input, State, Output, RenderModel>>,

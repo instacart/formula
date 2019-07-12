@@ -29,13 +29,6 @@ class TimerFormula(
                 onResetSelected = context.callback {
                     transition(state.copy(time = 0, runTimer = false))
                 },
-                onStart = context.callback {
-                    if (!state.runTimer) {
-                        transition(state.copy(runTimer = true))
-                    } else {
-                        none()
-                    }
-                },
                 onClose = context.callback {
                     output(TimerEffect.Exit)
                 }

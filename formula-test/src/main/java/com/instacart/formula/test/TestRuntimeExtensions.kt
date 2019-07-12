@@ -10,7 +10,7 @@ import io.reactivex.Observable
 fun <Input : Any, State, Output, RenderModel, F: Formula<Input, State, Output, RenderModel>> F.test(
     input: Input,
     builder: ChildFormulaRegistryBuilder.() -> Unit = {}
-): TestFormulaObserver<Input, Output, RenderModel> {
+): TestFormulaObserver<Input, Output, RenderModel, F> {
     val managers = ChildFormulaRegistryBuilder().apply(builder).testManagers
     return TestFormulaObserver(
         testManagers = managers,
