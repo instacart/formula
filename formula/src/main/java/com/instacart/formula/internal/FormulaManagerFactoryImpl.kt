@@ -10,6 +10,6 @@ class FormulaManagerFactoryImpl : FormulaManagerFactory {
         transitionLock: TransitionLock
     ): FormulaManager<Input, State, Output, RenderModel> {
         val initial = formula.initialState(input)
-        return ProcessorManager(initial, transitionLock, this)
+        return FormulaManagerImpl(initial, transitionLock, this)
     }
 }

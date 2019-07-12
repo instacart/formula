@@ -12,10 +12,10 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
     private val renderModel: RenderModel
 ) : FormulaManager<Input, State, Output, RenderModel> {
 
-    private var transitionListener: ((Output?) -> Unit) = {}
+    private var transitionListener: ((Output?, Boolean) -> Unit) = { _, _ -> Unit }
     private val inputs = mutableListOf<Input>()
 
-    override fun setTransitionListener(listener: (Output?) -> Unit) {
+    override fun setTransitionListener(listener: (Output?, Boolean) -> Unit) {
         transitionListener = listener
     }
 
@@ -45,7 +45,7 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
     override fun clearSideEffects() = Unit
 
     fun output(output: Output) {
-        transitionListener.invoke(output)
+        transitionListener.invoke(output, false)
     }
 
     fun lastInput(): Input {
