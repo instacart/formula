@@ -220,7 +220,6 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }) as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
 
         processorManager.setTransitionListener { output, isValid ->
-            // TODO: check if child state is valid
             val transition = output?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
             handleTransition(transition, !isValid)
         }

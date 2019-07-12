@@ -18,6 +18,40 @@ class FormulaRuntimeTest {
     }
 
     @Test
+    fun `multiple child worker updates`() {
+        ChildTimer()
+            .stepBy(seconds = 3)
+            .assertTimeValues(
+                "Time: 0",
+                "Time: 1",
+                "Time: 2",
+                "Time: 3"
+            )
+    }
+
+    @Test
+    fun `child worker is removed`() {
+        ChildTimer()
+            .stepBy(seconds = 2)
+            .resetTimer()
+            .stepBy(seconds = 4)
+            .assertTimeValues(
+                "Time: 0",
+                "Time: 1",
+                "Time: 2",
+                "Time: 0"
+            )
+    }
+
+    @Test
+    fun `child is removed through output`() {
+        ChildTimer()
+            .stepBy(seconds = 1)
+            .close()
+            .assertTimerIsVisible(true)
+    }
+
+    @Test
     fun `transition after no re-evaluation pass`() {
         val sideEffectService = SideEffectService()
         TransitionAfterNoEvaluationPass
