@@ -7,7 +7,8 @@ class IntegrationTest {
 
     @Test
     fun `transition after no re-evaluation pass`() {
-        TransitionAfterNoEvaluationPass()
+        TransitionAfterNoEvaluationPass
+            .formula()
             .test()
             .renderModel { transition() }
             .renderModel { transition() }
@@ -20,6 +21,15 @@ class IntegrationTest {
             .test(defaultToRealFormula = true)
             .renderModel { child.transition() }
             .renderModel { child.transition() }
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `nested child transition after no re-evaluation pass`() {
+        NestedChildTransitionAfterNoEvaluationPass()
+            .test(defaultToRealFormula = true)
+            .renderModel { child.child.transition() }
+            .renderModel { child.child.transition() }
             .assertRenderModelCount(1)
     }
 }
