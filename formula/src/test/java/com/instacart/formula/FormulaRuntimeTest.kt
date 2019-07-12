@@ -46,36 +46,28 @@ class FormulaRuntimeTest {
 
     @Test
     fun `multiple child worker updates`() {
-        ChildTimer()
-            .stepBy(seconds = 3)
-            .assertTimeValues(
-                "Time: 0",
-                "Time: 1",
-                "Time: 2",
-                "Time: 3"
-            )
+        ChildStreamEvents()
+            .startListening()
+            .incrementBy(3)
+            .assertCurrentValue(3)
     }
 
     @Test
     fun `child worker is removed`() {
-        ChildTimer()
-            .stepBy(seconds = 2)
-            .resetTimer()
-            .stepBy(seconds = 4)
-            .assertTimeValues(
-                "Time: 0",
-                "Time: 1",
-                "Time: 2",
-                "Time: 0"
-            )
+        ChildStreamEvents()
+            .startListening()
+            .incrementBy(2)
+            .stopListening()
+            .incrementBy(4)
+            .assertCurrentValue(2)
     }
 
     @Test
-    fun `child is removed through output`() {
-        ChildTimer()
-            .stepBy(seconds = 1)
-            .close()
-            .assertTimerIsVisible(true)
+    fun `parent removes child when child emits an output`() {
+        ChildRemovedOnOutputEvent()
+            .assertChildIsVisible(true)
+            .closeByOutput()
+            .assertChildIsVisible(false)
     }
 
     @Test
