@@ -13,4 +13,13 @@ class IntegrationTest {
             .renderModel { transition() }
             .assertRenderModelCount(1)
     }
+
+    @Test
+    fun `child transition after no re-evaluation pass`() {
+        ChildTransitionAfterNoEvaluationPass()
+            .test(defaultToRealFormula = true)
+            .renderModel { child.transition() }
+            .renderModel { child.transition() }
+            .assertRenderModelCount(1)
+    }
 }
