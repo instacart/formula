@@ -1,5 +1,5 @@
 package com.instacart.formula
 
 object TransitionAfterNoEvaluationPass {
-    fun formula(): SideEffectFormula = SideEffectFormula()
+    fun formula(sideEffectService: SideEffectService): SideEffectFormula = SideEffectFormula(sideEffectService)
 }

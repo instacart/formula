@@ -1,8 +1,11 @@
 package com.instacart.formula
 
-class SideEffectFormula : Formula<Unit, Int, Unit, SideEffectFormula.RenderModel> {
+class SideEffectFormula(
+    private val sideEffectService: SideEffectService
+) : Formula<Unit, Int, Unit, SideEffectFormula.RenderModel> {
+
     class RenderModel(
-        val transition: () -> Unit
+        val sideEffectTransition: () -> Unit
     )
 
     override fun initialState(input: Unit): Int = 0
@@ -10,10 +13,8 @@ class SideEffectFormula : Formula<Unit, Int, Unit, SideEffectFormula.RenderModel
     override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int, Unit>): Evaluation<RenderModel> {
         return Evaluation(
             renderModel = RenderModel(
-                transition = context.callback {
-                    sideEffect("no state change") {
-                        // noop
-                    }
+                sideEffectTransition = context.callback {
+                    sideEffect("no state change", sideEffectService)
                 }
             )
         )
