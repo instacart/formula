@@ -4,6 +4,7 @@ import android.app.Application
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.state
 
 class TodoApp : Application() {
 
