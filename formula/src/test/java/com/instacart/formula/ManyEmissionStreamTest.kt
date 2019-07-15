@@ -6,12 +6,15 @@ import io.reactivex.Observable
 import org.junit.Test
 
 class ManyEmissionStreamTest {
+    companion object {
+        const val EMISSION_COUNT = 100000
+    }
 
     @Test fun `all increment events go through`() {
         TestFormula()
             .test()
             .apply {
-                assertThat(values()).containsExactly(100000)
+                assertThat(values()).containsExactly(EMISSION_COUNT)
             }
     }
 
@@ -37,7 +40,7 @@ class ManyEmissionStreamTest {
 
     class MyStream : RxStream<Unit, Int> {
         override fun observable(input: Unit): Observable<Int> {
-            val values = 1..100000
+            val values = 1..EMISSION_COUNT
             return Observable.fromIterable(values)
         }
     }
