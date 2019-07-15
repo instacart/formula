@@ -28,6 +28,7 @@ dependencies {
 
     api libraries.rxjava
 
+    testImplementation project(":formula-test")
     testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.rxrelays

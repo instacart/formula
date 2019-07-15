@@ -15,7 +15,7 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class ProcessorManager<Input, State, Output, RenderModel>(
+class FormulaManagerImpl<Input, State, Output, RenderModel>(
     state: State,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
@@ -25,27 +25,42 @@ class ProcessorManager<Input, State, Output, RenderModel>(
 
     internal val children: MutableMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
     internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
-    internal var frame: Frame? = null
+    internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
 
     private var state: State = state
-    private var lastInput: Input? = null
 
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
-    private var onTransition: ((Output?) -> Unit)? = null
+    private var onTransition: ((Output?, Boolean) -> Unit)? = null
 
-    private fun handleTransition(transition: Transition<State, Output>) {
+    private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
         this.state = transition.state ?: this.state
 
+        val frame = this.frame
+        frame?.updateStateValidity(state)
+        if (wasChildInvalidated) {
+            frame?.childInvalidated()
+        }
+
         if (!terminated) {
-            onTransition?.invoke(transition.output)
+            val isValid = frame != null && frame.isValid()
+            onTransition?.invoke(transition.output, isValid)
         }
     }
 
-    override fun setTransitionListener(listener: (Output?) -> Unit) {
+    override fun setTransitionListener(listener: (Output?, Boolean) -> Unit) {
         onTransition = listener
+    }
+
+    override fun updateTransitionNumber(number: Long) {
+        val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
+        lastFrame.transitionCallbackWrapper.transitionNumber = number
+
+        children.forEach {
+            it.value.updateTransitionNumber(number)
+        }
     }
 
     /**
@@ -58,33 +73,23 @@ class ProcessorManager<Input, State, Output, RenderModel>(
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
 
-        var canRun = false
+        val lastFrame = frame
+        if (lastFrame != null && lastFrame.isValid(input)) {
+            updateTransitionNumber(currentTransition)
+            return lastFrame.evaluation
+        }
 
-        val context = FormulaContextImpl(currentTransition, this, transitionCallback = {
-            if (!canRun) {
-                throw IllegalStateException("Transitions are not allowed during evaluation")
-            }
+        val callback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
+        val context = FormulaContextImpl(currentTransition, this, callback)
 
-            if (TransitionUtils.isEmpty(it)) {
-                return@FormulaContextImpl
-            }
-
-            if (transitionLock.hasTransitioned(currentTransition)) {
-                // We have already transitioned, this should not happen.
-                throw IllegalStateException("Transition already happened. This is using old transition callback: $it.")
-            }
-
-            handleTransition(it)
-        })
-
-        val prevInput = lastInput
+        val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
             state = formula.onInputChanged(prevInput, input, state)
         }
 
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(result.updates, context.children)
-        updateManager.updateEventListeners(frame.updates)
+        val frame = Frame(input, state, result, callback, context.children)
+        updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
 
@@ -100,15 +105,14 @@ class ProcessorManager<Input, State, Output, RenderModel>(
             }
         }
 
-        this.lastInput = input
-        canRun = true
+        callback.running = true
         return result
     }
 
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
-        if (updateManager.terminateOld(newFrame.updates, currentTransition)) {
+        if (updateManager.terminateOld(newFrame.evaluation.updates, currentTransition)) {
             return true
         }
 
@@ -126,7 +130,7 @@ class ProcessorManager<Input, State, Output, RenderModel>(
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         // Update parent workers so they are ready to handle events
-        if (updateManager.startNew(newFrame.updates, currentTransition)) {
+        if (updateManager.startNew(newFrame.evaluation.updates, currentTransition)) {
             return true
         }
 
@@ -208,15 +212,16 @@ class ProcessorManager<Input, State, Output, RenderModel>(
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
     ): Evaluation<ChildRenderModel> {
+        @Suppress("UNCHECKED_CAST")
         val processorManager = (children[key] ?: run {
             val new = childManagerFactory.createChildManager(formula, input, transitionLock)
             children[key] = new
             new
         }) as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
 
-        processorManager.setTransitionListener {
-            val transition = it?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
-            handleTransition(transition)
+        processorManager.setTransitionListener { output, isValid ->
+            val transition = output?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
+            handleTransition(transition, !isValid)
         }
 
         return processorManager.evaluate(formula, input, processingPass)

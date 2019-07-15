@@ -10,7 +10,7 @@ import java.lang.IllegalStateException
 class FormulaContextImpl<State, Output>(
     private val processingPass: Long,
     private val delegate: Delegate<State, Output>,
-    private val transitionCallback: (Transition<State, Output>) -> Unit
+    private val transitionCallback: TransitionCallbackWrapper<State, Output>
 ) : FormulaContext<State, Output> {
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
@@ -26,18 +26,21 @@ class FormulaContextImpl<State, Output>(
     }
 
     override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory))
         }
     }
 
     override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+        ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory, it))
         }
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
+        ensureNotRunning()
         val builder = FormulaContext.UpdateBuilder(transitionCallback)
         builder.init()
         return builder.updates
@@ -49,6 +52,7 @@ class FormulaContextImpl<State, Output>(
         input: ChildInput,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel {
+        ensureNotRunning()
         val key = FormulaKey(formula::class, key)
         if (children.containsKey(key)) {
             throw IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
@@ -57,5 +61,11 @@ class FormulaContextImpl<State, Output>(
         val result = delegate.child(formula, input, key, onEvent, processingPass)
         children[key] = result.updates
         return result.renderModel
+    }
+
+    private fun ensureNotRunning() {
+        if (transitionCallback.running) {
+            throw IllegalStateException("cannot call this after evaluation finished.")
+        }
     }
 }

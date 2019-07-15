@@ -3,37 +3,35 @@ package com.instacart.formula
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.FormulaManagerFactoryImpl
-import com.instacart.formula.internal.ProcessorManager
+import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.TransitionLockImpl
-import com.instacart.formula.timer.Timer
-import com.instacart.formula.timer.TimerFormula
-import io.reactivex.schedulers.TestScheduler
 import org.junit.Test
 
-class ProcessorManagerChildrenTest {
+class FormulaManagerChildrenTest {
 
     @Test
     fun `children should be cleaned up`() {
 
-        val scheduler = TestScheduler()
-        val formula = RootFormula(TimerFormula(Timer(scheduler)))
+        val formula = OptionalChildFormula(StreamFormula())
         val transitionLock = TransitionLockImpl()
-        val manager = ProcessorManager<Unit, RootFormula.State, Unit, RootFormula.RenderModel>(
-            RootFormula.State(),
+        val manager = FormulaManagerImpl<Unit, OptionalChildFormula.State, Unit, OptionalChildFormula.RenderModel<StreamFormula.RenderModel>>(
+            OptionalChildFormula.State(),
             transitionLock = transitionLock,
             childManagerFactory = FormulaManagerFactoryImpl()
         )
 
-        manager.setTransitionListener {
+        manager.setTransitionListener { _, _ ->
             transitionLock.next()
         }
 
         val result = manager.evaluate(formula, Unit, transitionLock.processingPass)
-        result.renderModel.timer!!.onClose()
+        assertThat(manager.children[FormulaKey(StreamFormula::class, "")]).isNotNull()
+
+        result.renderModel.toggleChild()
 
         val next = manager.evaluate(formula, Unit, transitionLock.processingPass)
-        assertThat(next.renderModel.timer).isNull()
+        assertThat(next.renderModel.child).isNull()
 
-        assertThat(manager.frame!!.children[FormulaKey(TimerFormula::class, "")]).isNull()
+        assertThat(manager.children[FormulaKey(StreamFormula::class, "")]).isNull()
     }
 }

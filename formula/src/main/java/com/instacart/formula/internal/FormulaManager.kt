@@ -5,7 +5,9 @@ import com.instacart.formula.Formula
 
 interface FormulaManager<Input, State, Output, RenderModel> {
 
-    fun setTransitionListener(listener: (Output?) -> Unit)
+    fun setTransitionListener(listener: (Output?, isValid: Boolean) -> Unit)
+
+    fun updateTransitionNumber(number: Long)
 
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.

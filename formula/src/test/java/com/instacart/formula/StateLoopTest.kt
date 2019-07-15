@@ -22,7 +22,7 @@ class StateLoopTest {
                 is Action.Decrement -> state - 1
             }
 
-            newState.toNextWithOptionalEffect(ClearState.takeIf { newState == 3 })
+            newState.withOptionalEffect(ClearState.takeIf { newState == 3 })
         }
 
         fun onClearState(action: ClearState) = withoutEffects {

@@ -1,16 +1,21 @@
 package com.instacart.formula
 
+import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
 
 class ManyEmissionStreamTest {
+    companion object {
+        const val EMISSION_COUNT = 100000
+    }
 
     @Test fun `all increment events go through`() {
         TestFormula()
-            .state(Unit)
             .test()
-            .assertNoErrors()
-            .assertValues(100000)
+            .apply {
+                assertThat(values()).containsExactly(EMISSION_COUNT)
+            }
     }
 
     class TestFormula : Formula<Unit, Int, Unit, Int> {
@@ -35,7 +40,7 @@ class ManyEmissionStreamTest {
 
     class MyStream : RxStream<Unit, Int> {
         override fun observable(input: Unit): Observable<Int> {
-            val values = 1..100000
+            val values = 1..EMISSION_COUNT
             return Observable.fromIterable(values)
         }
     }

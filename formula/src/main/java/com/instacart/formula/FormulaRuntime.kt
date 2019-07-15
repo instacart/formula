@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.FormulaManagerFactory
 import com.instacart.formula.internal.FormulaManagerFactoryImpl
-import com.instacart.formula.internal.ProcessorManager
+import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionLockImpl
 import io.reactivex.Observable
@@ -53,7 +53,7 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
         }
     }
 
-    private var manager: ProcessorManager<Input, State, Output, RenderModel>? = null
+    private var manager: FormulaManagerImpl<Input, State, Output, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
     private var lastRenderModel: RenderModel? = null
@@ -67,18 +67,18 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
         this.input = input
 
         if (initialization) {
-            val processorManager: ProcessorManager<Input, State, Output, RenderModel> =
-                ProcessorManager(
+            val processorManager: FormulaManagerImpl<Input, State, Output, RenderModel> =
+                FormulaManagerImpl(
                     state = formula.initialState(input),
                     transitionLock = lock,
                     childManagerFactory = childManagerFactory
                 )
 
-            processorManager.setTransitionListener {
+            processorManager.setTransitionListener { output, isValid ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
-                if (it != null) {
-                    effects.push(it)
+                if (output != null) {
+                    effects.push(output)
                 }
 
                 process()
