@@ -351,6 +351,35 @@ subject.childInput(MyChildFormula::class) {
 }
 ```
 
+
+### Callbacks
+To define a simple callback is very easy. You just use `context.callback` or `context.eventCallback` within
+`Formula.evaluate` method.
+
+```kotlin
+CounterRenderModel(
+    onIncrement = context.callback("increment") {
+        transition(state + 1)
+    }
+)
+```
+
+The key `"increment"` must be unique within this `Formula`. For example, if you have a list of items and you want to
+have a click listener for each, you need to make sure each callback key is unique by using item id or something similar.
+```kotlin
+ItemListRenderModel(
+    items = state.items.map { item ->
+        ItemRenderModel(
+            name = item.name,
+            onSelected = context.callback("item ${item.id} selection") {
+                // perform a transition
+            }
+    }
+)
+```
+
+As part of `Formula` evaluation, we declare all our callbacks. Any callbacks you don't declare what our render model will look
+
 ## FAQ
 
 ### Threading

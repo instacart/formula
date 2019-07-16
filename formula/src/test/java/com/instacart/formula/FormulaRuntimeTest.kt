@@ -174,4 +174,18 @@ class FormulaRuntimeTest {
             .renderModel { toggleChild() }
             .renderModel { assertThat(child!!.childState).isEqualTo(0) }
     }
+
+    @Test
+    fun `multiple events using the same render model`() {
+        HasChildFormula(OutputFormula())
+            .test()
+            .renderModel {
+                child.incrementAndOutput()
+                child.incrementAndOutput()
+                child.incrementAndOutput()
+            }
+            .renderModel {
+                assertThat(child.childState).isEqualTo(3)
+            }
+    }
 }
