@@ -1,6 +1,6 @@
 package com.instacart.formula.internal
 
-class TransitionLockImpl : TransitionLock {
+internal class TransitionLockImpl : TransitionLock {
     var processingPass: Long = 0
     
     fun next(): Long {

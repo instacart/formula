@@ -7,7 +7,7 @@ import com.instacart.formula.Transition
 import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
-class FormulaContextImpl<State, Output>(
+class FormulaContextImpl<State, Output> internal constructor(
     private val processingPass: Long,
     private val delegate: Delegate<State, Output>,
     private val transitionCallback: TransitionCallbackWrapper<State, Output>
@@ -53,13 +53,13 @@ class FormulaContextImpl<State, Output>(
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel {
         ensureNotRunning()
-        val key = FormulaKey(formula::class, key)
-        if (children.containsKey(key)) {
-            throw IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
+        val formulaKey = FormulaKey(formula::class, key)
+        if (children.containsKey(formulaKey)) {
+            throw IllegalStateException("There already is a child with same key: $formulaKey. Use [key: String] parameter.")
         }
 
-        val result = delegate.child(formula, input, key, onEvent, processingPass)
-        children[key] = result.updates
+        val result = delegate.child(formula, input, formulaKey, onEvent, processingPass)
+        children[formulaKey] = result.updates
         return result.renderModel
     }
 
