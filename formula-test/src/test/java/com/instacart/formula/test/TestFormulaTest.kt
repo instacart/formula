@@ -80,7 +80,7 @@ class TestFormulaTest {
 
         override fun evaluate(input: String, context: FormulaContext<Unit, ChangeNameTo>): Evaluation<Button> {
             return Evaluation(
-                renderModel = Button(onNameChanged = context.eventCallback {
+                renderModel = Button(onNameChanged = context.eventCallback("change name") {
                     output(ChangeNameTo(it))
                 })
             )
