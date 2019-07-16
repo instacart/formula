@@ -5,7 +5,7 @@ class OutputFormula : Formula<Unit, Int, OutputFormula.Output, OutputFormula.Ren
     class Output(val state: Int)
 
     class RenderModel(
-        val childState: Int,
+        val state: Int,
         val triggerOutput: () -> Unit,
         val incrementAndOutput: () -> Unit
     )
@@ -15,7 +15,7 @@ class OutputFormula : Formula<Unit, Int, OutputFormula.Output, OutputFormula.Ren
     override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int, Output>): Evaluation<RenderModel> {
         return Evaluation(
             renderModel = RenderModel(
-                childState = state,
+                state = state,
                 triggerOutput = context.callback("trigger output") {
                     output(Output(state))
                 },

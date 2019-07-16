@@ -50,9 +50,7 @@ class InputChangedTest {
             state: String,
             context: FormulaContext<String, Unit>
         ): Evaluation<String> {
-            return Evaluation(
-                renderModel = state
-            )
+            return Evaluation(renderModel = state)
         }
     }
 }

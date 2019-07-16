@@ -79,7 +79,7 @@ class FormulaContextImpl<State, Output> internal constructor(
 
         eventCallbacks.add(key)
 
-        val callback = EventCallback<UIEvent>(key)
+        val callback = delegate.initOrFindEventCallback<UIEvent>(key)
         callback.callback = eventCallback(wrap)
         return callback
     }

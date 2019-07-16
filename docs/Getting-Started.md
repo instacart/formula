@@ -310,12 +310,44 @@ class MainPageFormula(
 }
 ```
 
+
+
 ### Diffing
 Given that we recompute everything with each state change, there is an internal diffing mechanism with Formula. This
 mechanism ensures that:
 1. RxJava streams are only subscribed to once.
 2. Side effects are only invoked once.
 2. Children state is persisted across every processing pass.
+
+### Callbacks
+To create a UI event callback use `context.callback` or `context.eventCallback` within `Formula.evaluate` method.
+```kotlin
+CounterRenderModel(
+    onIncrement = context.callback("increment") {
+        transition(state + 1)
+    }
+)
+```
+
+For each callback you must provide a key such as `"increment"` here that is unique within this `Formula`. This means
+that if you have a list of items and you want to have a click listener for each item, you need to make sure that each
+callback key is unique by using an item id or something similar.
+
+```kotlin
+ItemListRenderModel(
+    items = state.items.map { item ->
+        ItemRenderModel(
+            name = item.name,
+            onSelected = context.callback("item selection: ${item.id}") {
+                // perform a transition
+            }
+    }
+)
+```
+
+For each unique key we have a persisted callback instance that is kept across multiple `Formula.evaluate` calls. The
+instance is disabled and removed when your `Formula` is removed or if you don't create this callback in the current
+`Formula.evaluate` call.
 
 
 ### Testing
@@ -350,37 +382,6 @@ subject.childInput(MyChildFormula::class) {
     assertThat(this.property).isEqualTo("property")
 }
 ```
-
-
-### Callbacks
-To define a simple callback is very easy. You just use `context.callback` or `context.eventCallback` within
-`Formula.evaluate` method.
-
-```kotlin
-CounterRenderModel(
-    onIncrement = context.callback("increment") {
-        transition(state + 1)
-    }
-)
-```
-
-The key `"increment"` must be unique within this `Formula`. For example, if you have a list of items and you want to
-have a click listener for each, you need to make sure each callback key is unique by using item id or something similar.
-```kotlin
-ItemListRenderModel(
-    items = state.items.map { item ->
-        ItemRenderModel(
-            name = item.name,
-            onSelected = context.callback("item ${item.id} selection") {
-                // perform a transition
-            }
-    }
-)
-```
-
-If you previously created a callback with key `"my callback"` and in the current `Formula.evaluate` round you don't create
-this callback, the callback will be disposed off and invoking it won't do anything.
-
 
 ## FAQ
 

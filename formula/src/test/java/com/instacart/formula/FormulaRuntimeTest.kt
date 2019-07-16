@@ -168,25 +168,36 @@ class FormulaRuntimeTest {
             .test()
             .renderModel { child!!.incrementAndOutput() }
             .renderModel { child!!.incrementAndOutput() }
-            .renderModel { assertThat(child!!.childState).isEqualTo(2) }
+            .renderModel { assertThat(child!!.state).isEqualTo(2) }
             .renderModel { toggleChild() }
             .renderModel { assertThat(child).isNull() }
             .renderModel { toggleChild() }
-            .renderModel { assertThat(child!!.childState).isEqualTo(0) }
+            .renderModel { assertThat(child!!.state).isEqualTo(0) }
     }
 
     @Test
-    fun `multiple events using the same render model`() {
-        HasChildFormula(OutputFormula())
+    fun `multiple callbacks using the same render model`() {
+        OutputFormula()
             .test()
             .renderModel {
-                child.incrementAndOutput()
-                child.incrementAndOutput()
-                child.incrementAndOutput()
+                incrementAndOutput()
+                incrementAndOutput()
+                incrementAndOutput()
             }
             .renderModel {
-                assertThat(child.childState).isEqualTo(3)
+                assertThat(state).isEqualTo(3)
             }
+    }
+
+    @Test
+    fun `multiple event callbacks using the same render model`() {
+        EventCallbackFormula().test()
+            .renderModel {
+                changeState("one")
+                changeState("two")
+                changeState("three")
+            }
+            .renderModel { assertThat(state).isEqualTo("three") }
     }
 
     @Test
