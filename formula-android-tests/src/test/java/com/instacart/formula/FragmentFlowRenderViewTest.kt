@@ -132,8 +132,7 @@ class FragmentFlowRenderViewTest {
         sendStateUpdate(contract, BackCallback {
             backPressed += 1
             true
-        }
-        )
+        })
 
         navigateBack()
         navigateBack()
