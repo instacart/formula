@@ -129,12 +129,11 @@ class FragmentFlowRenderViewTest {
         var backPressed = 0
 
         val contract = TestContractWithId(1)
-        sendStateUpdate(contract, object : BackCallback {
-            override fun onBackPressed(): Boolean {
-                backPressed += 1
-                return true
-            }
-        })
+        sendStateUpdate(contract, BackCallback {
+            backPressed += 1
+            true
+        }
+        )
 
         navigateBack()
         navigateBack()
