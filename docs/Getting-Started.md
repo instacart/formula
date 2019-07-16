@@ -378,7 +378,9 @@ ItemListRenderModel(
 )
 ```
 
-As part of `Formula` evaluation, we declare all our callbacks. Any callbacks you don't declare what our render model will look
+If you previously created a callback with key `"my callback"` and in the current `Formula.evaluate` round you don't create
+this callback, the callback will be disposed off and invoking it won't do anything.
+
 
 ## FAQ
 

@@ -188,4 +188,19 @@ class FormulaRuntimeTest {
                 assertThat(child.childState).isEqualTo(3)
             }
     }
+
+    @Test
+    fun `using a removed child callback should do nothing`() {
+        OptionalChildFormula(OutputFormula())
+            .test()
+            .renderModel {
+                val cachedChild = child!!
+                toggleChild()
+
+                cachedChild.incrementAndOutput()
+                cachedChild.incrementAndOutput()
+                cachedChild.incrementAndOutput()
+            }
+            .renderModel { assertThat(child).isNull() }
+    }
 }

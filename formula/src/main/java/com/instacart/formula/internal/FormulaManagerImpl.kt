@@ -272,6 +272,21 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     override fun markAsTerminated() {
         terminated = true
 
+        // Clear callbacks
+        callbacks.forEach { entry ->
+            entry.value.callback = {
+                // TODO log that event is invalid because child was removed
+            }
+        }
+        callbacks.clear()
+
+        eventCallbacks.forEach { entry ->
+            entry.value.callback = {
+                // TODO log that event is invalid because child was removed
+            }
+        }
+        eventCallbacks.clear()
+
         // Terminate updates so no transitions happen
         updateManager.terminate()
 
