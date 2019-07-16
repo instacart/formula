@@ -94,8 +94,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             return lastFrame.evaluation
         }
 
-        val callback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
-        val context = FormulaContextImpl(currentTransition, this, callback)
+        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
+        val context = FormulaContextImpl(currentTransition, this, transitionCallback)
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
@@ -103,10 +103,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, callback, context.children)
+        val frame = Frame(input, state, result, transitionCallback, context.children)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
+        disableOldCallbacks(context)
 
         // Set pending removal of children.
         val childIterator = children.iterator()
@@ -120,8 +121,34 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             }
         }
 
-        callback.running = true
+        transitionCallback.running = true
         return result
+    }
+
+    private fun disableOldCallbacks(context: FormulaContextImpl<State, Output>) {
+        val callbackIterator = callbacks.iterator()
+        while (callbackIterator.hasNext()) {
+            val callback = callbackIterator.next()
+            if (!context.callbacks.contains(callback.key)) {
+                callback.value.callback = {
+                    // TODO log that disabled callback was invoked.
+                }
+
+                callbackIterator.remove()
+            }
+        }
+
+        val eventCallbackIterator = eventCallbacks.iterator()
+        while (eventCallbackIterator.hasNext()) {
+            val entry = eventCallbackIterator.next()
+            if (!context.eventCallbacks.contains(entry.key)) {
+                entry.value.callback = {
+                    // TODO log that disabled callback was invoked.
+                }
+
+                eventCallbackIterator.remove()
+            }
+        }
     }
 
     override fun terminateOldUpdates(currentTransition: Long): Boolean {

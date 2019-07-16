@@ -14,6 +14,8 @@ class FormulaContextImpl<State, Output> internal constructor(
 ) : FormulaContext<State, Output> {
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
+    val callbacks = mutableSetOf<String>()
+    val eventCallbacks = mutableSetOf<String>()
 
     interface Delegate<State, Effect> {
         fun initOrFindCallback(key: String): Callback
@@ -44,6 +46,18 @@ class FormulaContextImpl<State, Output> internal constructor(
     }
 
     override fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        ensureNotRunning()
+
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        if (callbacks.contains(key)) {
+            throw IllegalStateException("Callback $key is already defined. Make sure your key is unique.")
+        }
+
+        callbacks.add(key)
+
         val callback = delegate.initOrFindCallback(key)
         callback.callback = callback(wrap)
         return callback
@@ -53,6 +67,18 @@ class FormulaContextImpl<State, Output> internal constructor(
         key: String,
         wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
     ): (UIEvent) -> Unit {
+        ensureNotRunning()
+
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        if (eventCallbacks.contains(key)) {
+            throw IllegalStateException("Event callback $key is already defined. Make sure your key is unique.")
+        }
+
+        eventCallbacks.add(key)
+
         val callback = EventCallback<UIEvent>(key)
         callback.callback = eventCallback(wrap)
         return callback
