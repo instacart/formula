@@ -20,13 +20,17 @@ interface FormulaContext<State, Output> {
 
     /**
      * Creates a callback to be used for handling UI event transitions.
+     *
+     * @param key Unique identifier that describes this callback
      */
-    fun callback(name: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
+    fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
 
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     *
+     * @param key Unique identifier that describes this callback
      */
-    fun <UIEvent> eventCallback(name: String, wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
+    fun <UIEvent> eventCallback(key: String, wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
 
     /**
      * Declares a child [Formula] which returns the [ChildRenderModel]. The state management

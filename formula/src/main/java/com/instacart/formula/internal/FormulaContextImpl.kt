@@ -16,6 +16,10 @@ class FormulaContextImpl<State, Output> internal constructor(
     val children = mutableMapOf<FormulaKey, List<Update>>()
 
     interface Delegate<State, Effect> {
+        fun initOrFindCallback(key: String): Callback
+
+        fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent>
+
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
             input: ChildInput,
@@ -39,17 +43,17 @@ class FormulaContextImpl<State, Output> internal constructor(
         }
     }
 
-    override fun callback(name: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
-        val callback = Callback(name)
+    override fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        val callback = delegate.initOrFindCallback(key)
         callback.callback = callback(wrap)
         return callback
     }
 
     override fun <UIEvent> eventCallback(
-        name: String,
+        key: String,
         wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
     ): (UIEvent) -> Unit {
-        val callback = EventCallback<UIEvent>(name)
+        val callback = EventCallback<UIEvent>(key)
         callback.callback = eventCallback(wrap)
         return callback
     }
