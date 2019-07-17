@@ -214,4 +214,29 @@ class FormulaRuntimeTest {
             }
             .renderModel { assertThat(child).isNull() }
     }
+
+    @Test
+    fun `callbacks are equal across render model changes`() {
+        OutputFormula()
+            .test()
+            .renderModel { incrementAndOutput() }
+            .renderModel { incrementAndOutput() }
+            .assertRenderModelCount(3)
+            .apply {
+                assertThat(values().map { it.incrementAndOutput }.toSet()).hasSize(1)
+            }
+    }
+
+    @Test
+    fun `event callbacks are equal across render model changes`() {
+        EventCallbackFormula().test()
+            .renderModel {
+                changeState("one")
+                changeState("two")
+            }
+            .assertRenderModelCount(3)
+            .apply {
+                assertThat(values().map { it.changeState }.toSet()).hasSize(1)
+            }
+    }
 }
