@@ -10,16 +10,6 @@ interface FormulaContext<State, Output> {
 
     /**
      * Creates a callback to be used for handling UI event transitions.
-     */
-    fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
-
-    /**
-     * Creates a callback that takes a [UIEvent] and performs a [Transition].
-     */
-    fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
-
-    /**
-     * Creates a callback to be used for handling UI event transitions.
      *
      * @param key Unique identifier that describes this callback
      */

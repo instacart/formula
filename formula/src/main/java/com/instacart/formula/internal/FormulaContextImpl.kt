@@ -31,14 +31,14 @@ class FormulaContextImpl<State, Output> internal constructor(
         ): Evaluation<ChildRenderModel>
     }
 
-    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+    private fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory))
         }
     }
 
-    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+    private fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory, it))
