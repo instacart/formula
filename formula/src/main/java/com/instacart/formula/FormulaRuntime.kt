@@ -74,7 +74,7 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
                     childManagerFactory = childManagerFactory
                 )
 
-            processorManager.setTransitionListener { output, isValid ->
+            processorManager.setTransitionListener { output, _ ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
                 if (output != null) {

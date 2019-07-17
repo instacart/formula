@@ -5,7 +5,7 @@ import com.instacart.formula.Update
 /**
  * Handles [Update] changes.
  */
-class UpdateManager(
+internal class UpdateManager(
     private val transitionLock: TransitionLock
 ) {
     companion object {
@@ -29,6 +29,7 @@ class UpdateManager(
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
      * terminated streams.
      */
+    @Suppress("UNCHECKED_CAST")
     fun updateEventListeners(new: List<Update>) {
         updates.forEach { existing ->
             val update = new.firstOrNull { it == existing }

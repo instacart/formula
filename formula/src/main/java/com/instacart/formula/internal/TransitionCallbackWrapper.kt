@@ -2,7 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
 
-class TransitionCallbackWrapper<State, Output>(
+internal class TransitionCallbackWrapper<State, Output>(
     private val transitionLock: TransitionLock,
     private val handleTransition: (Transition<State, Output>, Boolean) -> Unit,
     var transitionNumber: Long

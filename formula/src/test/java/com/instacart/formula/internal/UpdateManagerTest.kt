@@ -8,8 +8,8 @@ import org.junit.Before
 import org.junit.Test
 
 class UpdateManagerTest {
-    lateinit var transitionLock: TestTransitionLock
-    lateinit var manager: UpdateManager
+    private lateinit var transitionLock: TestTransitionLock
+    private lateinit var manager: UpdateManager
 
     lateinit var running: MutableList<String>
 
