@@ -3,6 +3,7 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.test
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Observable
@@ -20,8 +21,7 @@ class TaskListFormulaTest {
         ))
 
         TaskListFormula(repo)
-            .state(mock())
-            .test()
+            .test(TaskListFormula.Input(showToast = {}))
             .apply {
                 assertThat(values().last().items).hasSize(2)
             }
