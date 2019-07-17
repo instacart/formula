@@ -1,6 +1,9 @@
 package com.instacart.formula.internal
 
-data class EventCallback<T>(val key: String): (T) -> Unit {
+/**
+ * Note: this class is not a data class because equality is based on instance and not [key].
+ */
+class EventCallback<T>(val key: String): (T) -> Unit {
     internal lateinit var callback: (T) -> Unit
 
     override fun invoke(p1: T) {

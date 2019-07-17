@@ -239,4 +239,59 @@ class FormulaRuntimeTest {
                 assertThat(values().map { it.changeState }.toSet()).hasSize(1)
             }
     }
+
+    @Test
+    fun `removed callback is disabled`() {
+        OptionalCallbackFormula()
+            .test()
+            .renderModel {
+
+                callback?.invoke()
+                toggleCallback()
+                callback?.invoke()
+            }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+            }
+    }
+
+    @Test
+    fun `callbacks are not the same after removing then adding it again`() {
+        OptionalCallbackFormula()
+            .test()
+            .renderModel {
+                toggleCallback()
+                toggleCallback()
+            }
+            .apply {
+                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+            }
+    }
+
+    @Test
+    fun `removed event callback is disabled`() {
+        OptionalEventCallbackFormula()
+            .test()
+            .renderModel {
+                callback?.invoke(1)
+                toggleCallback()
+                callback?.invoke(5)
+            }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+            }
+    }
+
+    @Test
+    fun `event callbacks are not the same after removing then adding it again`() {
+        OptionalEventCallbackFormula()
+            .test()
+            .renderModel {
+                toggleCallback()
+                toggleCallback()
+            }
+            .apply {
+                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+            }
+    }
 }
