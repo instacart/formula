@@ -60,10 +60,10 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
         return Evaluation(
             renderModel = CounterRenderModel(
                 title = "Count: $count",
-                onDecrement = context.callback {
+                onDecrement = context.callback("decrement") {
                     transition(state.copy(count = count - 1))
                 },
-                onIncrement = context.callback {
+                onIncrement = context.callback("increment") {
                     transition(state.copy(count = count + 1))
                 }
             )
@@ -161,7 +161,7 @@ class UserProfileFormula(
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
             renderModel = UserProfileRenderModel(
-                onSaveSelected = context.callback {
+                onSaveSelected = context.callback("save selected") {
                     sideEffect("save selected analytics") {
                         userAnalyticsService.trackSaveSelected()
                     }
@@ -210,7 +210,7 @@ class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
         renderModel = state.items.map { item ->
             ItemRow(
                 item = item,
-                onItemSelected = context.callback {
+                onItemSelected = context.callback("item selected: ${item.id}") {
                     // We send the `ItemSelected` event to the parent.
                     output(ItemOutput.ItemSelected(item.id))   
                 }  
