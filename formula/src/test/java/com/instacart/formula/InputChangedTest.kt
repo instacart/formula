@@ -29,7 +29,7 @@ class InputChangedTest {
             return Evaluation(
                 renderModel = RenderModel(
                     childName = context.child(childFormula, state),
-                    onChildNameChanged = context.eventCallback { name ->
+                    onChildNameChanged = context.eventCallback("child name change") { name ->
                         transition(name)
                     }
                 )
@@ -50,9 +50,7 @@ class InputChangedTest {
             state: String,
             context: FormulaContext<String, Unit>
         ): Evaluation<String> {
-            return Evaluation(
-                renderModel = state
-            )
+            return Evaluation(renderModel = state)
         }
     }
 }

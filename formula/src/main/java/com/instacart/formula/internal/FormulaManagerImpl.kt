@@ -33,6 +33,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
+    private val callbacks: MutableMap<String, Callback> = mutableMapOf()
+    private val eventCallbacks: MutableMap<String, EventCallback<*>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -63,6 +65,19 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
     }
 
+    override fun initOrFindCallback(key: String): Callback {
+        return callbacks.getOrPut(key) {
+            Callback(key)
+        }
+    }
+
+    override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
+        @Suppress("UNCHECKED_CAST")
+        return eventCallbacks.getOrPut(key) {
+            EventCallback<UIEvent>(key)
+        } as EventCallback<UIEvent>
+    }
+
     /**
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
@@ -79,8 +94,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             return lastFrame.evaluation
         }
 
-        val callback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
-        val context = FormulaContextImpl(currentTransition, this, callback)
+        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
+        val context = FormulaContextImpl(currentTransition, this, transitionCallback)
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
@@ -88,10 +103,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, callback, context.children)
+        val frame = Frame(input, state, result, transitionCallback, context.children)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
+        disableOldCallbacks(context)
 
         // Set pending removal of children.
         val childIterator = children.iterator()
@@ -105,8 +121,34 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             }
         }
 
-        callback.running = true
+        transitionCallback.running = true
         return result
+    }
+
+    private fun disableOldCallbacks(context: FormulaContextImpl<State, Output>) {
+        val callbackIterator = callbacks.iterator()
+        while (callbackIterator.hasNext()) {
+            val callback = callbackIterator.next()
+            if (!context.callbacks.contains(callback.key)) {
+                callback.value.callback = {
+                    // TODO log that disabled callback was invoked.
+                }
+
+                callbackIterator.remove()
+            }
+        }
+
+        val eventCallbackIterator = eventCallbacks.iterator()
+        while (eventCallbackIterator.hasNext()) {
+            val entry = eventCallbackIterator.next()
+            if (!context.eventCallbacks.contains(entry.key)) {
+                entry.value.callback = {
+                    // TODO log that disabled callback was invoked.
+                }
+
+                eventCallbackIterator.remove()
+            }
+        }
     }
 
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
@@ -229,6 +271,21 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     override fun markAsTerminated() {
         terminated = true
+
+        // Clear callbacks
+        callbacks.forEach { entry ->
+            entry.value.callback = {
+                // TODO log that event is invalid because child was removed
+            }
+        }
+        callbacks.clear()
+
+        eventCallbacks.forEach { entry ->
+            entry.value.callback = {
+                // TODO log that event is invalid because child was removed
+            }
+        }
+        eventCallbacks.clear()
 
         // Terminate updates so no transitions happen
         updateManager.terminate()

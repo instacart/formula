@@ -14,9 +14,7 @@ class DynamicFormulaInputTest {
 
     class TestFormula:  StatelessFormula<Int, Unit, Int>() {
         override fun evaluate(input: Int, context: FormulaContext<Unit, Unit>): Evaluation<Int> {
-            return Evaluation(
-                renderModel = input
-            )
+            return Evaluation(renderModel = input)
         }
     }
 }

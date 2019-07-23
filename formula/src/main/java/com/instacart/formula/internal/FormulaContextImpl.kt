@@ -14,8 +14,14 @@ class FormulaContextImpl<State, Output> internal constructor(
 ) : FormulaContext<State, Output> {
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
+    val callbacks = mutableSetOf<String>()
+    val eventCallbacks = mutableSetOf<String>()
 
     interface Delegate<State, Effect> {
+        fun initOrFindCallback(key: String): Callback
+
+        fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent>
+
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
             input: ChildInput,
@@ -25,18 +31,57 @@ class FormulaContextImpl<State, Output> internal constructor(
         ): Evaluation<ChildRenderModel>
     }
 
-    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+    private fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory))
         }
     }
 
-    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+    private fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory, it))
         }
+    }
+
+    override fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        ensureNotRunning()
+
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        if (callbacks.contains(key)) {
+            throw IllegalStateException("Callback $key is already defined. Make sure your key is unique.")
+        }
+
+        callbacks.add(key)
+
+        val callback = delegate.initOrFindCallback(key)
+        callback.callback = callback(wrap)
+        return callback
+    }
+
+    override fun <UIEvent> eventCallback(
+        key: String,
+        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): (UIEvent) -> Unit {
+        ensureNotRunning()
+
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        if (eventCallbacks.contains(key)) {
+            throw IllegalStateException("Event callback $key is already defined. Make sure your key is unique.")
+        }
+
+        eventCallbacks.add(key)
+
+        val callback = delegate.initOrFindEventCallback<UIEvent>(key)
+        callback.callback = eventCallback(wrap)
+        return callback
     }
 
     override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {

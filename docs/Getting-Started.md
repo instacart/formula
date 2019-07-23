@@ -60,10 +60,10 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
         return Evaluation(
             renderModel = CounterRenderModel(
                 title = "Count: $count",
-                onDecrement = context.callback {
+                onDecrement = context.callback("decrement") {
                     transition(state.copy(count = count - 1))
                 },
-                onIncrement = context.callback {
+                onIncrement = context.callback("increment") {
                     transition(state.copy(count = count + 1))
                 }
             )
@@ -161,7 +161,7 @@ class UserProfileFormula(
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
             renderModel = UserProfileRenderModel(
-                onSaveSelected = context.callback {
+                onSaveSelected = context.callback("save selected") {
                     sideEffect("save selected analytics") {
                         userAnalyticsService.trackSaveSelected()
                     }
@@ -210,7 +210,7 @@ class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
         renderModel = state.items.map { item ->
             ItemRow(
                 item = item,
-                onItemSelected = context.callback {
+                onItemSelected = context.callback("item selected: ${item.id}") {
                     // We send the `ItemSelected` event to the parent.
                     output(ItemOutput.ItemSelected(item.id))   
                 }  
@@ -310,12 +310,44 @@ class MainPageFormula(
 }
 ```
 
+
+
 ### Diffing
 Given that we recompute everything with each state change, there is an internal diffing mechanism with Formula. This
 mechanism ensures that:
 1. RxJava streams are only subscribed to once.
 2. Side effects are only invoked once.
 2. Children state is persisted across every processing pass.
+
+### Callbacks
+To create a UI event callback use `context.callback` or `context.eventCallback` within `Formula.evaluate` method.
+```kotlin
+CounterRenderModel(
+    onIncrement = context.callback("increment") {
+        transition(state + 1)
+    }
+)
+```
+
+For each callback you must provide a key such as `"increment"` here that is unique within this `Formula`. This means
+that if you have a list of items and you want to have a click listener for each item, you need to make sure that each
+callback key is unique by using an item id or something similar.
+
+```kotlin
+ItemListRenderModel(
+    items = state.items.map { item ->
+        ItemRenderModel(
+            name = item.name,
+            onSelected = context.callback("item selection: ${item.id}") {
+                // perform a transition
+            }
+    }
+)
+```
+
+For each unique key we have a persisted callback instance that is kept across multiple `Formula.evaluate` calls. The
+instance is disabled and removed when your `Formula` is removed or if you don't create this callback in the current
+`Formula.evaluate` call.
 
 
 ### Testing

@@ -168,10 +168,130 @@ class FormulaRuntimeTest {
             .test()
             .renderModel { child!!.incrementAndOutput() }
             .renderModel { child!!.incrementAndOutput() }
-            .renderModel { assertThat(child!!.childState).isEqualTo(2) }
+            .renderModel { assertThat(child!!.state).isEqualTo(2) }
             .renderModel { toggleChild() }
             .renderModel { assertThat(child).isNull() }
             .renderModel { toggleChild() }
-            .renderModel { assertThat(child!!.childState).isEqualTo(0) }
+            .renderModel { assertThat(child!!.state).isEqualTo(0) }
+    }
+
+    @Test
+    fun `multiple callbacks using the same render model`() {
+        OutputFormula()
+            .test()
+            .renderModel {
+                incrementAndOutput()
+                incrementAndOutput()
+                incrementAndOutput()
+            }
+            .renderModel {
+                assertThat(state).isEqualTo(3)
+            }
+    }
+
+    @Test
+    fun `multiple event callbacks using the same render model`() {
+        EventCallbackFormula().test()
+            .renderModel {
+                changeState("one")
+                changeState("two")
+                changeState("three")
+            }
+            .renderModel { assertThat(state).isEqualTo("three") }
+    }
+
+    @Test
+    fun `using a removed child callback should do nothing`() {
+        OptionalChildFormula(OutputFormula())
+            .test()
+            .renderModel {
+                val cachedChild = child!!
+                toggleChild()
+
+                cachedChild.incrementAndOutput()
+                cachedChild.incrementAndOutput()
+                cachedChild.incrementAndOutput()
+            }
+            .renderModel { assertThat(child).isNull() }
+    }
+
+    @Test
+    fun `callbacks are equal across render model changes`() {
+        OutputFormula()
+            .test()
+            .renderModel { incrementAndOutput() }
+            .renderModel { incrementAndOutput() }
+            .assertRenderModelCount(3)
+            .apply {
+                assertThat(values().map { it.incrementAndOutput }.toSet()).hasSize(1)
+            }
+    }
+
+    @Test
+    fun `event callbacks are equal across render model changes`() {
+        EventCallbackFormula().test()
+            .renderModel {
+                changeState("one")
+                changeState("two")
+            }
+            .assertRenderModelCount(3)
+            .apply {
+                assertThat(values().map { it.changeState }.toSet()).hasSize(1)
+            }
+    }
+
+    @Test
+    fun `removed callback is disabled`() {
+        OptionalCallbackFormula()
+            .test()
+            .renderModel {
+
+                callback?.invoke()
+                toggleCallback()
+                callback?.invoke()
+            }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+            }
+    }
+
+    @Test
+    fun `callbacks are not the same after removing then adding it again`() {
+        OptionalCallbackFormula()
+            .test()
+            .renderModel {
+                toggleCallback()
+                toggleCallback()
+            }
+            .apply {
+                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+            }
+    }
+
+    @Test
+    fun `removed event callback is disabled`() {
+        OptionalEventCallbackFormula()
+            .test()
+            .renderModel {
+                callback?.invoke(1)
+                toggleCallback()
+                callback?.invoke(5)
+            }
+            .apply {
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+            }
+    }
+
+    @Test
+    fun `event callbacks are not the same after removing then adding it again`() {
+        OptionalEventCallbackFormula()
+            .test()
+            .renderModel {
+                toggleCallback()
+                toggleCallback()
+            }
+            .apply {
+                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+            }
     }
 }

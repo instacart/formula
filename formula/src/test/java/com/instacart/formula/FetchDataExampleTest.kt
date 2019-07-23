@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
 
@@ -9,7 +10,6 @@ class FetchDataExampleTest {
     @Test fun `fake network example`() {
 
         MyFormula()
-            .state(Unit)
             .test()
             .apply {
                 values().last().onChangeId("1")
@@ -53,7 +53,7 @@ class FetchDataExampleTest {
             return Evaluation(
                 renderModel = RenderModel(
                     title = state.response?.name ?: "",
-                    onChangeId = context.eventCallback { id ->
+                    onChangeId = context.eventCallback("change id") { id ->
                         transition(state.copy(selectedId = id))
                     }
                 ),

@@ -38,7 +38,7 @@ class TaskListFormula(
             renderModel = TaskListRenderModel(
                 items = items,
                 filterOptions = TasksFilterType.values().map { type ->
-                    TaskFilterRenderModel(title = type.name, onSelected = context.callback {
+                    TaskFilterRenderModel(title = type.name, onSelected = context.callback("selected ${type.name}") {
                         transition(state.copy(filterType = type))
                     })
                 })
