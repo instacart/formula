@@ -22,9 +22,7 @@ class OptionalChildFormula<ChildOutput, ChildRenderModel>(
         context: FormulaContext<State, ChildOutput>
     ): Evaluation<RenderModel<ChildRenderModel>> {
         val childRM = if (state.showChild) {
-            context.child(child, Unit) {
-                onChildOutput(state, it)
-            }
+            context.child(child).onOutput { onChildOutput(state, it) }.input(Unit)
         } else {
             null
         }

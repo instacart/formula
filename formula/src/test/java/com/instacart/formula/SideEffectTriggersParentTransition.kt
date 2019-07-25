@@ -37,7 +37,7 @@ object SideEffectTriggersParentTransition {
             return Evaluation(
                 renderModel = RenderModel(
                     count = state,
-                    child = context.child(childFormula, Unit)
+                    child = context.child(childFormula).input(Unit)
                 ),
                 updates = context.updates {
                     events("increment", service.serviceEvents()) {

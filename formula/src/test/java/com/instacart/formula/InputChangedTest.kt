@@ -28,7 +28,7 @@ class InputChangedTest {
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
-                    childName = context.child(childFormula, state),
+                    childName = context.child(childFormula).input(state),
                     onChildNameChanged = context.eventCallback("child name change") { name ->
                         transition(name)
                     }

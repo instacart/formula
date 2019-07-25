@@ -1,5 +1,6 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.Child
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
@@ -11,7 +12,9 @@ class FormulaContextImpl<State, Output> internal constructor(
     private val processingPass: Long,
     private val delegate: Delegate<State, Output>,
     private val transitionCallback: TransitionCallbackWrapper<State, Output>
-) : FormulaContext<State, Output> {
+) : FormulaContext<State, Output>() {
+
+    private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
     val callbacks = mutableSetOf<String>()
@@ -84,14 +87,14 @@ class FormulaContextImpl<State, Output> internal constructor(
         return callback
     }
 
-    override fun updates(init: FormulaContext.UpdateBuilder<State, Output>.() -> Unit): List<Update> {
+    override fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update> {
         ensureNotRunning()
-        val builder = FormulaContext.UpdateBuilder(transitionCallback)
+        val builder = UpdateBuilder(transitionCallback)
         builder.init()
         return builder.updates
     }
 
-    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
         key: String,
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
@@ -106,6 +109,16 @@ class FormulaContextImpl<State, Output> internal constructor(
         val result = delegate.child(formula, input, formulaKey, onEvent, processingPass)
         children[formulaKey] = result.updates
         return result.renderModel
+    }
+
+    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        key: String,
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
+    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> {
+        @Suppress("UNCHECKED_CAST")
+        val casted = childBuilder as Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
+        casted.initialize(key, formula)
+        return casted
     }
 
     private fun ensureNotRunning() {
