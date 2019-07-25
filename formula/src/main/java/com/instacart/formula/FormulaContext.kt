@@ -6,74 +6,49 @@ import io.reactivex.Observable
  * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create
  * child formulas.
  */
-interface FormulaContext<State, Output> {
+abstract class FormulaContext<State, Output> {
 
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
      * @param key Unique identifier that describes this callback
      */
-    fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
+    abstract fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
 
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
      * @param key Unique identifier that describes this callback
      */
-    fun <UIEvent> eventCallback(key: String, wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
+    abstract fun <UIEvent> eventCallback(key: String, wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
 
     /**
-     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
-     * of child Formula is managed by the runtime.
+     * Starts building a child [Formula]. The state management of child [Formula]
+     * will be managed by the runtime. Call [Child.input] to finish declaring the child
+     * and receive the [ChildRenderModel].
      */
     fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
+    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> {
+        return child("", formula)
+    }
+
+    /**
+     * Starts building a child [Formula]. The state management of child [Formula]
+     * will be managed by the runtime. Call [Child.input] to finish declaring the child
+     * and receive the [ChildRenderModel].
+     *
+     * @param key A unique identifier for this formula.
+     */
+    abstract fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
         key: String,
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
-        input: ChildInput,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
-    ): ChildRenderModel
-
-    /**
-     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
-     * of child Formula is managed by the runtime.
-     */
-    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
-        input: ChildInput,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
-    ): ChildRenderModel {
-        return child("", formula, input, onEvent)
-    }
-
-    /**
-     * Declares a child [Formula] which returns the [ChildRenderModel]. The state management
-     * of child Formula is managed by the runtime.
-     */
-    fun <ChildInput, ChildState, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, Unit, ChildRenderModel>,
-        input: ChildInput
-    ): ChildRenderModel  {
-        return child("", formula, input)
-    }
-
-    /**
-     * Declares a child [Formula] that has no Output. The state management
-     * of child Formula is managed by the runtime.
-     */
-    fun <ChildInput, ChildState, ChildRenderModel> child(
-        key: String,
-        formula: Formula<ChildInput, ChildState, Unit, ChildRenderModel>,
-        input: ChildInput
-    ): ChildRenderModel  {
-        return child(key, formula, input, onEvent = {
-            none()
-        })
-    }
+        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
+    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
 
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
+    abstract fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
 
     /**
      * Provides methods to declare various events and effects.

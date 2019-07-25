@@ -46,9 +46,12 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     children = state.map { id ->
-                        context.child("child-$id", ChildFormula(logExit), Unit) {
-                            transition(state.minus(id))
-                        }
+                        context
+                            .child("child-$id", ChildFormula(logExit))
+                            .onOutput {
+                                transition(state.minus(id))
+                            }
+                            .input(Unit)
                     },
                     onClearAll = context.callback("clear all") {
                         transition(emptyList())
@@ -73,9 +76,7 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     onExit = context.callback("exit") {
-                        transition(state, Exit(), sideEffects = listOf(
-                            SideEffect("log exit", logExit)
-                        ))
+                        transition(state, Exit(), sideEffects = listOf(SideEffect("log exit", logExit)))
                     }
                 )
             )
