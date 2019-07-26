@@ -108,11 +108,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         this.frame = frame
 
         if (lastFrame != null && lastFrame.callbackCount != frame.callbackCount) {
-            val message = StringBuilder().apply {
-                append("Dynamic callback registrations detected. ")
+            val message = buildString {
+                append("Dynamic callback registrations detected in ${formula::class}. ")
                 append("Expected: ${lastFrame.callbackCount}, was: ${frame.callbackCount}.")
             }
-            throw IllegalStateException(message.toString())
+            throw IllegalStateException(message)
         }
 
         disableOldCallbacks(context)
