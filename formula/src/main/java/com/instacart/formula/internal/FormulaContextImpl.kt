@@ -19,13 +19,13 @@ class FormulaContextImpl<State, Output> internal constructor(
     internal var callbackCount = 0
 
     val children = mutableMapOf<FormulaKey, List<Update>>()
-    val callbacks = mutableSetOf<String>()
-    val eventCallbacks = mutableSetOf<String>()
+    val callbacks = mutableSetOf<Any>()
+    val eventCallbacks = mutableSetOf<Any>()
 
     interface Delegate<State, Effect> {
-        fun initOrFindCallback(key: String): Callback
+        fun initOrFindCallback(key: Any): Callback
 
-        fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent>
+        fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent>
 
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
@@ -53,7 +53,11 @@ class FormulaContextImpl<State, Output> internal constructor(
     override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
         ensureNotRunning()
 
-        val callback = callback(key = generatedKey(), wrap = wrap)
+        val key = callbackCount
+        callbacks.add(key)
+
+        val callback = delegate.initOrFindCallback(key)
+        callback.callback = wrapCallback(wrap)
         incrementCallbackCount()
         return callback
     }
@@ -71,7 +75,11 @@ class FormulaContextImpl<State, Output> internal constructor(
     }
 
     override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
-        val callback = eventCallback(key = generatedKey(), wrap = wrap)
+        val key = callbackCount
+        eventCallbacks.add(key)
+
+        val callback = delegate.initOrFindEventCallback<UIEvent>(key)
+        callback.callback = wrapEventCallback(wrap)
         incrementCallbackCount()
         return callback
     }
@@ -164,8 +172,6 @@ class FormulaContextImpl<State, Output> internal constructor(
     private fun incrementCallbackCount() {
         callbackCount += 1
     }
-
-    private fun generatedKey() = "formula:generated:$callbackCount"
 
     private fun ensureNotRunning() {
         if (transitionCallback.running) {

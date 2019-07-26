@@ -33,8 +33,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: MutableMap<String, Callback> = mutableMapOf()
-    private val eventCallbacks: MutableMap<String, EventCallback<*>> = mutableMapOf()
+    private val callbacks: MutableMap<Any, Callback> = mutableMapOf()
+    private val eventCallbacks: MutableMap<Any, EventCallback<*>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -65,13 +65,13 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
     }
 
-    override fun initOrFindCallback(key: String): Callback {
+    override fun initOrFindCallback(key: Any): Callback {
         return callbacks.getOrPut(key) {
             Callback(key)
         }
     }
 
-    override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
+    override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
         @Suppress("UNCHECKED_CAST")
         return eventCallbacks.getOrPut(key) {
             EventCallback<UIEvent>(key)
