@@ -53,7 +53,7 @@ class ChildrenRemovalTest {
                             }
                             .input(Unit)
                     },
-                    onClearAll = context.callback("clear all") {
+                    onClearAll = context.callback {
                         transition(emptyList())
                     }
                 )
@@ -75,7 +75,7 @@ class ChildrenRemovalTest {
         override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Exit>): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
-                    onExit = context.callback("exit") {
+                    onExit = context.callback {
                         transition(state, Exit(), sideEffects = listOf(SideEffect("log exit", logExit)))
                     }
                 )

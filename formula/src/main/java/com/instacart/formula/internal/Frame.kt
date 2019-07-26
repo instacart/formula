@@ -12,7 +12,8 @@ internal class Frame<Input, State, RenderModel>(
     val state: State,
     val evaluation: Evaluation<RenderModel>,
     val transitionCallbackWrapper: TransitionCallbackWrapper<State, *>,
-    val children: Map<FormulaKey, List<Update>>
+    val children: Map<FormulaKey, List<Update>>,
+    val callbackCount: Int
 ) {
     private var stateValid: Boolean = true
     private var childrenValid: Boolean = true

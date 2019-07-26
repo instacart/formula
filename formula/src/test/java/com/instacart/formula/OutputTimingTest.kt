@@ -42,7 +42,7 @@ class OutputTimingTest {
             return Evaluation(
                 renderModel = RenderModel(
                     value = state,
-                    trigger = context.callback("trigger") {
+                    trigger = context.callback {
                         transition(LAST_STATE_INTERNAL, Trigger())
                     }
                 ),

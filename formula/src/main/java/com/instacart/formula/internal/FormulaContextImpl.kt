@@ -16,6 +16,8 @@ class FormulaContextImpl<State, Output> internal constructor(
 
     private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
 
+    internal var callbackCount = 0
+
     val children = mutableMapOf<FormulaKey, List<Update>>()
     val callbacks = mutableSetOf<String>()
     val eventCallbacks = mutableSetOf<String>()
@@ -34,17 +36,55 @@ class FormulaContextImpl<State, Output> internal constructor(
         ): Evaluation<ChildRenderModel>
     }
 
-    private fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+    private fun wrapCallback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory))
         }
     }
 
-    private fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+    private fun <UIEvent> wrapEventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
         ensureNotRunning()
         return {
             transitionCallback(wrap(Transition.Factory, it))
+        }
+    }
+
+    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        ensureNotRunning()
+
+        val callback = callback(key = generatedKey(), wrap = wrap)
+        incrementCallbackCount()
+        return callback
+    }
+
+    override fun optionalCallback(
+        condition: Boolean,
+        wrap: Transition.Factory.() -> Transition<State, Output>
+    ): (() -> Unit)? {
+        return if (condition) {
+            callback(wrap)
+        } else {
+            incrementCallbackCount()
+            null
+        }
+    }
+
+    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+        val callback = eventCallback(key = generatedKey(), wrap = wrap)
+        incrementCallbackCount()
+        return callback
+    }
+
+    override fun <UIEvent> optionalEventCallback(
+        condition: Boolean,
+        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): ((UIEvent) -> Unit)? {
+        return if (condition) {
+            eventCallback(wrap)
+        } else {
+            incrementCallbackCount()
+            null
         }
     }
 
@@ -62,7 +102,7 @@ class FormulaContextImpl<State, Output> internal constructor(
         callbacks.add(key)
 
         val callback = delegate.initOrFindCallback(key)
-        callback.callback = callback(wrap)
+        callback.callback = wrapCallback(wrap)
         return callback
     }
 
@@ -83,7 +123,7 @@ class FormulaContextImpl<State, Output> internal constructor(
         eventCallbacks.add(key)
 
         val callback = delegate.initOrFindEventCallback<UIEvent>(key)
-        callback.callback = eventCallback(wrap)
+        callback.callback = wrapEventCallback(wrap)
         return callback
     }
 
@@ -120,6 +160,12 @@ class FormulaContextImpl<State, Output> internal constructor(
         casted.initialize(key, formula)
         return casted
     }
+
+    private fun incrementCallbackCount() {
+        callbackCount += 1
+    }
+
+    private fun generatedKey() = "formula:generated:$callbackCount"
 
     private fun ensureNotRunning() {
         if (transitionCallback.running) {

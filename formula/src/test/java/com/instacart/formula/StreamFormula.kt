@@ -32,10 +32,10 @@ class StreamFormula : Formula<Unit, StreamFormula.State, Unit, StreamFormula.Ren
             },
             renderModel = RenderModel(
                 state = state.count,
-                startListening = context.callback("start listening") {
+                startListening = context.callback {
                     state.copy(listenForEvents = true).transition()
                 },
-                stopListening = context.callback("stop listening") {
+                stopListening = context.callback {
                     state.copy(listenForEvents = false).transition()
                 }
             )

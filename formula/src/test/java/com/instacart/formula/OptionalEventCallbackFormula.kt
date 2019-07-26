@@ -18,14 +18,10 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
         return Evaluation(
             renderModel = RenderModel(
                 state = state.state,
-                callback = if (state.callbackEnabled) {
-                    context.eventCallback("my callback") {
-                        state.copy(state = it).transition()
-                    }
-                } else {
-                    null
+                callback = context.optionalEventCallback(state.callbackEnabled) {
+                    state.copy(state = it).transition()
                 },
-                toggleCallback = context.callback("toggle") {
+                toggleCallback = context.callback {
                     state.copy(callbackEnabled = !state.callbackEnabled).transition()
                 }
             )
