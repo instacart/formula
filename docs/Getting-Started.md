@@ -61,10 +61,10 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
             renderModel = CounterRenderModel(
                 title = "Count: $count",
                 onDecrement = context.callback {
-                    transition(state.copy(count = count - 1))
+                    state.copy(count = count - 1).transition()
                 },
                 onIncrement = context.callback {
-                    transition(state.copy(count = count + 1))
+                    state.copy(count = count + 1).transition()
                 }
             )
         )
@@ -121,44 +121,39 @@ class MyApp : Application() {
 And that's it. To learn more, see our [Formula Android Guide](Integration.md). 
 
 
-
 ### Listening for events
-We use RxJava for listening to events.
-```kotlin
-class MyFormula(
-    private val someObservable: Observable<MyData>
-) : Formula<...> {
+Formula uses RxJava to deal with event streams. You can either use `Observable` directly or wrap it in a `RxStream`.
 
-    override fun evaluate(
-        input: Unit,
-        state: MyState,
-        context: FormulaContext<MyState, ...>
-    ): Evaluation<TimerRenderModel> {
-        return Evaluation(
-            // You can declaratively define what event streams should run.
-            updates = context.updates {
-                // We use a key "data" to make sure that 
-                // internal diffing mechanism can distinguish
-                // between differen streams.
-                events("data", someObservable) { update: MyData ->
-                    // onEvent will always be scoped to the current `MyState` instance.
-                    transition(state.copy(myData = update))
-                }
-            },
-            renderModel = ...
-        )
-    }
-} 
+Usually event stream dependencies will be passed/injected through the constructor.
+```kotlin
+class MyFormula(private val dataObservable: Observable<MyData>): Formula<....>
 ```
+
+To listen to your data observable, you need to declare a binding within `Formula.evaluate` block.
+```kotlin
+Evaluation(
+    renderModel ...,
+    // We declare the event streams within `updates` block
+    updates = context.updates {
+        events("data", dataObservable) { update: MyData ->
+            // the listener is always scoped to the current `state` so you can update it as part of the transition
+            state.copy(myData = update).transition()
+        }
+    }
+)
+```
+
+*Note:* we use a unique identifier `"data"` to make sure that internal diffing mechanism can distinguish between
+different streams.
 
 ### Side effects
 It is very easy to emit side-effects.
 ```kotlin
 class UserProfileFormula(
     val userAnalyticsService: UserAnalyticsService
-) : ProcessorFormula<...> {
+) : Formula<...> {
 
-    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
+    override fun evaluate(...): Evaluation<UserProfileRenderModel> {
         return Evaluation(
             renderModel = UserProfileRenderModel(
                 onSaveSelected = context.callback {
@@ -199,7 +194,7 @@ sealed class ItemOutput {
 ```
 
 ```kotlin
-class ItemListFormula() : Formula<..., ..., ..., ItemOutput> {
+class ItemListFormula() : Formula<..., ..., ItemOutput, ...> {
 
   override fun evaluate(
     input: ..,
