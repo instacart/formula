@@ -33,8 +33,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: MutableMap<String, Callback> = mutableMapOf()
-    private val eventCallbacks: MutableMap<String, EventCallback<*>> = mutableMapOf()
+    private val callbacks: MutableMap<Any, Callback> = mutableMapOf()
+    private val eventCallbacks: MutableMap<Any, EventCallback<*>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -65,13 +65,13 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
     }
 
-    override fun initOrFindCallback(key: String): Callback {
+    override fun initOrFindCallback(key: Any): Callback {
         return callbacks.getOrPut(key) {
             Callback(key)
         }
     }
 
-    override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
+    override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
         @Suppress("UNCHECKED_CAST")
         return eventCallbacks.getOrPut(key) {
             EventCallback<UIEvent>(key)
@@ -103,9 +103,18 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, transitionCallback, context.children)
+        val frame = Frame(input, state, result, transitionCallback, context.children, context.callbackCount)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
+
+        if (lastFrame != null && lastFrame.callbackCount != frame.callbackCount) {
+            val message = buildString {
+                append("Dynamic callback registrations detected in ${formula::class}. ")
+                append("Expected: ${lastFrame.callbackCount}, was: ${frame.callbackCount}.")
+                append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
+            }
+            throw IllegalStateException(message)
+        }
 
         disableOldCallbacks(context)
 

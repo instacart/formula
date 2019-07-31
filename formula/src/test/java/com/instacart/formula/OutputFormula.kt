@@ -16,10 +16,10 @@ class OutputFormula : Formula<Unit, Int, OutputFormula.Output, OutputFormula.Ren
         return Evaluation(
             renderModel = RenderModel(
                 state = state,
-                triggerOutput = context.callback("trigger output") {
+                triggerOutput = context.callback {
                     output(Output(state))
                 },
-                incrementAndOutput = context.callback("increment and trigger output") {
+                incrementAndOutput = context.callback {
                     val newState = state + 1
                     transition(newState, Output(newState))
                 }

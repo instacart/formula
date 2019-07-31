@@ -13,7 +13,7 @@ class SideEffectFormula(
     override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int, Unit>): Evaluation<RenderModel> {
         return Evaluation(
             renderModel = RenderModel(
-                triggerSideEffect = context.callback("trigger") {
+                triggerSideEffect = context.callback {
                     sideEffect("no state change", onSideEffect)
                 }
             )

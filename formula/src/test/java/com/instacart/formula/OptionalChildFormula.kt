@@ -30,7 +30,7 @@ class OptionalChildFormula<ChildOutput, ChildRenderModel>(
         return Evaluation(
             renderModel = RenderModel(
                 child = childRM,
-                toggleChild = context.callback("toggle") {
+                toggleChild = context.callback {
                     state.copy(showChild = !state.showChild).transition()
                 }
             )

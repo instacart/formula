@@ -13,7 +13,7 @@ class EventCallbackFormula : Formula<Unit, String, Unit, EventCallbackFormula.Re
         return Evaluation(
             renderModel = RenderModel(
                 state = state,
-                changeState = context.eventCallback("change state") { newState ->
+                changeState = context.eventCallback { newState ->
                     newState.transition()
                 }
             )

@@ -11,6 +11,21 @@ abstract class FormulaContext<State, Output> {
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
+     * NOTE: this uses positional index to determine the key.
+     */
+    abstract fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
+
+    /**
+     * Creates a callback if [condition] is true.
+     */
+    abstract fun optionalCallback(
+        condition: Boolean,
+        wrap: Transition.Factory.() -> Transition<State, Output>
+    ): (() -> Unit)?
+
+    /**
+     * Creates a callback to be used for handling UI event transitions.
+     *
      * @param key Unique identifier that describes this callback
      */
     abstract fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
@@ -18,9 +33,29 @@ abstract class FormulaContext<State, Output> {
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
+     * NOTE: this uses positional index to determine the key.
+     */
+    abstract fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
+
+    /**
+     * If [condition] is met, creates a callback that takes a [UIEvent] and performs a [Transition].
+     *
+     * NOTE: this uses positional index to determine the key.
+     */
+    abstract fun <UIEvent> optionalEventCallback(
+        condition: Boolean,
+        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): ((UIEvent) -> Unit)?
+
+    /**
+     * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     *
      * @param key Unique identifier that describes this callback
      */
-    abstract fun <UIEvent> eventCallback(key: String, wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
+    abstract fun <UIEvent> eventCallback(
+        key: String,
+        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): (UIEvent) -> Unit
 
     /**
      * Starts building a child [Formula]. The state management of child [Formula]
