@@ -440,3 +440,7 @@ you will see the following exception.
 Caused by: java.lang.IllegalStateException: Transition already happened. This is using old transition callback: $it.
 ```
 
+### Dynamic callback registrations detected.
+By default, formula uses positional index for callback uniqueness. This exception indicates that some of your callbacks
+need to have an explicit key likely because some callback is defined within `if` block or a `list loop`. For more info
+take a look at the [callbacks section](#callbacks).
