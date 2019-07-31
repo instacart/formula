@@ -60,10 +60,10 @@ class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
         return Evaluation(
             renderModel = CounterRenderModel(
                 title = "Count: $count",
-                onDecrement = context.callback("decrement") {
+                onDecrement = context.callback {
                     transition(state.copy(count = count - 1))
                 },
-                onIncrement = context.callback("increment") {
+                onIncrement = context.callback {
                     transition(state.copy(count = count + 1))
                 }
             )
@@ -161,7 +161,7 @@ class UserProfileFormula(
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         return Evaluation(
             renderModel = UserProfileRenderModel(
-                onSaveSelected = context.callback("save selected") {
+                onSaveSelected = context.callback {
                     sideEffect("save selected analytics") {
                         userAnalyticsService.trackSaveSelected()
                     }
@@ -332,26 +332,58 @@ mechanism ensures that:
 To create a UI event callback use `context.callback` or `context.eventCallback` within `Formula.evaluate` method.
 ```kotlin
 CounterRenderModel(
-    onIncrement = context.callback("increment") {
+    onIncrement = context.callback {
         transition(state + 1)
     }
 )
 ```
 
-For each callback you must provide a key such as `"increment"` here that is unique within this `Formula`. This means
-that if you have a list of items and you want to have a click listener for each item, you need to make sure that each
-callback key is unique by using an item id or something similar.
+Callbacks retain equality across re-evaluation (such as state changes). By default, we persist the callback in a map
+where each callback is identified by an incremented integer id. In some cases incremented id is not sufficient and
+you will need to explicitly provide a unique `key`. There a two common situations: when callback is declared in a conditional
+statement or when it is declared in a list iteration.
 
+Conditional callback issue:
 ```kotlin
+// THIS WILL NOT WORK
+val optionalRenderModel = if (state.showChild) {
+    ChildRenderModel(
+        // Incremented integer id doesn't work in this case
+        onClick = context.callback {
+            transition()
+        }
+    )
+} else {
+    null
+}
+```
+
+To fix it, you just need to add a unique key
+```kotlin
+onClick = context.callback("child on click") {
+
+}
+```
+
+Creating callbacks within a list:
+```kotlin
+// This will not work unless your list of items never changes (removal of item or position change).
 ItemListRenderModel(
     items = state.items.map { item ->
         ItemRenderModel(
             name = item.name,
-            onSelected = context.callback("item selection: ${item.id}") {
+            onSelected = context.callback {
                 // perform a transition
             }
     }
 )
+```
+
+To fix it, you should use an `item id` or something similar to declare callbacks
+```kotlin
+onSelected = context.callback("item selection: ${item.id}") {
+    // perform a transition
+}
 ```
 
 For each unique key we have a persisted callback instance that is kept across multiple `Formula.evaluate` calls. The
@@ -407,3 +439,4 @@ you will see the following exception.
 ```
 Caused by: java.lang.IllegalStateException: Transition already happened. This is using old transition callback: $it.
 ```
+

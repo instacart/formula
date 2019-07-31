@@ -111,6 +111,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             val message = buildString {
                 append("Dynamic callback registrations detected in ${formula::class}. ")
                 append("Expected: ${lastFrame.callbackCount}, was: ${frame.callbackCount}.")
+                append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
             }
             throw IllegalStateException(message)
         }
