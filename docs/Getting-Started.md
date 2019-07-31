@@ -263,10 +263,27 @@ class NotificationSettingsRenderView(private val root: View) : RenderView<Notifi
 ```
 
 ## Composing formulas
-One of the primary goals when making `ProcessorFormula` was easy composability of features and widgets. Previously,
-we had to listen to `Observable<ChildrenRenderModel>` and add it to our `State` and `RenderModel` classes. Also, we 
-would have to use observables to pass information from parent to the child. 
+You can pass other formulas through the constructor
+```kotlin
+class MainPageFormula(
+    val headerFormula: HeaderFormula,
+    val listFormula: ListFormula,
+    val dialogFormula: DialogFormula
+) : Formula<> 
+```
 
+Use `FormulaContext.child` within `Formula.evaluate` to hook them up.
+```kotlin
+val listRenderModel = context
+    .child(listFormula)
+    .onOutput { listEvent ->
+        // You can react to the list formula output and trigger a transition
+        none()
+    }
+    .input(createListInput(state))
+```
+ 
+Here is a more complete example:
 ```kotlin
 class MainPageFormula(
     val headerFormula: HeaderFormula,
