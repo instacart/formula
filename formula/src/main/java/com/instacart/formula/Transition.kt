@@ -73,12 +73,13 @@ data class Transition<out State, out Output> internal constructor(
         }
 
         /**
-         * Emits an [Output] and a single [SideEffect] as part of this transition.
+         * Emits an [Output] and [SideEffect]s as part of this transition.
          */
-        fun <State, Output> outputAndSideEffect(output: Output, key: String, effect: () -> Unit): Transition<State, Output> {
+        fun <State, Output> outputAndSideEffects(output: Output, vararg sideEffects: SideEffect) : Transition<State, Output> {
+            val effects = sideEffects.asList()
             return Transition(
                 output = output,
-                sideEffects = listOf(SideEffect(key, effect))
+                sideEffects = effects
             )
         }
     }
