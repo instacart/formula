@@ -71,5 +71,15 @@ data class Transition<out State, out Output> internal constructor(
         fun <State, Output> sideEffect(key: String, effect: () -> Unit): Transition<State, Output> {
             return Transition(sideEffects = listOf(SideEffect(key, effect)))
         }
+
+        /**
+         * Emits an [Output] and a single [SideEffect] as part of this transition.
+         */
+        fun <State, Output> outputAndSideEffect(output: Output, key: String, effect: () -> Unit): Transition<State, Output> {
+            return Transition(
+                output = output,
+                sideEffects = listOf(SideEffect(key, effect))
+            )
+        }
     }
 }
