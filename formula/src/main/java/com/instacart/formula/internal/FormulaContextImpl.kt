@@ -18,9 +18,7 @@ class FormulaContextImpl<State, Output> internal constructor(
 
     internal var callbackCount = 0
 
-    val children = mutableMapOf<FormulaKey, List<Update>>()
-    val callbacks = mutableSetOf<Any>()
-    val eventCallbacks = mutableSetOf<Any>()
+    val children = mutableSetOf<FormulaKey>()
 
     interface Delegate<State, Effect> {
         fun initOrFindCallback(key: Any): Callback
@@ -43,7 +41,6 @@ class FormulaContextImpl<State, Output> internal constructor(
     override fun initOrFindPositionalCallback(): Callback {
         ensureNotRunning()
         val key = callbackCount
-        callbacks.add(key)
         val callback = delegate.initOrFindCallback(key)
         incrementCallbackCount()
         return callback
@@ -65,18 +62,12 @@ class FormulaContextImpl<State, Output> internal constructor(
             throw IllegalStateException("Key cannot be blank.")
         }
 
-        if (callbacks.contains(key)) {
-            throw IllegalStateException("Callback $key is already defined. Make sure your key is unique.")
-        }
-
-        callbacks.add(key)
         return delegate.initOrFindCallback(key)
     }
 
     override fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
         ensureNotRunning()
         val key = callbackCount
-        eventCallbacks.add(key)
         incrementCallbackCount()
         return delegate.initOrFindEventCallback(key)
     }
@@ -97,11 +88,6 @@ class FormulaContextImpl<State, Output> internal constructor(
             throw IllegalStateException("Key cannot be blank.")
         }
 
-        if (eventCallbacks.contains(key)) {
-            throw IllegalStateException("Event callback $key is already defined. Make sure your key is unique.")
-        }
-
-        eventCallbacks.add(key)
         return delegate.initOrFindEventCallback<UIEvent>(key)
     }
 
@@ -120,12 +106,12 @@ class FormulaContextImpl<State, Output> internal constructor(
     ): ChildRenderModel {
         ensureNotRunning()
         val formulaKey = FormulaKey(formula::class, key)
-        if (children.containsKey(formulaKey)) {
+        if (children.contains(formulaKey)) {
             throw IllegalStateException("There already is a child with same key: $formulaKey. Use [key: String] parameter.")
         }
 
         val result = delegate.child(formula, input, formulaKey, onEvent, processingPass)
-        children[formulaKey] = result.updates
+        children.add(formulaKey)
         return result.renderModel
     }
 

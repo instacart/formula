@@ -32,9 +32,22 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
+    class Holder<T>(val value: T) {
+        var requested: Boolean = false
+
+        inline fun requestAccess(errorMessage: () -> String): T {
+            if (requested) {
+                throw IllegalStateException(errorMessage())
+            }
+
+            requested = true
+            return value
+        }
+    }
+
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: MutableMap<Any, Callback> = mutableMapOf()
-    private val eventCallbacks: MutableMap<Any, EventCallback<*>> = mutableMapOf()
+    private val callbacks: MutableMap<Any, Holder<Callback>> = mutableMapOf()
+    private val eventCallbacks: MutableMap<Any, Holder<EventCallback<*>>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -66,16 +79,20 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     }
 
     override fun initOrFindCallback(key: Any): Callback {
-        return callbacks.getOrPut(key) {
-            Callback(key)
-        }
+        return callbacks
+            .getOrPut(key) { Holder(Callback(key)) }
+            .requestAccess {
+               "Callback $key is already defined. Make sure your key is unique."
+            }
     }
 
     override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
         @Suppress("UNCHECKED_CAST")
-        return eventCallbacks.getOrPut(key) {
-            EventCallback<UIEvent>(key)
-        } as EventCallback<UIEvent>
+        return eventCallbacks
+            .getOrPut(key) { Holder(EventCallback<UIEvent>(key)) }
+            .requestAccess {
+                "Event callback $key is already defined. Make sure your key is unique."
+            } as EventCallback<UIEvent>
     }
 
     /**
@@ -116,13 +133,13 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             throw IllegalStateException(message)
         }
 
-        disableOldCallbacks(context)
+        disableOldCallbacks()
 
         // Set pending removal of children.
         val childIterator = children.iterator()
         while (childIterator.hasNext()) {
             val child = childIterator.next()
-            if (!frame.children.containsKey(child.key)) {
+            if (!frame.children.contains(child.key)) {
                 val processor = child.value
                 processor.markAsTerminated()
                 pendingTermination.add(processor)
@@ -134,28 +151,31 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         return result
     }
 
-    private fun disableOldCallbacks(context: FormulaContextImpl<State, Output>) {
+    private fun disableOldCallbacks() {
         val callbackIterator = callbacks.iterator()
         while (callbackIterator.hasNext()) {
             val callback = callbackIterator.next()
-            if (!context.callbacks.contains(callback.key)) {
-                callback.value.callback = {
+            if (!callback.value.requested) {
+                callback.value.value.callback = {
                     // TODO log that disabled callback was invoked.
                 }
-
                 callbackIterator.remove()
+            } else {
+                callback.value.requested = false
             }
         }
 
         val eventCallbackIterator = eventCallbacks.iterator()
         while (eventCallbackIterator.hasNext()) {
             val entry = eventCallbackIterator.next()
-            if (!context.eventCallbacks.contains(entry.key)) {
-                entry.value.callback = {
+            if (!entry.value.requested) {
+                entry.value.value.callback = {
                     // TODO log that disabled callback was invoked.
                 }
 
                 eventCallbackIterator.remove()
+            } else {
+                entry.value.requested = false
             }
         }
     }
@@ -283,14 +303,14 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
         // Clear callbacks
         callbacks.forEach { entry ->
-            entry.value.callback = {
+            entry.value.value.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }
         callbacks.clear()
 
         eventCallbacks.forEach { entry ->
-            entry.value.callback = {
+            entry.value.value.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }

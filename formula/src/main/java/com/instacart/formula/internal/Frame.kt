@@ -12,7 +12,7 @@ internal class Frame<Input, State, RenderModel>(
     val state: State,
     val evaluation: Evaluation<RenderModel>,
     val transitionCallbackWrapper: TransitionCallbackWrapper<State, *>,
-    val children: Map<FormulaKey, List<Update>>,
+    val children: Set<FormulaKey>,
     val callbackCount: Int
 ) {
     private var stateValid: Boolean = true
@@ -29,7 +29,6 @@ internal class Frame<Input, State, RenderModel>(
     }
 
     fun isValid() = stateValid && childrenValid
-
 
     fun isValid(input: Input): Boolean {
         return stateValid && childrenValid && this.input == input
