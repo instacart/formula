@@ -9,18 +9,14 @@ import java.lang.IllegalStateException
 
 class FormulaContextImpl<State, Output> internal constructor(
     private val processingPass: Long,
+    private val callbacks: Callbacks,
     private val delegate: Delegate<State, Output>,
     private val transitionCallback: TransitionCallbackWrapper<State, Output>
 ) : FormulaContext<State, Output>() {
 
     private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
-    internal var callbackCount = 0
 
     interface Delegate<State, Effect> {
-        fun initOrFindCallback(key: Any): Callback
-
-        fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent>
-
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
             input: ChildInput,
@@ -36,19 +32,11 @@ class FormulaContextImpl<State, Output> internal constructor(
 
     override fun initOrFindPositionalCallback(): Callback {
         ensureNotRunning()
-        val key = callbackCount
-        val callback = delegate.initOrFindCallback(key)
-        incrementCallbackCount()
-        return callback
+        return callbacks.initOrFindPositionalCallback()
     }
 
     override fun initOrFindOptionalCallback(condition: Boolean): Callback? {
-        return if (condition) {
-            initOrFindPositionalCallback()
-        } else {
-            incrementCallbackCount()
-            null
-        }
+        return callbacks.initOrFindOptionalCallback(condition)
     }
 
     override fun initOrFindCallback(key: String): Callback {
@@ -58,23 +46,16 @@ class FormulaContextImpl<State, Output> internal constructor(
             throw IllegalStateException("Key cannot be blank.")
         }
 
-        return delegate.initOrFindCallback(key)
+        return callbacks.initOrFindCallback(key)
     }
 
     override fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
         ensureNotRunning()
-        val key = callbackCount
-        incrementCallbackCount()
-        return delegate.initOrFindEventCallback(key)
+        return callbacks.initOrFindPositionalEventCallback()
     }
 
     override fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>? {
-        return if (condition) {
-            initOrFindPositionalEventCallback()
-        } else {
-            incrementCallbackCount()
-            null
-        }
+        return callbacks.initOrFindOptionalEventCallback(condition)
     }
 
     override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
@@ -84,7 +65,7 @@ class FormulaContextImpl<State, Output> internal constructor(
             throw IllegalStateException("Key cannot be blank.")
         }
 
-        return delegate.initOrFindEventCallback<UIEvent>(key)
+        return callbacks.initOrFindEventCallback<UIEvent>(key)
     }
 
     override fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update> {
@@ -109,14 +90,12 @@ class FormulaContextImpl<State, Output> internal constructor(
         key: String,
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
     ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> {
+        ensureNotRunning()
+
         @Suppress("UNCHECKED_CAST")
         val casted = childBuilder as Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
         casted.initialize(key, formula)
         return casted
-    }
-
-    private fun incrementCallbackCount() {
-        callbackCount += 1
     }
 
     private fun ensureNotRunning() {

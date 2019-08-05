@@ -23,6 +23,14 @@ abstract class FormulaContext<State, Output> {
         return callback
     }
 
+//    fun <Value> optional(create: () -> Value?): Value? {
+//        val value = create()
+//        if (value == null) {
+//
+//        }
+//        return value
+//    }
+
     /**
      * Creates a callback if [condition] is true.
      */

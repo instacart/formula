@@ -57,19 +57,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     override fun updateTransitionNumber(number: Long) {
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.transitionCallbackWrapper.transitionNumber = number
+        lastFrame.transitionCallbackWrapper.transitionId = number
 
         children.forEachValue {
             it.updateTransitionNumber(number)
         }
-    }
-
-    override fun initOrFindCallback(key: Any): Callback {
-        return callbacks.initOrFindCallback(key)
-    }
-
-    override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
-        return callbacks.initOrFindEventCallback(key)
     }
 
     /**
@@ -78,18 +70,18 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
-        currentTransition: Long
+        transitionId: Long
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
 
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
-            updateTransitionNumber(currentTransition)
+            updateTransitionNumber(transitionId)
             return lastFrame.evaluation
         }
 
-        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
-        val context = FormulaContextImpl(currentTransition, this, transitionCallback)
+        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, transitionId)
+        val context = FormulaContextImpl(transitionId, callbacks, this, transitionCallback)
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
@@ -97,20 +89,20 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, transitionCallback, context.callbackCount)
+        val frame = Frame(input, state, result, transitionCallback)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
-        if (lastFrame != null && lastFrame.callbackCount != frame.callbackCount) {
+        if (!callbacks.isValidRound()) {
             val message = buildString {
                 append("Dynamic callback registrations detected in ${formula::class}. ")
-                append("Expected: ${lastFrame.callbackCount}, was: ${frame.callbackCount}.")
+                append("Expected: ${callbacks.lastCallbackCount}, was: ${callbacks.callbackCount}.")
                 append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
             }
             throw IllegalStateException(message)
         }
 
-        callbacks.disableOldCallbacks()
+        callbacks.evaluationFinished()
 
         // Set pending removal of children.
         children.clearUnrequested {
