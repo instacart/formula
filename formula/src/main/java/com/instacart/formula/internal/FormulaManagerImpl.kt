@@ -33,8 +33,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: SingleRequestMap<Any, Callback> = mutableMapOf()
-    private val eventCallbacks: SingleRequestMap<Any, EventCallback<*>> = mutableMapOf()
+    private val callbacks = Callbacks()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -66,20 +65,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     }
 
     override fun initOrFindCallback(key: Any): Callback {
-        return callbacks
-            .findOrInit(key) { Callback(key) }
-            .requestAccess {
-                "Callback $key is already defined. Make sure your key is unique."
-            }
+        return callbacks.initOrFindCallback(key)
     }
 
     override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
-        @Suppress("UNCHECKED_CAST")
-        return eventCallbacks
-            .findOrInit(key) { EventCallback<UIEvent>(key) }
-            .requestAccess {
-                "Event callback $key is already defined. Make sure your key is unique."
-            } as EventCallback<UIEvent>
+        return callbacks.initOrFindEventCallback(key)
     }
 
     /**
@@ -120,7 +110,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
             throw IllegalStateException(message)
         }
 
-        disableOldCallbacks()
+        callbacks.disableOldCallbacks()
 
         // Set pending removal of children.
         children.clearUnrequested {
@@ -130,20 +120,6 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
         transitionCallback.running = true
         return result
-    }
-
-    private fun disableOldCallbacks() {
-        callbacks.clearUnrequested {
-            it.callback = {
-                // TODO log that disabled callback was invoked.
-            }
-        }
-
-        eventCallbacks.clearUnrequested {
-            it.callback = {
-                // TODO log that disabled callback was invoked.
-            }
-        }
     }
 
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
@@ -270,19 +246,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         terminated = true
 
         // Clear callbacks
-        callbacks.forEachValue {
-            it.callback = {
-                // TODO log that event is invalid because child was removed
-            }
-        }
-        callbacks.clear()
-
-        eventCallbacks.forEachValue { entry ->
-            entry.callback = {
-                // TODO log that event is invalid because child was removed
-            }
-        }
-        eventCallbacks.clear()
+        callbacks.disableAll()
 
         // Terminate updates so no transitions happen
         updateManager.terminate()
