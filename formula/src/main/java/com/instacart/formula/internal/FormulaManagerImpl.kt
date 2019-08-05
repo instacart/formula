@@ -23,7 +23,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: MutableMap<FormulaKey, SingleRequestHolder<FormulaManager<*, *, *, *>>> = mutableMapOf()
+    internal val children: SingleRequestMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
     internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false

@@ -14,7 +14,6 @@ class FormulaContextImpl<State, Output> internal constructor(
 ) : FormulaContext<State, Output>() {
 
     private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
-
     internal var callbackCount = 0
 
     interface Delegate<State, Effect> {
