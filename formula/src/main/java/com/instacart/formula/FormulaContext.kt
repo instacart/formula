@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.Callback
+import com.instacart.formula.internal.EventCallback
 import io.reactivex.Observable
 
 /**
@@ -13,49 +15,90 @@ abstract class FormulaContext<State, Output> {
      *
      * NOTE: this uses positional index to determine the key.
      */
-    abstract fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
+    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+        val callback = initOrFindPositionalCallback()
+        callback.callback = {
+            performTransition(transition(Transition.Factory))
+        }
+        return callback
+    }
 
     /**
      * Creates a callback if [condition] is true.
      */
-    abstract fun optionalCallback(
+    inline fun optionalCallback(
         condition: Boolean,
-        wrap: Transition.Factory.() -> Transition<State, Output>
-    ): (() -> Unit)?
+        crossinline transition: Transition.Factory.() -> Transition<State, Output>
+    ): (() -> Unit)? {
+        return initOrFindOptionalCallback(condition)?.apply {
+            callback = {
+                performTransition(transition(Transition.Factory))
+            }
+        }
+    }
 
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
      * @param key Unique identifier that describes this callback
      */
-    abstract fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit
+    inline fun callback(
+        key: String,
+        crossinline transition: Transition.Factory.() -> Transition<State, Output>
+    ): () -> Unit {
+        val callback = initOrFindCallback(key)
+        callback.callback = {
+            performTransition(transition(Transition.Factory))
+        }
+        return callback
+    }
 
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
      * NOTE: this uses positional index to determine the key.
      */
-    abstract fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit
+    inline fun <UIEvent> eventCallback(
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): (UIEvent) -> Unit {
+        val callback = initOrFindPositionalEventCallback<UIEvent>()
+        callback.callback = {
+            performTransition(transition(Transition.Factory, it))
+        }
+        return callback
+    }
 
     /**
      * If [condition] is met, creates a callback that takes a [UIEvent] and performs a [Transition].
      *
      * NOTE: this uses positional index to determine the key.
      */
-    abstract fun <UIEvent> optionalEventCallback(
+    inline fun <UIEvent> optionalEventCallback(
         condition: Boolean,
-        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
-    ): ((UIEvent) -> Unit)?
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): ((UIEvent) -> Unit)? {
+        return initOrFindOptionalEventCallback<UIEvent>(condition)?.apply {
+            callback = {
+                performTransition(transition(Transition.Factory, it))
+            }
+        }
+    }
 
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
      * @param key Unique identifier that describes this callback
      */
-    abstract fun <UIEvent> eventCallback(
+    inline fun <UIEvent> eventCallback(
         key: String,
-        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
-    ): (UIEvent) -> Unit
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+    ): (UIEvent) -> Unit {
+        val callback = initOrFindEventCallback<UIEvent>(key)
+        callback.callback = {
+            performTransition(transition(Transition.Factory, it))
+        }
+        return callback
+    }
 
     /**
      * Starts building a child [Formula]. The state management of child [Formula]
@@ -84,6 +127,20 @@ abstract class FormulaContext<State, Output> {
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
     abstract fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
+
+    @PublishedApi internal abstract fun performTransition(transition: Transition<State, Output>)
+
+    @PublishedApi internal abstract fun initOrFindPositionalCallback(): Callback
+
+    @PublishedApi internal abstract fun initOrFindCallback(key: String): Callback
+
+    @PublishedApi internal abstract fun initOrFindOptionalCallback(condition: Boolean): Callback?
+
+    @PublishedApi internal abstract fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent>
+
+    @PublishedApi internal abstract fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent>
+
+    @PublishedApi internal abstract fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>?
 
     /**
      * Provides methods to declare various events and effects.

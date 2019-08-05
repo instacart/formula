@@ -9,7 +9,6 @@ internal class TransitionCallbackWrapper<State, Output>(
 ) : (Transition<State, Output>) -> Unit {
     var running = false
 
-
     override fun invoke(transition: Transition<State, Output>) {
         if (!running) {
             throw IllegalStateException("Transitions are not allowed during evaluation")

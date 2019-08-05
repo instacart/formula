@@ -36,67 +36,29 @@ class FormulaContextImpl<State, Output> internal constructor(
         ): Evaluation<ChildRenderModel>
     }
 
-    private fun wrapCallback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
-        ensureNotRunning()
-        return {
-            transitionCallback(wrap(Transition.Factory))
-        }
+    override fun performTransition(transition: Transition<State, Output>) {
+        transitionCallback.invoke(transition)
     }
 
-    private fun <UIEvent> wrapEventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
+    override fun initOrFindPositionalCallback(): Callback {
         ensureNotRunning()
-        return {
-            transitionCallback(wrap(Transition.Factory, it))
-        }
-    }
-
-    override fun callback(wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
-        ensureNotRunning()
-
         val key = callbackCount
         callbacks.add(key)
-
         val callback = delegate.initOrFindCallback(key)
-        callback.callback = wrapCallback(wrap)
         incrementCallbackCount()
         return callback
     }
 
-    override fun optionalCallback(
-        condition: Boolean,
-        wrap: Transition.Factory.() -> Transition<State, Output>
-    ): (() -> Unit)? {
+    override fun initOrFindOptionalCallback(condition: Boolean): Callback? {
         return if (condition) {
-            callback(wrap)
+            initOrFindPositionalCallback()
         } else {
             incrementCallbackCount()
             null
         }
     }
 
-    override fun <UIEvent> eventCallback(wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>): (UIEvent) -> Unit {
-        val key = callbackCount
-        eventCallbacks.add(key)
-
-        val callback = delegate.initOrFindEventCallback<UIEvent>(key)
-        callback.callback = wrapEventCallback(wrap)
-        incrementCallbackCount()
-        return callback
-    }
-
-    override fun <UIEvent> optionalEventCallback(
-        condition: Boolean,
-        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
-    ): ((UIEvent) -> Unit)? {
-        return if (condition) {
-            eventCallback(wrap)
-        } else {
-            incrementCallbackCount()
-            null
-        }
-    }
-
-    override fun callback(key: String, wrap: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+    override fun initOrFindCallback(key: String): Callback {
         ensureNotRunning()
 
         if (key.isBlank()) {
@@ -108,16 +70,27 @@ class FormulaContextImpl<State, Output> internal constructor(
         }
 
         callbacks.add(key)
-
-        val callback = delegate.initOrFindCallback(key)
-        callback.callback = wrapCallback(wrap)
-        return callback
+        return delegate.initOrFindCallback(key)
     }
 
-    override fun <UIEvent> eventCallback(
-        key: String,
-        wrap: Transition.Factory.(UIEvent) -> Transition<State, Output>
-    ): (UIEvent) -> Unit {
+    override fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
+        ensureNotRunning()
+        val key = callbackCount
+        eventCallbacks.add(key)
+        incrementCallbackCount()
+        return delegate.initOrFindEventCallback(key)
+    }
+
+    override fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>? {
+        return if (condition) {
+            initOrFindPositionalEventCallback()
+        } else {
+            incrementCallbackCount()
+            null
+        }
+    }
+
+    override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
         ensureNotRunning()
 
         if (key.isBlank()) {
@@ -129,10 +102,7 @@ class FormulaContextImpl<State, Output> internal constructor(
         }
 
         eventCallbacks.add(key)
-
-        val callback = delegate.initOrFindEventCallback<UIEvent>(key)
-        callback.callback = wrapEventCallback(wrap)
-        return callback
+        return delegate.initOrFindEventCallback<UIEvent>(key)
     }
 
     override fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update> {
