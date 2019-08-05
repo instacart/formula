@@ -2,7 +2,6 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Child
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Transition
 import com.instacart.formula.Update
@@ -18,8 +17,6 @@ class FormulaContextImpl<State, Output> internal constructor(
 
     internal var callbackCount = 0
 
-    val children = mutableSetOf<FormulaKey>()
-
     interface Delegate<State, Effect> {
         fun initOrFindCallback(key: Any): Callback
 
@@ -31,7 +28,7 @@ class FormulaContextImpl<State, Output> internal constructor(
             key: FormulaKey,
             onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
             processingPass: Long
-        ): Evaluation<ChildRenderModel>
+        ): ChildRenderModel
     }
 
     override fun performTransition(transition: Transition<State, Output>) {
@@ -106,13 +103,7 @@ class FormulaContextImpl<State, Output> internal constructor(
     ): ChildRenderModel {
         ensureNotRunning()
         val formulaKey = FormulaKey(formula::class, key)
-        if (children.contains(formulaKey)) {
-            throw IllegalStateException("There already is a child with same key: $formulaKey. Use [key: String] parameter.")
-        }
-
-        val result = delegate.child(formula, input, formulaKey, onEvent, processingPass)
-        children.add(formulaKey)
-        return result.renderModel
+        return delegate.child(formula, input, formulaKey, onEvent, processingPass)
     }
 
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
