@@ -23,7 +23,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: MutableMap<FormulaKey, Holder<FormulaManager<*, *, *, *>>> = mutableMapOf()
+    internal val children: MutableMap<FormulaKey, SingleRequestHolder<FormulaManager<*, *, *, *>>> = mutableMapOf()
     internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
@@ -32,26 +32,9 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
-    class Holder<T>(val value: T) {
-        var requested: Boolean = false
-
-        inline fun requestAccess(errorMessage: () -> String): T {
-            if (requested) {
-                throw IllegalStateException(errorMessage())
-            }
-
-            requested = true
-            return value
-        }
-
-        fun reset() {
-            requested = false
-        }
-    }
-
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: MutableMap<Any, Holder<Callback>> = mutableMapOf()
-    private val eventCallbacks: MutableMap<Any, Holder<EventCallback<*>>> = mutableMapOf()
+    private val callbacks: SingleRequestMap<Any, Callback> = mutableMapOf()
+    private val eventCallbacks: SingleRequestMap<Any, EventCallback<*>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -77,23 +60,23 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
         lastFrame.transitionCallbackWrapper.transitionNumber = number
 
-        children.forEach {
-            it.value.value.updateTransitionNumber(number)
+        children.forEachValue {
+            it.updateTransitionNumber(number)
         }
     }
 
     override fun initOrFindCallback(key: Any): Callback {
         return callbacks
-            .getOrPut(key) { Holder(Callback(key)) }
+            .findOrInit(key) { Callback(key) }
             .requestAccess {
-               "Callback $key is already defined. Make sure your key is unique."
+                "Callback $key is already defined. Make sure your key is unique."
             }
     }
 
     override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
         @Suppress("UNCHECKED_CAST")
         return eventCallbacks
-            .getOrPut(key) { Holder(EventCallback<UIEvent>(key)) }
+            .findOrInit(key) { EventCallback<UIEvent>(key) }
             .requestAccess {
                 "Event callback $key is already defined. Make sure your key is unique."
             } as EventCallback<UIEvent>
@@ -140,17 +123,9 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         disableOldCallbacks()
 
         // Set pending removal of children.
-        val childIterator = children.iterator()
-        while (childIterator.hasNext()) {
-            val child = childIterator.next()
-            if (!child.value.requested) {
-                val processor = child.value.value
-                processor.markAsTerminated()
-                pendingTermination.add(processor)
-                childIterator.remove()
-            } else {
-                child.value.reset()
-            }
+        children.clearUnrequested {
+            it.markAsTerminated()
+            pendingTermination.add(it)
         }
 
         transitionCallback.running = true
@@ -158,30 +133,15 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     }
 
     private fun disableOldCallbacks() {
-        val callbackIterator = callbacks.iterator()
-        while (callbackIterator.hasNext()) {
-            val callback = callbackIterator.next()
-            if (!callback.value.requested) {
-                callback.value.value.callback = {
-                    // TODO log that disabled callback was invoked.
-                }
-                callbackIterator.remove()
-            } else {
-                callback.value.reset()
+        callbacks.clearUnrequested {
+            it.callback = {
+                // TODO log that disabled callback was invoked.
             }
         }
 
-        val eventCallbackIterator = eventCallbacks.iterator()
-        while (eventCallbackIterator.hasNext()) {
-            val entry = eventCallbackIterator.next()
-            if (!entry.value.requested) {
-                entry.value.value.callback = {
-                    // TODO log that disabled callback was invoked.
-                }
-
-                eventCallbackIterator.remove()
-            } else {
-                entry.value.reset()
+        eventCallbacks.clearUnrequested {
+            it.callback = {
+                // TODO log that disabled callback was invoked.
             }
         }
     }
@@ -194,8 +154,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         // Step through children frames
-        children.forEach {
-            if (it.value.value.terminateOldUpdates(currentTransition)) {
+        children.forEachValue {
+            if (it.terminateOldUpdates(currentTransition)) {
                 return true
             }
         }
@@ -212,8 +172,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         // Step through children frames
-        children.forEach {
-            if (it.value.value.startNewUpdates(currentTransition)) {
+        children.forEachValue {
+            if (it.startNewUpdates(currentTransition)) {
                 return true
             }
         }
@@ -238,8 +198,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     }
 
     override fun processSideEffects(currentTransition: Long): Boolean {
-        children.forEach { child ->
-            if (child.value.value.processSideEffects(currentTransition)) {
+        children.forEachValue { child ->
+            if (child.processSideEffects(currentTransition)) {
                 return true
             }
         }
@@ -291,7 +251,9 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     ): ChildRenderModel {
         @Suppress("UNCHECKED_CAST")
         val manager = children
-            .getOrPut(key) { Holder(childManagerFactory.createChildManager(formula, input, transitionLock)) }
+            .findOrInit(key) {
+                childManagerFactory.createChildManager(formula, input, transitionLock)
+            }
             .requestAccess {
                 throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
             } as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
@@ -308,15 +270,15 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         terminated = true
 
         // Clear callbacks
-        callbacks.forEach { entry ->
-            entry.value.value.callback = {
+        callbacks.forEachValue {
+            it.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }
         callbacks.clear()
 
-        eventCallbacks.forEach { entry ->
-            entry.value.value.callback = {
+        eventCallbacks.forEachValue { entry ->
+            entry.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }
@@ -325,8 +287,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         // Terminate updates so no transitions happen
         updateManager.terminate()
 
-        children.forEach {
-            it.value.value.markAsTerminated()
+        children.forEachValue {
+            it.markAsTerminated()
         }
     }
 
