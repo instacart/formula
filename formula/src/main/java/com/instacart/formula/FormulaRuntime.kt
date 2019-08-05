@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.internal.FormulaManagerFactory
 import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.FormulaManagerImpl
+import com.instacart.formula.internal.ScopedCallbacks
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionLockImpl
 import io.reactivex.Observable
@@ -70,6 +71,7 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
             val processorManager: FormulaManagerImpl<Input, State, Output, RenderModel> =
                 FormulaManagerImpl(
                     state = formula.initialState(input),
+                    callbacks = ScopedCallbacks(formula),
                     transitionLock = lock,
                     childManagerFactory = childManagerFactory
                 )

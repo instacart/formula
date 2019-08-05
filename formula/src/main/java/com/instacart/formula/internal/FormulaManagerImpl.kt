@@ -15,15 +15,16 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class FormulaManagerImpl<Input, State, Output, RenderModel>(
+internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
     state: State,
+    private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
 ) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: SingleRequestMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
+    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *, *>> = mutableMapOf()
     internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
@@ -33,7 +34,6 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks = Callbacks()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -92,15 +92,6 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         val frame = Frame(input, state, result, transitionCallback)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
-
-        if (!callbacks.isValidRound()) {
-            val message = buildString {
-                append("Dynamic callback registrations detected in ${formula::class}. ")
-                append("Expected: ${callbacks.lastCallbackCount}, was: ${callbacks.callbackCount}.")
-                append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
-            }
-            throw IllegalStateException(message)
-        }
 
         callbacks.evaluationFinished()
 
@@ -213,7 +204,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
-        key: FormulaKey,
+        key: Any,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
     ): ChildRenderModel {

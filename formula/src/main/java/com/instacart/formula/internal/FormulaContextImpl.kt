@@ -9,7 +9,7 @@ import java.lang.IllegalStateException
 
 class FormulaContextImpl<State, Output> internal constructor(
     private val processingPass: Long,
-    private val callbacks: Callbacks,
+    private val callbacks: ScopedCallbacks,
     private val delegate: Delegate<State, Output>,
     private val transitionCallback: TransitionCallbackWrapper<State, Output>
 ) : FormulaContext<State, Output>() {
@@ -20,7 +20,7 @@ class FormulaContextImpl<State, Output> internal constructor(
         fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
             input: ChildInput,
-            key: FormulaKey,
+            key: Any,
             onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
             processingPass: Long
         ): ChildRenderModel
@@ -76,14 +76,13 @@ class FormulaContextImpl<State, Output> internal constructor(
     }
 
     fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
-        key: String,
+        key: Any,
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
     ): ChildRenderModel {
         ensureNotRunning()
-        val formulaKey = FormulaKey(formula::class, key)
-        return delegate.child(formula, input, formulaKey, onEvent, processingPass)
+        return delegate.child(formula, input, key, onEvent, processingPass)
     }
 
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
