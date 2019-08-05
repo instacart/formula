@@ -97,6 +97,13 @@ class FormulaContextImpl<State, Output> internal constructor(
         return casted
     }
 
+    @PublishedApi internal fun <Value> key(key: Any, create: () -> Value): Value {
+        callbacks.enterScope(key)
+        val value = create()
+        callbacks.endScope()
+        return value
+    }
+
     private fun ensureNotRunning() {
         if (transitionCallback.running) {
             throw IllegalStateException("cannot call this after evaluation finished.")

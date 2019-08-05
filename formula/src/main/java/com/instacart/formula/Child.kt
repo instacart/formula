@@ -6,14 +6,14 @@ import com.instacart.formula.internal.JoinedKey
 /**
  * A stateful child [Formula] builder. It is initialized by calling [FormulaContext.child].
  */
-class Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>(
-    private val context: FormulaContextImpl<State, Output>
+class Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> internal constructor(
+    @PublishedApi internal val context: FormulaContextImpl<State, Output>
 ) {
     private val none: Transition.Factory.(ChildOutput) -> Transition<State, Output> = {
         none()
     }
 
-    private var key: Any? = null
+    @PublishedApi internal var key: Any? = null
     private var formula: Formula<ChildInput, *, ChildOutput, ChildRenderModel>? = null
     private var onOutput: Transition.Factory.(ChildOutput) -> Transition<State, Output> = none
 
@@ -38,11 +38,10 @@ class Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>(
         this.onOutput = callback
     }
 
-    fun input(create: () -> ChildInput): ChildRenderModel {
-        // scope to child key
-        val renderModel = input(create())
-        // end scope
-        return renderModel
+    inline fun input(crossinline create: () -> ChildInput): ChildRenderModel {
+        return context.key(checkNotNull(key)) {
+            input(create())
+        }
     }
 
     fun input(input: ChildInput): ChildRenderModel {
