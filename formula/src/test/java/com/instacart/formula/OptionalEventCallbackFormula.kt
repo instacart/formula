@@ -21,15 +21,6 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
                 callback = context.optionalEventCallback(state.callbackEnabled) {
                     state.copy(state = it).transition()
                 },
-//                callback = context.optional {
-//                    if (state.callbackEnabled) {
-//                        context.eventCallback<Int> {
-//                            state.copy(state = it).transition()
-//                        }
-//                    } else {
-//                        null
-//                    }
-//                },
                 toggleCallback = context.callback {
                     state.copy(callbackEnabled = !state.callbackEnabled).transition()
                 }
