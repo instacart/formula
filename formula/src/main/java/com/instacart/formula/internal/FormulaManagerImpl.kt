@@ -2,43 +2,36 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.SideEffect
+import com.instacart.formula.Message
 import com.instacart.formula.Transition
 
 /**
- * Handles state processing.
+ * Handles formula and its children state processing.
  *
  * Order of processing:
- * 1. Mark removed children as terminated.
- * 2. Prepare parent and alive children for updates.
- * 3. Process removed children side effects.
- * 4. Perform children side effects
- * 5. Perform parent side effects.
+ * 1. Evaluate
+ * 2. Disable old callbacks
+ * 3. Terminate removed children
+ * 4. Prepare parent and alive children for updates.
  */
-internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
+internal class FormulaManagerImpl<Input, State, RenderModel>(
     state: State,
     private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
-) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output, RenderModel> {
+) : FormulaContextImpl.Delegate<State>, FormulaManager<Input, State, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *, *>> = mutableMapOf()
-    internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
+    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *>> = mutableMapOf()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
 
     private var state: State = state
+    private var onTransition: ((List<Message>, isValid: Boolean) -> Unit)? = null
 
-    private var pendingSideEffects = mutableListOf<SideEffect>()
-
-    private var onTransition: ((Output?, Boolean) -> Unit)? = null
-
-    private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
-        pendingSideEffects.addAll(transition.sideEffects)
+    private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
         this.state = transition.state ?: this.state
-
         val frame = this.frame
         frame?.updateStateValidity(state)
         if (wasChildInvalidated) {
@@ -47,12 +40,12 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
         if (!terminated) {
             val isValid = frame != null && frame.isValid()
-            onTransition?.invoke(transition.output, isValid)
+            onTransition?.invoke(transition.messages, isValid)
         }
     }
 
-    override fun setTransitionListener(listener: (Output?, Boolean) -> Unit) {
-        onTransition = listener
+    override fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit) {
+        this.onTransition = listener
     }
 
     override fun updateTransitionNumber(number: Long) {
@@ -68,7 +61,7 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     override fun evaluate(
-        formula: Formula<Input, State, Output, RenderModel>,
+        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel> {
@@ -99,7 +92,6 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
         // Set pending removal of children.
         children.clearUnrequested {
             it.markAsTerminated()
-            pendingTermination.add(it)
         }
 
         transitionCallback.running = true
@@ -141,44 +133,6 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
         return false
     }
 
-    private fun clearRemovedChildren(currentTransition: Long): Boolean {
-        // Tear down old children
-        val pendingTerminationIterator = pendingTermination.iterator()
-        while (pendingTerminationIterator.hasNext()) {
-            val child = pendingTerminationIterator.next()
-            pendingTerminationIterator.remove()
-            child.clearSideEffects()
-
-            if (transitionLock.hasTransitioned(currentTransition)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    override fun processSideEffects(currentTransition: Long): Boolean {
-        children.forEachValue { child ->
-            if (child.processSideEffects(currentTransition)) {
-                return true
-            }
-        }
-
-        // Perform pending side-effects
-        val sideEffectIterator = pendingSideEffects.iterator()
-        while (sideEffectIterator.hasNext()) {
-            val sideEffect = sideEffectIterator.next()
-            sideEffectIterator.remove()
-            sideEffect.effect()
-
-            if (transitionLock.hasTransitioned(currentTransition)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
     /**
      * Returns true if has transition while moving to next frame.
      */
@@ -191,22 +145,13 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
             return true
         }
 
-        if (clearRemovedChildren(currentTransition)) {
-            return true
-        }
-
-        if (processSideEffects(currentTransition)) {
-            return true
-        }
-
         return transitionLock.hasTransitioned(currentTransition)
     }
 
-    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
+    override fun <ChildInput, ChildState, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildRenderModel>,
         input: ChildInput,
         key: Any,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
     ): ChildRenderModel {
         @Suppress("UNCHECKED_CAST")
@@ -216,11 +161,10 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
             }
             .requestAccess {
                 throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
-            } as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
+            } as FormulaManager<ChildInput, ChildState, ChildRenderModel>
 
-        manager.setTransitionListener { output, isValid ->
-            val transition = output?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
-            handleTransition(transition, !isValid)
+        manager.setTransitionListener { messages, isValid ->
+            handleTransition(Transition(messages = messages), !isValid)
         }
 
         return manager.evaluate(formula, input, processingPass).renderModel
@@ -240,31 +184,8 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
     }
 
-    override fun clearSideEffects() {
-        // Terminate children
-        val childIterator = children.iterator()
-        while (childIterator.hasNext()) {
-            val child = childIterator.next()
-            childIterator.remove()
-            child.value.value.clearSideEffects()
-        }
-
-        // Perform pending side effects
-        processSideEffects()
-    }
 
     fun terminate() {
         markAsTerminated()
-        clearSideEffects()
-    }
-
-    private fun processSideEffects() {
-        // Clear side-effect queue
-        val sideEffectIterator = pendingSideEffects.iterator()
-        while (sideEffectIterator.hasNext()) {
-            val sideEffect = sideEffectIterator.next()
-            sideEffectIterator.remove()
-            sideEffect.effect()
-        }
     }
 }

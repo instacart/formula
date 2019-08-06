@@ -11,7 +11,7 @@ import org.junit.Test
 class TestFormulaTest {
     lateinit var childFormula: ChildFormula
     lateinit var parentFormula: ParentFormula
-    lateinit var subject: TestFormulaObserver<Unit, Unit, ParentFormula.RenderModel, ParentFormula>
+    lateinit var subject: TestFormulaObserver<Unit, ParentFormula.RenderModel, ParentFormula>
 
     @Before fun setup() {
         childFormula = ChildFormula()
@@ -22,17 +22,17 @@ class TestFormulaTest {
             }
     }
 
-    @Test fun `output using formula class`() {
+    @Test fun `send message using formula class`() {
         subject
-            .output(ChildFormula::class, ChildFormula.ChangeNameTo("my name"))
+            .childInput(ChildFormula::class) { onChangeName("my name") }
             .renderModel {
                 assertThat(name).isEqualTo("my name")
             }
     }
 
-    @Test fun `output using formula`() {
+    @Test fun `send message using formula instance`() {
         subject
-            .output(childFormula, ChildFormula.ChangeNameTo("my name"))
+            .childInput(childFormula) { onChangeName("my name") }
             .renderModel {
                 assertThat(name).isEqualTo("my name")
             }
@@ -40,13 +40,13 @@ class TestFormulaTest {
 
     @Test fun `input passed to formula`() {
         subject.childInput(childFormula) {
-            assertThat(this).isEqualTo("")
+            assertThat(name).isEqualTo("")
         }
     }
 
     class ParentFormula(
         private val childFormula: ChildFormula
-    ) : Formula<Unit, ParentFormula.State, Unit, ParentFormula.RenderModel> {
+    ) : Formula<Unit, ParentFormula.State, ParentFormula.RenderModel> {
 
         data class State(val name: String)
 
@@ -60,30 +60,39 @@ class TestFormulaTest {
         override fun evaluate(
             input: Unit,
             state: State,
-            context: FormulaContext<State, Unit>
+            context: FormulaContext<State>
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
                     name = state.name,
-                    button = context.child(childFormula)
-                        .onOutput {
-                            transition(state.copy(name = it.newName))
+                    button = context
+                        .child(childFormula)
+                        .input {
+                            ChildFormula.Input(
+                                name = state.name,
+                                onChangeName = context.eventCallback {
+                                    state.copy(name = it).noMessages()
+                                }
+                            )
                         }
-                        .input(state.name)
                 )
             )
         }
     }
 
-    class ChildFormula : StatelessFormula<String, ChildFormula.ChangeNameTo, ChildFormula.Button>() {
-        class ChangeNameTo(val newName: String)
+    class ChildFormula : StatelessFormula<ChildFormula.Input, ChildFormula.Button>() {
+
+        data class Input(
+            val name: String,
+            val onChangeName: (newName: String) -> Unit
+        )
 
         class Button(val onNameChanged: (String) -> Unit)
 
-        override fun evaluate(input: String, context: FormulaContext<Unit, ChangeNameTo>): Evaluation<Button> {
+        override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Button> {
             return Evaluation(
                 renderModel = Button(onNameChanged = context.eventCallback {
-                    output(ChangeNameTo(it))
+                    message(input.onChangeName, input.name)
                 })
             )
         }

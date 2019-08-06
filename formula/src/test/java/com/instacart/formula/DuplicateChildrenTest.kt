@@ -11,10 +11,10 @@ class DuplicateChildrenTest {
         }
     }
 
-    class ParentFormula : Formula<Unit, Unit, Unit, List<Unit>> {
+    class ParentFormula : Formula<Unit, Unit, List<Unit>> {
         override fun initialState(input: Unit) = Unit
 
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<List<Unit>> {
+        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit>): Evaluation<List<Unit>> {
             return Evaluation(
                 renderModel = listOf(1, 2, 3).map {
                     context.child(ChildFormula()).input(Unit)
@@ -23,10 +23,10 @@ class DuplicateChildrenTest {
         }
     }
 
-    class ChildFormula: Formula<Unit, Unit, Unit, Unit> {
+    class ChildFormula: Formula<Unit, Unit, Unit> {
         override fun initialState(input: Unit) = Unit
 
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {
+        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
             return Evaluation(
                 renderModel = Unit
             )

@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.messages.TestEventCallback
 import com.instacart.formula.test.test
 import org.junit.Test
 
@@ -38,9 +39,9 @@ class FormulaRuntimeTest {
         MultipleChildEvents
             .formula()
             .test()
-            .renderModel { child.incrementAndOutput() }
-            .renderModel { child.incrementAndOutput() }
-            .renderModel { child.incrementAndOutput() }
+            .renderModel { child.incrementAndMessage() }
+            .renderModel { child.incrementAndMessage() }
+            .renderModel { child.incrementAndMessage() }
             .renderModel { assertThat(state).isEqualTo(3) }
     }
 
@@ -63,10 +64,10 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `parent removes child when child emits an output`() {
-        ChildRemovedOnOutputEvent()
+    fun `parent removes child when child emits a message`() {
+        ChildRemovedOnMessage()
             .assertChildIsVisible(true)
-            .closeByOutput()
+            .closeByChildMessage()
             .assertChildIsVisible(false)
     }
 
@@ -113,42 +114,47 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `runtime emits output events`() {
-        OutputFormula()
-            .test()
-            .renderModel { triggerOutput() }
-            .assertOutputCount(1)
+    fun `runtime emits messages`() {
+        val messageHandler = TestEventCallback<Int>()
+        MessageFormula()
+            .test(MessageFormula.Input(messageHandler = messageHandler))
+            .renderModel { triggerMessage() }
             .assertRenderModelCount(1) // no state change, so no re-evaluation
+            .apply {
+                assertThat(messageHandler.values()).hasSize(1)
+            }
     }
 
     @Test
-    fun `output after no re-evaluation pass`() {
-        OutputFormula()
-            .test()
-            .renderModel { triggerOutput() }
-            .renderModel { triggerOutput() }
-            .assertOutputCount(2)
+    fun `message after no re-evaluation pass`() {
+        val messageHandler = TestEventCallback<Int>()
+        MessageFormula()
+            .test(MessageFormula.Input(messageHandler = messageHandler))
+            .renderModel { triggerMessage() }
+            .renderModel { triggerMessage() }
             .assertRenderModelCount(1)
+            .apply {
+                assertThat(messageHandler.values()).hasSize(2)
+            }
     }
 
     @Test
-    fun `child output with no parent state change`() {
-        ChildOutputNoParentStateChange
+    fun `child message with no parent state change`() {
+        ChildMessageNoParentStateChange
             .formula()
             .test()
-            .renderModel { child.triggerOutput() }
-            .assertOutputCount(1)
-            .assertRenderModelCount(1) // no state change, so no re-evaluation
+            .renderModel { child.triggerMessage() }
+            .assertRenderModelCount(1)  // no state change, so no re-evaluation
     }
 
     @Test
-    fun `child output with parent state change`() {
-        ChildOutputWithParentStateChange
+    fun `child message with parent state change`() {
+        ChildMessageWithParentStateChange
             .formula()
             .test()
-            .renderModel { child.triggerOutput() }
-            .assertOutputCount(1)
+            .renderModel { child.triggerMessage() }
             .assertRenderModelCount(2)
+            .renderModel { assertThat(state).isEqualTo(1) }
     }
 
     @Test fun `side effect triggers parent state transition`() {
@@ -166,8 +172,8 @@ class FormulaRuntimeTest {
         ChildStateResetAfterToggle
             .formula()
             .test()
-            .renderModel { child!!.incrementAndOutput() }
-            .renderModel { child!!.incrementAndOutput() }
+            .renderModel { child!!.incrementAndMessage() }
+            .renderModel { child!!.incrementAndMessage() }
             .renderModel { assertThat(child!!.state).isEqualTo(2) }
             .renderModel { toggleChild() }
             .renderModel { assertThat(child).isNull() }
@@ -177,12 +183,12 @@ class FormulaRuntimeTest {
 
     @Test
     fun `multiple callbacks using the same render model`() {
-        OutputFormula()
-            .test()
+        MessageFormula()
+            .test(MessageFormula.Input(messageHandler = {}))
             .renderModel {
-                incrementAndOutput()
-                incrementAndOutput()
-                incrementAndOutput()
+                incrementAndMessage()
+                incrementAndMessage()
+                incrementAndMessage()
             }
             .renderModel {
                 assertThat(state).isEqualTo(3)
@@ -202,28 +208,30 @@ class FormulaRuntimeTest {
 
     @Test
     fun `using a removed child callback should do nothing`() {
-        OptionalChildFormula(OutputFormula())
+        OptionalChildFormula(MessageFormula()) {
+            MessageFormula.Input(messageHandler = eventCallback { none() })
+        }
             .test()
             .renderModel {
                 val cachedChild = child!!
                 toggleChild()
 
-                cachedChild.incrementAndOutput()
-                cachedChild.incrementAndOutput()
-                cachedChild.incrementAndOutput()
+                cachedChild.incrementAndMessage()
+                cachedChild.incrementAndMessage()
+                cachedChild.incrementAndMessage()
             }
             .renderModel { assertThat(child).isNull() }
     }
 
     @Test
     fun `callbacks are equal across render model changes`() {
-        OutputFormula()
-            .test()
-            .renderModel { incrementAndOutput() }
-            .renderModel { incrementAndOutput() }
+        MessageFormula()
+            .test(MessageFormula.Input(messageHandler = {}))
+            .renderModel { incrementAndMessage() }
+            .renderModel { incrementAndMessage() }
             .assertRenderModelCount(3)
             .apply {
-                assertThat(values().map { it.incrementAndOutput }.toSet()).hasSize(1)
+                assertThat(values().map { it.incrementAndMessage }.toSet()).hasSize(1)
             }
     }
 

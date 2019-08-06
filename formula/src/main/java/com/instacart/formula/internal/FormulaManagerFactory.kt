@@ -4,9 +4,9 @@ import com.instacart.formula.Formula
 
 interface FormulaManagerFactory {
 
-    fun <Input, State, Output, RenderModel> createChildManager(
-        formula: Formula<Input, State, Output, RenderModel>,
+    fun <Input, State, RenderModel> createChildManager(
+        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionLock: TransitionLock
-    ): FormulaManager<Input, State, Output, RenderModel>
+    ): FormulaManager<Input, State, RenderModel>
 }

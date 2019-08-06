@@ -2,20 +2,21 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.Message
 import com.instacart.formula.internal.FormulaManager
 
 /**
  * Used within tests to inspect the values parent [Formula] passes to the child [Formula] and
- * to send child output events to the parent [Formula]
+ * to emit child messages to the parent [Formula].
  */
-class TestFormulaManager<Input, State, Output, RenderModel>(
+class TestFormulaManager<Input, State, RenderModel>(
     private val renderModel: RenderModel
-) : FormulaManager<Input, State, Output, RenderModel> {
+) : FormulaManager<Input, State, RenderModel> {
 
-    private var transitionListener: ((Output?, Boolean) -> Unit) = { _, _ -> Unit }
+    private var transitionListener: ((List<Message>, Boolean) -> Unit) = { _, _ -> Unit }
     private val inputs = mutableListOf<Input>()
 
-    override fun setTransitionListener(listener: (Output?, Boolean) -> Unit) {
+    override fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit) {
         transitionListener = listener
     }
 
@@ -24,7 +25,7 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
     }
 
     override fun evaluate(
-        formula: Formula<Input, State, Output, RenderModel>,
+        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel> {
@@ -40,17 +41,7 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
         return false
     }
 
-    override fun processSideEffects(currentTransition: Long): Boolean {
-        return false
-    }
-
     override fun markAsTerminated() = Unit
-
-    override fun clearSideEffects() = Unit
-
-    fun output(output: Output) {
-        transitionListener.invoke(output, false)
-    }
 
     fun lastInput(): Input {
         return inputs.last()

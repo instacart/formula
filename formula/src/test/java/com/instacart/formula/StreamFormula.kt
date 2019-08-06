@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-class StreamFormula : Formula<Unit, StreamFormula.State, Unit, StreamFormula.RenderModel> {
+class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderModel> {
 
     val incrementEvents = IncrementRxStream()
 
@@ -20,23 +20,23 @@ class StreamFormula : Formula<Unit, StreamFormula.State, Unit, StreamFormula.Ren
     override fun evaluate(
         input: Unit,
         state: State,
-        context: FormulaContext<State, Unit>
+        context: FormulaContext<State>
     ): Evaluation<RenderModel> {
         return Evaluation(
             updates = context.updates {
                 if (state.listenForEvents) {
                     events(incrementEvents, onEvent = {
-                        transition(state.copy(count = state.count + 1))
+                        state.copy(count = state.count + 1).noMessages()
                     })
                 }
             },
             renderModel = RenderModel(
                 state = state.count,
                 startListening = context.callback {
-                    state.copy(listenForEvents = true).transition()
+                    state.copy(listenForEvents = true).noMessages()
                 },
                 stopListening = context.callback {
-                    state.copy(listenForEvents = false).transition()
+                    state.copy(listenForEvents = false).noMessages()
                 }
             )
         )
