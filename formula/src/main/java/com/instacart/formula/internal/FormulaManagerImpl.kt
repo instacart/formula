@@ -88,6 +88,7 @@ internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
             state = formula.onInputChanged(prevInput, input, state)
         }
 
+        callbacks.evaluationStarted()
         val result = formula.evaluate(input, state, context)
         val frame = Frame(input, state, result, transitionCallback)
         updateManager.updateEventListeners(frame.evaluation.updates)

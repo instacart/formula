@@ -9,10 +9,10 @@ import java.lang.IllegalStateException
 
 class FormulaContextImpl<State, Output> internal constructor(
     private val processingPass: Long,
-    private val callbacks: ScopedCallbacks,
+    callbacks: ScopedCallbacks,
     private val delegate: Delegate<State, Output>,
     private val transitionCallback: TransitionCallbackWrapper<State, Output>
-) : FormulaContext<State, Output>() {
+) : FormulaContext<State, Output>(callbacks) {
 
     private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
 
@@ -28,44 +28,6 @@ class FormulaContextImpl<State, Output> internal constructor(
 
     override fun performTransition(transition: Transition<State, Output>) {
         transitionCallback.invoke(transition)
-    }
-
-    override fun initOrFindPositionalCallback(): Callback {
-        ensureNotRunning()
-        return callbacks.initOrFindPositionalCallback()
-    }
-
-    override fun initOrFindOptionalCallback(condition: Boolean): Callback? {
-        return callbacks.initOrFindOptionalCallback(condition)
-    }
-
-    override fun initOrFindCallback(key: String): Callback {
-        ensureNotRunning()
-
-        if (key.isBlank()) {
-            throw IllegalStateException("Key cannot be blank.")
-        }
-
-        return callbacks.initOrFindCallback(key)
-    }
-
-    override fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
-        ensureNotRunning()
-        return callbacks.initOrFindPositionalEventCallback()
-    }
-
-    override fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>? {
-        return callbacks.initOrFindOptionalEventCallback(condition)
-    }
-
-    override fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent> {
-        ensureNotRunning()
-
-        if (key.isBlank()) {
-            throw IllegalStateException("Key cannot be blank.")
-        }
-
-        return callbacks.initOrFindEventCallback<UIEvent>(key)
     }
 
     override fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update> {
@@ -95,13 +57,6 @@ class FormulaContextImpl<State, Output> internal constructor(
         val casted = childBuilder as Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
         casted.initialize(key, formula)
         return casted
-    }
-
-    @PublishedApi internal fun <Value> key(key: Any, create: () -> Value): Value {
-        callbacks.enterScope(key)
-        val value = create()
-        callbacks.endScope()
-        return value
     }
 
     private fun ensureNotRunning() {
