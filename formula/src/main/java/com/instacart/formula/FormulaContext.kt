@@ -1,14 +1,15 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.Callback
-import com.instacart.formula.internal.EventCallback
+import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.Observable
 
 /**
  * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create
  * child formulas.
  */
-abstract class FormulaContext<State, Output> {
+abstract class FormulaContext<State, Output> internal constructor(
+    @PublishedApi internal val callbacks: ScopedCallbacks
+) {
 
     /**
      * Creates a callback to be used for handling UI event transitions.
@@ -16,7 +17,7 @@ abstract class FormulaContext<State, Output> {
      * NOTE: this uses positional index to determine the key.
      */
     inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
-        val callback = initOrFindPositionalCallback()
+        val callback = callbacks.initOrFindPositionalCallback()
         callback.callback = {
             performTransition(transition(Transition.Factory))
         }
@@ -30,7 +31,7 @@ abstract class FormulaContext<State, Output> {
         condition: Boolean,
         crossinline transition: Transition.Factory.() -> Transition<State, Output>
     ): (() -> Unit)? {
-        return initOrFindOptionalCallback(condition)?.apply {
+        return callbacks.initOrFindOptionalCallback(condition)?.apply {
             callback = {
                 performTransition(transition(Transition.Factory))
             }
@@ -46,7 +47,11 @@ abstract class FormulaContext<State, Output> {
         key: String,
         crossinline transition: Transition.Factory.() -> Transition<State, Output>
     ): () -> Unit {
-        val callback = initOrFindCallback(key)
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        val callback = callbacks.initOrFindCallback(key)
         callback.callback = {
             performTransition(transition(Transition.Factory))
         }
@@ -61,7 +66,8 @@ abstract class FormulaContext<State, Output> {
     inline fun <UIEvent> eventCallback(
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
     ): (UIEvent) -> Unit {
-        val callback = initOrFindPositionalEventCallback<UIEvent>()
+
+        val callback = callbacks.initOrFindPositionalEventCallback<UIEvent>()
         callback.callback = {
             performTransition(transition(Transition.Factory, it))
         }
@@ -77,7 +83,7 @@ abstract class FormulaContext<State, Output> {
         condition: Boolean,
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
     ): ((UIEvent) -> Unit)? {
-        return initOrFindOptionalEventCallback<UIEvent>(condition)?.apply {
+        return callbacks.initOrFindOptionalEventCallback<UIEvent>(condition)?.apply {
             callback = {
                 performTransition(transition(Transition.Factory, it))
             }
@@ -93,7 +99,11 @@ abstract class FormulaContext<State, Output> {
         key: String,
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
     ): (UIEvent) -> Unit {
-        val callback = initOrFindEventCallback<UIEvent>(key)
+        if (key.isBlank()) {
+            throw IllegalStateException("Key cannot be blank.")
+        }
+
+        val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
         callback.callback = {
             performTransition(transition(Transition.Factory, it))
         }
@@ -128,19 +138,19 @@ abstract class FormulaContext<State, Output> {
      */
     abstract fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
 
+    /**
+     * Scopes [create] block with a [key].
+     *
+     * @param key Unique identifier that will be used for this block.
+     */
+    inline fun <Value> key(key: Any, create: () -> Value): Value {
+        callbacks.enterScope(key)
+        val value = create()
+        callbacks.endScope()
+        return value
+    }
+
     @PublishedApi internal abstract fun performTransition(transition: Transition<State, Output>)
-
-    @PublishedApi internal abstract fun initOrFindPositionalCallback(): Callback
-
-    @PublishedApi internal abstract fun initOrFindCallback(key: String): Callback
-
-    @PublishedApi internal abstract fun initOrFindOptionalCallback(condition: Boolean): Callback?
-
-    @PublishedApi internal abstract fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent>
-
-    @PublishedApi internal abstract fun <UIEvent> initOrFindEventCallback(key: String): EventCallback<UIEvent>
-
-    @PublishedApi internal abstract fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>?
 
     /**
      * Provides methods to declare various events and effects.

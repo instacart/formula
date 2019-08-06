@@ -387,14 +387,20 @@ ItemListRenderModel(
             onSelected = context.callback {
                 // perform a transition
             }
+        )
     }
 )
 ```
 
-To fix it, you should use an `item id` or something similar to declare callbacks
+To fix it, you should wrap `ItemRenderModel` creation block in `context.key` where you pass it an `item id`.
 ```kotlin
-onSelected = context.callback("item selection: ${item.id}") {
-    // perform a transition
+context.key(item.id) {
+    ItemRenderModel(
+        name = item.name,
+        onSelected = context.callback {
+            // perform a transition
+        }
+    )
 }
 ```
 

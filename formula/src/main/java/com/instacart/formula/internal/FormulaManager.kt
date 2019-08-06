@@ -15,9 +15,8 @@ interface FormulaManager<Input, State, Output, RenderModel> {
     fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
-        currentTransition: Long
+        transitionId: Long
     ): Evaluation<RenderModel>
-
 
     fun terminateOldUpdates(currentTransition: Long): Boolean
 
