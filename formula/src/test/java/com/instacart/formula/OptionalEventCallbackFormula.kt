@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.State, Unit, OptionalEventCallbackFormula.RenderModel> {
+class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.State, OptionalEventCallbackFormula.RenderModel> {
     data class State(
         val callbackEnabled: Boolean = true,
         val state: Int = 0
@@ -14,12 +14,12 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
 
     override fun initialState(input: Unit) = State()
 
-    override fun evaluate(input: Unit, state: State, context: FormulaContext<State, Unit>): Evaluation<RenderModel> {
+    override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<RenderModel> {
         return Evaluation(
             renderModel = RenderModel(
                 state = state.state,
                 callback = context.optionalEventCallback(state.callbackEnabled) {
-                    state.copy(state = it).transition()
+                    state.copy(state = it).noMessages()
                 },
 //                callback = context.optional {
 //                    if (state.callbackEnabled) {
@@ -31,7 +31,7 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
 //                    }
 //                },
                 toggleCallback = context.callback {
-                    state.copy(callbackEnabled = !state.callbackEnabled).transition()
+                    state.copy(callbackEnabled = !state.callbackEnabled).noMessages()
                 }
             )
         )

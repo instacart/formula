@@ -1,86 +1,79 @@
 package com.instacart.formula
 
 /**
- * Defines an intent to transition by emitting a new [State] or [Output].
+ * Defines an intent to transition by emitting a new [State] and 0..N number of messages.
  *
  * @param state Updated state
- * @param output An optional message to the parent [Formula].
- * @param sideEffects Optional side-effects such as logging / db writes / network requests / etc.
+ * @param messages Optional messages such as parent callbacks / logging / db writes/ network requests / etc.
  */
-data class Transition<out State, out Output> internal constructor(
+data class Transition<out State> @PublishedApi internal constructor(
     val state: State? = null,
-    val output: Output? = null,
-    val sideEffects: List<SideEffect> = emptyList()
+    val messages: List<Message> = emptyList()
 ) {
     object Factory {
-        private val NONE = Transition<Any, Any>()
+        private val NONE = Transition<Any>()
 
         /**
          * A transition that does nothing.
          */
-        fun <State, Output> none(): Transition<State, Output> {
+        fun <State> none(): Transition<State> {
             @Suppress("UNCHECKED_CAST")
-            return NONE as Transition<State, Output>
+            return NONE as Transition<State>
         }
 
         /**
-         * Emits an [Output] event to the parent [Formula].
+         * Creates a transition to a new [State].
          */
-        fun <State, Output> output(output: Output): Transition<State, Output> {
-            return Transition(null, output)
+        fun <State> transition(state: State): Transition<State> {
+            return Transition(state)
         }
 
         /**
-         * Triggers a transition to new [State] that also can have an optional [Output].
+         * Creates a transition to a new [State] and emits messages added within [buildMessages] block.
          */
-        fun <State, Output> transition(
-            state: State,
-            output: Output? = null,
-            sideEffects: List<SideEffect> = emptyList()
-        ): Transition<State, Output> {
-            return Transition(state, output, sideEffects)
+        inline fun <State> transition(
+            state: State? = null,
+            buildMessages: MessageBuilder.() -> Unit
+        ): Transition<State> {
+            val messages = MessageBuilder().apply(buildMessages).list
+            return Transition(state, messages = messages)
         }
 
         /**
-         * Creates a transition to [State].
+         * Creates a transition to a new [State] with no additional messages.
          */
-        fun <State, Output> State.transition(): Transition<State, Output> {
+        fun <State> State.noMessages(): Transition<State> {
             return Transition(this)
         }
 
-        fun <State, Output> State.withOutput(output: Output?): Transition<State, Output> {
-            return Transition(this, output)
-        }
+        /**
+         * Creates a transition to a new [State] with an optional message.
+         */
+        fun <State> State.withMessage(invocation: (() -> Unit)?): Transition<State> {
+            val effects = invocation
+                ?.let { listOf(UnitMessage(it)) }
+                ?: emptyList()
 
-        fun <State, Output> State.withSideEffect(sideEffect: SideEffect?): Transition<State, Output> {
-            val effects = sideEffect?.let {
-                listOf(it)
-            } ?: emptyList()
-
-            return Transition(this, null, effects)
-        }
-
-        fun <State, Output> State.withSideEffects(vararg sideEffect: SideEffect): Transition<State, Output> {
-            val effects = sideEffect.asList()
-            return Transition(this, null, effects)
+            return Transition(this, messages = effects)
         }
 
         /**
-         * Emits only a single [SideEffect] as part of this transition.
+         * Creates a transition that emits a single [Message] with no data.
          */
-        fun <State, Output> sideEffect(key: String, effect: () -> Unit): Transition<State, Output> {
-            return Transition(sideEffects = listOf(SideEffect(key, effect)))
+        fun <State> message(handler: () -> Unit): Transition<State> {
+            return Transition(messages = listOf(UnitMessage(handler)))
         }
 
         /**
-         * Emits an [Output] and [SideEffect]s as part of this transition.
+         * Creates a transition that emits a single [Message] with [Data].
          */
-        fun <State, Output> outputAndSideEffects(output: Output, vararg sideEffects: SideEffect) : Transition<State, Output> {
-            val effects = sideEffects.asList()
-            return Transition(
-                output = output,
-                sideEffects = effects
-            )
+        fun <State, Data> message(handler: (Data) -> Unit, data: Data): Transition<State> {
+            return Transition(messages = listOf(EventMessage(handler, data)))
+        }
+
+        inline fun <State> State.withMessages(build: MessageBuilder.() -> Unit): Transition<State> {
+            val messages = MessageBuilder().apply(build).list
+            return Transition(this, messages = messages)
         }
     }
 }

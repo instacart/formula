@@ -7,7 +7,7 @@ import io.reactivex.Observable
  * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create
  * child formulas.
  */
-abstract class FormulaContext<State, Output> internal constructor(
+abstract class FormulaContext<State> internal constructor(
     @PublishedApi internal val callbacks: ScopedCallbacks
 ) {
 
@@ -16,7 +16,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      *
      * NOTE: this uses positional index to determine the key.
      */
-    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State, Output>): () -> Unit {
+    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
         val callback = callbacks.initOrFindPositionalCallback()
         callback.callback = {
             performTransition(transition(Transition.Factory))
@@ -29,7 +29,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      */
     inline fun optionalCallback(
         condition: Boolean,
-        crossinline transition: Transition.Factory.() -> Transition<State, Output>
+        crossinline transition: Transition.Factory.() -> Transition<State>
     ): (() -> Unit)? {
         return callbacks.initOrFindOptionalCallback(condition)?.apply {
             callback = {
@@ -45,7 +45,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      */
     inline fun callback(
         key: String,
-        crossinline transition: Transition.Factory.() -> Transition<State, Output>
+        crossinline transition: Transition.Factory.() -> Transition<State>
     ): () -> Unit {
         if (key.isBlank()) {
             throw IllegalStateException("Key cannot be blank.")
@@ -64,7 +64,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      * NOTE: this uses positional index to determine the key.
      */
     inline fun <UIEvent> eventCallback(
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
 
         val callback = callbacks.initOrFindPositionalEventCallback<UIEvent>()
@@ -81,7 +81,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      */
     inline fun <UIEvent> optionalEventCallback(
         condition: Boolean,
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): ((UIEvent) -> Unit)? {
         return callbacks.initOrFindOptionalEventCallback<UIEvent>(condition)?.apply {
             callback = {
@@ -97,7 +97,7 @@ abstract class FormulaContext<State, Output> internal constructor(
      */
     inline fun <UIEvent> eventCallback(
         key: String,
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State, Output>
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
         if (key.isBlank()) {
             throw IllegalStateException("Key cannot be blank.")
@@ -115,9 +115,9 @@ abstract class FormulaContext<State, Output> internal constructor(
      * will be managed by the runtime. Call [Child.input] to finish declaring the child
      * and receive the [ChildRenderModel].
      */
-    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
-    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> {
+    fun <ChildInput, ChildState, ChildRenderModel> child(
+        formula: Formula<ChildInput, ChildState, ChildRenderModel>
+    ): Child<State, ChildInput, ChildRenderModel> {
         return child("", formula)
     }
 
@@ -128,15 +128,15 @@ abstract class FormulaContext<State, Output> internal constructor(
      *
      * @param key A unique identifier for this formula.
      */
-    abstract fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+    abstract fun <ChildInput, ChildState, ChildRenderModel> child(
         key: String,
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
-    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
+        formula: Formula<ChildInput, ChildState, ChildRenderModel>
+    ): Child<State, ChildInput, ChildRenderModel>
 
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update>
+    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update>
 
     /**
      * Scopes [create] block with a [key].
@@ -150,13 +150,13 @@ abstract class FormulaContext<State, Output> internal constructor(
         return value
     }
 
-    @PublishedApi internal abstract fun performTransition(transition: Transition<State, Output>)
+    @PublishedApi internal abstract fun performTransition(transition: Transition<State>)
 
     /**
      * Provides methods to declare various events and effects.
      */
-    class UpdateBuilder<State, Output>(
-        private val transitionCallback: (Transition<State, Output>) -> Unit
+    class UpdateBuilder<State>(
+        private val transitionCallback: (Transition<State>) -> Unit
     ) {
         internal val updates = mutableListOf<Update>()
 
@@ -171,7 +171,7 @@ abstract class FormulaContext<State, Output> internal constructor(
         fun <StreamInput : Any, StreamOutput> events(
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
             events("", stream, input, onEvent)
         }
@@ -189,7 +189,7 @@ abstract class FormulaContext<State, Output> internal constructor(
             key: String = "",
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
             add(createConnection(key, stream, input, onEvent))
         }
@@ -200,7 +200,7 @@ abstract class FormulaContext<State, Output> internal constructor(
          */
         fun <StreamOutput> events(
             stream: Stream<Unit, StreamOutput>,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
             events("", stream, onEvent)
         }
@@ -212,7 +212,7 @@ abstract class FormulaContext<State, Output> internal constructor(
         fun <StreamOutput> events(
             key: String,
             stream: Stream<Unit, StreamOutput>,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
             events(key, stream, Unit, onEvent)
         }
@@ -226,7 +226,7 @@ abstract class FormulaContext<State, Output> internal constructor(
         fun <StreamOutput> events(
             key: String,
             observable: Observable<StreamOutput>,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
             val stream = object : RxStream<Unit, StreamOutput> {
                 override fun observable(input: Unit): Observable<StreamOutput> {
@@ -284,7 +284,7 @@ abstract class FormulaContext<State, Output> internal constructor(
             key: String = "",
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
-            onEvent: Transition.Factory.(StreamOutput) -> Transition<State, Output>
+            onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ): Update.Stream<StreamInput, StreamOutput> {
             return Update.Stream(
                 key = Update.Stream.Key(input, stream::class, key),

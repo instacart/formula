@@ -6,7 +6,7 @@ import com.instacart.formula.Formula
 internal class ScopedCallbacks private constructor(
     private val rootKey: Any
 ) {
-    constructor(formula: Formula<*, *, *, *>) : this(formula::class)
+    constructor(formula: Formula<*, *, *>) : this(formula::class)
 
     private val callbacks: SingleRequestMap<Any, Callbacks> = mutableMapOf()
 

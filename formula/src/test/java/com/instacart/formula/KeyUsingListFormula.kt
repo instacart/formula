@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.test.test
 
-class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, Unit, KeyUsingListFormula.RenderModel> {
+class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.RenderModel> {
     companion object {
         fun test(items: List<String>) = KeyUsingListFormula().test(Input(items))
     }
@@ -23,13 +23,13 @@ class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormu
     override fun evaluate(
         input: Input,
         state: State,
-        context: FormulaContext<State, Unit>
+        context: FormulaContext<State>
     ): Evaluation<RenderModel> {
 
         val items = state.items.map { itemName ->
             context.key(itemName) {
                 ItemRenderModel(itemName, onDeleteSelected = context.callback {
-                    state.copy(items = state.items.minus(itemName)).transition()
+                    state.copy(items = state.items.minus(itemName)).noMessages()
                 })
             }
         }

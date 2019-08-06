@@ -7,10 +7,10 @@ import io.reactivex.Observable
  * @param input Input passed to [Formula].
  * @param builder Enables to set a mock render model for children formulas.
  */
-fun <Input : Any, State, Output, RenderModel, F: Formula<Input, State, Output, RenderModel>> F.test(
+fun <Input : Any, State, RenderModel : Any, F: Formula<Input, State, RenderModel>> F.test(
     input: Input,
     builder: ChildFormulaRegistryBuilder.() -> Unit = {}
-): TestFormulaObserver<Input, Output, RenderModel, F> {
+): TestFormulaObserver<Input, RenderModel, F> {
     val managers = ChildFormulaRegistryBuilder().apply(builder).testManagers
     return TestFormulaObserver(
         testManagers = managers,
@@ -22,7 +22,7 @@ fun <Input : Any, State, Output, RenderModel, F: Formula<Input, State, Output, R
 /**
  * @param builder Enables to set a mock render model for children formulas.
  */
-fun <State, Output, RenderModel, F: Formula<Unit, State, Output, RenderModel>> F.test(
+fun <State, RenderModel : Any, F: Formula<Unit, State, RenderModel>> F.test(
     builder: ChildFormulaRegistryBuilder.() -> Unit = {}
 ) = test(Unit, builder)
 

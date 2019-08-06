@@ -14,11 +14,10 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class FormulaRuntime<Input : Any, State, Output, RenderModel>(
+class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     private val threadChecker: ThreadChecker,
-    private val formula: Formula<Input, State, Output, RenderModel>,
+    private val formula: Formula<Input, State, RenderModel>,
     private val childManagerFactory: FormulaManagerFactory,
-    private val onEvent: (Output) -> Unit,
     private val onRenderModel: (RenderModel) -> Unit
 ) {
 
@@ -26,17 +25,16 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
         /**
          * RuntimeExtensions.kt [state] calls this method.
          */
-        fun <Input : Any, State, Output, RenderModel> start(
+        fun <Input : Any, State,  RenderModel : Any> start(
             input: Observable<Input>,
-            formula: Formula<Input, State, Output, RenderModel>,
-            onEvent: (Output) -> Unit,
+            formula: Formula<Input, State, RenderModel>,
             childManagerFactory: FormulaManagerFactory = FormulaManagerFactoryImpl()
         ): Observable<RenderModel> {
             val threadChecker = ThreadChecker()
             return Observable.create<RenderModel> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = FormulaRuntime(threadChecker, formula, childManagerFactory, onEvent, emitter::onNext)
+                val runtime = FormulaRuntime(threadChecker, formula, childManagerFactory, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
@@ -54,12 +52,12 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
         }
     }
 
-    private var manager: FormulaManagerImpl<Input, State, Output, RenderModel>? = null
+    private var manager: FormulaManagerImpl<Input, State, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
     private var lastRenderModel: RenderModel? = null
 
-    private val effects = LinkedList<Output>()
+    private val messageQueue = LinkedList<Message>()
 
     private var input: Input? = null
 
@@ -68,7 +66,7 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
         this.input = input
 
         if (initialization) {
-            val processorManager: FormulaManagerImpl<Input, State, Output, RenderModel> =
+            val processorManager: FormulaManagerImpl<Input, State, RenderModel> =
                 FormulaManagerImpl(
                     state = formula.initialState(input),
                     callbacks = ScopedCallbacks(formula),
@@ -76,47 +74,55 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
                     childManagerFactory = childManagerFactory
                 )
 
-            processorManager.setTransitionListener { output, _ ->
+            processorManager.setTransitionListener { messages, isValid ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
-                if (output != null) {
-                    effects.push(output)
+                messages.forEach {
+                    messageQueue.push(it)
                 }
 
-                process()
+                process(isValid)
             }
+
             manager = processorManager
 
-            process()
+            process(false)
             hasInitialFinished = true
 
             lastRenderModel?.let {
                 onRenderModel(it)
             }
         } else {
-            process()
+            process(false)
         }
     }
 
     /**
      * Processes the next frame.
      */
-    private fun process() {
+    private fun process(isValid: Boolean) {
         val localManager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        val processingPass = lock.next()
-        val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
-        lastRenderModel = result.renderModel
-
-        if (localManager.nextFrame(processingPass)) {
-            return
+        val processingPass = if (isValid) {
+            lock.processingPass
+        } else {
+            lock.next()
         }
 
-        while (effects.isNotEmpty()) {
-            val first = effects.pollFirst()
-            if (first != null) {
-                onEvent(first)
+        if (!isValid) {
+            val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
+            lastRenderModel = result.renderModel
+
+            if (localManager.nextFrame(processingPass)) {
+                return
+            }
+        }
+
+        while (messageQueue.isNotEmpty()) {
+            val message = messageQueue.pollFirst()
+            if (message != null) {
+                message.deliver()
 
                 if (lock.hasTransitioned(processingPass)) {
                     return
@@ -124,8 +130,8 @@ class FormulaRuntime<Input : Any, State, Output, RenderModel>(
             }
         }
 
-        if (hasInitialFinished) {
-            onRenderModel(result.renderModel)
+        if (hasInitialFinished && !isValid) {
+            onRenderModel(checkNotNull(lastRenderModel))
         }
     }
 }

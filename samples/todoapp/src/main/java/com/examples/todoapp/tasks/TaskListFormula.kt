@@ -7,7 +7,7 @@ import com.instacart.formula.Formula
 
 class TaskListFormula(
     private val repo: TaskRepo
-) : Formula<TaskListFormula.Input, TaskListState, Unit, TaskListRenderModel> {
+) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
 
     class Input(
         val showToast: (String) -> Unit
@@ -20,9 +20,8 @@ class TaskListFormula(
     override fun evaluate(
         input: Input,
         state: TaskListState,
-        context: FormulaContext<TaskListState, Unit>
+        context: FormulaContext<TaskListState>
     ): Evaluation<TaskListRenderModel> {
-
         val items = createTaskList(
             state,
             onTaskCompletedEvent = repo::onTaskCompleted,
@@ -32,14 +31,14 @@ class TaskListFormula(
         return Evaluation(
             updates = context.updates {
                 events("task changes", repo.tasks()) {
-                    transition(state.copy(taskState = it))
+                    state.copy(taskState = it).noMessages()
                 }
             },
             renderModel = TaskListRenderModel(
                 items = items,
                 filterOptions = TasksFilterType.values().map { type ->
                     TaskFilterRenderModel(title = type.name, onSelected = context.callback("selected ${type.name}") {
-                        transition(state.copy(filterType = type))
+                        state.copy(filterType = type).noMessages()
                     })
                 })
         )

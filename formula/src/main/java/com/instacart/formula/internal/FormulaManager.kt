@@ -2,10 +2,11 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.Message
 
-interface FormulaManager<Input, State, Output, RenderModel> {
+interface FormulaManager<Input, State, RenderModel> {
 
-    fun setTransitionListener(listener: (Output?, isValid: Boolean) -> Unit)
+    fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit)
 
     fun updateTransitionNumber(number: Long)
 
@@ -13,7 +14,7 @@ interface FormulaManager<Input, State, Output, RenderModel> {
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     fun evaluate(
-        formula: Formula<Input, State, Output, RenderModel>,
+        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel>
@@ -22,9 +23,5 @@ interface FormulaManager<Input, State, Output, RenderModel> {
 
     fun startNewUpdates(currentTransition: Long): Boolean
 
-    fun processSideEffects(currentTransition: Long): Boolean
-
     fun markAsTerminated()
-
-    fun clearSideEffects()
 }

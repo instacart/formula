@@ -21,25 +21,23 @@ class SimpleSideEffectTest {
     class TestFormula(
         private val increment: Observable<Unit>,
         private val onGameOver: () -> Unit
-    ) : Formula<Unit, TestFormula.State, Unit, Int> {
+    ) : Formula<Unit, TestFormula.State, Int> {
         data class State(val count: Int)
 
         override fun initialState(input: Unit): State = State(count = 0)
 
-        override fun evaluate(input: Unit, state: State, context: FormulaContext<State, Unit>): Evaluation<Int> {
+        override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<Int> {
             return Evaluation(
                 renderModel = state.count,
                 updates = context.updates {
                     events("increment", increment) {
                         val updated = state.copy(count = state.count + 1)
 
-                        val effect = if (updated.count == 5) {
-                            SideEffect("result", onGameOver)
+                        if (updated.count == 5) {
+                            updated.withMessage(onGameOver)
                         } else {
-                            null
+                            updated.noMessages()
                         }
-
-                        updated.withSideEffect(effect)
                     }
                 }
             )

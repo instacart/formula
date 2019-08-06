@@ -18,7 +18,7 @@ object SideEffectTriggersParentTransition {
         }
     }
 
-    class TestFormula : Formula<Unit, Int, Unit, TestFormula.RenderModel> {
+    class TestFormula : Formula<Unit, Int, TestFormula.RenderModel> {
         private val service = Service()
         private val childFormula = SideEffectFormula(service::trigger)
 
@@ -32,7 +32,7 @@ object SideEffectTriggersParentTransition {
         override fun evaluate(
             input: Unit,
             state: Int,
-            context: FormulaContext<Int, Unit>
+            context: FormulaContext<Int>
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
