@@ -1,9 +1,9 @@
 package com.instacart.formula.internal
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.Cancelation
 import com.instacart.formula.Stream
 import com.instacart.formula.Update
-import io.reactivex.disposables.Disposable
 import org.junit.Before
 import org.junit.Test
 
@@ -54,24 +54,18 @@ class UpdateManagerTest {
         assertThat(running).containsExactly("one", "three", "four")
     }
 
-    private fun createStream(key: String): Update.Stream<*, *> {
-        return Update.Stream(
-            key = Update.Stream.Key(
+    private fun createStream(key: String): Update<*, *> {
+        return Update(
+            key = Update.Key(
                 Unit,
                 Stream::class,
                 tag = key
             ),
             stream = object : Stream<Unit, Unit> {
-                override fun subscribe(input: Unit, onEvent: (Unit) -> Unit): Disposable {
+                override fun perform(input: Unit, onEvent: (Unit) -> Unit): Cancelation {
                     running.add(key)
-                    return object : Disposable {
-                        override fun isDisposed(): Boolean {
-                            return !running.contains(key)
-                        }
-
-                        override fun dispose() {
-                            running.remove(key)
-                        }
+                    return Cancelation {
+                        running.remove(key)
                     }
                 }
             },

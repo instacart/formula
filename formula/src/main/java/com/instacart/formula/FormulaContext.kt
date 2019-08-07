@@ -108,7 +108,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update>
+    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*, *>>
 
     /**
      * Scopes [create] block with a [key].
@@ -130,7 +130,7 @@ abstract class FormulaContext<State> internal constructor(
     class UpdateBuilder<State>(
         private val transitionCallback: (Transition<State>) -> Unit
     ) {
-        internal val updates = mutableListOf<Update>()
+        internal val updates = mutableListOf<Update<*, *>>()
 
         /**
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
@@ -216,13 +216,7 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         fun effect(key: String, action: () -> Unit) {
-            val connection = Update.Effect(
-                input = Unit,
-                key = key,
-                action = action
-            )
-
-            add(connection)
+            add(createConnection(key, Stream.performOnCreate(action), Unit, { none() }))
         }
 
         /**
@@ -233,18 +227,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         fun <EffectInput : Any> effect(key: String, input: EffectInput, action: (EffectInput) -> Unit) {
-            val connection = Update.Effect(
-                input = input,
-                key = key,
-                action = {
-                    action(input)
-                }
-            )
-
-            add(connection)
+            add(createConnection(key, Stream.performOnCreate(action), input, { none() }))
         }
 
-        private fun add(connection: Update) {
+        private fun add(connection: Update<*, *>) {
             if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
             }
@@ -257,9 +243,9 @@ abstract class FormulaContext<State> internal constructor(
             stream: Stream<StreamInput, StreamOutput>,
             input: StreamInput,
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
-        ): Update.Stream<StreamInput, StreamOutput> {
-            return Update.Stream(
-                key = Update.Stream.Key(input, stream::class, key),
+        ): Update<StreamInput, StreamOutput> {
+            return Update(
+                key = Update.Key(input, stream::class, key),
                 input = input,
                 stream = stream,
                 onEvent = {

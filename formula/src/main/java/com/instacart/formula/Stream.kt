@@ -1,7 +1,5 @@
 package com.instacart.formula
 
-import io.reactivex.disposables.Disposable
-
 /**
  * A [Stream] defines an asynchronous event(s).
  *
@@ -9,5 +7,25 @@ import io.reactivex.disposables.Disposable
  * @param Output - Event type that the stream produces.
  */
 interface Stream<Input, Output> {
-    fun subscribe(input: Input, onEvent: (Output) -> Unit): Disposable
+    companion object {
+        inline fun performOnCreate(crossinline action: () -> Unit): Stream<Unit, Unit> {
+            return object : Stream<Unit, Unit> {
+                override fun perform(input: Unit, onEvent: (Unit) -> Unit): Cancelation? {
+                    action()
+                    return null
+                }
+            }
+        }
+
+        inline fun <Input> performOnCreate(crossinline action: (Input) -> Unit): Stream<Input, Unit> {
+            return object : Stream<Input, Unit> {
+                override fun perform(input: Input, onEvent: (Unit) -> Unit): Cancelation? {
+                    action(input)
+                    return null
+                }
+            }
+        }
+    }
+
+    fun perform(input: Input, onEvent: (Output) -> Unit): Cancelation?
 }
