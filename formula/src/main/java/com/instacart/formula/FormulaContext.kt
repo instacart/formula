@@ -200,13 +200,7 @@ abstract class FormulaContext<State> internal constructor(
             observable: Observable<StreamOutput>,
             onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
         ) {
-            val stream = object : RxStream<Unit, StreamOutput> {
-                override fun observable(input: Unit): Observable<StreamOutput> {
-                    return observable
-                }
-            }
-
-            events(key, stream, onEvent)
+            events(key, RxStream.fromObservable { observable }, onEvent)
         }
 
         /**
