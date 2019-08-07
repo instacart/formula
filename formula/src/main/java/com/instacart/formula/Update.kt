@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 class Update<Input : Any, Output>(
     val key: Key,
     val input: Input,
-    val stream: com.instacart.formula.Stream<Input, Output>,
+    val stream: Stream<Input, Output>,
     onEvent: (Output) -> Unit
 ) {
     /**

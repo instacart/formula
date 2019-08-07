@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.messages.TestEventCallback
 import com.instacart.formula.test.test
+import io.reactivex.Observable
 import org.junit.Test
 
 class FormulaRuntimeTest {
@@ -337,5 +338,30 @@ class FormulaRuntimeTest {
                 assertThat(this).isEqualTo(4)
             }
             .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `effect without input executed once`() {
+        EffectExecutedOnce.test().apply {
+            assertThat(formula.effect).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `effects with input`() {
+        EffectWithInputFormula()
+            .test(input = Observable.range(0, 3))
+            .apply {
+                assertThat(formula.effects).containsExactly(0, 1, 2)
+            }
+    }
+
+    @Test
+    fun `effect api ignores duplicate inputs`() {
+        EffectWithInputFormula()
+            .test(input = Observable.just(0, 0, 0, 0))
+            .apply {
+                assertThat(formula.effects).containsExactly(0)
+            }
     }
 }
