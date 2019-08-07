@@ -18,17 +18,17 @@ class Update<Input : Any, Output>(
     )
 
     internal var handler: (Output) -> Unit = onEvent
-    internal var disposable: Cancelation? = null
+    internal var cancelation: Cancelation? = null
 
     internal fun start() {
-        disposable = stream.perform(input) { next ->
+        cancelation = stream.perform(input) { next ->
             handler.invoke(next)
         }
     }
 
     internal fun tearDown() {
-        disposable?.cancel()
-        disposable = null
+        cancelation?.cancel()
+        cancelation = null
     }
 
     override fun equals(other: Any?): Boolean {
