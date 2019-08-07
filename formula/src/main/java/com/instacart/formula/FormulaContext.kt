@@ -204,7 +204,7 @@ abstract class FormulaContext<State> internal constructor(
         }
 
         /**
-         * Define a side effect for which the uniqueness is tied only to [key]. It will be invoked once when it is initially added.
+         * Defines a side effect for which the uniqueness is tied only to [key]. It will be invoked once when it is initially added.
          *
          * @param key Used to distinguish between different types of effects.
          * @param action A callback that will be invoked once.

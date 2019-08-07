@@ -15,17 +15,6 @@ internal class UpdateManager(
     private var updates: LinkedHashSet<Update<*, *>> = LinkedHashSet()
 
     /**
-     * Returns true if there was a transition while updating streams.
-     */
-    fun updateConnections(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
-        if (terminateOld(new, transitionNumber)) {
-            return true
-        }
-
-        return startNew(new, transitionNumber)
-    }
-
-    /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
      * terminated streams.
      */
@@ -41,6 +30,9 @@ internal class UpdateManager(
         }
     }
 
+    /**
+     * Returns true if there was a transition while updating streams.
+     */
     fun terminateOld(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
         val iterator = updates.iterator()
         while (iterator.hasNext()) {
