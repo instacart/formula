@@ -364,4 +364,18 @@ class FormulaRuntimeTest {
                 assertThat(formula.effects).containsExactly(0)
             }
     }
+
+    @Test
+    fun `remove all streams`() {
+        DynamicStreamSubject()
+            .updateStreams("one", "two", "three")
+            .removeAll()
+    }
+
+    @Test
+    fun `switch one stream`() {
+        DynamicStreamSubject()
+            .updateStreams("one", "two", "three")
+            .updateStreams("one", "three", "four")
+    }
 }
