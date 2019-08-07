@@ -15,15 +15,16 @@ import com.instacart.formula.Transition
  * 4. Perform children side effects
  * 5. Perform parent side effects.
  */
-class FormulaManagerImpl<Input, State, Output, RenderModel>(
+internal class FormulaManagerImpl<Input, State, Output, RenderModel>(
     state: State,
+    private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
 ) : FormulaContextImpl.Delegate<State, Output>, FormulaManager<Input, State, Output, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: MutableMap<FormulaKey, FormulaManager<*, *, *, *>> = mutableMapOf()
+    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *, *>> = mutableMapOf()
     internal val pendingTermination = mutableListOf<FormulaManager<*, *, *, *>>()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
@@ -33,8 +34,6 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     private var pendingSideEffects = mutableListOf<SideEffect>()
 
     private var onTransition: ((Output?, Boolean) -> Unit)? = null
-    private val callbacks: MutableMap<Any, Callback> = mutableMapOf()
-    private val eventCallbacks: MutableMap<Any, EventCallback<*>> = mutableMapOf()
 
     private fun handleTransition(transition: Transition<State, Output>, wasChildInvalidated: Boolean) {
         pendingSideEffects.addAll(transition.sideEffects)
@@ -58,24 +57,11 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
 
     override fun updateTransitionNumber(number: Long) {
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.transitionCallbackWrapper.transitionNumber = number
+        lastFrame.transitionCallbackWrapper.transitionId = number
 
-        children.forEach {
-            it.value.updateTransitionNumber(number)
+        children.forEachValue {
+            it.updateTransitionNumber(number)
         }
-    }
-
-    override fun initOrFindCallback(key: Any): Callback {
-        return callbacks.getOrPut(key) {
-            Callback(key)
-        }
-    }
-
-    override fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
-        @Suppress("UNCHECKED_CAST")
-        return eventCallbacks.getOrPut(key) {
-            EventCallback<UIEvent>(key)
-        } as EventCallback<UIEvent>
     }
 
     /**
@@ -84,80 +70,40 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
-        currentTransition: Long
+        transitionId: Long
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
 
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
-            updateTransitionNumber(currentTransition)
+            updateTransitionNumber(transitionId)
             return lastFrame.evaluation
         }
 
-        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, currentTransition)
-        val context = FormulaContextImpl(currentTransition, this, transitionCallback)
+        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, transitionId)
+        val context = FormulaContextImpl(transitionId, callbacks, this, transitionCallback)
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
             state = formula.onInputChanged(prevInput, input, state)
         }
 
+        callbacks.evaluationStarted()
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, transitionCallback, context.children, context.callbackCount)
+        val frame = Frame(input, state, result, transitionCallback)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
-        if (lastFrame != null && lastFrame.callbackCount != frame.callbackCount) {
-            val message = buildString {
-                append("Dynamic callback registrations detected in ${formula::class}. ")
-                append("Expected: ${lastFrame.callbackCount}, was: ${frame.callbackCount}.")
-                append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
-            }
-            throw IllegalStateException(message)
-        }
-
-        disableOldCallbacks(context)
+        callbacks.evaluationFinished()
 
         // Set pending removal of children.
-        val childIterator = children.iterator()
-        while (childIterator.hasNext()) {
-            val child = childIterator.next()
-            if (!frame.children.containsKey(child.key)) {
-                val processor = child.value
-                processor.markAsTerminated()
-                pendingTermination.add(processor)
-                childIterator.remove()
-            }
+        children.clearUnrequested {
+            it.markAsTerminated()
+            pendingTermination.add(it)
         }
 
         transitionCallback.running = true
         return result
-    }
-
-    private fun disableOldCallbacks(context: FormulaContextImpl<State, Output>) {
-        val callbackIterator = callbacks.iterator()
-        while (callbackIterator.hasNext()) {
-            val callback = callbackIterator.next()
-            if (!context.callbacks.contains(callback.key)) {
-                callback.value.callback = {
-                    // TODO log that disabled callback was invoked.
-                }
-
-                callbackIterator.remove()
-            }
-        }
-
-        val eventCallbackIterator = eventCallbacks.iterator()
-        while (eventCallbackIterator.hasNext()) {
-            val entry = eventCallbackIterator.next()
-            if (!context.eventCallbacks.contains(entry.key)) {
-                entry.value.callback = {
-                    // TODO log that disabled callback was invoked.
-                }
-
-                eventCallbackIterator.remove()
-            }
-        }
     }
 
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
@@ -168,8 +114,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         // Step through children frames
-        children.forEach {
-            if (it.value.terminateOldUpdates(currentTransition)) {
+        children.forEachValue {
+            if (it.terminateOldUpdates(currentTransition)) {
                 return true
             }
         }
@@ -186,8 +132,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         }
 
         // Step through children frames
-        children.forEach {
-            if (it.value.startNewUpdates(currentTransition)) {
+        children.forEachValue {
+            if (it.startNewUpdates(currentTransition)) {
                 return true
             }
         }
@@ -212,8 +158,8 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     }
 
     override fun processSideEffects(currentTransition: Long): Boolean {
-        children.forEach { child ->
-            if (child.value.processSideEffects(currentTransition)) {
+        children.forEachValue { child ->
+            if (child.processSideEffects(currentTransition)) {
                 return true
             }
         }
@@ -259,48 +205,38 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
     override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
         formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
         input: ChildInput,
-        key: FormulaKey,
+        key: Any,
         onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>,
         processingPass: Long
-    ): Evaluation<ChildRenderModel> {
+    ): ChildRenderModel {
         @Suppress("UNCHECKED_CAST")
-        val processorManager = (children[key] ?: run {
-            val new = childManagerFactory.createChildManager(formula, input, transitionLock)
-            children[key] = new
-            new
-        }) as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
+        val manager = children
+            .findOrInit(key) {
+                childManagerFactory.createChildManager(formula, input, transitionLock)
+            }
+            .requestAccess {
+                throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
+            } as FormulaManager<ChildInput, ChildState, ChildOutput, ChildRenderModel>
 
-        processorManager.setTransitionListener { output, isValid ->
+        manager.setTransitionListener { output, isValid ->
             val transition = output?.let { onEvent(Transition.Factory, it) } ?: Transition.Factory.none()
             handleTransition(transition, !isValid)
         }
 
-        return processorManager.evaluate(formula, input, processingPass)
+        return manager.evaluate(formula, input, processingPass).renderModel
     }
 
     override fun markAsTerminated() {
         terminated = true
 
         // Clear callbacks
-        callbacks.forEach { entry ->
-            entry.value.callback = {
-                // TODO log that event is invalid because child was removed
-            }
-        }
-        callbacks.clear()
-
-        eventCallbacks.forEach { entry ->
-            entry.value.callback = {
-                // TODO log that event is invalid because child was removed
-            }
-        }
-        eventCallbacks.clear()
+        callbacks.disableAll()
 
         // Terminate updates so no transitions happen
         updateManager.terminate()
 
-        children.forEach {
-            it.value.markAsTerminated()
+        children.forEachValue {
+            it.markAsTerminated()
         }
     }
 
@@ -310,7 +246,7 @@ class FormulaManagerImpl<Input, State, Output, RenderModel>(
         while (childIterator.hasNext()) {
             val child = childIterator.next()
             childIterator.remove()
-            child.value.clearSideEffects()
+            child.value.value.clearSideEffects()
         }
 
         // Perform pending side effects

@@ -26,7 +26,7 @@ class TestFormulaManager<Input, State, Output, RenderModel>(
     override fun evaluate(
         formula: Formula<Input, State, Output, RenderModel>,
         input: Input,
-        currentTransition: Long
+        transitionId: Long
     ): Evaluation<RenderModel> {
         inputs.add(input)
         return Evaluation(renderModel = renderModel)

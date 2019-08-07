@@ -294,4 +294,14 @@ class FormulaRuntimeTest {
                 assertThat(values().map { it.callback }.toSet()).hasSize(3)
             }
     }
+
+    @Test
+    fun `remove item from a list using a key block for each item`() {
+        KeyUsingListFormula
+            .test(items = listOf("one", "two", "three"))
+            .renderModel {
+                items[1].onDeleteSelected()
+            }
+            .renderModel { assertThat(items).hasSize(2) }
+    }
 }

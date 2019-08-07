@@ -79,7 +79,9 @@ class TestFormulaObserver<Input : Any, Output, RenderModel, FormulaT : Formula<I
     }
 
     fun assertRenderModelCount(count: Int) = apply {
-        assert(values().size == count)
+        assert(values().size == count) {
+            "Expected: $count, was: ${values().size}"
+        }
     }
 
     fun outputs(): List<Output> = outputs
