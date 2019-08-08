@@ -444,4 +444,56 @@ class FormulaRuntimeTest {
 
         formula.test().assertRenderModelCount(1)
     }
+
+    @Test
+    fun `multiple effects without key`() {
+        var executed = 0
+        val formula = OnlyUpdateFormula<Unit> {
+            effect {
+                executed += 1
+            }
+
+            effect {
+                executed += 1
+            }
+        }
+
+        formula.test().apply {
+            assertThat(executed).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun `multiple effects with input and without key`() {
+        var executed = 0
+        val formula = OnlyUpdateFormula<Int> {
+            effect(it) {
+                executed += 1
+            }
+
+            effect(it) {
+                executed += 1
+            }
+        }
+
+        formula.test(1).apply {
+            assertThat(executed).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun `key is required for effects in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(0, 1, 2)
+            list.forEach {
+                effect {
+                    // nothing needed here
+                }
+            }
+        }
+
+        formula.state(Unit).test().assertError {
+            it is IllegalStateException
+        }
+    }
 }

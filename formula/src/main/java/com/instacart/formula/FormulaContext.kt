@@ -217,6 +217,15 @@ abstract class FormulaContext<State> internal constructor(
         }
 
         /**
+         * Defines a side effect.
+         *
+         * @param action A callback that will be invoked once.
+         */
+        inline fun effect(crossinline action: () -> Unit) {
+            add(createConnection(null, Stream.performOnCreate(action), Unit, { none() }))
+        }
+
+        /**
          * Defines a side effect for which the uniqueness is tied only to [key]. It will be invoked once when it is initially added.
          *
          * @param key Used to distinguish between different types of effects.
@@ -224,6 +233,16 @@ abstract class FormulaContext<State> internal constructor(
          */
         inline fun effect(key: String, crossinline action: () -> Unit) {
             add(createConnection(key, Stream.performOnCreate(action), Unit, { none() }))
+        }
+
+        /**
+         * Define a side effect for which the uniqueness is tied to [key] and [input]. It will be invoked once when it is initially added.
+         *
+         * @param input Will be passed to [action]. It is also used as key to distinguish different types of effects.
+         * @param action A callback that will be invoked once.
+         */
+        inline fun <EffectInput : Any> effect(input: EffectInput, crossinline action: (EffectInput) -> Unit) {
+            add(createConnection(null, Stream.performOnCreate(action), input, { none() }))
         }
 
         /**
