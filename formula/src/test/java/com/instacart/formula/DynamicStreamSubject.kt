@@ -21,10 +21,10 @@ class DynamicStreamSubject {
         assertThat(subject.formula.running).containsExactly(*keys)
     }
 
-    class TestFormula : StatelessFormula<List<String>, Unit, Unit>() {
+    class TestFormula : StatelessFormula<List<String>, Unit>() {
         val running = mutableListOf<String>()
 
-        override fun evaluate(input: List<String>, context: FormulaContext<Unit, Unit>): Evaluation<Unit> {
+        override fun evaluate(input: List<String>, context: FormulaContext<Unit>): Evaluation<Unit> {
             return Evaluation(
                 renderModel = Unit,
                 updates = context.updates {

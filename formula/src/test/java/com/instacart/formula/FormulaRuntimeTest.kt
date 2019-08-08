@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.messages.TestEventCallback
+import com.instacart.formula.streams.EmptyStream
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
@@ -158,7 +159,8 @@ class FormulaRuntimeTest {
             .renderModel { assertThat(state).isEqualTo(1) }
     }
 
-    @Test fun `side effect triggers parent state transition`() {
+    @Test
+    fun `side effect triggers parent state transition`() {
         SideEffectTriggersParentTransition
             .formula()
             .test()
@@ -377,5 +379,69 @@ class FormulaRuntimeTest {
         DynamicStreamSubject()
             .updateStreams("one", "two", "three")
             .updateStreams("one", "three", "four")
+    }
+
+    @Test
+    fun `same stream declarations are okay`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            events(EmptyStream()) {
+                transition(Unit)
+            }
+
+            events(EmptyStream()) {
+                transition(Unit)
+            }
+        }
+
+        formula
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `same observable declarations are okay`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            events("same", Observable.just(1)) {
+                none()
+            }
+
+            events("same", Observable.just(1)) {
+                none()
+            }
+        }
+
+        formula
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `key is required when stream is declared in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(1, 2, 3)
+            list.forEach {
+                events(EmptyStream()) {
+                    none()
+                }
+            }
+        }
+
+        formula.state(Unit).test().assertError {
+            it is IllegalStateException
+        }
+    }
+
+    @Test
+    fun `using key for stream declared in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(1, 2, 3)
+            list.forEach {
+                events("$it", EmptyStream()) {
+                    none()
+                }
+            }
+        }
+
+        formula.test().assertRenderModelCount(1)
     }
 }

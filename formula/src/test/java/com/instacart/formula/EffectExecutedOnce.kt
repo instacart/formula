@@ -5,7 +5,6 @@ import com.instacart.formula.test.test
 object EffectExecutedOnce {
     fun test() = TestFormula().test()
 
-
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var effect = 0
 

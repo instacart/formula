@@ -13,8 +13,8 @@ class Update<Input : Any, Output>(
      */
     data class Key(
         val input: Any,
-        val processorType: KClass<*>,
-        val tag: String = ""
+        val type: KClass<*>,
+        val extra: Any? = null
     )
 
     internal var handler: (Output) -> Unit = onEvent
