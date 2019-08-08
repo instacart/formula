@@ -14,7 +14,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
-     * NOTE: this uses positional index to determine the key.
+     * It uses inlined callback anonymous class for type.
      */
     inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
         val callback: () -> Unit = {
@@ -48,7 +48,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
-     * NOTE: this uses positional index to determine the key.
+     * It uses inlined callback anonymous class for type.
      */
     inline fun <UIEvent> eventCallback(
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
