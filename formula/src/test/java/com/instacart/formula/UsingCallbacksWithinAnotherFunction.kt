@@ -9,8 +9,8 @@ object UsingCallbacksWithinAnotherFunction {
         val second: () -> Unit
     )
 
-    class TestFormula : StatelessFormula<Unit, Unit, TestRenderModel>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit, Unit>): Evaluation<TestRenderModel> {
+    class TestFormula : StatelessFormula<Unit, TestRenderModel>() {
+        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestRenderModel> {
             return Evaluation(
                 renderModel = TestRenderModel(
                     first = createDefaultCallback(context),
@@ -19,7 +19,7 @@ object UsingCallbacksWithinAnotherFunction {
             )
         }
 
-        private fun createDefaultCallback(context: FormulaContext<Unit, Unit>): () -> Unit {
+        private fun createDefaultCallback(context: FormulaContext<Unit>): () -> Unit {
             return context.callback {
                 none()
             }

@@ -11,8 +11,8 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
         val second: ChildRenderModel
     )
 
-    class TestFormula : StatelessFormula<Unit, Unit, TestRenderModel>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit, Unit>): Evaluation<TestRenderModel> {
+    class TestFormula : StatelessFormula<Unit, TestRenderModel>() {
+        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestRenderModel> {
             return Evaluation(
                 renderModel = TestRenderModel(
                     first = context.key("first") {
@@ -25,7 +25,7 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
             )
         }
 
-        private fun createChild(context: FormulaContext<Unit, Unit>): ChildRenderModel {
+        private fun createChild(context: FormulaContext<Unit>): ChildRenderModel {
             return ChildRenderModel(
                 callback = context.callback {
                     none()
