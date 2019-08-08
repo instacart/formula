@@ -58,6 +58,10 @@ commands:
     description: Run unit tests
     steps:
       - run:
+          name: Run Legacy Tests
+          command: |
+            ./gradlew :formula-legacy:test
+      - run:
           name: Run Core Tests
           command: |
             ./gradlew :formula:test
