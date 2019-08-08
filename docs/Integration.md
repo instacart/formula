@@ -89,7 +89,7 @@ class MyApp : Application() {
 ```
 
 For the sake of simplicity, I've inlined the state management logic into the `bind` function. In a real world example,
-this logic would live within `Formula` or `RenderFormula` classes.
+this logic would live within `Formula`.
 
 ### The only thing left is navigating to this screen
 ```kotlin
