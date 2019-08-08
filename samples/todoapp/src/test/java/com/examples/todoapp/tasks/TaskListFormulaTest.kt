@@ -22,14 +22,14 @@ class TaskListFormulaTest {
 
         TaskListFormula(repo)
             .test(TaskListFormula.Input(showToast = {}))
-            .apply {
-                assertThat(values().last().items).hasSize(2)
+            .renderModel {
+                assertThat(items).hasSize(2)
             }
-            .apply {
-                values().last().filterOptions.first { it.title == "COMPLETED_TASKS" }.onSelected()
+            .renderModel {
+                filterOptions.first { it.title == "COMPLETED_TASKS" }.onSelected()
             }
-            .apply {
-                assertThat(values().last().items).isEmpty()
+            .renderModel {
+                assertThat(items).isEmpty()
             }
     }
 }
