@@ -1,6 +1,5 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.Reducer
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 
@@ -51,7 +50,7 @@ class BackStackStore<Key>(initial: List<Key>) {
         }
     }
 
-    private inline fun updateState(modify: Reducer<BackStack<Key>>) {
+    private inline fun updateState(modify: (BackStack<Key>) -> BackStack<Key>) {
         backStackStateRelay.onNext(modify(backStackStateRelay.value!!))
     }
 }
