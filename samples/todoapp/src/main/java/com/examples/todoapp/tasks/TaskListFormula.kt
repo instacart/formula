@@ -22,7 +22,6 @@ class TaskListFormula(
         state: TaskListState,
         context: FormulaContext<TaskListState, Unit>
     ): Evaluation<TaskListRenderModel> {
-
         val items = createTaskList(
             state,
             onTaskCompletedEvent = repo::onTaskCompleted,
@@ -38,9 +37,11 @@ class TaskListFormula(
             renderModel = TaskListRenderModel(
                 items = items,
                 filterOptions = TasksFilterType.values().map { type ->
-                    TaskFilterRenderModel(title = type.name, onSelected = context.callback("selected ${type.name}") {
-                        transition(state.copy(filterType = type))
-                    })
+                    context.key(type.name) {
+                        TaskFilterRenderModel(title = type.name, onSelected = context.callback {
+                            transition(state.copy(filterType = type))
+                        })
+                    }
                 })
         )
     }
