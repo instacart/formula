@@ -529,7 +529,7 @@ class FormulaRuntimeTest {
         var emissions = 0
         var cancelCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            cancellationEffect {
+            cancellationMessage {
                 emissions += 1
                 cancelCallback = input
             }

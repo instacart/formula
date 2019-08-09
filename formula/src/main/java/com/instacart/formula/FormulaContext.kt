@@ -270,9 +270,9 @@ abstract class FormulaContext<State> internal constructor(
         }
 
         /**
-         * Defines a side effect which is executed when [Formula] is removed.
+         * Defines a message that will be executed when [Formula] is removed.
          */
-        inline fun cancellationEffect(crossinline action: () -> Unit) {
+        inline fun cancellationMessage(crossinline action: () -> Unit) {
             val callback: (Unit) -> Unit = {
                 action()
             }

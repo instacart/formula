@@ -7,7 +7,7 @@ class CancellationEffectFormula : StatelessFormula<Unit, Unit>() {
         return Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                cancellationEffect {
+                cancellationMessage {
                     timesCancelledCalled += 1
                 }
             }
