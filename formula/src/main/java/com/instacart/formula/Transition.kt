@@ -1,86 +1,100 @@
 package com.instacart.formula
 
+import com.instacart.formula.Transition.Factory.noMessages
+
 /**
- * Defines an intent to transition by emitting a new [State] or [Output].
+ * Defines an intent to transition by emitting a new [State] and 0..N number of messages.
  *
  * @param state Updated state
- * @param output An optional message to the parent [Formula].
- * @param sideEffects Optional side-effects such as logging / db writes / network requests / etc.
+ * @param messages Optional messages such as parent callbacks / logging / db writes/ network requests / etc.
  */
-data class Transition<out State, out Output> internal constructor(
+data class Transition<out State> @PublishedApi internal constructor(
     val state: State? = null,
-    val output: Output? = null,
-    val sideEffects: List<SideEffect> = emptyList()
+    val messages: List<Message> = emptyList()
 ) {
     object Factory {
-        private val NONE = Transition<Any, Any>()
+        private val NONE = Transition<Any>()
 
         /**
          * A transition that does nothing.
          */
-        fun <State, Output> none(): Transition<State, Output> {
+        fun <State> none(): Transition<State> {
             @Suppress("UNCHECKED_CAST")
-            return NONE as Transition<State, Output>
+            return NONE as Transition<State>
         }
 
         /**
-         * Emits an [Output] event to the parent [Formula].
+         * Creates a transition to a new [State] and emits messages added within [buildMessages] block.
          */
-        fun <State, Output> output(output: Output): Transition<State, Output> {
-            return Transition(null, output)
+        inline fun <State> transition(
+            state: State?,
+            buildMessages: MessageBuilder.() -> Unit
+        ): Transition<State> {
+            val messages = MessageBuilder().apply(buildMessages).list
+            return Transition(state, messages)
         }
 
         /**
-         * Triggers a transition to new [State] that also can have an optional [Output].
+         * Creates a transition that has an optional state change and 0..N messages.
          */
-        fun <State, Output> transition(
-            state: State,
-            output: Output? = null,
-            sideEffects: List<SideEffect> = emptyList()
-        ): Transition<State, Output> {
-            return Transition(state, output, sideEffects)
+        fun <State> transition(
+            state: State? = null,
+            messages: List<Message> = emptyList()
+        ): Transition<State> {
+            return Transition(state, messages)
         }
 
         /**
-         * Creates a transition to [State].
+         * Creates a transition to a new [State] with no additional messages.
          */
-        fun <State, Output> State.transition(): Transition<State, Output> {
-            return Transition(this)
-        }
-
-        fun <State, Output> State.withOutput(output: Output?): Transition<State, Output> {
-            return Transition(this, output)
-        }
-
-        fun <State, Output> State.withSideEffect(sideEffect: SideEffect?): Transition<State, Output> {
-            val effects = sideEffect?.let {
-                listOf(it)
-            } ?: emptyList()
-
-            return Transition(this, null, effects)
-        }
-
-        fun <State, Output> State.withSideEffects(vararg sideEffect: SideEffect): Transition<State, Output> {
-            val effects = sideEffect.asList()
-            return Transition(this, null, effects)
+        fun <State> State.noMessages(): Transition<State> {
+            return transition(this)
         }
 
         /**
-         * Emits only a single [SideEffect] as part of this transition.
+         * Creates a transition to a new [State] with an optional message.
          */
-        fun <State, Output> sideEffect(key: String, effect: () -> Unit): Transition<State, Output> {
-            return Transition(sideEffects = listOf(SideEffect(key, effect)))
+        fun <State> State.withMessage(invocation: (() -> Unit)?): Transition<State> {
+            val messages = invocation
+                ?.let { listOf(UnitMessage(it)) }
+                ?: emptyList()
+
+            return Transition(this, messages = messages)
         }
 
         /**
-         * Emits an [Output] and [SideEffect]s as part of this transition.
+         * Creates a transition to a new [State] with a [Data] message.
          */
-        fun <State, Output> outputAndSideEffects(output: Output, vararg sideEffects: SideEffect) : Transition<State, Output> {
-            val effects = sideEffects.asList()
-            return Transition(
-                output = output,
-                sideEffects = effects
-            )
+        fun <State, Data> State.withMessage(invocation: (Data) -> Unit, data: Data): Transition<State> {
+            val messages = listOf(EventMessage(invocation, data))
+            return Transition(this, messages = messages)
+        }
+
+        /**
+         * Creates a transition that emits a single [Message] with no data.
+         */
+        fun <State> message(handler: () -> Unit): Transition<State> {
+            return Transition(messages = listOf(UnitMessage(handler)))
+        }
+
+        /**
+         * Creates a transition that emits a single [Message] with [Data].
+         */
+        fun <State, Data> message(handler: (Data) -> Unit, data: Data): Transition<State> {
+            return Transition(messages = listOf(EventMessage(handler, data)))
+        }
+
+        /**
+         * Creates a transition that emits messages added within [buildMessages] block.
+         */
+        inline fun <State> messages(buildMessages: MessageBuilder.() -> Unit): Transition<State> {
+            val messages = MessageBuilder().apply(buildMessages).list
+            return Transition(messages = messages)
+        }
+
+        inline fun <State> State.withMessages(build: MessageBuilder.() -> Unit): Transition<State> {
+            val messages = MessageBuilder().apply(build).list
+            return Transition(this, messages = messages)
         }
     }
 }

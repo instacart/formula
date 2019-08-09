@@ -30,7 +30,7 @@ class ChildrenRemovalTest {
 
     class ParentFormula(
         private val logExit: () -> Unit = {}
-    ) : Formula<Unit, List<Int>, Unit, ParentFormula.RenderModel> {
+    ) : Formula<Unit, List<Int>, ParentFormula.RenderModel> {
         class RenderModel(
             val children: List<ChildFormula.RenderModel>,
             val onClearAll: () -> Unit
@@ -41,20 +41,21 @@ class ChildrenRemovalTest {
         override fun evaluate(
             input: Unit,
             state: List<Int>,
-            context: FormulaContext<List<Int>, Unit>
+            context: FormulaContext<List<Int>>
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
                     children = state.map { id ->
                         context
                             .child("child-$id", ChildFormula(logExit))
-                            .onOutput {
-                                transition(state.minus(id))
-                            }
-                            .input(Unit)
+                            .input(ChildFormula.Input(
+                                exit = context.callback("exit-$id") {
+                                    state.minus(id).noMessages()
+                                }
+                            ))
                     },
                     onClearAll = context.callback {
-                        transition(emptyList())
+                        emptyList<Int>().noMessages()
                     }
                 )
             )
@@ -63,20 +64,26 @@ class ChildrenRemovalTest {
 
     class ChildFormula(
         val logExit: () -> Unit
-    ) : Formula<Unit, Unit, ChildFormula.Exit, ChildFormula.RenderModel> {
+    ) : Formula<ChildFormula.Input, Unit, ChildFormula.RenderModel> {
+
+        class Input(
+            val exit: () -> Unit
+        )
+
         class RenderModel(
             val onExit: () -> Unit
         )
 
-        class Exit
+        override fun initialState(input: Input) = Unit
 
-        override fun initialState(input: Unit) = Unit
-
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit, Exit>): Evaluation<RenderModel> {
+        override fun evaluate(input: Input, state: Unit, context: FormulaContext<Unit>): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
                     onExit = context.callback {
-                        transition(state, Exit(), sideEffects = listOf(SideEffect("log exit", logExit)))
+                        state.withMessages {
+                            message(input.exit)
+                            message(logExit)
+                        }
                     }
                 )
             )

@@ -1,29 +1,24 @@
 package com.instacart.formula.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.SideEffect
 import com.instacart.formula.Transition
+import com.instacart.formula.UnitMessage
 import org.junit.Test
 
 class TransitionUtilsTest {
 
     @Test fun `none transition is empty`() {
-        val none = Transition.Factory.none<String, String>()
+        val none = Transition.Factory.none<String>()
         assertThat(TransitionUtils.isEmpty(none)).isTrue()
     }
 
     @Test fun `state change is not empty`() {
-        val transition = Transition<String, String>(state = "")
+        val transition = Transition(state = "")
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 
-    @Test fun `transition with output is not empty`() {
-        val transition = Transition<String, String>(output = "")
-        assertThat(TransitionUtils.isEmpty(transition)).isFalse()
-    }
-
-    @Test fun `transition with side effects is not empty`() {
-        val transition = Transition<String, String>(sideEffects = listOf(SideEffect("random", {})))
+    @Test fun `transition with messages is not empty`() {
+        val transition = Transition<String>(messages = listOf(UnitMessage {}))
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 }

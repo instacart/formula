@@ -30,7 +30,7 @@ class FetchDataExampleTest {
         }
     }
 
-    class MyFormula : Formula<Unit, MyFormula.State, Unit, MyFormula.RenderModel> {
+    class MyFormula : Formula<Unit, MyFormula.State, MyFormula.RenderModel> {
         private val fetchStream = FetchDataStream()
 
         data class State(
@@ -48,19 +48,19 @@ class FetchDataExampleTest {
         override fun evaluate(
             input: Unit,
             state: State,
-            context: FormulaContext<State, Unit>
+            context: FormulaContext<State>
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
                     title = state.response?.name ?: "",
                     onChangeId = context.eventCallback { id ->
-                        transition(state.copy(selectedId = id))
+                        state.copy(selectedId = id).noMessages()
                     }
                 ),
                 updates = context.updates {
                     if (state.selectedId != null) {
                         events(fetchStream, FetchDataStream.Request(state.selectedId)) { response ->
-                            transition(state.copy(response = response))
+                            state.copy(response = response).noMessages()
                         }
                     }
                 }

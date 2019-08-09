@@ -24,22 +24,20 @@ class FakeDbSideEffectTest {
     class TestFormula(
         private val nameChanges: Observable<String>,
         private val saveToDb: (name: String) -> Unit
-    ) : Formula<Unit, TestFormula.State, Unit, String> {
+    ) : Formula<Unit, TestFormula.State, String> {
 
         data class State(val name: String)
 
         override fun initialState(input: Unit): State = State(name = "")
 
-        override fun evaluate(input: Unit, state: State, context: FormulaContext<State, Unit>): Evaluation<String> {
+        override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<String> {
             return Evaluation(
                 renderModel = state.name,
                 updates = context.updates {
                     events("nameChanges", nameChanges) { newName ->
-                        transition(state.copy(name = newName), sideEffects = listOf(
-                            SideEffect("db updates") {
-                                saveToDb(newName)
-                            }
-                        ))
+                        transition(state.copy(name = newName)) {
+                            message(saveToDb, newName)
+                        }
                     }
                 }
             )

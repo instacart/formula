@@ -4,11 +4,11 @@ import com.instacart.formula.Formula
 
 class FormulaManagerFactoryImpl : FormulaManagerFactory {
 
-    override fun <Input, State, Output, RenderModel> createChildManager(
-        formula: Formula<Input, State, Output, RenderModel>,
+    override fun <Input, State, RenderModel> createChildManager(
+        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionLock: TransitionLock
-    ): FormulaManager<Input, State, Output, RenderModel> {
+    ): FormulaManager<Input, State, RenderModel> {
         val initial = formula.initialState(input)
         return FormulaManagerImpl(initial, ScopedCallbacks(formula), transitionLock, this)
     }

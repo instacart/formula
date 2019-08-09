@@ -5,10 +5,9 @@ package com.instacart.formula
  *
  * @param Input - defines data that the parent/host can pass to this formula.
  * @param State - internal state that is used for this formula.
- * @param Output - a type of message that can be passed to the parent/host.
  * @param RenderModel - a type that is used to render this formula UI.
  */
-interface Formula<Input, State, Output, RenderModel> {
+interface Formula<Input, State, RenderModel> {
 
     /**
      * Instantiate initial [State].
@@ -30,7 +29,7 @@ interface Formula<Input, State, Output, RenderModel> {
      * This method is called any time there is:
      * 1. A [State] change
      * 2. A parent [Formula] calls [FormulaContext.child] with a new [Input].
-     * 3. A child [Formula] has an internal state change or produces an output.
+     * 3. A child [Formula] has an internal state change.
      *
      * As part of this method:
      * 1. Use [FormulaContext.child] to define children formulas.
@@ -43,6 +42,6 @@ interface Formula<Input, State, Output, RenderModel> {
     fun evaluate(
         input: Input,
         state: State,
-        context: FormulaContext<State, Output>
+        context: FormulaContext<State>
     ): Evaluation<RenderModel>
 }

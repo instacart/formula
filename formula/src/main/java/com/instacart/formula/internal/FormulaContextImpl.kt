@@ -7,54 +7,51 @@ import com.instacart.formula.Transition
 import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
-class FormulaContextImpl<State, Output> internal constructor(
+class FormulaContextImpl<State> internal constructor(
     private val processingPass: Long,
     callbacks: ScopedCallbacks,
-    private val delegate: Delegate<State, Output>,
-    private val transitionCallback: TransitionCallbackWrapper<State, Output>
-) : FormulaContext<State, Output>(callbacks) {
+    private val delegate: Delegate<State>,
+    private val transitionCallback: TransitionCallbackWrapper<State>
+) : FormulaContext<State>(callbacks) {
 
-    private var childBuilder: Child<State, Output, *, *, *> = Child<State, Output, Any, Any, Any>(this)
+    private var childBuilder: Child<State, *, *> = Child<State, Any, Any>(this)
 
-    interface Delegate<State, Effect> {
-        fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
-            formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
+    interface Delegate<State> {
+        fun <ChildInput, ChildState, ChildRenderModel> child(
+            formula: Formula<ChildInput, ChildState, ChildRenderModel>,
             input: ChildInput,
             key: Any,
-            onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Effect>,
             processingPass: Long
         ): ChildRenderModel
     }
 
-    override fun performTransition(transition: Transition<State, Output>) {
+    override fun performTransition(transition: Transition<State>) {
         transitionCallback.invoke(transition)
     }
 
-    override fun updates(init: UpdateBuilder<State, Output>.() -> Unit): List<Update> {
+    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update> {
         ensureNotRunning()
         val builder = UpdateBuilder(transitionCallback)
         builder.init()
         return builder.updates
     }
 
-    fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+    fun <ChildInput, ChildState, ChildRenderModel> child(
         key: Any,
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>,
-        input: ChildInput,
-        onEvent: Transition.Factory.(ChildOutput) -> Transition<State, Output>
+        formula: Formula<ChildInput, ChildState, ChildRenderModel>,
+        input: ChildInput
     ): ChildRenderModel {
         ensureNotRunning()
-        return delegate.child(formula, input, key, onEvent, processingPass)
+        return delegate.child(formula, input, key, processingPass)
     }
 
-    override fun <ChildInput, ChildState, ChildOutput, ChildRenderModel> child(
+    override fun <ChildInput, ChildState, ChildRenderModel> child(
         key: String,
-        formula: Formula<ChildInput, ChildState, ChildOutput, ChildRenderModel>
-    ): Child<State, Output, ChildInput, ChildOutput, ChildRenderModel> {
+        formula: Formula<ChildInput, ChildState, ChildRenderModel>
+    ): Child<State, ChildInput, ChildRenderModel>  {
         ensureNotRunning()
-
         @Suppress("UNCHECKED_CAST")
-        val casted = childBuilder as Child<State, Output, ChildInput, ChildOutput, ChildRenderModel>
+        val casted = childBuilder as Child<State, ChildInput, ChildRenderModel>
         casted.initialize(key, formula)
         return casted
     }

@@ -47,14 +47,14 @@ class CounterRenderView(private val root: ViewGroup): RenderView<CounterRenderMo
 Creating a counter widget that has increment/decrement buttons.
 
 ```kotlin
-class CounterFormula : Formula<Unit, CounterState, Unit, CounterRenderModel> {
+class CounterFormula : Formula<Unit, CounterState, CounterRenderModel> {
 
     override fun initialState(input: Unit): Int = CounterState(count = 0)
 
     override fun evaluate(
         input: Unit,
         state: CounterState,
-        context: FormulaContext<Int, Unit>
+        context: FormulaContext<Int>
     ): Evaluation<CounterRenderModel> {
         val count = state.count
         return Evaluation(
@@ -120,7 +120,6 @@ class MyApp : Application() {
 
 And that's it. To learn more, see our [Formula Android Guide](Integration.md). 
 
-
 ### Listening for events
 Formula uses RxJava to deal with event streams. You can either use `Observable` directly or wrap it in a `RxStream`.
 
@@ -146,8 +145,11 @@ Evaluation(
 *Note:* we use a unique identifier `"data"` to make sure that internal diffing mechanism can distinguish between
 different streams.
 
-### Side effects
-It is very easy to emit side-effects.
+### Messages
+Messages are objects used to request execution of impure code. Use messages to execute operations such as
+logging, database updates, firing network requests, notifying a parent and etc.
+
+For example, lets say we want to fire analytics event when user clicks a button.
 ```kotlin
 class UserProfileFormula(
     val userAnalyticsService: UserAnalyticsService
@@ -157,9 +159,7 @@ class UserProfileFormula(
         return Evaluation(
             renderModel = UserProfileRenderModel(
                 onSaveSelected = context.callback {
-                    sideEffect("save selected analytics") {
-                        userAnalyticsService.trackSaveSelected()
-                    }
+                    message(userAnalyticsService::trackSaveSelected)
                 }
             )
         )
@@ -167,10 +167,17 @@ class UserProfileFormula(
 }
 ```
 
+The main part is the declaration within the `context.callback` block.
+```kotlin
+context.callback {
+    // We do a state transition and declare 0..N messages that we want to execute.
+}
+```
+
 ### Input
 Input is used to pass information/data from the parent to the child. 
 ```kotlin
-class ItemDetailFormula() : Formula<Input, ..., ..., ...> {
+class ItemDetailFormula() : Formula<Input, ..., ...> {
 
   data class Input(val itemId: String)
 
@@ -185,36 +192,44 @@ class ItemDetailFormula() : Formula<Input, ..., ..., ...> {
 }
 ```
 
-### Passing events to the parent / host
-You can define a sealed class for outputs that the parent needs to handle.
+### Passing events to the parent
+To pass events to the parent, we need to first define the callbacks on the `Formula.Input` class.
 ```kotlin
-sealed class ItemOutput {
-    class ItemSelected(val itemId: String) : ItemOutput()
+data class ItemListInput(
+  val onItemSelected: (itemId: String) -> Unit
+)
+```
+
+Also, lets make sure that `Input` type is declared at the top of our `formula`.
+```kotlin
+class ItemListFormula() : Formula<ItemListInput, ..., ...>
+```
+
+Now, we can use the the Message API and the `input` passed to us in `Formula.evaluate` to communicate with the parent.
+```kotlin
+override fun evaluate(
+  input: ItemListInput,
+  state: ..,
+  context: ..
+): Evaluation<...> {
+  return Evaluation(
+    renderModel = state.items.map { item ->
+      context.key(item.id) {
+        ItemRow(
+          name = item.name,
+          onClick = context.callback {
+            // sending a message to `input.onItemSelected` with parameter `item.id`
+            message(input.onItemSelected, item.id)
+          }
+        )
+      }
+    }
+  )
 }
 ```
 
-```kotlin
-class ItemListFormula() : Formula<..., ..., ItemOutput, ...> {
-
-  override fun evaluate(
-    input: ..,
-    state: ..,
-    context: ..
-  ): Evaluation<...> {
-    return Evaluation(
-        renderModel = state.items.map { item ->
-            ItemRow(
-                item = item,
-                onItemSelected = context.callback("item selected: ${item.id}") {
-                    // We send the `ItemSelected` event to the parent.
-                    output(ItemOutput.ItemSelected(item.id))   
-                }  
-            )
-        }   
-    )
-  }
-}
-```
+**Note:** instead of calling `input.onItemSelected(item.id)`, we call `message(input.onItemSelected, item.id)`. This
+allows formula runtime to ensure that parent is in the right state to handle the message.
 
 ## Composing Render models
 Render Models are meant to be composable. You can build bigger Render Models from smaller Render Models.
@@ -276,11 +291,13 @@ Use `FormulaContext.child` within `Formula.evaluate` to hook them up.
 ```kotlin
 val listRenderModel = context
     .child(listFormula)
-    .onOutput { listEvent ->
-        // You can react to the list formula output and trigger a transition
-        none()
+    .input {
+        ListInput(
+            items = state.items,
+            onItemSelected = context.eventCallback {
+                // you can respond to child event
+            }
     }
-    .input(createListInput(state))
 ```
  
 Here is a more complete example:
@@ -295,26 +312,17 @@ class MainPageFormula(
         // "context.child" returns a RenderModel 
         val listRenderModel = context
             .child(listFormula)
-            .onOutput { listEvent ->
-                // We can perform state transition here.
-            }
-            .input(createListInput(state))
+            .input { createListInput(state) }
 
         val headerRenderModel = context
             .child(headerFormula)
-            .onOutput { headerEvent ->
-                // handle header events
-            }
-            .input(createHeaderInput(state))
+            .input { createHeaderInput(state) }
 
         // We can make decisions using the current `state` about 
         // what children to show
         val dialog = if (state.showDialog) {
             context
                 .child(dialogFormula)
-                .onOutput { dialogEvent ->
-                    // perform dialog event
-                }
                 .input(Unit)
         } else {
             null
@@ -337,7 +345,6 @@ class MainPageFormula(
 Given that we recompute everything with each state change, there is an internal diffing mechanism with Formula. This
 mechanism ensures that:
 1. RxJava streams are only subscribed to once.
-2. Side effects are only invoked once.
 2. Children state is persisted across every processing pass.
 
 ### Callbacks
@@ -415,7 +422,7 @@ To simplify testing your Formulas, you can use `formula-test` module.
 testImplementation 'com.github.instacart:formula-test:{latest_version}'
 ```
 
-Testing render model output
+Testing the last render model emission
 ```kotlin
 val subject = MyFormula().test().renderModel {
     assertThat(this.name).isEqualTo("my name")
@@ -430,15 +437,17 @@ val subject = MyFormula().test {
 }
 ```
 
-You can now emit children output to your Formula
-```kotlin
-subject.output(MyChildFormula::class, MyChildFormula.Output("property"))
-```
-
 To inspect the input that was passed to the child
 ```kotlin
 subject.childInput(MyChildFormula::class) {
     assertThat(this.property).isEqualTo("property")
+}
+```
+
+You can fake child events
+```kotlin
+subject.childInput(MyChildFormula::class) {
+    this.onEvent("fake data")
 }
 ```
 

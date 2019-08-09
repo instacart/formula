@@ -1,9 +1,9 @@
 package com.instacart.formula
 
-class OptionalChildFormula<ChildOutput, ChildRenderModel>(
-    private val child: Formula<Unit, *, ChildOutput, ChildRenderModel>,
-    private val onChildOutput: (State, ChildOutput) -> Transition<State, ChildOutput> = { _, output -> Transition.Factory.output(output) }
-): Formula<Unit, OptionalChildFormula.State, ChildOutput, OptionalChildFormula.RenderModel<ChildRenderModel>> {
+class OptionalChildFormula<ChildInput, ChildRenderModel>(
+    private val child: Formula<ChildInput, *, ChildRenderModel>,
+    private val childInput: FormulaContext<State>.(State) -> ChildInput
+): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<ChildRenderModel>> {
 
     data class State(
         val showChild: Boolean = true
@@ -19,10 +19,10 @@ class OptionalChildFormula<ChildOutput, ChildRenderModel>(
     override fun evaluate(
         input: Unit,
         state: State,
-        context: FormulaContext<State, ChildOutput>
+        context: FormulaContext<State>
     ): Evaluation<RenderModel<ChildRenderModel>> {
         val childRM = if (state.showChild) {
-            context.child(child).onOutput { onChildOutput(state, it) }.input(Unit)
+            context.child(child).input { childInput(context, state) }
         } else {
             null
         }
@@ -31,7 +31,7 @@ class OptionalChildFormula<ChildOutput, ChildRenderModel>(
             renderModel = RenderModel(
                 child = childRM,
                 toggleChild = context.callback {
-                    state.copy(showChild = !state.showChild).transition()
+                    state.copy(showChild = !state.showChild).noMessages()
                 }
             )
         )

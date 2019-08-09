@@ -18,19 +18,19 @@ class ManyEmissionStreamTest {
             }
     }
 
-    class TestFormula : Formula<Unit, Int, Unit, Int> {
+    class TestFormula : Formula<Unit, Int, Int> {
         override fun initialState(input: Unit): Int = 0
 
         override fun evaluate(
             input: Unit,
             state: Int,
-            context: FormulaContext<Int, Unit>
+            context: FormulaContext<Int>
         ): Evaluation<Int> {
 
             return Evaluation(
                 updates = context.updates {
                     events(MyStream()) {
-                        transition(state + 1)
+                        (state + 1).noMessages()
                     }
                 },
                 renderModel = state

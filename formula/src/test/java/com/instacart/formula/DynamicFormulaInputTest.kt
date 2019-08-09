@@ -12,8 +12,8 @@ class DynamicFormulaInputTest {
             .assertValues(1, 2, 3)
     }
 
-    class TestFormula:  StatelessFormula<Int, Unit, Int>() {
-        override fun evaluate(input: Int, context: FormulaContext<Unit, Unit>): Evaluation<Int> {
+    class TestFormula:  StatelessFormula<Int, Int>() {
+        override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
             return Evaluation(renderModel = input)
         }
     }

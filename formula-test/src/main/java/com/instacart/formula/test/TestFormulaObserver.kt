@@ -9,19 +9,19 @@ import com.instacart.formula.internal.TransitionLock
 import io.reactivex.Observable
 import kotlin.reflect.KClass
 
-class TestFormulaObserver<Input : Any, Output, RenderModel, FormulaT : Formula<Input, *, Output, RenderModel>>(
-    private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *, *>>,
+class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Input, *, RenderModel>>(
+    private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *>>,
     private val input: Observable<Input>,
     val formula: FormulaT,
     private val defaultToRealFormula: Boolean = true
 ) {
 
-    class ManagerFactory(private val observer: TestFormulaObserver<*, *, *, *>) : FormulaManagerFactory {
-        override fun <Input, State, Output, RenderModel> createChildManager(
-            formula: Formula<Input, State, Output, RenderModel>,
+    class ManagerFactory(private val observer: TestFormulaObserver<*, *, *>) : FormulaManagerFactory {
+        override fun <Input, State, RenderModel> createChildManager(
+            formula: Formula<Input, State, RenderModel>,
             input: Input,
             transitionLock: TransitionLock
-        ): FormulaManager<Input, State, Output, RenderModel> {
+        ): FormulaManager<Input, State, RenderModel> {
             if (!observer.testManagers.containsKey(formula::class) && observer.defaultToRealFormula) {
                 return FormulaManagerFactoryImpl().createChildManager(formula, input, transitionLock)
             }
@@ -30,45 +30,28 @@ class TestFormulaObserver<Input : Any, Output, RenderModel, FormulaT : Formula<I
         }
     }
 
-    private val outputs = mutableListOf<Output>()
-
     private val observer = FormulaRuntime
         .start(
             input = input,
             formula = formula,
-            onEvent = {
-                outputs.add(it)
-            },
             childManagerFactory = ManagerFactory(this)
         )
         .test()
         .assertNoErrors()
 
-    fun <Input, State, Output, RenderModel> output(
-        type: KClass<out Formula<Input, State, Output, RenderModel>>,
-        output: Output
-    ) = apply {
-        findManager(type).output(output)
-    }
-
-    fun <Input, State, Output, RenderModel> output(
-        formula: Formula<Input, State, Output, RenderModel>,
-        output: Output
-    ) = output(formula::class, output)
-
     fun values(): List<RenderModel> {
         return observer.values()
     }
 
-    inline fun <Input, State, Output, RenderModel> childInput(
-        childType: KClass<out Formula<Input, State, Output, RenderModel>>,
+    inline fun <Input, State, RenderModel> childInput(
+        childType: KClass<out Formula<Input, State, RenderModel>>,
         assert: Input.() -> Unit
     ) = apply {
         findManager(childType).lastInput().assert()
     }
 
-    inline fun <Input, State, Output, RenderModel> childInput(
-        childFormula: Formula<Input, State, Output, RenderModel>,
+    inline fun <Input, State, RenderModel> childInput(
+        childFormula: Formula<Input, State, RenderModel>,
         assert: Input.() -> Unit
     ) = apply {
         findManager(childFormula::class).lastInput().assert()
@@ -79,30 +62,21 @@ class TestFormulaObserver<Input : Any, Output, RenderModel, FormulaT : Formula<I
     }
 
     fun assertRenderModelCount(count: Int) = apply {
-        assert(values().size == count) {
-            "Expected: $count, was: ${values().size}"
+        val size = values().size
+        assert(size == count) {
+            "Expected: $count, was: $size"
         }
     }
 
-    fun outputs(): List<Output> = outputs
-
-    fun assertOutputCount(count: Int) = apply {
-        assert(outputs.size == count)
-    }
-
-    inline fun outputs(assert: List<Output>.() -> Unit) = apply {
-        assert(outputs())
-    }
-
     @PublishedApi
-    internal fun <Input, State, Output, RenderModel> findManager(
-        type: KClass<out Formula<Input, State, Output, RenderModel>>
-    ): TestFormulaManager<Input, State, Output, RenderModel> {
+    internal fun <Input, State, RenderModel> findManager(
+        type: KClass<out Formula<Input, State, RenderModel>>
+    ): TestFormulaManager<Input, State, RenderModel> {
         val manager = checkNotNull(testManagers[type]) {
             "missing manager registration for $type"
         }
 
         @Suppress("UNCHECKED_CAST")
-        return manager as TestFormulaManager<Input, State, Output, RenderModel>
+        return manager as TestFormulaManager<Input, State, RenderModel>
     }
 }

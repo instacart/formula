@@ -14,7 +14,7 @@ class InputChangedTest {
         }
     }
 
-    class ParentFormula : Formula<Unit, String, Unit, ParentFormula.RenderModel> {
+    class ParentFormula : Formula<Unit, String, ParentFormula.RenderModel> {
         private val childFormula = ChildFormula()
 
         class RenderModel(val childName: String, val onChildNameChanged: (String) -> Unit)
@@ -24,20 +24,20 @@ class InputChangedTest {
         override fun evaluate(
             input: Unit,
             state: String,
-            context: FormulaContext<String, Unit>
+            context: FormulaContext<String>
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
                     childName = context.child(childFormula).input(state),
                     onChildNameChanged = context.eventCallback { name ->
-                        transition(name)
+                        name.noMessages()
                     }
                 )
             )
         }
     }
 
-    class ChildFormula : Formula<String, String, Unit, String> {
+    class ChildFormula : Formula<String, String, String> {
         override fun initialState(input: String): String = input
 
         override fun onInputChanged(oldInput: String, input: String, state: String): String {
@@ -48,7 +48,7 @@ class InputChangedTest {
         override fun evaluate(
             input: String,
             state: String,
-            context: FormulaContext<String, Unit>
+            context: FormulaContext<String>
         ): Evaluation<String> {
             return Evaluation(renderModel = state)
         }
