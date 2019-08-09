@@ -1,9 +1,10 @@
 package com.examples.todoapp.tasks
 
+import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.FormulaContext
 
 class TaskListFormula(
     private val repo: TaskRepo
@@ -22,60 +23,62 @@ class TaskListFormula(
         state: TaskListState,
         context: FormulaContext<TaskListState>
     ): Evaluation<TaskListRenderModel> {
-        val items = createTaskList(
-            state,
-            onTaskCompletedEvent = repo::onTaskCompleted,
-            showToast = input.showToast
-        )
+        val items = taskList(state).map { task ->
+            context.key(task.id) {
+                TaskItemRenderModel(
+                    id = task.id,
+                    text = task.title,
+                    isSelected = task.isCompleted,
+                    onClick = context.callback{
+                        message(input.showToast, "Task selected: ${task.title}")
+                    },
+                    onToggle = context.callback {
+                        val event = TaskCompletedEvent(
+                            taskId = task.id,
+                            isCompleted = !task.isCompleted
+                        )
+                        message(repo::onTaskCompleted, event)
+                    }
+                )
+            }
+        }
 
         return Evaluation(
             updates = context.updates {
-                events("task changes", repo.tasks()) {
+                events(repo.tasks()) {
                     state.copy(taskState = it).noMessages()
                 }
             },
             renderModel = TaskListRenderModel(
                 items = items,
-                filterOptions = TasksFilterType.values().map { type ->
-                    context.key(type.name) {
-                        TaskFilterRenderModel(title = type.name, onSelected = context.callback {
-                            state.copy(filterType = type).noMessages()
-                        })
-                    }
-                })
+                filterOptions = filterOptions(state, context)
+            )
         )
     }
 
-    private fun createTaskList(
-        state: TaskListState,
-        onTaskCompletedEvent: (TaskCompletedEvent) -> Unit,
-        showToast: (String) -> Unit
-    ): List<TaskItemRenderModel> {
-        val tasks = state.taskState.filter {
+    private fun taskList(state: TaskListState): List<Task> {
+        return state.taskState.filter {
             when (state.filterType) {
                 TasksFilterType.ALL_TASKS -> true
                 TasksFilterType.COMPLETED_TASKS -> it.isCompleted
                 TasksFilterType.ACTIVE_TASKS -> !it.isCompleted
             }
         }
+    }
 
-        return tasks.map {
-            TaskItemRenderModel(
-                id = it.id,
-                text = it.title,
-                isSelected = it.isCompleted,
-                onClick = {
-                    showToast("Task selected: ${it.title}")
-                },
-                onToggle = {
-                    onTaskCompletedEvent(
-                        TaskCompletedEvent(
-                            taskId = it.id,
-                            isCompleted = !it.isCompleted
-                        )
-                    )
-                }
-            )
+    private fun filterOptions(
+        state: TaskListState,
+        context: FormulaContext<TaskListState>
+    ): List<TaskFilterRenderModel> {
+        return TasksFilterType.values().map { type ->
+            context.key(type.name) {
+                TaskFilterRenderModel(
+                    title = type.name,
+                    onSelected = context.callback {
+                        state.copy(filterType = type).noMessages()
+                    }
+                )
+            }
         }
     }
 }
