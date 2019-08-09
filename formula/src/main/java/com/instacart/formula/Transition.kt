@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.Transition.Factory.noMessages
+
 /**
  * Defines an intent to transition by emitting a new [State] and 0..N number of messages.
  *
@@ -22,47 +24,50 @@ data class Transition<out State> @PublishedApi internal constructor(
         }
 
         /**
-         * Creates a transition to a new [State].
-         */
-        fun <State> transition(state: State): Transition<State> {
-            return Transition(state)
-        }
-
-        /**
          * Creates a transition to a new [State] and emits messages added within [buildMessages] block.
          */
         inline fun <State> transition(
-            state: State? = null,
+            state: State?,
             buildMessages: MessageBuilder.() -> Unit
         ): Transition<State> {
             val messages = MessageBuilder().apply(buildMessages).list
-            return Transition(state, messages = messages)
+            return Transition(state, messages)
+        }
+
+        /**
+         * Creates a transition that has an optional state change and 0..N messages.
+         */
+        fun <State> transition(
+            state: State? = null,
+            messages: List<Message> = emptyList()
+        ): Transition<State> {
+            return Transition(state, messages)
         }
 
         /**
          * Creates a transition to a new [State] with no additional messages.
          */
         fun <State> State.noMessages(): Transition<State> {
-            return Transition(this)
+            return transition(this)
         }
 
         /**
          * Creates a transition to a new [State] with an optional message.
          */
         fun <State> State.withMessage(invocation: (() -> Unit)?): Transition<State> {
-            val effects = invocation
+            val messages = invocation
                 ?.let { listOf(UnitMessage(it)) }
                 ?: emptyList()
 
-            return Transition(this, messages = effects)
+            return Transition(this, messages = messages)
         }
 
         /**
          * Creates a transition to a new [State] with a [Data] message.
          */
         fun <State, Data> State.withMessage(invocation: (Data) -> Unit, data: Data): Transition<State> {
-            val effects = listOf(EventMessage(invocation, data))
-            return Transition(this, messages = effects)
+            val messages = listOf(EventMessage(invocation, data))
+            return Transition(this, messages = messages)
         }
 
         /**
