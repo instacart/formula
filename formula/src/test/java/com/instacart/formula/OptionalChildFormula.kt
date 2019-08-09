@@ -6,7 +6,7 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
 ): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<ChildRenderModel>> {
     companion object {
         operator fun <ChildRenderModel> invoke(child: Formula<Unit, *, ChildRenderModel>) = run {
-            OptionalChildFormula(child, { Unit })
+            OptionalChildFormula(child) { Unit }
         }
     }
 

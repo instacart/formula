@@ -8,34 +8,40 @@ package com.instacart.formula
  */
 interface Stream<Input, Output> {
     companion object {
-        inline fun performOnCreate(crossinline action: () -> Unit): Stream<Unit, Unit> {
-            return object : Stream<Unit, Unit> {
-                override fun perform(input: Unit, onEvent: (Unit) -> Unit): Cancelation? {
-                    action()
-                    return null
-                }
-            }
-        }
 
-        inline fun <Input> performOnCreate(crossinline action: (Input) -> Unit): Stream<Input, Unit> {
-            return object : Stream<Input, Unit> {
-                override fun perform(input: Input, onEvent: (Unit) -> Unit): Cancelation? {
-                    action(input)
-                    return null
-                }
-            }
+        fun <Input> effect(): Stream<Input, Input> {
+            @Suppress("UNCHECKED_CAST")
+            return EffectStream as Stream<Input, Input>
         }
 
         fun cancellationEffect(): Stream<Unit, Unit> {
-            return object : Stream<Unit, Unit> {
-                override fun perform(input: Unit, onEvent: (Unit) -> Unit): Cancelation? {
-                    return Cancelation {
-                        onEvent(Unit)
-                    }
-                }
-            }
+            @Suppress("UNCHECKED_CAST")
+            return CancellationEffectStream as Stream<Unit, Unit>
         }
     }
 
     fun perform(input: Input, onEvent: (Output) -> Unit): Cancelation?
 }
+
+/**
+ * Triggers [onEvent] as soon as [perform] is called.
+ */
+internal object EffectStream : Stream<Any, Any> {
+    override fun perform(input: Any, onEvent: (Any) -> Unit): Cancelation? {
+        onEvent(input)
+        return null
+    }
+}
+
+/**
+ * Triggers [onEvent] when [Formula] is removed.
+ */
+internal object CancellationEffectStream : Stream<Any, Any> {
+    override fun perform(input: Any, onEvent: (Any) -> Unit): Cancelation? {
+        return Cancelation {
+            onEvent(input)
+        }
+    }
+}
+
+

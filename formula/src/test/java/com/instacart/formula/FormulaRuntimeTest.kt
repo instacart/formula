@@ -523,4 +523,24 @@ class FormulaRuntimeTest {
                 assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(1)
             }
     }
+
+    @Test
+    fun `cancellation is scoped to latest input`() {
+        var emissions = 0
+        var cancelCallback = -1
+        val formula = OnlyUpdateFormula<Int> { input ->
+            cancellationEffect {
+                emissions += 1
+                cancelCallback = input
+            }
+        }
+
+        formula
+            .test(Observable.just(1, 2, 3))
+            .dispose()
+            .apply {
+                assertThat(emissions).isEqualTo(1)
+                assertThat(cancelCallback).isEqualTo(3)
+            }
+    }
 }

@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.Observable
 
@@ -222,7 +223,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         inline fun effect(crossinline action: () -> Unit) {
-            add(createConnection(null, Stream.performOnCreate(action), Unit, { none() }))
+            val callback: (Unit) -> Unit = {
+                action()
+            }
+            add(Update(callback::class, Unit, Stream.effect(), callback))
         }
 
         /**
@@ -232,7 +236,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         inline fun effect(key: String, crossinline action: () -> Unit) {
-            add(createConnection(key, Stream.performOnCreate(action), Unit, { none() }))
+            val callback: (Unit) -> Unit = {
+                action()
+            }
+            add(Update(JoinedKey(key, callback::class), Unit, Stream.effect(), callback))
         }
 
         /**
@@ -242,7 +249,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         inline fun <EffectInput : Any> effect(input: EffectInput, crossinline action: (EffectInput) -> Unit) {
-            add(createConnection(null, Stream.performOnCreate(action), input, { none() }))
+            val callback: (EffectInput) -> Unit = {
+                action(it)
+            }
+            add(Update(callback::class, input, Stream.effect(), callback))
         }
 
         /**
@@ -253,7 +263,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param action A callback that will be invoked once.
          */
         inline fun <EffectInput : Any> effect(key: String, input: EffectInput, crossinline action: (EffectInput) -> Unit) {
-            add(createConnection(key, Stream.performOnCreate(action), input, { none() }))
+            val callback: (EffectInput) -> Unit = {
+                action(it)
+            }
+            add(Update(Update.Key(input, callback::class, key), input, Stream.effect(), callback))
         }
 
         /**
