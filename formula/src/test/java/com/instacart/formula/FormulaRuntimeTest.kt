@@ -496,4 +496,31 @@ class FormulaRuntimeTest {
             it is IllegalStateException
         }
     }
+
+    @Test
+    fun `cancellation effect by unsubscribing`() {
+        CancellationEffectFormula()
+            .test()
+            .apply {
+                assertThat(formula.timesCancelledCalled).isEqualTo(0)
+            }
+            .dispose()
+            .apply {
+                assertThat(formula.timesCancelledCalled).isEqualTo(1)
+            }
+    }
+
+    @Test
+    fun `cancellation by removing child formula`() {
+        val cancellationFormula = CancellationEffectFormula()
+        OptionalChildFormula(cancellationFormula)
+            .test()
+            .apply {
+                assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(0)
+            }
+            .renderModel { toggleChild() }
+            .apply {
+                assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(1)
+            }
+    }
 }

@@ -3,7 +3,7 @@ package com.instacart.formula
 import kotlin.reflect.KClass
 
 class Update<Input : Any, Output>(
-    val key: Key,
+    val key: Any,
     val input: Input,
     val stream: Stream<Input, Output>,
     onEvent: (Output) -> Unit

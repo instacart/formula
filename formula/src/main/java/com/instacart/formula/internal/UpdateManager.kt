@@ -41,7 +41,6 @@ internal class UpdateManager(
             val update = new.firstOrNull { it == existing }
             if (update == null) {
                 iterator.remove()
-                existing.handler = NO_OP
                 tearDownStream(existing)
             }
 
@@ -70,14 +69,14 @@ internal class UpdateManager(
     fun terminate() {
         val iterator = updates.iterator()
         while(iterator.hasNext()) {
-            val next = iterator.next()
+            val stream = iterator.next()
             iterator.remove()
-            tearDownStream(next)
+            tearDownStream(stream)
         }
     }
 
-    private fun tearDownStream(existing: Update<*, *>) {
-        existing.handler = NO_OP
-        existing.tearDown()
+    private fun tearDownStream(stream: Update<*, *>) {
+        stream.tearDown()
+        stream.handler = NO_OP
     }
 }

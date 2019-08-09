@@ -256,6 +256,23 @@ abstract class FormulaContext<State> internal constructor(
             add(createConnection(key, Stream.performOnCreate(action), input, { none() }))
         }
 
+        /**
+         * Defines a side effect which is executed when [Formula] is removed.
+         */
+        inline fun cancellationEffect(crossinline action: () -> Unit) {
+            val callback: (Unit) -> Unit = {
+                action()
+            }
+
+            val update = Update(
+                key = callback::class,
+                input = Unit,
+                stream = Stream.cancellationEffect(),
+                onEvent = callback
+            )
+            add(update)
+        }
+
         @PublishedApi internal fun add(connection: Update<*, *>) {
             if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")

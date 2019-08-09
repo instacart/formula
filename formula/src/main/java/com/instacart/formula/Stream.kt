@@ -25,6 +25,16 @@ interface Stream<Input, Output> {
                 }
             }
         }
+
+        fun cancellationEffect(): Stream<Unit, Unit> {
+            return object : Stream<Unit, Unit> {
+                override fun perform(input: Unit, onEvent: (Unit) -> Unit): Cancelation? {
+                    return Cancelation {
+                        onEvent(Unit)
+                    }
+                }
+            }
+        }
     }
 
     fun perform(input: Input, onEvent: (Output) -> Unit): Cancelation?
