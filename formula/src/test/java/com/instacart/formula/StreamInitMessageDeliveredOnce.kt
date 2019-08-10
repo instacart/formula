@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.test.test
 
-object EffectExecutedOnce {
+object StreamInitMessageDeliveredOnce {
     fun test() = TestFormula().test()
 
     class TestFormula : StatelessFormula<Unit, Unit>() {
@@ -13,8 +13,10 @@ object EffectExecutedOnce {
             return Evaluation(
                 renderModel = Unit,
                 updates = context.updates {
-                    effect("effect") {
-                        effect += 1
+                    events("effect", Stream.onInit()) {
+                        message {
+                            effect += 1
+                        }
                     }
                 }
             )

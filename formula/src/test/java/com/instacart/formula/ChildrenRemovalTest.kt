@@ -50,12 +50,12 @@ class ChildrenRemovalTest {
                             .child("child-$id", ChildFormula(logExit))
                             .input(ChildFormula.Input(
                                 exit = context.callback("exit-$id") {
-                                    state.minus(id).noMessages()
+                                    transition(state.minus(id))
                                 }
                             ))
                     },
                     onClearAll = context.callback {
-                        emptyList<Int>().noMessages()
+                        transition(emptyList())
                     }
                 )
             )

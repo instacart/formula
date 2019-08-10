@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.Observable
 
@@ -141,10 +140,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param input An object passed to the [Stream] for instantiation. This can
          * @param onEvent - a callback invoked when [Stream] produces an
          */
-        inline fun <StreamInput : Any, StreamOutput> events(
-            stream: Stream<StreamInput, StreamOutput>,
-            input: StreamInput,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+        inline fun <Input : Any, Message> events(
+            stream: Stream<Input, Message>,
+            input: Input,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             events("", stream, input, onEvent)
         }
@@ -158,11 +157,11 @@ abstract class FormulaContext<State> internal constructor(
          * @param input An object passed to the [Stream] for instantiation. This can
          * @param onEvent - a callback invoked when [Stream] produces an
          */
-        inline fun <StreamInput : Any, StreamOutput> events(
+        inline fun <Input : Any, Message> events(
             key: String,
-            stream: Stream<StreamInput, StreamOutput>,
-            input: StreamInput,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+            stream: Stream<Input, Message>,
+            input: Input,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             add(createConnection(key, stream, input, onEvent))
         }
@@ -171,9 +170,9 @@ abstract class FormulaContext<State> internal constructor(
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          */
-        inline fun <StreamOutput> events(
-            stream: Stream<Unit, StreamOutput>,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+        inline fun <Message> events(
+            stream: Stream<Unit, Message>,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             events("", stream, onEvent)
         }
@@ -184,10 +183,10 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param key An extra parameter used to distinguish between streams.
          */
-        inline fun <StreamOutput> events(
+        inline fun <Message> events(
             key: String,
-            stream: Stream<Unit, StreamOutput>,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+            stream: Stream<Unit, Message>,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             events(key, stream, Unit, onEvent)
         }
@@ -196,9 +195,9 @@ abstract class FormulaContext<State> internal constructor(
          * Adds an [Observable] as part of this [Evaluation]. Observable will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          */
-        inline fun <StreamOutput> events(
-            observable: Observable<StreamOutput>,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+        inline fun <Message> events(
+            observable: Observable<Message>,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             events("", RxStream.fromObservable { observable }, onEvent)
         }
@@ -209,81 +208,12 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param key Primary way to distinguish between different observables.
          */
-        inline fun <StreamOutput> events(
+        inline fun <Message> events(
             key: String,
-            observable: Observable<StreamOutput>,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
+            observable: Observable<Message>,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
         ) {
             events(key, RxStream.fromObservable { observable }, onEvent)
-        }
-
-        /**
-         * Defines a side effect.
-         *
-         * @param action A callback that will be invoked once.
-         */
-        inline fun effect(crossinline action: () -> Unit) {
-            val callback: (Unit) -> Unit = {
-                action()
-            }
-            add(Update(callback::class, Unit, Stream.effect(), callback))
-        }
-
-        /**
-         * Defines a side effect for which the uniqueness is tied only to [key]. It will be invoked once when it is initially added.
-         *
-         * @param key Used to distinguish between different types of effects.
-         * @param action A callback that will be invoked once.
-         */
-        inline fun effect(key: String, crossinline action: () -> Unit) {
-            val callback: (Unit) -> Unit = {
-                action()
-            }
-            add(Update(JoinedKey(key, callback::class), Unit, Stream.effect(), callback))
-        }
-
-        /**
-         * Define a side effect for which the uniqueness is tied to [key] and [input]. It will be invoked once when it is initially added.
-         *
-         * @param input Will be passed to [action]. It is also used as key to distinguish different types of effects.
-         * @param action A callback that will be invoked once.
-         */
-        inline fun <EffectInput : Any> effect(input: EffectInput, crossinline action: (EffectInput) -> Unit) {
-            val callback: (EffectInput) -> Unit = {
-                action(it)
-            }
-            add(Update(callback::class, input, Stream.effect(), callback))
-        }
-
-        /**
-         * Define a side effect for which the uniqueness is tied to [key] and [input]. It will be invoked once when it is initially added.
-         *
-         * @param key Used to distinguish between different types of effects.
-         * @param input Will be passed to [action]. It is also used as key to distinguish different types of effects.
-         * @param action A callback that will be invoked once.
-         */
-        inline fun <EffectInput : Any> effect(key: String, input: EffectInput, crossinline action: (EffectInput) -> Unit) {
-            val callback: (EffectInput) -> Unit = {
-                action(it)
-            }
-            add(Update(Update.Key(input, callback::class, key), input, Stream.effect(), callback))
-        }
-
-        /**
-         * Defines a message that will be executed when [Formula] is removed.
-         */
-        inline fun cancellationMessage(crossinline action: () -> Unit) {
-            val callback: (Unit) -> Unit = {
-                action()
-            }
-
-            val update = Update(
-                key = callback::class,
-                input = Unit,
-                stream = Stream.cancellationEffect(),
-                onEvent = callback
-            )
-            add(update)
         }
 
         @PublishedApi internal fun add(connection: Update<*, *>) {
@@ -294,13 +224,13 @@ abstract class FormulaContext<State> internal constructor(
             updates.add(connection)
         }
 
-        @PublishedApi internal inline fun <StreamInput : Any, StreamOutput> createConnection(
+        @PublishedApi internal inline fun <Input : Any, Message> createConnection(
             key: Any? = null,
-            stream: Stream<StreamInput, StreamOutput>,
-            input: StreamInput,
-            crossinline onEvent: Transition.Factory.(StreamOutput) -> Transition<State>
-        ): Update<StreamInput, StreamOutput> {
-            val callback: (StreamOutput) -> Unit = {
+            stream: Stream<Input, Message>,
+            input: Input,
+            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+        ): Update<Input, Message> {
+            val callback: (Message) -> Unit = {
                 val value = onEvent(Transition.Factory, it)
                 transitionCallback(value)
             }

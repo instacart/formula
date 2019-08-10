@@ -7,8 +7,8 @@ class EffectWithInputFormula : StatelessFormula<Int, Unit>()  {
         return Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                effect("input", input) {
-                    effects.add(it)
+                events("input", Stream.onInput(), input) {
+                    message { effects.add(it) }
                 }
             }
         )

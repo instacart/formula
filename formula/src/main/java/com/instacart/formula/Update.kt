@@ -21,8 +21,8 @@ class Update<Input : Any, Output>(
     internal var cancelation: Cancelation? = null
 
     internal fun start() {
-        cancelation = stream.perform(input) { next ->
-            handler.invoke(next)
+        cancelation = stream.start(input) { message ->
+            handler.invoke(message)
         }
     }
 

@@ -8,6 +8,7 @@ internal class TransitionCallbackWrapper<State>(
     var transitionId: Long
 ) : (Transition<State>) -> Unit {
     var running = false
+    var terminated = false
 
     override fun invoke(transition: Transition<State>) {
         if (!running) {
@@ -18,7 +19,7 @@ internal class TransitionCallbackWrapper<State>(
             return
         }
 
-        if (transitionLock.hasTransitioned(transitionId)) {
+        if (!terminated && transitionLock.hasTransitioned(transitionId)) {
             // We have already transitioned, this should not happen.
             throw IllegalStateException("Transition already happened. This is using old transition callback: $transition.")
         }

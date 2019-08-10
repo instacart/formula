@@ -6,9 +6,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 
-class TaskListFormula(
-    private val repo: TaskRepo
-) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
+class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
 
     class Input(
         val showToast: (String) -> Unit
@@ -29,7 +27,7 @@ class TaskListFormula(
                     id = task.id,
                     text = task.title,
                     isSelected = task.isCompleted,
-                    onClick = context.callback{
+                    onClick = context.callback {
                         message(input.showToast, "Task selected: ${task.title}")
                     },
                     onToggle = context.callback {

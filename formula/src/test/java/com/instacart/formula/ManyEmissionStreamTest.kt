@@ -30,7 +30,7 @@ class ManyEmissionStreamTest {
             return Evaluation(
                 updates = context.updates {
                     events(MyStream()) {
-                        (state + 1).noMessages()
+                        transition(state + 1)
                     }
                 },
                 renderModel = state
