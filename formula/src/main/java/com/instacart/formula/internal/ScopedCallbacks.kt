@@ -21,29 +21,9 @@ internal class ScopedCallbacks private constructor(
         return currentCallbacks().initOrFindCallback(key)
     }
 
-    fun initOrFindPositionalCallback(): Callback {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindPositionalCallback()
-    }
-
-    fun initOrFindOptionalCallback(condition: Boolean): Callback? {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindOptionalCallback(condition)
-    }
-
     fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
         ensureNotRunning()
         return currentCallbacks().initOrFindEventCallback(key)
-    }
-
-    fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindPositionalEventCallback()
-    }
-
-    fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>? {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindOptionalEventCallback(condition)
     }
 
     fun enterScope(key: Any) {
@@ -79,15 +59,6 @@ internal class ScopedCallbacks private constructor(
                 iterator.remove()
             } else {
                 val callbacks = entry.value.value
-                if (!callbacks.isValidRound()) {
-                    val message = buildString {
-                        append("Dynamic callback registrations detected in ${entry.key}. ")
-                        append("Expected: ${callbacks.lastCallbackCount}, was: ${callbacks.callbackCount}.")
-                        append("Take a look at https://github.com/instacart/formula/blob/master/docs/Getting-Started.md#callbacks")
-                    }
-                    throw IllegalStateException(message)
-                }
-
                 callbacks.evaluationFinished()
                 entry.value.requested = false
             }

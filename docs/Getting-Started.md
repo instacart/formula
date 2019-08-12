@@ -358,33 +358,10 @@ CounterRenderModel(
 ```
 
 Callbacks retain equality across re-evaluation (such as state changes). By default, we persist the callback in a map
-where each callback is identified by an incremented integer id. In some cases incremented id is not sufficient and
-you will need to explicitly provide a unique `key`. There a two common situations: when callback is declared in a conditional
-statement or when it is declared in a list iteration.
+where each callback is identified by it's class type. In one case this is not sufficient and you need to explicitly
+provide a unique `key`. This special condition is when declaring callbacks within a loop.
 
-Conditional callback issue:
-```kotlin
-// THIS WILL NOT WORK
-val optionalRenderModel = if (state.showChild) {
-    ChildRenderModel(
-        // Incremented integer id doesn't work in this case
-        onClick = context.callback {
-            transition()
-        }
-    )
-} else {
-    null
-}
-```
-
-To fix it, you just need to add a unique key
-```kotlin
-onClick = context.callback("child on click") {
-
-}
-```
-
-Creating callbacks within a list:
+For example, if you are mapping list of items and creating a callback within the `map` function.
 ```kotlin
 // This will not work unless your list of items never changes (removal of item or position change).
 ItemListRenderModel(
@@ -466,8 +443,3 @@ you will see the following exception.
 ```
 Caused by: java.lang.IllegalStateException: Transition already happened. This is using old transition callback: $it.
 ```
-
-### Dynamic callback registrations detected.
-By default, formula uses positional index for callback uniqueness. This exception indicates that some of your callbacks
-need to have an explicit key likely because some callback is defined within `if` block or a `list loop`. For more info
-take a look at the [callbacks section](#callbacks).

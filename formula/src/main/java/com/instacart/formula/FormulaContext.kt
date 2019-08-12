@@ -14,28 +14,15 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
-     * NOTE: this uses positional index to determine the key.
+     * It uses inlined callback anonymous class for type.
      */
     inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
-        val callback = callbacks.initOrFindPositionalCallback()
-        callback.callback = {
+        val callback: () -> Unit = {
             performTransition(transition(Transition.Factory))
         }
-        return callback
-    }
-
-    /**
-     * Creates a callback if [condition] is true.
-     */
-    inline fun optionalCallback(
-        condition: Boolean,
-        crossinline transition: Transition.Factory.() -> Transition<State>
-    ): (() -> Unit)? {
-        return callbacks.initOrFindOptionalCallback(condition)?.apply {
-            callback = {
-                performTransition(transition(Transition.Factory))
-            }
-        }
+        val reference = callbacks.initOrFindCallback(callback::class)
+        reference.callback = callback
+        return reference
     }
 
     /**
@@ -61,33 +48,18 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
-     * NOTE: this uses positional index to determine the key.
+     * It uses inlined callback anonymous class for type.
      */
     inline fun <UIEvent> eventCallback(
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
-
-        val callback = callbacks.initOrFindPositionalEventCallback<UIEvent>()
-        callback.callback = {
+        val callback: (UIEvent) -> Unit = {
             performTransition(transition(Transition.Factory, it))
         }
-        return callback
-    }
 
-    /**
-     * If [condition] is met, creates a callback that takes a [UIEvent] and performs a [Transition].
-     *
-     * NOTE: this uses positional index to determine the key.
-     */
-    inline fun <UIEvent> optionalEventCallback(
-        condition: Boolean,
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
-    ): ((UIEvent) -> Unit)? {
-        return callbacks.initOrFindOptionalEventCallback<UIEvent>(condition)?.apply {
-            callback = {
-                performTransition(transition(Transition.Factory, it))
-            }
-        }
+        val reference = callbacks.initOrFindEventCallback<UIEvent>(callback::class)
+        reference.callback = callback
+        return reference
     }
 
     /**

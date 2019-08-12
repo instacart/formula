@@ -304,6 +304,22 @@ class FormulaRuntimeTest {
     }
 
     @Test
+    fun `using callbacks within another function crashes`() {
+        UsingCallbacksWithinAnotherFunction
+            .test()
+            .assertError {
+                it is IllegalStateException
+            }
+    }
+
+    @Test
+    fun `using key to scope callbacks within another function`() {
+        UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    @Test
     fun `remove item from a list using a key block for each item`() {
         KeyUsingListFormula
             .test(items = listOf("one", "two", "three"))

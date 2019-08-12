@@ -3,31 +3,22 @@ package com.instacart.formula.internal
 internal class Callbacks {
     private val callbacks: SingleRequestMap<Any, Callback> = mutableMapOf()
     private val eventCallbacks: SingleRequestMap<Any, EventCallback<*>> = mutableMapOf()
-    internal var lastCallbackCount = -1
-    internal var callbackCount = 0
+
+    private fun duplicateKeyErrorMessage(key: Any): String {
+        if (key is String) {
+            // This indicates manual key creation.
+            return "Callback $key is already defined. Make sure your key is unique."
+        }
+        // This indicates automatic key generation
+        return "Callback $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
+    }
 
     fun initOrFindCallback(key: Any): Callback {
         return callbacks
             .findOrInit(key) { Callback(key) }
             .requestAccess {
-                "Callback $key is already defined. Make sure your key is unique."
+                duplicateKeyErrorMessage(key)
             }
-    }
-
-    fun initOrFindPositionalCallback(): Callback {
-        val key = callbackCount
-        val callback = initOrFindCallback(key)
-        incrementCallbackCount()
-        return callback
-    }
-
-    fun initOrFindOptionalCallback(condition: Boolean): Callback? {
-        return if (condition) {
-            initOrFindPositionalCallback()
-        } else {
-            incrementCallbackCount()
-            null
-        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -35,23 +26,8 @@ internal class Callbacks {
         return eventCallbacks
             .findOrInit(key) { EventCallback<UIEvent>(key) }
             .requestAccess {
-                "Event callback $key is already defined. Make sure your key is unique."
+                duplicateKeyErrorMessage(key)
             } as EventCallback<UIEvent>
-    }
-
-    fun <UIEvent> initOrFindPositionalEventCallback(): EventCallback<UIEvent> {
-        val key = callbackCount
-        incrementCallbackCount()
-        return initOrFindEventCallback(key)
-    }
-
-    fun <UIEvent> initOrFindOptionalEventCallback(condition: Boolean): EventCallback<UIEvent>? {
-        return if (condition) {
-            initOrFindPositionalEventCallback()
-        } else {
-            incrementCallbackCount()
-            null
-        }
     }
 
     fun evaluationFinished() {
@@ -66,9 +42,6 @@ internal class Callbacks {
                 // TODO log that disabled callback was invoked.
             }
         }
-
-        lastCallbackCount = callbackCount
-        callbackCount = 0
     }
 
     fun disableAll() {
@@ -85,13 +58,5 @@ internal class Callbacks {
             }
         }
         eventCallbacks.clear()
-    }
-
-    fun isValidRound(): Boolean {
-        return lastCallbackCount == -1 || lastCallbackCount == callbackCount
-    }
-
-    private fun incrementCallbackCount() {
-        callbackCount += 1
     }
 }
