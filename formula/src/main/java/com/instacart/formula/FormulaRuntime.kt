@@ -113,10 +113,10 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         if (!isValid) {
             val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
             lastRenderModel = result.renderModel
+        }
 
-            if (localManager.nextFrame(processingPass)) {
-                return
-            }
+        if (localManager.nextFrame(processingPass)) {
+            return
         }
 
         while (messageQueue.isNotEmpty()) {
