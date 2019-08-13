@@ -1,12 +1,9 @@
-### Fetching Data
 Let's say your feature needs to fetch an item. Formula uses RxJava
 to define asynchronous operations. We will assume that you are familiar
 with `Retrofit` library.
 
 ```kotlin
-class FetchItemRxStream(
-    private val itemApi: RetrofitItemApi
-) : RxStream<FetchItemRxStream.Request, Item> {
+class FetchItemStream(private val itemApi: RetrofitItemApi) : RxStream<FetchItemRxStream.Request, Item> {
     data class Request(val itemId: String)
 
     override fun observable(input: Request): Observable<Item> {
@@ -18,7 +15,7 @@ class FetchItemRxStream(
 Now, let's define our Formula.
 ```kotlin
 class ItemDetailFormula(
-    private val fetchItem: FetchItemRxStream
+    private val fetchItem: FetchItemStream
 ) : Formula<Input, State, Unit, RenderMode> {
 
     data class Input(val itemId: String)
@@ -37,7 +34,7 @@ class ItemDetailFormula(
             updates = context.updates {
                 if (state.fetchItemRequest != null) {
                     events(fetchItem, state.fetchItemRequest) { item ->
-                        state.copy(fetchItemRequest = null, item = item).transition()
+                        state.copy(fetchItemRequest = null, item = item).noMessages()
                     }
                 }
             }

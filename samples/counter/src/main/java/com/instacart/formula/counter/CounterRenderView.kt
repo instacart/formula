@@ -12,7 +12,7 @@ class CounterRenderView(private val root: ViewGroup): RenderView<CounterRenderMo
     private val countTextView: TextView = root.findViewById(R.id.count_text_view)
 
     override val renderer: Renderer<CounterRenderModel> = Renderer.create { model ->
-        countTextView.setText(model.count)
+        countTextView.text = model.count
         decrementButton.setOnClickListener {
             model.onDecrement()
         }
