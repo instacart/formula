@@ -328,4 +328,14 @@ class FormulaRuntimeTest {
             }
             .renderModel { assertThat(items).hasSize(2) }
     }
+
+    @Test
+    fun `subscribes to updates before delivering messages`() {
+        SubscribesToAllUpdatesBeforeDeliveringMessages
+            .test()
+            .renderModel {
+                assertThat(this).isEqualTo(4)
+            }
+            .assertRenderModelCount(1)
+    }
 }
