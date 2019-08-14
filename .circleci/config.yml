@@ -97,11 +97,11 @@ commands:
       - run:
           name: Assemple Counter
           command: |
-            ./gradlew :samples:counter:assemble
+            ./gradlew :samples:counter:assembleRelease
       - run:
           name: Assemple Todo App
           command: |
-            ./gradlew :samples:todoapp:assemble
+            ./gradlew :samples:todoapp:assembleRelease
 
 executors:
   android:
