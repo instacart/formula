@@ -57,6 +57,8 @@
     <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
+      <link rel="stylesheet" href="../css/app.css">
+    
     
       
     
@@ -332,7 +334,7 @@
                 <p>Let's say your feature needs to fetch an item. Formula uses RxJava
 to define asynchronous operations. We will assume that you are familiar
 with <code>Retrofit</code> library.</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">FetchItemRxStream</span><span class="p">(</span>
+<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">FetchItemStream</span><span class="p">(</span>
     <span class="k">private</span> <span class="k">val</span> <span class="py">itemApi</span><span class="p">:</span> <span class="n">RetrofitItemApi</span>
 <span class="p">)</span> <span class="p">:</span> <span class="n">RxStream</span><span class="p">&lt;</span><span class="n">FetchItemRxStream</span><span class="p">.</span><span class="n">Request</span><span class="p">,</span> <span class="n">Item</span><span class="p">&gt;</span> <span class="p">{</span>
     <span class="k">data</span> <span class="k">class</span> <span class="nc">Request</span><span class="p">(</span><span class="k">val</span> <span class="py">itemId</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span>
@@ -346,7 +348,7 @@ with <code>Retrofit</code> library.</p>
 
 <p>Now, let's define our Formula.</p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ItemDetailFormula</span><span class="p">(</span>
-    <span class="k">private</span> <span class="k">val</span> <span class="py">fetchItem</span><span class="p">:</span> <span class="n">FetchItemRxStream</span>
+    <span class="k">private</span> <span class="k">val</span> <span class="py">fetchItem</span><span class="p">:</span> <span class="n">FetchItemStream</span>
 <span class="p">)</span> <span class="p">:</span> <span class="n">Formula</span><span class="p">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="p">,</span> <span class="n">Unit</span><span class="p">,</span> <span class="n">RenderMode</span><span class="p">&gt;</span> <span class="p">{</span>
 
     <span class="k">data</span> <span class="k">class</span> <span class="nc">Input</span><span class="p">(</span><span class="k">val</span> <span class="py">itemId</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span>
