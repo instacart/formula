@@ -58,10 +58,6 @@ commands:
     description: Run unit tests
     steps:
       - run:
-          name: Run Legacy Tests
-          command: |
-            ./gradlew :formula-legacy:test
-      - run:
           name: Run Core Tests
           command: |
             ./gradlew :formula:test
@@ -83,12 +79,6 @@ commands:
             mkdir -p ~/jacoco/
             find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
           when: always
-      # We run this test after jacoco to avoid including compiler classes as part of code coverage.
-      - run:
-          name: Run Compiler Tests
-          command: |
-            ./gradlew :formula-compiler:assemble
-            ./gradlew :formula-compiler:test
       - run:
           name: Save test results
           command: |
@@ -105,9 +95,13 @@ commands:
     description: Assemble Samples
     steps:
       - run:
-          name: Assemple Samples
+          name: Assemple Counter
           command: |
-            ./gradlew :samples:counter:assemble
+            ./gradlew :samples:counter:assembleRelease
+      - run:
+          name: Assemple Todo App
+          command: |
+            ./gradlew :samples:todoapp:assembleRelease
 
 executors:
   android:
