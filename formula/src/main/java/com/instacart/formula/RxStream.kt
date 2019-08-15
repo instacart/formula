@@ -2,23 +2,54 @@ package com.instacart.formula
 
 import io.reactivex.Observable
 
-interface RxStream<Data, Message> : Stream<Data, Message> {
+/**
+ * Formula [Stream] adapter to enable RxJava use.
+ */
+interface RxStream<Parameter, Message> : Stream<Parameter, Message> {
     companion object {
-        inline fun <Data, Message> fromObservable(
-            crossinline create: (Data) -> Observable<Message>
-        ): RxStream<Data, Message> {
-            return object : RxStream<Data, Message> {
-                override fun observable(data: Data): Observable<Message> {
-                    return create(data)
+        /**
+         * Creates a [Stream] from an [Observable] factory [create] which doesn't take any parameters.
+         *
+         * ```
+         * events(RxStream.fromObservable { locationManager.updates() }) { event ->
+         *   transition()
+         * }
+         * ```
+         */
+        inline fun <Message> fromObservable(
+            crossinline create: () -> Observable<Message>
+        ): Stream<Unit, Message> {
+            return object : RxStream<Unit, Message> {
+                override fun observable(parameter: Unit): Observable<Message> {
+                    return create()
+                }
+            }
+        }
+
+        /**
+         * Creates a [Stream] from an [Observable] factory [create] which takes a single [Parameter].
+         *
+         * ```
+         * events(RxStream.withParameter(itemRepository::fetchItem), itemId) {
+         *   transition()
+         * }
+         * ```
+         */
+        inline fun <Parameter, Message> withParameter(
+            crossinline create: (Parameter) -> Observable<Message>
+        ): Stream<Parameter, Message> {
+            return object : RxStream<Parameter, Message> {
+                override fun observable(parameter: Parameter): Observable<Message> {
+                    return create(parameter)
                 }
             }
         }
     }
 
-    fun observable(data: Data): Observable<Message>
+    fun observable(parameter: Parameter): Observable<Message>
 
-    override fun start(data: Data, send: (Message) -> Unit): Cancelable? {
-        val disposable = observable(data).subscribe(send)
+    override fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable? {
+        val disposable = observable(parameter).subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }

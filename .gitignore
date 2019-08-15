@@ -13,4 +13,4 @@
 *.iml
 
 # Site
-.site
+/site

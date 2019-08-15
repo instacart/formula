@@ -33,7 +33,7 @@ class MultipleMessageTest {
             return Evaluation(
                 renderModel = Unit,
                 updates = context.updates {
-                    events("changes", Observable.range(0, 4)) {
+                    events(Observable.range(0, 4)) {
                         val updated = state + 1
                         updated.withMessages {
                             message(input.trigger, state)

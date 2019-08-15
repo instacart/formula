@@ -1,7 +1,6 @@
 Messages are objects used to request execution of impure code. Use messages to execute operations such as
 logging, database updates, firing network requests, notifying a parent and etc.
 
-
 ### Receive UI messages
 To listen and respond to UI events, declare a callback on the `Render Model` for each type of UI event you care about.
 ```kotlin
@@ -96,32 +95,30 @@ override fun evaluate(
 **Note:** instead of calling `input.onItemSelected(item.id)`, we call `message(input.onItemSelected, item.id)`. This
 allows formula runtime to ensure that parent is in the right state to handle the message.
 
+### Sending a message when Formula is initialized
+One use case is to track analytics when a screen or component is created.
 
-### Receiving asynchronous events
-Formula uses RxJava to deal with event streams. You can either use `Observable` directly or wrap it in a `RxStream`.
-
-Usually event stream dependencies will be passed/injected through the constructor.
 ```kotlin
-class MyFormula(private val dataObservable: Observable<MyData>): Formula<....>
-```
-
-To listen to your data observable, you need to declare a binding within `Formula.evaluate` block.
-```kotlin
-Evaluation(
-  renderModel = ...,
-  // We declare the event streams within `updates` block
-  updates = context.updates {
-    events("data", dataObservable) { update: MyData ->
-      // the listener is always scoped to the current `state` so you can update it as part of the transition
-      state.copy(myData = update).noMessages()
-    }
+context.updates {
+  events(Stream.onInit()) {
+    message(analytics::trackScreenOpen)
   }
-)
+}
 ```
 
-*Note:* we use a unique identifier `"data"` to make sure that internal diffing mechanism can distinguish between
-different streams.
+### Sending a message when Formula is terminated
+```kotlin
+events(Stream.onTerminate()) {
+  message(analytics::trackClose)
+}
+```
 
+### Sending a message when some data changes
+```kotlin
+events(Stream.onData(), itemId) {
+  message(api::fetchItem, itemId)
+}
+```
 
 ### Formula retains callbacks
 Callbacks retain equality across re-evaluation (such as state changes). By default, we persist the callback in a map

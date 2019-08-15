@@ -18,11 +18,11 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
             return Evaluation(
                 renderModel = state,
                 updates = context.updates {
-                    events("initial", initial) {
+                    events(initial) {
                         message(incrementRelay::accept, Unit)
                     }
 
-                    events("increment", incrementRelay) {
+                    events(incrementRelay) {
                         transition(state + 1)
                     }
                 }

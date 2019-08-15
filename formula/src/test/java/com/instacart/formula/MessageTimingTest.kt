@@ -56,7 +56,7 @@ class MessageTimingTest {
                     }
                 ),
                 updates = context.updates {
-                    events("changes", input.external) {
+                    events(input.external) {
                         state.plus(State.EXTERNAL).noMessages()
                     }
                 }

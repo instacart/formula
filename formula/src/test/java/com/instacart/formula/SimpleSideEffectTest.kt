@@ -30,7 +30,7 @@ class SimpleSideEffectTest {
             return Evaluation(
                 renderModel = state.count,
                 updates = context.updates {
-                    events("increment", increment) {
+                    events(increment) {
                         val updated = state.copy(count = state.count + 1)
 
                         if (updated.count == 5) {

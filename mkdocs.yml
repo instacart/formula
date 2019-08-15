@@ -16,6 +16,7 @@ markdown_extensions:
 
 nav:
   - 'Overview': index.md
+  - 'Asynchronous Events': async_events.md
   - 'Using Input': input.md
   - 'Messages': messages.md
   - 'Composition': composition.md

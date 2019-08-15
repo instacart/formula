@@ -17,7 +17,7 @@ data class NotificationSettingsRenderModel(
 
 You can also do the same in your Render View layer.
 ```kotlin
-class CheckboxRenderView(private val root: View) : RenderView<CheckboxRenderModel> {
+class CheckboxRenderView(root: View) : RenderView<CheckboxRenderModel> {
   private val checkbox: Checkbox = root.findViewById(R.id.checkbox)
   
   override val renderer: Renderer<CheckboxRenderModel> = Renderer.create { model ->
@@ -29,7 +29,7 @@ class CheckboxRenderView(private val root: View) : RenderView<CheckboxRenderMode
   } 
 }
 
-class NotificationSettingsRenderView(private val root: View) : RenderView<NotificationSettingsRenderModel> {
+class NotificationSettingsRenderView(root: View) : RenderView<NotificationSettingsRenderModel> {
   private val messagePushNotification = CheckboxRenderView(root.findViewById(R.id.message_push_checkbox))
   private val promotionalPushNotifications = CheckboxRenderView(root.findViewById(R.id.promotional_push_checkbox))
   private val marketingEmailNotifications = CheckboxRenderView(root.findViewById(R.id.marketing_email_checkbox))

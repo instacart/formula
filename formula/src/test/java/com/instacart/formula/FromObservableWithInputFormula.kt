@@ -22,7 +22,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
         return Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                events(RxStream.fromObservable(repo::fetchItem), input.itemId) {
+                events(RxStream.withParameter(repo::fetchItem), input.itemId) {
                     message(input.onItem, it)
                 }
             }

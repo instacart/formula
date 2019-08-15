@@ -1,12 +1,25 @@
 package com.instacart.formula
 
+import io.reactivex.Observable
+
 /**
  * A [Stream] defines an asynchronous event(s).
  *
- * @param Data Type of data that is used to initialize a stream. Use [Unit] if stream doesn't need any data.
+ * To use it within a [Formula]:
+ * ```
+ * Evaluation(
+ *   updates = context.updates {
+ *     events(stream) {
+ *       transition()
+ *     }
+ *   }
+ * )
+ * ```
+ *
+ * @param Parameter Type of parameter that is used to initialize the stream. Use [Unit] if the stream doesn't require any parameters to run.
  * @param Message A type of messages that the stream produces.
  */
-interface Stream<Data, Message> {
+interface Stream<Parameter, Message> {
     companion object {
 
         /**
@@ -58,15 +71,15 @@ interface Stream<Data, Message> {
      * @param send Use this callback to pass messages back to [Formula].
      *             Note: you need to call this on the main thread.
      */
-    fun start(input: Data, send: (Message) -> Unit): Cancelable?
+    fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable?
 }
 
 /**
  * Emits a message as soon as [Stream] is initialized.
  */
 internal object StartMessageStream : Stream<Any, Any> {
-    override fun start(input: Any, send: (Any) -> Unit): Cancelable? {
-        send(input)
+    override fun start(parameter: Any, send: (Any) -> Unit): Cancelable? {
+        send(parameter)
         return null
     }
 }
@@ -75,11 +88,9 @@ internal object StartMessageStream : Stream<Any, Any> {
  * Emits a message when [Formula] is terminated.
  */
 internal object TerminateMessageStream : Stream<Unit, Unit> {
-    override fun start(input: Unit, send: (Unit) -> Unit): Cancelable? {
+    override fun start(parameter: Unit, send: (Unit) -> Unit): Cancelable? {
         return Cancelable {
-            send(input)
+            send(parameter)
         }
     }
 }
-
-

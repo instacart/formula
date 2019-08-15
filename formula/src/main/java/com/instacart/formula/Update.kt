@@ -12,7 +12,7 @@ class Update<Data : Any, Message>(
      * A way to ensure uniqueness and equality between [Update]s.
      */
     data class Key(
-        val input: Any,
+        val data: Any,
         val type: KClass<*>,
         val extra: Any? = null
     )

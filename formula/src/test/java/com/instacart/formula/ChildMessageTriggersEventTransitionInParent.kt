@@ -40,7 +40,7 @@ object ChildMessageTriggersEventTransitionInParent {
                     child = context.child(childFormula).input(Unit)
                 ),
                 updates = context.updates {
-                    events("increment", service.serviceEvents()) {
+                    events(service.serviceEvents()) {
                         transition(state + 1)
                     }
                 }
