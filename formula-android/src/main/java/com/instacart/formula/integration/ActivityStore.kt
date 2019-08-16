@@ -13,7 +13,7 @@ import io.reactivex.disposables.Disposable
  * management stream.
  *
  * @param configureActivity this is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
- *                         user this callback to inject the activity.
+ *                          use this callback to inject the activity.
  * @param onRenderFragmentState this is invoked after [FragmentFlowState] has been updated.
  * @param onFragmentLifecycleEvent this is callback for when a fragment is added or removed.
  */
