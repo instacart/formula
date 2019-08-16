@@ -2,11 +2,11 @@ package com.instacart.formula
 
 import kotlin.reflect.KClass
 
-class Update<Input : Any, Output>(
+class Update<Input : Any, Message>(
     val key: Any,
     val input: Input,
-    val stream: Stream<Input, Output>,
-    onEvent: (Output) -> Unit
+    val stream: Stream<Input, Message>,
+    initial: (Message) -> Unit
 ) {
     /**
      * A way to ensure uniqueness and equality between [Update]s.
@@ -17,7 +17,7 @@ class Update<Input : Any, Output>(
         val extra: Any? = null
     )
 
-    internal var handler: (Output) -> Unit = onEvent
+    internal var handler: (Message) -> Unit = initial
     internal var cancelable: Cancelable? = null
 
     internal fun start() {

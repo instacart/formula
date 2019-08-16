@@ -1,8 +1,9 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.test.messages.TestEventCallback
 import com.instacart.formula.streams.EmptyStream
+import com.instacart.formula.test.messages.TestCallback
+import com.instacart.formula.test.messages.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
@@ -75,43 +76,44 @@ class FormulaRuntimeTest {
 
     @Test
     fun `transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+        val sideEffectCallback = TestCallback()
         TransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { triggerSideEffect() }
             .renderModel { triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
     @Test
     fun `child transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+        val sideEffectCallback = TestCallback()
         ChildTransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { child.triggerSideEffect() }
             .renderModel { child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
     @Test
     fun `nested child transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+
+        val sideEffectCallback = TestCallback()
         NestedChildTransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { child.child.triggerSideEffect() }
             .renderModel { child.child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
@@ -161,7 +163,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `side effect triggers parent state transition`() {
-        SideEffectTriggersParentTransition
+        ChildMessageTriggersEventTransitionInParent
             .formula()
             .test()
             .renderModel { child.triggerSideEffect() }
@@ -345,25 +347,25 @@ class FormulaRuntimeTest {
     @Test
     fun `init message executed once`() {
         StreamInitMessageDeliveredOnce.test().apply {
-            assertThat(formula.effect).isEqualTo(1)
+            assertThat(formula.timesInitializedCalled).isEqualTo(1)
         }
     }
 
     @Test
-    fun `effects with input`() {
-        EffectWithInputFormula()
+    fun `input changed message`() {
+        StreamInputFormula()
             .test(input = Observable.range(0, 3))
             .apply {
-                assertThat(formula.effects).containsExactly(0, 1, 2)
+                assertThat(formula.messages).containsExactly(0, 1, 2)
             }
     }
 
     @Test
-    fun `effect api ignores duplicate inputs`() {
-        EffectWithInputFormula()
+    fun `events api ignores duplicate inputs`() {
+        StreamInputFormula()
             .test(input = Observable.just(0, 0, 0, 0))
             .apply {
-                assertThat(formula.effects).containsExactly(0)
+                assertThat(formula.messages).containsExactly(0)
             }
     }
 
@@ -446,7 +448,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `multiple effects without key`() {
+    fun `multiple event streams without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
             events(Stream.onInit()) {
@@ -468,14 +470,14 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `multiple effects with input and without key`() {
+    fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Stream.onInit()) {
+            events(Stream.onInput(), it) {
                 message { executed += 1 }
             }
 
-            events(Stream.onInit()) {
+            events(Stream.onInput(), it) {
                 message { executed += 1 }
             }
         }
@@ -486,7 +488,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `key is required for effects in a loop`() {
+    fun `key is required for events in a loop`() {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(0, 1, 2)
             list.forEach {
@@ -502,8 +504,8 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `cancellation effect by unsubscribing`() {
-        CancellationEffectFormula()
+    fun `disposing formula triggers cancel message`() {
+        StreamCancelFormula()
             .test()
             .apply {
                 assertThat(formula.timesCancelledCalled).isEqualTo(0)
@@ -515,8 +517,8 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `cancellation by removing child formula`() {
-        val cancellationFormula = CancellationEffectFormula()
+    fun `removing child formula triggers cancel message`() {
+        val cancellationFormula = StreamCancelFormula()
         OptionalChildFormula(cancellationFormula)
             .test()
             .apply {
@@ -529,7 +531,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `cancellation is scoped to latest input`() {
+    fun `cancel message is scoped to latest input`() {
         var emissions = 0
         var cancelCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
@@ -551,12 +553,27 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `nested child cancellation message when root parent is removed`() {
-        val cancellationFormula = CancellationEffectFormula()
+    fun `parent removal triggers childs cancel message`() {
+        val cancellationFormula = StreamCancelFormula()
         val formula = OptionalChildFormula(HasChildFormula(cancellationFormula))
 
         formula.test().renderModel { toggleChild() }.apply {
             assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(1)
         }
+    }
+
+    @Test
+    fun `removing stream sends cancel message`() {
+        val cancelCallback = TestCallback()
+        RemovingStreamSendsCancelMessageFormula()
+            .test(
+                input = Observable.just(
+                    RemovingStreamSendsCancelMessageFormula.Input(onCancel = cancelCallback),
+                    RemovingStreamSendsCancelMessageFormula.Input(onCancel = null)
+                )
+            )
+            .apply {
+                cancelCallback.assertTimesCalled(1)
+            }
     }
 }

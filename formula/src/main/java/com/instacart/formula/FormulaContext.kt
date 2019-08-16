@@ -241,7 +241,7 @@ abstract class FormulaContext<State> internal constructor(
                 key = Update.Key(input, callback::class, key),
                 input = input,
                 stream = stream,
-                onEvent = callback
+                initial = callback
             )
         }
     }

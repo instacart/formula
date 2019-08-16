@@ -3,7 +3,7 @@ package com.instacart.formula
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
-object SideEffectTriggersParentTransition {
+object ChildMessageTriggersEventTransitionInParent {
     fun formula() = TestFormula()
 
     class Service {

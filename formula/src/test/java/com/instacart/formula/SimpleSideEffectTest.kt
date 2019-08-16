@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.messages.TestCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
@@ -9,13 +9,13 @@ class SimpleSideEffectTest {
 
     @Test fun `side effect test`() {
         val intRange = 1..100
-        val sideEffectService = SideEffectService()
+        val gameOverCallback = TestCallback()
         TestFormula(
             increment = Observable.fromIterable(intRange.map { Unit }),
-            onGameOver = sideEffectService
+            onGameOver = gameOverCallback
         ).test()
 
-        assertThat(sideEffectService.invoked).isEqualTo(1)
+        gameOverCallback.assertTimesCalled(1)
     }
 
     class TestFormula(
