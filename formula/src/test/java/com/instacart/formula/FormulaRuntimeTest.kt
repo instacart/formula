@@ -576,4 +576,21 @@ class FormulaRuntimeTest {
                 terminateCallback.assertTimesCalled(0)
             }
     }
+
+    @Test
+    fun `using from observable with input`() {
+        val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
+        FromObservableWithInputFormula()
+            .test(
+                input = Observable.just("1", "2").map {
+                    FromObservableWithInputFormula.Input(it, onItem = onItem)
+                }
+            )
+            .apply {
+                assertThat(onItem.values()).containsExactly(
+                    FromObservableWithInputFormula.Item("1"),
+                    FromObservableWithInputFormula.Item("2")
+                )
+            }
+    }
 }
