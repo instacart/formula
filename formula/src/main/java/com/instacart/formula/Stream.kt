@@ -14,7 +14,7 @@ interface Stream<Input, Message> {
          * is initialized.
          * ```
          * events(Stream.onInit()) {
-         *   message(analytics::trackClose)
+         *   message(analytics::trackViewEvent)
          * }
          */
         fun onInit(): Stream<Unit, Unit> {
@@ -37,15 +37,18 @@ interface Stream<Input, Message> {
         }
 
         /**
-         * Emits a message when [Stream] is canceled. Use this stream to send a message when [Formula] is removed.
+         * Emits a message when [Formula] is terminated.
          * ```
-         * events(Stream.onCancel()) {
-         *   message(analytics::trackClose)
+         * events(Stream.onTerminate()) {
+         *   message(analytics::trackCloseEvent)
          * }
          * ```
+         *
+         * Note that transitions to new state will be discarded because [Formula] is terminated. This is best to
+         * use to notify other services/analytics of [Formula] termination.
          */
-        fun onCancel(): Stream<Unit, Unit> {
-            return CancelMessageStream
+        fun onTerminate(): Stream<Unit, Unit> {
+            return TerminateMessageStream
         }
     }
 
@@ -69,9 +72,9 @@ internal object StartMessageStream : Stream<Any, Any> {
 }
 
 /**
- * Emits a message when [Stream] is canceled.
+ * Emits a message when [Formula] is terminated.
  */
-internal object CancelMessageStream : Stream<Unit, Unit> {
+internal object TerminateMessageStream : Stream<Unit, Unit> {
     override fun start(input: Unit, send: (Unit) -> Unit): Cancelable? {
         return Cancelable {
             send(input)

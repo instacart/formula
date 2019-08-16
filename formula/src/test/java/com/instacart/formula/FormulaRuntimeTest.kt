@@ -504,41 +504,41 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `disposing formula triggers cancel message`() {
-        StreamCancelFormula()
+    fun `disposing formula triggers terminate message`() {
+        TerminateFormula()
             .test()
             .apply {
-                assertThat(formula.timesCancelledCalled).isEqualTo(0)
+                assertThat(formula.timesTerminateCalled).isEqualTo(0)
             }
             .dispose()
             .apply {
-                assertThat(formula.timesCancelledCalled).isEqualTo(1)
+                assertThat(formula.timesTerminateCalled).isEqualTo(1)
             }
     }
 
     @Test
-    fun `removing child formula triggers cancel message`() {
-        val cancellationFormula = StreamCancelFormula()
-        OptionalChildFormula(cancellationFormula)
+    fun `removing child formula triggers terminate message`() {
+        val terminateFormula = TerminateFormula()
+        OptionalChildFormula(terminateFormula)
             .test()
             .apply {
-                assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(0)
+                assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
             }
             .renderModel { toggleChild() }
             .apply {
-                assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(1)
+                assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
             }
     }
 
     @Test
-    fun `cancel message is scoped to latest input`() {
+    fun `terminate message is scoped to latest input`() {
         var emissions = 0
-        var cancelCallback = -1
+        var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            events(Stream.onCancel()) {
+            events(Stream.onTerminate()) {
                 message {
                     emissions += 1
-                    cancelCallback = input
+                    terminateCallback = input
                 }
             }
         }
@@ -548,32 +548,32 @@ class FormulaRuntimeTest {
             .dispose()
             .apply {
                 assertThat(emissions).isEqualTo(1)
-                assertThat(cancelCallback).isEqualTo(3)
+                assertThat(terminateCallback).isEqualTo(3)
             }
     }
 
     @Test
-    fun `parent removal triggers childs cancel message`() {
-        val cancellationFormula = StreamCancelFormula()
-        val formula = OptionalChildFormula(HasChildFormula(cancellationFormula))
+    fun `parent removal triggers childs terminate message`() {
+        val terminateFormula = TerminateFormula()
+        val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
 
         formula.test().renderModel { toggleChild() }.apply {
-            assertThat(cancellationFormula.timesCancelledCalled).isEqualTo(1)
+            assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
     }
 
     @Test
-    fun `removing stream sends cancel message`() {
-        val cancelCallback = TestCallback()
-        RemovingStreamSendsCancelMessageFormula()
+    fun `canceling terminate stream does not emit terminate message`() {
+        val terminateCallback = TestCallback()
+        RemovingTerminateStreamSendsNoMessagesFormula()
             .test(
                 input = Observable.just(
-                    RemovingStreamSendsCancelMessageFormula.Input(onCancel = cancelCallback),
-                    RemovingStreamSendsCancelMessageFormula.Input(onCancel = null)
+                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback),
+                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null)
                 )
             )
             .apply {
-                cancelCallback.assertTimesCalled(1)
+                terminateCallback.assertTimesCalled(0)
             }
     }
 }
