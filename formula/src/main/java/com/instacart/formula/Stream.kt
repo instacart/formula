@@ -39,14 +39,20 @@ interface Stream<Input, Message> {
         }
     }
 
-    fun start(input: Input, onEvent: (Message) -> Unit): Cancelation?
+    /**
+     * This method is called when Stream is first declared within [Formula].
+     *
+     * @param onEvent - Use this callback to pass messages back to [Formula].
+     *                  Note: you need to call this on the main thread.
+     */
+    fun start(input: Input, onEvent: (Message) -> Unit): Cancelable?
 }
 
 /**
  * Triggers [onEvent] as soon as [start] is called.
  */
 internal object StartMessageStream : Stream<Any, Any> {
-    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelation? {
+    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelable? {
         onEvent(input)
         return null
     }
@@ -56,8 +62,8 @@ internal object StartMessageStream : Stream<Any, Any> {
  * Triggers [onEvent] when [Formula] is removed.
  */
 internal object CancelMessageStream : Stream<Any, Any> {
-    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelation? {
-        return Cancelation {
+    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelable? {
+        return Cancelable {
             onEvent(input)
         }
     }

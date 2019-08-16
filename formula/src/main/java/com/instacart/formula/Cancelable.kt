@@ -3,10 +3,10 @@ package com.instacart.formula
 /**
  * Used within [Stream] to define how to cancel an operation.
  */
-interface Cancelation {
+interface Cancelable {
     companion object {
-        inline operator fun invoke(crossinline cancel: () -> Unit): Cancelation {
-            return object : Cancelation {
+        inline operator fun invoke(crossinline cancel: () -> Unit): Cancelable {
+            return object : Cancelable {
                 override fun cancel() {
                     cancel()
                 }

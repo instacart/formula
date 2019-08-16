@@ -18,17 +18,17 @@ class Update<Input : Any, Output>(
     )
 
     internal var handler: (Output) -> Unit = onEvent
-    internal var cancelation: Cancelation? = null
+    internal var cancelable: Cancelable? = null
 
     internal fun start() {
-        cancelation = stream.start(input) { message ->
+        cancelable = stream.start(input) { message ->
             handler.invoke(message)
         }
     }
 
     internal fun tearDown() {
-        cancelation?.cancel()
-        cancelation = null
+        cancelable?.cancel()
+        cancelable = null
     }
 
     override fun equals(other: Any?): Boolean {
