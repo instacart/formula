@@ -3,14 +3,19 @@ package com.instacart.formula
 /**
  * A [Stream] defines an asynchronous event(s).
  *
- * @param Input - Type of Input that is used to initialize a stream. Use [Unit] if stream doesn't need any input.
- * @param Message - A type of messages that the stream produces.
+ * @param Input Type of Input that is used to initialize a stream. Use [Unit] if stream doesn't need any input.
+ * @param Message A type of messages that the stream produces.
  */
 interface Stream<Input, Message> {
     companion object {
 
         /**
-         * Emits a message when [Stream] is initialized.
+         * Emits a message when [Stream] is initialized. Use this stream to send a message when [Formula]
+         * is initialized.
+         * ```
+         * events(Stream.onInit()) {
+         *   message(analytics::trackClose)
+         * }
          */
         fun onInit(): Stream<Unit, Unit> {
             @Suppress("UNCHECKED_CAST")
@@ -18,7 +23,13 @@ interface Stream<Input, Message> {
         }
 
         /**
-         * Emits a message when [Stream] is initialized or [Input] has changed.
+         * Emits a message when [Stream] is initialized or [Input] has changed. Use this stream to send a message
+         * with latest [Input] value.
+         * ```
+         * events(Stream.onInput(), itemId) {
+         *   message(api::fetchItem, itemId)
+         * }
+         * ```
          */
         fun <Input> onInput(): Stream<Input, Input> {
             @Suppress("UNCHECKED_CAST")
@@ -34,37 +45,36 @@ interface Stream<Input, Message> {
          * ```
          */
         fun onCancel(): Stream<Unit, Unit> {
-            @Suppress("UNCHECKED_CAST")
-            return CancelMessageStream as Stream<Unit, Unit>
+            return CancelMessageStream
         }
     }
 
     /**
      * This method is called when Stream is first declared within [Formula].
      *
-     * @param onEvent - Use this callback to pass messages back to [Formula].
-     *                  Note: you need to call this on the main thread.
+     * @param send Use this callback to pass messages back to [Formula].
+     *             Note: you need to call this on the main thread.
      */
-    fun start(input: Input, onEvent: (Message) -> Unit): Cancelable?
+    fun start(input: Input, send: (Message) -> Unit): Cancelable?
 }
 
 /**
- * Triggers [onEvent] as soon as [start] is called.
+ * Emits a message as soon as [Stream] is initialized.
  */
 internal object StartMessageStream : Stream<Any, Any> {
-    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelable? {
-        onEvent(input)
+    override fun start(input: Any, send: (Any) -> Unit): Cancelable? {
+        send(input)
         return null
     }
 }
 
 /**
- * Triggers [onEvent] when [Formula] is removed.
+ * Emits a message when [Stream] is canceled.
  */
-internal object CancelMessageStream : Stream<Any, Any> {
-    override fun start(input: Any, onEvent: (Any) -> Unit): Cancelable? {
+internal object CancelMessageStream : Stream<Unit, Unit> {
+    override fun start(input: Unit, send: (Unit) -> Unit): Cancelable? {
         return Cancelable {
-            onEvent(input)
+            send(input)
         }
     }
 }

@@ -15,8 +15,8 @@ interface RxStream<Input, Output> : Stream<Input, Output> {
 
     fun observable(input: Input): Observable<Output>
 
-    override fun start(input: Input, onEvent: (Output) -> Unit): Cancelable? {
-        val disposable = observable(input).subscribe(onEvent)
+    override fun start(input: Input, send: (Output) -> Unit): Cancelable? {
+        val disposable = observable(input).subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }

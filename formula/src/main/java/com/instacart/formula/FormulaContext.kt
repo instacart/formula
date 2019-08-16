@@ -136,45 +136,47 @@ abstract class FormulaContext<State> internal constructor(
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          *
-         * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
+         * @param stream An instance of [Stream].
          * @param input An object passed to the [Stream] for instantiation. This can
-         * @param onEvent - a callback invoked when [Stream] produces an
+         * @param transition Callback invoked when [Stream] sends us a [Message].
          */
         inline fun <Input : Any, Message> events(
             stream: Stream<Input, Message>,
             input: Input,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events("", stream, input, onEvent)
+            events("", stream, input, transition)
         }
 
         /**
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          *
-         * @param key - an extra parameter used to distinguish between different streams.
-         * @param stream - an instance of [Stream]. The [Stream] class type will be used as a key. If you are declaring multiple streams of same type, also use [key].
+         * @param key an extra parameter used to distinguish between different streams.
+         * @param stream an instance of [Stream].
          * @param input An object passed to the [Stream] for instantiation. This can
-         * @param onEvent - a callback invoked when [Stream] produces an
+         * @param transition Callback invoked when [Stream] sends us a [Message].
          */
         inline fun <Input : Any, Message> events(
             key: String,
             stream: Stream<Input, Message>,
             input: Input,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            add(createConnection(key, stream, input, onEvent))
+            add(createConnection(key, stream, input, transition))
         }
 
         /**
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param transition Callback invoked when [Stream] sends us a [Message].
          */
         inline fun <Message> events(
             stream: Stream<Unit, Message>,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events("", stream, onEvent)
+            events("", stream, transition)
         }
 
         /**
@@ -186,9 +188,9 @@ abstract class FormulaContext<State> internal constructor(
         inline fun <Message> events(
             key: String,
             stream: Stream<Unit, Message>,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events(key, stream, Unit, onEvent)
+            events(key, stream, Unit, transition)
         }
 
         /**
@@ -197,9 +199,9 @@ abstract class FormulaContext<State> internal constructor(
          */
         inline fun <Message> events(
             observable: Observable<Message>,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events("", RxStream.fromObservable { observable }, onEvent)
+            events("", RxStream.fromObservable { observable }, transition)
         }
 
         /**
@@ -211,9 +213,9 @@ abstract class FormulaContext<State> internal constructor(
         inline fun <Message> events(
             key: String,
             observable: Observable<Message>,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events(key, RxStream.fromObservable { observable }, onEvent)
+            events(key, RxStream.fromObservable { observable }, transition)
         }
 
         @PublishedApi internal fun add(connection: Update<*, *>) {
@@ -228,10 +230,10 @@ abstract class FormulaContext<State> internal constructor(
             key: Any? = null,
             stream: Stream<Input, Message>,
             input: Input,
-            crossinline onEvent: Transition.Factory.(Message) -> Transition<State>
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ): Update<Input, Message> {
             val callback: (Message) -> Unit = {
-                val value = onEvent(Transition.Factory, it)
+                val value = transition(Transition.Factory, it)
                 transitionCallback(value)
             }
 

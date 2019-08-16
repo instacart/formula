@@ -3,9 +3,9 @@ package com.instacart.formula
 /**
  * Formula interface defines render model management.
  *
- * @param Input - defines data that the parent/host can pass to this formula.
- * @param State - internal state that is used for this formula.
- * @param RenderModel - a type that is used to render this formula UI.
+ * @param Input Defines data that the parent/host can pass to this formula.
+ * @param State Internal state that is used within this formula.
+ * @param RenderModel A type that is used to render UI.
  */
 interface Formula<Input, State, RenderModel> {
 

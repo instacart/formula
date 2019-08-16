@@ -1,7 +1,8 @@
 package com.instacart.formula
 
 /**
- * Used within [Stream] to define how to cancel an operation.
+ * Used within [Stream] to receive a cancel event. Use this to perform
+ * clean up and/or to send last message to [Formula].
  */
 interface Cancelable {
     companion object {

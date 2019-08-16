@@ -23,8 +23,6 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val terminationMessages: MutableList<Message> = mutableListOf()
-
     internal val children: SingleRequestMap<Any, FormulaManager<*, *, *>> = mutableMapOf()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
@@ -181,8 +179,6 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         callbacks.disableAll()
         updateManager.terminate()
         children.forEachValue { it.markAsTerminated() }
-
-        terminationMessages.forEach { it.deliver() }
     }
 
     fun terminate() {

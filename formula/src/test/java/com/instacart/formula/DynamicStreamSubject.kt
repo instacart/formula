@@ -39,7 +39,7 @@ class DynamicStreamSubject {
 
         private fun stream(key: String): Stream<Unit, Unit> {
             return object : Stream<Unit, Unit> {
-                override fun start(input: Unit, onEvent: (Unit) -> Unit): Cancelable? {
+                override fun start(input: Unit, send: (Unit) -> Unit): Cancelable? {
                     running.add(key)
                     return Cancelable {
                         running.remove(key)
