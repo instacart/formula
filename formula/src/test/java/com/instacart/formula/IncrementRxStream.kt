@@ -6,7 +6,7 @@ import io.reactivex.Observable
 class IncrementRxStream : RxStream<Unit, Unit> {
     private val relay = PublishRelay.create<Unit>()
 
-    override fun observable(input: Unit): Observable<Unit> {
+    override fun observable(data: Unit): Observable<Unit> {
         return relay
     }
 

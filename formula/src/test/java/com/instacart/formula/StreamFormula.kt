@@ -25,7 +25,7 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
         return Evaluation(
             updates = context.updates {
                 if (state.listenForEvents) {
-                    events(incrementEvents, onEvent = {
+                    events(incrementEvents, transition = {
                         state.copy(count = state.count + 1).noMessages()
                     })
                 }

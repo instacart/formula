@@ -13,7 +13,7 @@ class FormulaManagerChildrenTest {
     @Test
     fun `children should be cleaned up`() {
 
-        val formula = OptionalChildFormula(StreamFormula()) { Unit }
+        val formula = OptionalChildFormula(StreamFormula())
         val transitionLock = TransitionLockImpl()
         val manager = FormulaManagerImpl<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<StreamFormula.RenderModel>>(
             OptionalChildFormula.State(),

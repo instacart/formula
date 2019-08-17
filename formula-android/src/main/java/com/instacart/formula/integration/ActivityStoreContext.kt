@@ -18,7 +18,7 @@ import io.reactivex.functions.BiFunction
  * ability to safely communicate with the current activity instance [Activity] and listen for
  * activity events.
  *
- * @param Activity - type of activity that this class provides context for.
+ * @param Activity Type of activity that this class provides context for.
  */
 class ActivityStoreContext<Activity : FragmentActivity>(
     @PublishedApi internal val holder: ActivityHolder<Activity>
@@ -76,13 +76,13 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     /**
      * Creates an [ActivityStore].
      *
-     * @param configureActivity - this is called when activity is created before view inflation. You can use this to
-     *                            configure / inject the activity.
-     * @param onRenderFragmentState - this is called after [FragmentFlowState] is applied to UI.
-     * @param onFragmentLifecycleEvent - this is called after each [FragmentLifecycleEvent].
-     * @param streams - this provides ability to configure arbitrary RxJava streams that survive
-     *                  configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts - [FragmentFlowStore] used to provide state management for individual screens.
+     * @param configureActivity This is called when activity is created before view inflation. You can use this to
+     *                          configure / inject the activity.
+     * @param onRenderFragmentState This is called after [FragmentFlowState] is applied to UI.
+     * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
+     * @param streams This provides ability to configure arbitrary RxJava streams that survive
+     *                configuration changes. Check [StreamConfigurator] for utility methods.
+     * @param contracts [FragmentFlowStore] used to provide state management for individual screens.
      */
     fun store(
         configureActivity: (Activity.() -> Unit)? = null,
@@ -107,13 +107,13 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     /**
      * Creates an [ActivityStore].
      *
-     * @param configureActivity - this is called when activity is created before view inflation. You can use this to
-     *                            configure / inject the activity.
-     * @param onRenderFragmentState - this is called after [FragmentFlowState] is applied to UI.
-     * @param onFragmentLifecycleEvent - this is called after each [FragmentLifecycleEvent].
-     * @param streams - this provides ability to configure arbitrary RxJava streams that survive
-     *                  configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts - builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
+     * @param configureActivity This is called when activity is created before view inflation. You can use this to
+     *                          configure / inject the activity.
+     * @param onRenderFragmentState This is called after [FragmentFlowState] is applied to UI.
+     * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
+     * @param streams This provides ability to configure arbitrary RxJava streams that survive
+     *                configuration changes. Check [StreamConfigurator] for utility methods.
+     * @param contracts Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
      */
     inline fun store(
         noinline configureActivity: (Activity.() -> Unit)? = null,
@@ -155,7 +155,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
     /**
      * This enables you to select specific events from the activity.
      *
-     * [Event] - type of event
+     * @param Event Type of event
      */
     inline fun <Event> selectActivityEvents(crossinline select: Activity.() -> Observable<Event>): Observable<Event> {
         return holder.latestActivity().switchMap {
@@ -187,8 +187,8 @@ class ActivityStoreContext<Activity : FragmentActivity>(
          * Keeps activity in-sync with state observable updates. On activity configuration
          * changes, the last update is applied to new activity instance.
          *
-         * @param state - a state observable
-         * @param update - an update function
+         * @param state a state observable
+         * @param update an update function
          */
         fun <State> update(state: Observable<State>, update: (Activity, State) -> Unit): Disposable {
             // To keep activity & state in sync, we re-emit state on every activity change.

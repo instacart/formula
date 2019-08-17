@@ -14,7 +14,7 @@ class FormulaContextImpl<State> internal constructor(
     private val transitionCallback: TransitionCallbackWrapper<State>
 ) : FormulaContext<State>(callbacks) {
 
-    private var childBuilder: Child<State, *, *> = Child<State, Any, Any>(this)
+    private val childBuilder: Child<State, *, *> = Child<State, Any, Any>(this)
 
     interface Delegate<State> {
         fun <ChildInput, ChildState, ChildRenderModel> child(
@@ -29,7 +29,7 @@ class FormulaContextImpl<State> internal constructor(
         transitionCallback.invoke(transition)
     }
 
-    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update> {
+    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*, *>> {
         ensureNotRunning()
         val builder = UpdateBuilder(transitionCallback)
         builder.init()

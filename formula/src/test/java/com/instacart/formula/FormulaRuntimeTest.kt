@@ -1,8 +1,11 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.streams.EmptyStream
+import com.instacart.formula.test.messages.TestCallback
 import com.instacart.formula.test.messages.TestEventCallback
 import com.instacart.formula.test.test
+import io.reactivex.Observable
 import org.junit.Test
 
 class FormulaRuntimeTest {
@@ -73,43 +76,44 @@ class FormulaRuntimeTest {
 
     @Test
     fun `transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+        val sideEffectCallback = TestCallback()
         TransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { triggerSideEffect() }
             .renderModel { triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
     @Test
     fun `child transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+        val sideEffectCallback = TestCallback()
         ChildTransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { child.triggerSideEffect() }
             .renderModel { child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
     @Test
     fun `nested child transition after no re-evaluation pass`() {
-        val sideEffectService = SideEffectService()
+
+        val sideEffectCallback = TestCallback()
         NestedChildTransitionAfterNoEvaluationPass
-            .formula(sideEffectService)
+            .formula(sideEffectCallback)
             .test()
             .renderModel { child.child.triggerSideEffect() }
             .renderModel { child.child.triggerSideEffect() }
             .assertRenderModelCount(1)
             .apply {
-                assertThat(sideEffectService.invoked).isEqualTo(2)
+                sideEffectCallback.assertTimesCalled(2)
             }
     }
 
@@ -157,8 +161,9 @@ class FormulaRuntimeTest {
             .renderModel { assertThat(state).isEqualTo(1) }
     }
 
-    @Test fun `side effect triggers parent state transition`() {
-        SideEffectTriggersParentTransition
+    @Test
+    fun `side effect triggers parent state transition`() {
+        ChildMessageTriggersEventTransitionInParent
             .formula()
             .test()
             .renderModel { child.triggerSideEffect() }
@@ -337,5 +342,255 @@ class FormulaRuntimeTest {
                 assertThat(this).isEqualTo(4)
             }
             .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `init message executed once`() {
+        StreamInitMessageDeliveredOnce.test().apply {
+            assertThat(formula.timesInitializedCalled).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `input changed message`() {
+        StreamInputFormula()
+            .test(input = Observable.range(0, 3))
+            .apply {
+                assertThat(formula.messages).containsExactly(0, 1, 2)
+            }
+    }
+
+    @Test
+    fun `events api ignores duplicate inputs`() {
+        StreamInputFormula()
+            .test(input = Observable.just(0, 0, 0, 0))
+            .apply {
+                assertThat(formula.messages).containsExactly(0)
+            }
+    }
+
+    @Test
+    fun `remove all streams`() {
+        DynamicStreamSubject()
+            .updateStreams("one", "two", "three")
+            .removeAll()
+    }
+
+    @Test
+    fun `switch one stream`() {
+        DynamicStreamSubject()
+            .updateStreams("one", "two", "three")
+            .updateStreams("one", "three", "four")
+    }
+
+    @Test
+    fun `same stream declarations are okay`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            events(EmptyStream()) {
+                transition(Unit)
+            }
+
+            events(EmptyStream()) {
+                transition(Unit)
+            }
+        }
+
+        formula
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `same observable declarations are okay`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            events("same", Observable.just(1)) {
+                none()
+            }
+
+            events("same", Observable.just(1)) {
+                none()
+            }
+        }
+
+        formula
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `key is required when stream is declared in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(1, 2, 3)
+            list.forEach {
+                events(EmptyStream()) {
+                    none()
+                }
+            }
+        }
+
+        formula.state(Unit).test().assertError {
+            it is IllegalStateException
+        }
+    }
+
+    @Test
+    fun `using key for stream declared in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(1, 2, 3)
+            list.forEach {
+                events("$it", EmptyStream()) {
+                    none()
+                }
+            }
+        }
+
+        formula.test().assertRenderModelCount(1)
+    }
+
+    @Test
+    fun `multiple event streams without key`() {
+        var executed = 0
+        val formula = OnlyUpdateFormula<Unit> {
+            events(Stream.onInit()) {
+                message {
+                    executed += 1
+                }
+            }
+
+            events(Stream.onInit()) {
+                message {
+                    executed += 1
+                }
+            }
+        }
+
+        formula.test().apply {
+            assertThat(executed).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun `multiple events with input and without key`() {
+        var executed = 0
+        val formula = OnlyUpdateFormula<Int> {
+            events(Stream.onData(), it) {
+                message { executed += 1 }
+            }
+
+            events(Stream.onData(), it) {
+                message { executed += 1 }
+            }
+        }
+
+        formula.test(1).apply {
+            assertThat(executed).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun `key is required for events in a loop`() {
+        val formula = OnlyUpdateFormula<Unit> {
+            val list = listOf(0, 1, 2)
+            list.forEach {
+                events(Stream.onInit()) {
+                    none()
+                }
+            }
+        }
+
+        formula.state(Unit).test().assertError {
+            it is IllegalStateException
+        }
+    }
+
+    @Test
+    fun `disposing formula triggers terminate message`() {
+        TerminateFormula()
+            .test()
+            .apply {
+                assertThat(formula.timesTerminateCalled).isEqualTo(0)
+            }
+            .dispose()
+            .apply {
+                assertThat(formula.timesTerminateCalled).isEqualTo(1)
+            }
+    }
+
+    @Test
+    fun `removing child formula triggers terminate message`() {
+        val terminateFormula = TerminateFormula()
+        OptionalChildFormula(terminateFormula)
+            .test()
+            .apply {
+                assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
+            }
+            .renderModel { toggleChild() }
+            .apply {
+                assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
+            }
+    }
+
+    @Test
+    fun `terminate message is scoped to latest input`() {
+        var emissions = 0
+        var terminateCallback = -1
+        val formula = OnlyUpdateFormula<Int> { input ->
+            events(Stream.onTerminate()) {
+                message {
+                    emissions += 1
+                    terminateCallback = input
+                }
+            }
+        }
+
+        formula
+            .test(Observable.just(1, 2, 3))
+            .dispose()
+            .apply {
+                assertThat(emissions).isEqualTo(1)
+                assertThat(terminateCallback).isEqualTo(3)
+            }
+    }
+
+    @Test
+    fun `parent removal triggers childs terminate message`() {
+        val terminateFormula = TerminateFormula()
+        val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
+
+        formula.test().renderModel { toggleChild() }.apply {
+            assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `canceling terminate stream does not emit terminate message`() {
+        val terminateCallback = TestCallback()
+        RemovingTerminateStreamSendsNoMessagesFormula()
+            .test(
+                input = Observable.just(
+                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback),
+                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null)
+                )
+            )
+            .apply {
+                terminateCallback.assertTimesCalled(0)
+            }
+    }
+
+    @Test
+    fun `using from observable with input`() {
+        val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
+        FromObservableWithInputFormula()
+            .test(
+                input = Observable.just("1", "2").map {
+                    FromObservableWithInputFormula.Input(it, onItem = onItem)
+                }
+            )
+            .apply {
+                assertThat(onItem.values()).containsExactly(
+                    FromObservableWithInputFormula.Item("1"),
+                    FromObservableWithInputFormula.Item("2")
+                )
+            }
     }
 }

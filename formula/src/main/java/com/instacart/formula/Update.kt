@@ -1,87 +1,52 @@
 package com.instacart.formula
 
-import io.reactivex.disposables.Disposable
 import kotlin.reflect.KClass
 
-sealed class Update {
-
-    abstract fun keyAsString(): String
-
-    class Effect(
+class Update<Data : Any, Message>(
+    val key: Any,
+    val data: Data,
+    val stream: Stream<Data, Message>,
+    initial: (Message) -> Unit
+) {
+    /**
+     * A way to ensure uniqueness and equality between [Update]s.
+     */
+    data class Key(
         val input: Any,
-        val key: String,
-        val action: () -> Unit
-    ): Update() {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
+        val type: KClass<*>,
+        val extra: Any? = null
+    )
 
-            other as Effect
+    internal var handler: (Message) -> Unit = initial
+    internal var cancelable: Cancelable? = null
 
-            if (input != other.input) return false
-            if (key != other.key) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = input.hashCode()
-            result = 31 * result + key.hashCode()
-            return result
-        }
-
-        override fun keyAsString(): String {
-            return "$key-$input"
+    internal fun start() {
+        cancelable = stream.start(data) { message ->
+            handler.invoke(message)
         }
     }
 
-    class Stream<Input : Any, Output>(
-        val key: Key,
-        val input: Input,
-        val stream: com.instacart.formula.Stream<Input, Output>,
-        onEvent: (Output) -> Unit
-    ): Update() {
+    internal fun tearDown() {
+        cancelable?.cancel()
+        cancelable = null
+    }
 
-        /**
-         * A way to ensure uniqueness and equality between [Stream]s.
-         */
-        data class Key(
-            val input: Any,
-            val processorType: KClass<*>,
-            val tag: String = ""
-        )
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-        internal var handler: (Output) -> Unit = onEvent
-        internal var disposable: Disposable? = null
+        other as Update<*, *>
 
-        internal fun start() {
-            disposable = stream.subscribe(input) { next ->
-                handler.invoke(next)
-            }
-        }
+        if (key != other.key) return false
 
-        internal fun tearDown() {
-            disposable?.dispose()
-            disposable = null
-        }
+        return true
+    }
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
+    override fun hashCode(): Int {
+        return key.hashCode()
+    }
 
-            other as Stream<*, *>
-
-            if (key != other.key) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return key.hashCode()
-        }
-
-        override fun keyAsString(): String {
-            return key.toString()
-        }
+    fun keyAsString(): String {
+        return key.toString()
     }
 }

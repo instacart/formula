@@ -68,6 +68,10 @@ class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Inp
         }
     }
 
+    fun dispose() = apply {
+        observer.dispose()
+    }
+
     @PublishedApi
     internal fun <Input, State, RenderModel> findManager(
         type: KClass<out Formula<Input, State, RenderModel>>

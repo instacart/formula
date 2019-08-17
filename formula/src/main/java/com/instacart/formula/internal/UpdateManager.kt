@@ -12,40 +12,28 @@ internal class UpdateManager(
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private var updates: LinkedHashSet<Update> = LinkedHashSet()
-
-    /**
-     * Returns true if there was a transition while updating streams.
-     */
-    fun updateConnections(new: List<Update>, transitionNumber: Long): Boolean {
-        if (terminateOld(new, transitionNumber)) {
-            return true
-        }
-
-        return startNew(new, transitionNumber)
-    }
+    private val updates: LinkedHashSet<Update<*, *>> = LinkedHashSet()
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
      * terminated streams.
      */
     @Suppress("UNCHECKED_CAST")
-    fun updateEventListeners(new: List<Update>) {
+    fun updateEventListeners(new: List<Update<*, *>>) {
         updates.forEach { existing ->
             val update = new.firstOrNull { it == existing }
-            when (existing) {
-                is Update.Stream<*, *> -> {
-                    if (update != null) {
-                        existing.handler = (update as Update.Stream<*, *>).handler as (Any?) -> Unit
-                    } else {
-                        existing.handler = NO_OP
-                    }
-                }
+            if (update != null) {
+                existing.handler = update.handler as (Any?) -> Unit
+            } else {
+                existing.handler = NO_OP
             }
         }
     }
 
-    fun terminateOld(new: List<Update>, transitionNumber: Long): Boolean {
+    /**
+     * Returns true if there was a transition while updating streams.
+     */
+    fun terminateOld(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
         val iterator = updates.iterator()
         while (iterator.hasNext()) {
             val existing = iterator.next()
@@ -53,13 +41,7 @@ internal class UpdateManager(
             val update = new.firstOrNull { it == existing }
             if (update == null) {
                 iterator.remove()
-
-                when (existing) {
-                    is Update.Stream<*, *> -> {
-                        existing.handler = NO_OP
-                        tearDownStream(existing)
-                    }
-                }
+                tearDownStream(existing)
             }
 
             if (transitionLock.hasTransitioned(transitionNumber)) {
@@ -69,14 +51,11 @@ internal class UpdateManager(
         return false
     }
 
-    fun startNew(new: List<Update>, transitionNumber: Long): Boolean {
+    fun startNew(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
         new.forEach { update ->
             if (!updates.contains(update)) {
                 updates.add(update)
-                when (update) {
-                    is Update.Stream<*, *> -> update.start()
-                    is Update.Effect -> update.action()
-                }
+                update.start()
 
                 if (transitionLock.hasTransitioned(transitionNumber)) {
                     return true
@@ -88,16 +67,16 @@ internal class UpdateManager(
     }
 
     fun terminate() {
-        updates.forEach { update ->
-            when (update) {
-                is Update.Stream<*, *> -> tearDownStream(update)
-            }
+        val iterator = updates.iterator()
+        while(iterator.hasNext()) {
+            val stream = iterator.next()
+            iterator.remove()
+            tearDownStream(stream)
         }
-        updates.clear()
     }
 
-    private fun tearDownStream(existing: Update.Stream<*, *>) {
-        existing.handler = NO_OP
-        existing.tearDown()
+    private fun tearDownStream(stream: Update<*, *>) {
+        stream.tearDown()
+        stream.handler = NO_OP
     }
 }

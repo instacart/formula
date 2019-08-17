@@ -31,6 +31,12 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     private var onTransition: ((List<Message>, isValid: Boolean) -> Unit)? = null
 
     private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
+        if (terminated) {
+            // We only pass messages up.
+            onTransition?.invoke(transition.messages, true)
+            return
+        }
+
         this.state = transition.state ?: this.state
         val frame = this.frame
         frame?.updateStateValidity(state)
@@ -38,10 +44,8 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
             frame?.childInvalidated()
         }
 
-        if (!terminated) {
-            val isValid = frame != null && frame.isValid()
-            onTransition?.invoke(transition.messages, isValid)
-        }
+        val isValid = frame != null && frame.isValid()
+        onTransition?.invoke(transition.messages, isValid)
     }
 
     override fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit) {
@@ -52,9 +56,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
         lastFrame.transitionCallbackWrapper.transitionId = number
 
-        children.forEachValue {
-            it.updateTransitionNumber(number)
-        }
+        children.forEachValue { it.updateTransitionNumber(number) }
     }
 
     /**
@@ -172,18 +174,12 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
 
     override fun markAsTerminated() {
         terminated = true
+        frame?.transitionCallbackWrapper?.terminated = true
 
-        // Clear callbacks
         callbacks.disableAll()
-
-        // Terminate updates so no transitions happen
         updateManager.terminate()
-
-        children.forEachValue {
-            it.markAsTerminated()
-        }
+        children.forEachValue { it.markAsTerminated() }
     }
-
 
     fun terminate() {
         markAsTerminated()

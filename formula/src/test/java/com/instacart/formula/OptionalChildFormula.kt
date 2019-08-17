@@ -4,6 +4,11 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
     private val child: Formula<ChildInput, *, ChildRenderModel>,
     private val childInput: FormulaContext<State>.(State) -> ChildInput
 ): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<ChildRenderModel>> {
+    companion object {
+        operator fun <ChildRenderModel> invoke(child: Formula<Unit, *, ChildRenderModel>) = run {
+            OptionalChildFormula(child) { Unit }
+        }
+    }
 
     data class State(
         val showChild: Boolean = true
