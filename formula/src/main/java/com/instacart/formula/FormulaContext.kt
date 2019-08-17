@@ -140,9 +140,9 @@ abstract class FormulaContext<State> internal constructor(
          * @param input An object passed to the [Stream] for instantiation. This can
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Input : Any, Message> events(
-            stream: Stream<Input, Message>,
-            input: Input,
+        inline fun <Data : Any, Message> events(
+            stream: Stream<Data, Message>,
+            input: Data,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
             events("", stream, input, transition)
@@ -157,10 +157,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param input An object passed to the [Stream] for instantiation. This can
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Input : Any, Message> events(
+        inline fun <Data : Any, Message> events(
             key: String,
-            stream: Stream<Input, Message>,
-            input: Input,
+            stream: Stream<Data, Message>,
+            input: Data,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
             add(createConnection(key, stream, input, transition))
@@ -226,20 +226,20 @@ abstract class FormulaContext<State> internal constructor(
             updates.add(connection)
         }
 
-        @PublishedApi internal inline fun <Input : Any, Message> createConnection(
+        @PublishedApi internal inline fun <Data : Any, Message> createConnection(
             key: Any? = null,
-            stream: Stream<Input, Message>,
-            input: Input,
+            stream: Stream<Data, Message>,
+            data: Data,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ): Update<Input, Message> {
+        ): Update<Data, Message> {
             val callback: (Message) -> Unit = {
                 val value = transition(Transition.Factory, it)
                 transitionCallback(value)
             }
 
             return Update(
-                key = Update.Key(input, callback::class, key),
-                input = input,
+                key = Update.Key(data, callback::class, key),
+                data = data,
                 stream = stream,
                 initial = callback
             )

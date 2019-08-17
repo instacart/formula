@@ -2,23 +2,23 @@ package com.instacart.formula
 
 import io.reactivex.Observable
 
-interface RxStream<Input, Message> : Stream<Input, Message> {
+interface RxStream<Data, Message> : Stream<Data, Message> {
     companion object {
-        inline fun <Input, Message> fromObservable(
-            crossinline create: (Input) -> Observable<Message>
-        ): RxStream<Input, Message> {
-            return object : RxStream<Input, Message> {
-                override fun observable(input: Input): Observable<Message> {
-                    return create(input)
+        inline fun <Data, Message> fromObservable(
+            crossinline create: (Data) -> Observable<Message>
+        ): RxStream<Data, Message> {
+            return object : RxStream<Data, Message> {
+                override fun observable(data: Data): Observable<Message> {
+                    return create(data)
                 }
             }
         }
     }
 
-    fun observable(input: Input): Observable<Message>
+    fun observable(data: Data): Observable<Message>
 
-    override fun start(input: Input, send: (Message) -> Unit): Cancelable? {
-        val disposable = observable(input).subscribe(send)
+    override fun start(data: Data, send: (Message) -> Unit): Cancelable? {
+        val disposable = observable(data).subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }

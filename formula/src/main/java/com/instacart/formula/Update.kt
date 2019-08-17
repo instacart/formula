@@ -2,10 +2,10 @@ package com.instacart.formula
 
 import kotlin.reflect.KClass
 
-class Update<Input : Any, Message>(
+class Update<Data : Any, Message>(
     val key: Any,
-    val input: Input,
-    val stream: Stream<Input, Message>,
+    val data: Data,
+    val stream: Stream<Data, Message>,
     initial: (Message) -> Unit
 ) {
     /**
@@ -21,7 +21,7 @@ class Update<Input : Any, Message>(
     internal var cancelable: Cancelable? = null
 
     internal fun start() {
-        cancelable = stream.start(input) { message ->
+        cancelable = stream.start(data) { message ->
             handler.invoke(message)
         }
     }

@@ -3,10 +3,10 @@ package com.instacart.formula
 /**
  * A [Stream] defines an asynchronous event(s).
  *
- * @param Input Type of Input that is used to initialize a stream. Use [Unit] if stream doesn't need any input.
+ * @param Data Type of data that is used to initialize a stream. Use [Unit] if stream doesn't need any data.
  * @param Message A type of messages that the stream produces.
  */
-interface Stream<Input, Message> {
+interface Stream<Data, Message> {
     companion object {
 
         /**
@@ -23,17 +23,17 @@ interface Stream<Input, Message> {
         }
 
         /**
-         * Emits a message when [Stream] is initialized or [Input] has changed. Use this stream to send a message
-         * with latest [Input] value.
+         * Emits a message when [Stream] is initialized or [Data] has changed. Use this stream to send a message
+         * with latest [Data] value.
          * ```
-         * events(Stream.onInput(), itemId) {
+         * events(Stream.onData(), itemId) {
          *   message(api::fetchItem, itemId)
          * }
          * ```
          */
-        fun <Input> onInput(): Stream<Input, Input> {
+        fun <Data> onData(): Stream<Data, Data> {
             @Suppress("UNCHECKED_CAST")
-            return StartMessageStream as Stream<Input, Input>
+            return StartMessageStream as Stream<Data, Data>
         }
 
         /**
@@ -58,7 +58,7 @@ interface Stream<Input, Message> {
      * @param send Use this callback to pass messages back to [Formula].
      *             Note: you need to call this on the main thread.
      */
-    fun start(input: Input, send: (Message) -> Unit): Cancelable?
+    fun start(input: Data, send: (Message) -> Unit): Cancelable?
 }
 
 /**

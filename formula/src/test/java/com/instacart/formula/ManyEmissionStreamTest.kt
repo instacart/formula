@@ -39,7 +39,7 @@ class ManyEmissionStreamTest {
     }
 
     class MyStream : RxStream<Unit, Int> {
-        override fun observable(input: Unit): Observable<Int> {
+        override fun observable(data: Unit): Observable<Int> {
             val values = 1..EMISSION_COUNT
             return Observable.fromIterable(values)
         }

@@ -7,7 +7,7 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
         return Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                events("input", Stream.onInput(), input) {
+                events("data", Stream.onData(), input) {
                     message { messages.add(it) }
                 }
             }

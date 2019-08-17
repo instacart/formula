@@ -473,11 +473,11 @@ class FormulaRuntimeTest {
     fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Stream.onInput(), it) {
+            events(Stream.onData(), it) {
                 message { executed += 1 }
             }
 
-            events(Stream.onInput(), it) {
+            events(Stream.onData(), it) {
                 message { executed += 1 }
             }
         }

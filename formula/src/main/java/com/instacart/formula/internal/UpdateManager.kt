@@ -12,7 +12,7 @@ internal class UpdateManager(
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private var updates: LinkedHashSet<Update<*, *>> = LinkedHashSet()
+    private val updates: LinkedHashSet<Update<*, *>> = LinkedHashSet()
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
