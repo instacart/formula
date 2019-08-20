@@ -228,6 +228,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../async_events/" title="Asynchronous Events" class="md-nav__link">
+      Asynchronous Events
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
     <a href="../input/" title="Using Input" class="md-nav__link">
       Using Input
     </a>
@@ -284,8 +296,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#receiving-asynchronous-events" title="Receiving asynchronous events" class="md-nav__link">
-    Receiving asynchronous events
+  <a href="#sending-a-message-when-formula-is-initialized" title="Sending a message when Formula is initialized" class="md-nav__link">
+    Sending a message when Formula is initialized
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message-when-formula-is-terminated" title="Sending a message when Formula is terminated" class="md-nav__link">
+    Sending a message when Formula is terminated
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message-when-some-data-changes" title="Sending a message when some data changes" class="md-nav__link">
+    Sending a message when some data changes
   </a>
   
 </li>
@@ -447,8 +473,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#receiving-asynchronous-events" title="Receiving asynchronous events" class="md-nav__link">
-    Receiving asynchronous events
+  <a href="#sending-a-message-when-formula-is-initialized" title="Sending a message when Formula is initialized" class="md-nav__link">
+    Sending a message when Formula is initialized
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message-when-formula-is-terminated" title="Sending a message when Formula is terminated" class="md-nav__link">
+    Sending a message when Formula is terminated
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message-when-some-data-changes" title="Sending a message when some data changes" class="md-nav__link">
+    Sending a message when some data changes
   </a>
   
 </li>
@@ -601,29 +641,30 @@ utility functions to construct a transition. Take a look at <code>Transition.Fac
 
 <p><strong>Note:</strong> instead of calling <code>input.onItemSelected(item.id)</code>, we call <code>message(input.onItemSelected, item.id)</code>. This
 allows formula runtime to ensure that parent is in the right state to handle the message.</p>
-<h3 id="receiving-asynchronous-events">Receiving asynchronous events</h3>
-<p>Formula uses RxJava to deal with event streams. You can either use <code>Observable</code> directly or wrap it in a <code>RxStream</code>.</p>
-<p>Usually event stream dependencies will be passed/injected through the constructor.</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">MyFormula</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">dataObservable</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">MyData</span><span class="p">&gt;):</span> <span class="n">Formula</span><span class="p">&lt;....&gt;</span>
-</pre></div>
-
-
-<p>To listen to your data observable, you need to declare a binding within <code>Formula.evaluate</code> block.</p>
-<div class="codehilite"><pre><span></span><span class="n">Evaluation</span><span class="p">(</span>
-  <span class="n">renderModel</span> <span class="p">=</span> <span class="p">...,</span>
-  <span class="c1">// We declare the event streams within `updates` block</span>
-  <span class="n">updates</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
-    <span class="n">events</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="n">dataObservable</span><span class="p">)</span> <span class="p">{</span> <span class="n">update</span><span class="p">:</span> <span class="n">MyData</span> <span class="p">-&gt;</span>
-      <span class="c1">// the listener is always scoped to the current `state` so you can update it as part of the transition</span>
-      <span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">myData</span> <span class="p">=</span> <span class="n">update</span><span class="p">).</span><span class="n">noMessages</span><span class="p">()</span>
-    <span class="p">}</span>
+<h3 id="sending-a-message-when-formula-is-initialized">Sending a message when Formula is initialized</h3>
+<p>One use case is to track analytics when a screen or component is created.</p>
+<div class="codehilite"><pre><span></span><span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
+  <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onInit</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackScreenOpen</span><span class="p">)</span>
   <span class="p">}</span>
-<span class="p">)</span>
+<span class="p">}</span>
 </pre></div>
 
 
-<p><em>Note:</em> we use a unique identifier <code>"data"</code> to make sure that internal diffing mechanism can distinguish between
-different streams.</p>
+<h3 id="sending-a-message-when-formula-is-terminated">Sending a message when Formula is terminated</h3>
+<div class="codehilite"><pre><span></span><span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onTerminate</span><span class="p">())</span> <span class="p">{</span>
+  <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackClose</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="sending-a-message-when-some-data-changes">Sending a message when some data changes</h3>
+<div class="codehilite"><pre><span></span><span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onData</span><span class="p">(),</span> <span class="n">itemId</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">message</span><span class="p">(</span><span class="n">api</span><span class="o">::</span><span class="n">fetchItem</span><span class="p">,</span> <span class="n">itemId</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
 <h3 id="formula-retains-callbacks">Formula retains callbacks</h3>
 <p>Callbacks retain equality across re-evaluation (such as state changes). By default, we persist the callback in a map
 where each callback is identified by its class type. There a couple of cases when this is not sufficient and you need 
