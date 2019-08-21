@@ -3,7 +3,7 @@ deterministic, composable, testable applications.
 
 ### Quick example
 To demonstrate some of the concepts we will make a simple counter application. It shows the current count and 
-has two buttons to increment and decrement the count.
+has two buttons to increment and decrement itq.
 
 One of the best practises when working with Formula is to first think what the UI needs for rendering and what 
 actions the user will be able to take. This concept is called a `RenderModel` and is represented by a Kotlin data class.
@@ -109,7 +109,6 @@ onDecrement = context.callback {
 
 In response to the decrement event, we take the current `count` and subtract `1` from it. Then, we call `transition`
 method to create `Transition<CounterState>` object which we return. 
-
 
 If you notice, our logic currently allows user to decrement to a number below 0. We can update the transition logic to 
 prevent this.

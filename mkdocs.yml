@@ -5,6 +5,8 @@ repo_url: 'https://github.com/instacart/formula'
 
 theme:
   name: 'material'
+  palette:
+    primary: 'green'
 
 extra_css:
   - 'css/app.css'
@@ -16,9 +18,9 @@ markdown_extensions:
 
 nav:
   - 'Overview': index.md
+  - 'Event Handling': events.md
   - 'Asynchronous Events': async_events.md
   - 'Using Input': input.md
-  - 'Messages': messages.md
   - 'Composition': composition.md
   - 'Testing': testing.md
   - 'Formula Android': Integration.md

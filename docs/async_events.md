@@ -1,75 +1,77 @@
-Formula provides a declarative API for handling asynchronous events. All the events we care about should
-be declared within `context.updates` block and returned as part of `Evaluation.updates`.
-```kotlin
-class MyFormula : Formula {
+It's worth reading [Event Handling](events.md) section first given that there is a lot of overlap.
 
-  override fun evaluate(...): Evaluation<RenderModel> {
-    return Evaluation(
-      renderModel = ...,
-      updates = context.updates {
-        // all event declarations go here.
+To show how Formula handles asynchronous events, we'll use a task app example. Let's say we have
+a task repository that exposes an RxJava `Observable<List<Task>>`.
+```kotlin
+interface TaskRepo {
+  fun tasks(): Observable<List<Task>>
+}
+```
+
+All asynchronous events have to be declared within `Formula.evaluate` function.
+```kotlin
+override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
+  return Evaluation(
+    renderModel = createRenderModel(state.taskList),
+    // All async events need to be declared within "context.updates" block.
+    updates = context.updates {
+      // Convert RxJava observable to a Formula Stream.
+      val taskStream = RxStream.fromObservable(taskRepo::tasks)
+      // Tell Formula that you want to listen to these events
+      events(taskStream) { newTaskList ->
+        // update our state
+        transition(state.copy(taskList = newTaskList))
       }
-    )
-  }
+    }
+  )
 }
+
 ```
 
-Asynchronous events are very similar to UI events. For each type of event, we declare a callback that takes a message
-and creates a transition.
+Formula uses a `Stream` interface to define an asynchronous event producers/sources.
 ```kotlin
-context.updates {
-  events(/* stream */) { event ->
-    // perform a transition
-  }
+interface Stream<Parameter, Message> {
+  fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable?
 }
 ```
 
-### Using RxJava
-Let's say we have a task repository that exposes an RxJava `Observable<List<Task>>`.
-```kotlin
-context.updates {
-  val taskStream = RxStream.fromObservable { repository.tasks() }
-  events(taskStream) { tasks ->
-    transition(state.copy(tasks = tasks))
-  }
-}
-```
+In this example we used an `RxStream.fromObservable` to convert from an `Observable` to a `Stream` instance.
 
-We use `RxStream.fromObservable` to wrap the `Observable`. Instead of us subscribing to the observable directly,
-the runtime manages the subscriptions for us. It will subscribe the first time `events` is called and unsubscribe
-when our Formula is removed or if we don't return it anymore. For example, it is okay to have conditional logic
-within `context.updates` block.
+Instead of us subscribing to the observable/stream directly, the runtime manages the subscriptions for us.
+It will subscribe the first time `events` is called and unsubscribe when our Formula is removed or
+if we don't return it anymore. For example, it is okay to have conditional logic.
 ```kotlin
 context.updates {
   if (state.locationTrackingEnabled) {
-    events(RxStream.fromObservable { locationManager.updates() }) { event ->
+    val locationStream = RxStream.fromObservable { locationManager.updates() }
+    events(locationStream) { event ->
       transition(state.copy(location = event.location))
     }
   }
 }
 ```
 
-If `state.locationTrackingEnabled` changes from `true` to `false`, we won't return this `Stream` anymore and the runtime
-will unsubscribe.
+If `state.locationTrackingEnabled` changes from `true` to `false`, we won't return this `Stream`
+anymore and the runtime will unsubscribe.
 
 ### Fetching data
-Let's say we need to fetch an item that has a specific `item id`.
+Let's say we need to fetch a task that has a specific `task id`.
 ```kotlin
-interface ItemApi {
-  fun fetchItem(itemId: String): Observable<Item>
+interface TaskRepo {
+  fun fetchTask(taskId: String): Observable<Task>
 }
 ```
 
-Using `ItemApi` directly:
+Using `TaskRepo` directly:
 ```kotlin
-class ItemDetailFormula(val itemApi: ItemApi): Formula {
+class TaskFormula(val taskRepo: TaskRepo): Formula {
 
   data class Input(
-    val itemId: String
+    val taskId: String
   )
 
   data class State(
-    val item: Item? = null
+    val task: Task? = null
   )
 
   override fun evaluate(
@@ -79,9 +81,9 @@ class ItemDetailFormula(val itemApi: ItemApi): Formula {
   ): Evaluation<RenderModel> {
     return Evaluation(
       updates = context.updates {
-        val fetchItemStream = RxStream.withParameter(itemApi::fetchItem)
-        events(fetchItemStream, input.itemId) { itemResponse ->
-          transition(state.copy(item = itemResponse))
+        val fetchTask = RxStream.withParameter(taskRepo::fetchTask)
+        events(fetchTask, input.taskId) { taskResponse ->
+          transition(state.copy(task = taskResponse))
         }
       }
     )
@@ -91,17 +93,19 @@ class ItemDetailFormula(val itemApi: ItemApi): Formula {
 
 We can also extend `RxStream`:
 ```kotlin
-class FetchItemStream(val itemApi: ItemApi): RxStream<String, Item> {
+class FetchTaskStream(val taskRepo: TaskRepo): RxStream<Request, Task> {
 
-  override fun observable(parameter: String): Observable<Item> {
-    return itemApi.fetchItem(parameter)
+  data class Request(val taskId: String)
+
+  override fun observable(parameter: Request): Observable<Task> {
+    return taskRepo.fetchTask(parameter.taskId)
   }
 }
 ```
 
 And then update the formula to:
 ```kotlin
-class ItemDetailFormula(val fetchItem: FetchItemStream): Formula {
+class TaskFormula(val fetchTask: FetchTasktream): Formula {
 
   override fun evaluate(
     input: Input,
@@ -110,8 +114,8 @@ class ItemDetailFormula(val fetchItem: FetchItemStream): Formula {
   ): Evaluation<RenderModel> {
     return Evaluation(
       updates = context.updates {
-        events(fetchItemStream, input.itemId) { itemResponse ->
-          transition(state.copy(item = itemResponse))
+        events(fetchTask, FetchTaskStream.Request(input.itemId)) { taskResponse ->
+          transition(state.copy(task = taskResponse))
         }
       }
     )
@@ -127,7 +131,7 @@ Note: we are not handling errors in this example. The best practice is to emit e
 of emitting them through onError.
 ```
 
-### Not using RxJava
+### Extending Stream Interface
 If you need to use a different mechanism for asynchronous events, you can extend `Stream` interface.
 ```kotlin
 interface Stream<Parameter, Message> {
@@ -159,7 +163,7 @@ We can now hook this up within our Formula:
 ```kotlin
 class MyFormula(val networkStatus: NetworkStatusStream): Formula {
 
-  override fun evaluate(.., context: FormulaContext): Evaluation {
+  override fun evaluate(input: .., state: .., context: FormulaContext): .. {
     return Evaluation(
       updates = context.updates {
         events(networkStatus) { status ->

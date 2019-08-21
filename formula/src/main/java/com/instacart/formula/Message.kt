@@ -3,7 +3,7 @@ package com.instacart.formula
 /**
  * An executable message.
  */
-sealed class Message() {
+sealed class Message {
     internal abstract fun deliver()
 }
 

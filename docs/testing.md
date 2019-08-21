@@ -13,7 +13,8 @@ val subject = MyFormula().test().renderModel {
 If your Formula has children, you can replace their render model output
 ```kotlin
 val subject = MyFormula().test {
-    // Note: we are using mockito to mock ChildRenderModel, you could also manually create it.
+    // We are using mockito to mock ChildRenderModel.
+    // You could also manually create it.
     child(MyChildFormula::class, mock<ChildRenderModel>())
 }
 ```
