@@ -42,6 +42,12 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
       
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.01803549.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4caf50">
       
     
     
@@ -65,7 +71,9 @@
     
   </head>
   
-    <body dir="ltr">
+    
+    
+    <body dir="ltr" data-md-color-primary="green" data-md-color-accent="">
   
     <svg class="md-svg">
       <defs>
@@ -364,7 +372,8 @@
 
 <p>If your Formula has children, you can replace their render model output</p>
 <div class="codehilite"><pre><span></span><span class="k">val</span> <span class="py">subject</span> <span class="p">=</span> <span class="n">MyFormula</span><span class="p">().</span><span class="n">test</span> <span class="p">{</span>
-    <span class="c1">// Note: we are using mockito to mock ChildRenderModel, you could also manually create it.</span>
+    <span class="c1">// We are using mockito to mock ChildRenderModel.</span>
+    <span class="c1">// You could also manually create it.</span>
     <span class="n">child</span><span class="p">(</span><span class="n">MyChildFormula</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="n">mock</span><span class="p">&lt;</span><span class="n">ChildRenderModel</span><span class="p">&gt;())</span>
 <span class="p">}</span>
 </pre></div>

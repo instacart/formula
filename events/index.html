@@ -42,6 +42,12 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
       
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.01803549.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4caf50">
       
     
     
@@ -65,7 +71,9 @@
     
   </head>
   
-    <body dir="ltr">
+    
+    
+    <body dir="ltr" data-md-color-primary="green" data-md-color-accent="">
   
     <svg class="md-svg">
       <defs>
@@ -286,13 +294,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#more-info" title="More info" class="md-nav__link">
-    More info
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -455,13 +456,6 @@
           <li class="md-nav__item">
   <a href="#case-2-delegating-to-another-function" title="Case 2: Delegating to another function" class="md-nav__link">
     Case 2: Delegating to another function
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#more-info" title="More info" class="md-nav__link">
-    More info
   </a>
   
 </li>
@@ -693,12 +687,6 @@ Let's say you have a function that takes FormulaContext and creates a ChildRende
   <span class="n">second</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">key</span><span class="p">(</span><span class="s">&quot;second&quot;</span><span class="p">)</span> <span class="p">{</span> <span class="n">createChildRenderModel</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
-
-
-<h4 id="more-info">More info</h4>
-<p>For each unique key we have a persisted callback instance that is kept across multiple <code>Formula.evaluate</code> calls. The
-instance is disabled and removed when your <code>Formula</code> is removed or if you don't create this callback in the current
-<code>Formula.evaluate</code> call.</p>
                 
                   
                 
