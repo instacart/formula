@@ -25,8 +25,8 @@ class FetchDataExampleTest {
 
         data class Response(val id: String, val name: String)
 
-        override fun observable(data: Request): Observable<Response> {
-            return Observable.just(Response(id = data.dataId, name = "response: ${data.dataId}"))
+        override fun observable(parameter: Request): Observable<Response> {
+            return Observable.just(Response(id = parameter.dataId, name = "response: ${parameter.dataId}"))
         }
     }
 

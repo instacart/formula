@@ -1,0 +1,29 @@
+site_name: Formula
+
+repo_name: 'Formula'
+repo_url: 'https://github.com/instacart/formula'
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'green'
+
+extra_css:
+  - 'css/app.css'
+
+
+markdown_extensions:
+  - codehilite:
+      guess_lang: false
+
+nav:
+  - 'Overview': index.md
+  - 'Event Handling': events.md
+  - 'Asynchronous Events': async_events.md
+  - 'Using Input': input.md
+  - 'Composition': composition.md
+  - 'Testing': testing.md
+  - 'Formula Android': Integration.md
+  - 'Using Android View Model': using_android_view_model.md
+  - 'FAQ': faq.md
+  - 'Contributing': contributing.md

@@ -5,6 +5,7 @@ import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.RxStream
 
 class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
 
@@ -43,7 +44,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
 
         return Evaluation(
             updates = context.updates {
-                events(repo.tasks()) {
+                events(RxStream.fromObservable(repo::tasks)) {
                     state.copy(taskState = it).noMessages()
                 }
             },

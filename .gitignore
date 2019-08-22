@@ -11,3 +11,6 @@
 *.iws
 .idea/
 *.iml
+
+# Site
+/site

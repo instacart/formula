@@ -16,8 +16,7 @@ class CounterFormulaTest {
             .renderModel { onIncrement() }
             .renderModel { onIncrement() }
             .renderModel {
-               assertThat(this.count).isEqualTo("Count: 5")
+               assertThat(count).isEqualTo("Count: 5")
             }
     }
-
 }

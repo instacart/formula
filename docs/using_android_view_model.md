@@ -1,7 +1,7 @@
-### Using Formula with Android View Model
 Define `ViewModel` which runs `Formula.state` stream until `onCleared` is called.
 ```kotlin
-class CounterViewModel(private val formula: CounterFormula) : ViewModel {
+class CounterViewModel() : ViewModel {
+  private val formula = CounterFormula()
   private val disposables = CompositeDisposable()
     
   val renderModels = formula.state(Unit).replay(1).apply {

@@ -2,8 +2,8 @@
 A functional reactive framework for managing state and side effects based on RxJava. It enables building 
 deterministic, composable, testable applications.
 
-To learn more, see our [Gettting Started Guide](docs/Getting-Started.md). Also, take a look at the [samples](samples) 
-folder.
+[Check documentation](https://instacart.github.io/formula/)
+[Check samples](samples)
 
 ## Android Module
 The Android module provides declarative API to connect reactive state management to Android Fragments. 
@@ -25,8 +25,8 @@ And add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.github.instacart:formula:0.3.2'
-    implementation 'com.github.instacart:formula-android:0.3.2'
+    implementation 'com.github.instacart:formula:0.4.0-alpha2'
+    implementation 'com.github.instacart:formula-android:0.4.0-alpha2'
 }
 ```
 

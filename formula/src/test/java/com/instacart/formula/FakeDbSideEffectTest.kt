@@ -34,7 +34,7 @@ class FakeDbSideEffectTest {
             return Evaluation(
                 renderModel = state.name,
                 updates = context.updates {
-                    events("nameChanges", nameChanges) { newName ->
+                    events(nameChanges) { newName ->
                         transition(state.copy(name = newName)) {
                             message(saveToDb, newName)
                         }
