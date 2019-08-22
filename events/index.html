@@ -36,7 +36,7 @@
     
     
       
-        <title>Messages - Formula</title>
+        <title>Event Handling - Formula</title>
       
     
     
@@ -79,7 +79,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#receive-ui-messages" tabindex="1" class="md-skip">
+      <a href="#sending-messages-to-the-parent" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -105,7 +105,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Messages
+                Event Handling
               
             </span>
           
@@ -226,30 +226,6 @@
       
       
 
-
-  <li class="md-nav__item">
-    <a href="../async_events/" title="Asynchronous Events" class="md-nav__link">
-      Asynchronous Events
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../input/" title="Using Input" class="md-nav__link">
-      Using Input
-    </a>
-  </li>
-
-    
-      
-      
-      
-
   
 
 
@@ -259,11 +235,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        Messages
+        Event Handling
       </label>
     
-    <a href="./" title="Messages" class="md-nav__link md-nav__link--active">
-      Messages
+    <a href="./" title="Event Handling" class="md-nav__link md-nav__link--active">
+      Event Handling
     </a>
     
       
@@ -275,20 +251,6 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#receive-ui-messages" title="Receive UI messages" class="md-nav__link">
-    Receive UI messages
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message" title="Sending a message" class="md-nav__link">
-    Sending a message
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#sending-messages-to-the-parent" title="Sending messages to the parent" class="md-nav__link">
     Sending messages to the parent
   </a>
@@ -296,22 +258,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sending-a-message-when-formula-is-initialized" title="Sending a message when Formula is initialized" class="md-nav__link">
-    Sending a message when Formula is initialized
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message-when-formula-is-terminated" title="Sending a message when Formula is terminated" class="md-nav__link">
-    Sending a message when Formula is terminated
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message-when-some-data-changes" title="Sending a message when some data changes" class="md-nav__link">
-    Sending a message when some data changes
+  <a href="#formula-events" title="Formula events" class="md-nav__link">
+    Formula events
   </a>
   
 </li>
@@ -358,6 +306,30 @@
   
 </nav>
     
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../async_events/" title="Asynchronous Events" class="md-nav__link">
+      Asynchronous Events
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../input/" title="Using Input" class="md-nav__link">
+      Using Input
+    </a>
   </li>
 
     
@@ -452,20 +424,6 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#receive-ui-messages" title="Receive UI messages" class="md-nav__link">
-    Receive UI messages
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message" title="Sending a message" class="md-nav__link">
-    Sending a message
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#sending-messages-to-the-parent" title="Sending messages to the parent" class="md-nav__link">
     Sending messages to the parent
   </a>
@@ -473,22 +431,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sending-a-message-when-formula-is-initialized" title="Sending a message when Formula is initialized" class="md-nav__link">
-    Sending a message when Formula is initialized
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message-when-formula-is-terminated" title="Sending a message when Formula is terminated" class="md-nav__link">
-    Sending a message when Formula is terminated
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sending-a-message-when-some-data-changes" title="Sending a message when some data changes" class="md-nav__link">
-    Sending a message when some data changes
+  <a href="#formula-events" title="Formula events" class="md-nav__link">
+    Formula events
   </a>
   
 </li>
@@ -543,66 +487,94 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/instacart/formula/edit/master/docs/messages.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/instacart/formula/edit/master/docs/events.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>Messages</h1>
+                  <h1>Event Handling</h1>
                 
-                <p>Messages are objects used to request execution of impure code. Use messages to execute operations such as
-logging, database updates, firing network requests, notifying a parent and etc.</p>
-<h3 id="receive-ui-messages">Receive UI messages</h3>
-<p>To listen and respond to UI events, declare a callback on the <code>Render Model</code> for each type of UI event you care about.</p>
+                <p>Event handling in Formula is based on messages and message passing using callback functions (message handlers).
+Message handlers can have zero or one parameter to pass data with the message.</p>
+<p>For example, to handle UI events, declare message handlers on the <code>Render Model</code> for each type of UI event you care about.</p>
 <div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">FormRenderModel</span><span class="p">(</span>
-  <span class="k">val</span> <span class="py">email</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span>
-  <span class="k">val</span> <span class="py">onEmailChanged</span><span class="p">:</span> <span class="p">(</span><span class="n">String</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">,</span>
-  <span class="k">val</span> <span class="py">onSaveSelected</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
+  <span class="c1">// A callback with no parameters</span>
+  <span class="k">val</span> <span class="py">onSaveSelected</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">,</span>
+
+  <span class="c1">// A callback where data is passed with the message</span>
+  <span class="k">val</span> <span class="py">onNameChanged</span><span class="p">:</span> <span class="p">(</span><span class="n">newName</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
 <span class="p">)</span>
 </pre></div>
 
 
-<p>Use <code>FormulaContext.callback</code> and <code>FormulaContext.eventCallback</code> within <code>Formula.evaluate</code> block to create them.  </p>
-<div class="codehilite"><pre><span></span><span class="n">FormRenderModel</span><span class="p">(</span>
-  <span class="n">email</span> <span class="p">=</span> <span class="n">state</span><span class="p">.</span><span class="n">email</span><span class="p">,</span>
-  <span class="n">onEmailChanged</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">eventCallback</span> <span class="p">{</span> <span class="n">newEmail</span> <span class="p">-&gt;</span>
-    <span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">email</span> <span class="p">=</span> <span class="n">newEmail</span><span class="p">).</span><span class="n">noMessages</span><span class="p">()</span>
-  <span class="p">},</span>
-  <span class="n">onSaveSelected</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
-    <span class="n">message</span><span class="p">(</span><span class="n">userService</span><span class="o">::</span><span class="n">updateEmail</span><span class="p">,</span> <span class="n">state</span><span class="p">.</span><span class="n">email</span><span class="p">)</span>
-  <span class="p">}</span>
-<span class="p">)</span>
-</pre></div>
+<p>All message handlers should be created within <code>Formula.evaluate</code> block.</p>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">):</span> <span class="p">...</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
+    <span class="n">renderModel</span> <span class="p">=</span> <span class="n">FormRenderModel</span><span class="p">(</span>
+      <span class="n">name</span> <span class="p">=</span> <span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
 
+      <span class="c1">// Use FormulaContext.eventCallback for callbacks that have a parameter.</span>
+      <span class="n">onNameChanged</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">eventCallback</span> <span class="p">{</span> <span class="n">newName</span> <span class="p">-&gt;</span>
+        <span class="c1">// Use &quot;newName&quot; to perform a transition</span>
+        <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="n">newName</span><span class="p">))</span>
+      <span class="p">},</span>
 
-<p>We need to return a <code>Transition&lt;State&gt;</code> within each of the callbacks. Transition enables you to specify a new
-state and/or send 0..N messages. It uses Kotlin receiver parameter to provide you with <code>noMessages</code> and <code>message</code>
-utility functions to construct a transition. Take a look at <code>Transition.Factory</code> for all available utilities.</p>
-<p><em>Note</em>: <code>FormulaContext.callback</code> takes no parameters and <code>FormulaContext.eventCallback</code> takes one generic parameter. </p>
-<h3 id="sending-a-message">Sending a message</h3>
-<p>For example, lets say we want to fire analytics event when user clicks a button.</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">UserProfileFormula</span><span class="p">(</span>
-  <span class="k">val</span> <span class="py">userAnalyticsService</span><span class="p">:</span> <span class="n">UserAnalyticsService</span>
-<span class="p">)</span> <span class="p">:</span> <span class="n">Formula</span><span class="p">&lt;...&gt;</span> <span class="p">{</span>
-
-  <span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...):</span> <span class="n">Evaluation</span><span class="p">&lt;</span><span class="n">UserProfileRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
-      <span class="n">renderModel</span> <span class="p">=</span> <span class="n">UserProfileRenderModel</span><span class="p">(</span>
-        <span class="n">onSaveSelected</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
-          <span class="n">message</span><span class="p">(</span><span class="n">userAnalyticsService</span><span class="o">::</span><span class="n">trackSaveSelected</span><span class="p">)</span>
+      <span class="c1">// Use FormulaContext.callback for callbacks with no parameters.</span>
+      <span class="n">onSaveSelected</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
+        <span class="c1">// No state change, sending two messages</span>
+        <span class="n">transition</span> <span class="p">{</span>
+          <span class="n">message</span><span class="p">(</span><span class="n">userService</span><span class="o">::</span><span class="n">updateName</span><span class="p">,</span> <span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+          <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackNameUpdated</span><span class="p">,</span> <span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
         <span class="p">}</span>
-      <span class="p">)</span>
-    <span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">),</span>
+    <span class="n">updates</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
+      <span class="k">val</span> <span class="py">updateNameResponses</span> <span class="p">=</span> <span class="n">RxStream</span><span class="p">.</span><span class="n">fromObservable</span> <span class="p">{</span>
+        <span class="n">userService</span><span class="p">.</span><span class="n">updateNameResponses</span><span class="p">()</span>
+      <span class="p">}</span>
+      <span class="n">events</span><span class="p">(</span><span class="n">updateNameResponses</span><span class="p">)</span> <span class="p">{</span> <span class="n">event</span> <span class="p">-&gt;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">isSuccess</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">// Successful update, let&#39;s ask the parent to close us.</span>
+          <span class="n">message</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">close</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="c1">// Update failed, ask parent to show an error message.</span>
+          <span class="n">message</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">showNotification</span><span class="p">,</span> <span class="n">event</span><span class="p">.</span><span class="n">errorMessage</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>This example is dense, but it shows almost every kind of scenario. Let's go over it.</p>
+<p>To create a message handler, we pass a function that returns a <code>Transition&lt;State&gt;</code>. Formula
+uses transitions to update internal state and/or send messages to other components. Message
+handlers are scoped to the current state. Any time we transition to a new state, evaluate
+is called again and the message handlers are recreated.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Updating state</span>
+<span class="n">context</span><span class="p">.</span><span class="n">eventCallback</span> <span class="p">{</span> <span class="n">newName</span><span class="p">:</span> <span class="n">String</span> <span class="p">-&gt;</span>
+  <span class="c1">// We use kotlin data class copy function</span>
+  <span class="c1">// to create a new state with new name</span>
+  <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="n">newName</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// Updating onSaveSelected to include validation</span>
+<span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">isBlank</span><span class="p">())</span> <span class="p">{</span>
+    <span class="c1">// Sending a single message</span>
+    <span class="n">message</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">showNotification</span><span class="p">,</span> <span class="s">&quot;Name cannot be empty!&quot;</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// No state change, sending two messages</span>
+    <span class="n">transition</span> <span class="p">{</span>
+      <span class="n">message</span><span class="p">(</span><span class="n">userService</span><span class="o">::</span><span class="n">updateName</span><span class="p">,</span> <span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+      <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackNameUpdated</span><span class="p">,</span> <span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 
 
-<p>The main part is the declaration within the <code>context.callback</code> block.</p>
-<div class="codehilite"><pre><span></span><span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
-  <span class="c1">// We do a state transition and declare 0..N messages that we want to execute.</span>
-<span class="p">}</span>
-</pre></div>
-
-
+<p>To ensure safe execution, transition function should not have any side-effects and all impure
+code should be wrapped in a message.</p>
 <h3 id="sending-messages-to-the-parent">Sending messages to the parent</h3>
 <p>To pass events to the parent, we need to first define the callbacks on the <code>Formula.Input</code> class.</p>
 <div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">ItemListInput</span><span class="p">(</span>
@@ -617,18 +589,14 @@ utility functions to construct a transition. Take a look at <code>Transition.Fac
 
 
 <p>Now, we can use the the Message API and the <code>input</code> passed to us in <code>Formula.evaluate</code> to communicate with the parent.</p>
-<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(</span>
-  <span class="n">input</span><span class="p">:</span> <span class="n">ItemListInput</span><span class="p">,</span>
-  <span class="n">state</span><span class="p">:</span> <span class="p">..,</span>
-  <span class="n">context</span><span class="p">:</span> <span class="p">..</span>
-<span class="p">):</span> <span class="n">Evaluation</span><span class="p">&lt;...&gt;</span> <span class="p">{</span>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">ItemListInput</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span> <span class="p">...</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
     <span class="n">renderModel</span> <span class="p">=</span> <span class="n">state</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">item</span> <span class="p">-&gt;</span>
       <span class="n">context</span><span class="p">.</span><span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">id</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">ItemRow</span><span class="p">(</span>
           <span class="n">name</span> <span class="p">=</span> <span class="n">item</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
           <span class="n">onClick</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
-            <span class="c1">// sending a message to `input.onItemSelected` with parameter `item.id`</span>
+            <span class="c1">// Sending a message to the parent that item was selected.</span>
             <span class="n">message</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">onItemSelected</span><span class="p">,</span> <span class="n">item</span><span class="p">.</span><span class="n">id</span><span class="p">)</span>
           <span class="p">}</span>
         <span class="p">)</span>
@@ -639,36 +607,37 @@ utility functions to construct a transition. Take a look at <code>Transition.Fac
 </pre></div>
 
 
-<p><strong>Note:</strong> instead of calling <code>input.onItemSelected(item.id)</code>, we call <code>message(input.onItemSelected, item.id)</code>. This
-allows formula runtime to ensure that parent is in the right state to handle the message.</p>
-<h3 id="sending-a-message-when-formula-is-initialized">Sending a message when Formula is initialized</h3>
-<p>One use case is to track analytics when a screen or component is created.</p>
-<div class="codehilite"><pre><span></span><span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
-  <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onInit</span><span class="p">())</span> <span class="p">{</span>
-    <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackScreenOpen</span><span class="p">)</span>
+<h3 id="formula-events">Formula events</h3>
+<p>There are a few events that every formula can listen to and respond.</p>
+<div class="codehilite"><pre><span></span><span class="n">Evaluation</span><span class="p">(</span>
+  <span class="n">updates</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
+    <span class="c1">// Send a message when formula is initialized</span>
+    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onInit</span><span class="p">())</span> <span class="p">{</span>
+      <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackScreenOpen</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Send a message when formula is terminated</span>
+    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onTerminate</span><span class="p">())</span> <span class="p">{</span>
+      <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackClose</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Send a message when data changes</span>
+    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onData</span><span class="p">(),</span> <span class="n">state</span><span class="p">.</span><span class="n">itemId</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// This will call api.fetchItem for each unique itemId</span>
+      <span class="n">message</span><span class="p">(</span><span class="n">api</span><span class="o">::</span><span class="n">fetchItem</span><span class="p">,</span> <span class="n">it</span><span class="p">)</span>
+    <span class="p">}</span>
   <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<h3 id="sending-a-message-when-formula-is-terminated">Sending a message when Formula is terminated</h3>
-<div class="codehilite"><pre><span></span><span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onTerminate</span><span class="p">())</span> <span class="p">{</span>
-  <span class="n">message</span><span class="p">(</span><span class="n">analytics</span><span class="o">::</span><span class="n">trackClose</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<h3 id="sending-a-message-when-some-data-changes">Sending a message when some data changes</h3>
-<div class="codehilite"><pre><span></span><span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="n">onData</span><span class="p">(),</span> <span class="n">itemId</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">message</span><span class="p">(</span><span class="n">api</span><span class="o">::</span><span class="n">fetchItem</span><span class="p">,</span> <span class="n">itemId</span><span class="p">)</span>
-<span class="p">}</span>
+<span class="p">)</span>
 </pre></div>
 
 
 <h3 id="formula-retains-callbacks">Formula retains callbacks</h3>
-<p>Callbacks retain equality across re-evaluation (such as state changes). By default, we persist the callback in a map
-where each callback is identified by its class type. There a couple of cases when this is not sufficient and you need 
-to explicitly provide a unique <code>key</code>. </p>
+<p>Callbacks retain equality across re-evaluation (such as state changes). The first time formula
+requests a callback, we create it and persist it in the map. Subsequent calls will re-use this
+instance. The instance is disabled and removed when your formula is removed or if you don't
+request this callback within Formula.evaluate block.</p>
+<p>By default, we generate a key for each callback based on the position in code where it is called.
+There are a couple of cases when this is not sufficient and you need to explicitly provide a unique <code>key</code>.</p>
 <h4 id="case-1-declaring-callbacks-within-a-loop">Case 1: Declaring callbacks within a loop</h4>
 <p>For example, if you are mapping list of items and creating a callback within the <code>map</code> function.</p>
 <div class="codehilite"><pre><span></span><span class="c1">// This will not work unless your list of items never changes (removal of item or position change).</span>
@@ -704,7 +673,7 @@ Let's say you have a function that takes FormulaContext and creates a ChildRende
   <span class="k">return</span> <span class="n">ChildRenderModel</span><span class="p">(</span>
     <span class="n">onClick</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{}</span>
   <span class="p">)</span>
-<span class="p">}</span> 
+<span class="p">}</span>
 </pre></div>
 
 
@@ -712,7 +681,7 @@ Let's say you have a function that takes FormulaContext and creates a ChildRende
 <div class="codehilite"><pre><span></span><span class="n">RenderModel</span><span class="p">(</span>
   <span class="c1">// First child is created with no problem</span>
   <span class="n">first</span> <span class="p">=</span> <span class="n">createChildRenderModel</span><span class="p">(</span><span class="n">context</span><span class="p">),</span>
-  <span class="c1">// Calling it again will crash </span>
+  <span class="c1">// Calling it again will crash</span>
   <span class="n">second</span> <span class="p">=</span> <span class="n">createChildRenderModel</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -750,7 +719,7 @@ instance is disabled and removed when your <code>Formula</code> is removed or if
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../input/" title="Using Input" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href=".." title="Overview" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -759,19 +728,19 @@ instance is disabled and removed when your <code>Formula</code> is removed or if
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Using Input
+                Overview
               </span>
             </div>
           </a>
         
         
-          <a href="../composition/" title="Composition" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../async_events/" title="Asynchronous Events" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Composition
+                Asynchronous Events
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

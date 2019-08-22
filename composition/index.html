@@ -228,6 +228,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../events/" title="Event Handling" class="md-nav__link">
+      Event Handling
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
     <a href="../async_events/" title="Asynchronous Events" class="md-nav__link">
       Asynchronous Events
     </a>
@@ -242,18 +254,6 @@
   <li class="md-nav__item">
     <a href="../input/" title="Using Input" class="md-nav__link">
       Using Input
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../messages/" title="Messages" class="md-nav__link">
-      Messages
     </a>
   </li>
 
@@ -442,7 +442,7 @@
 
 
 <p>You can also do the same in your Render View layer.</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">CheckboxRenderView</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">root</span><span class="p">:</span> <span class="n">View</span><span class="p">)</span> <span class="p">:</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">CheckboxRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
+<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">CheckboxRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">View</span><span class="p">)</span> <span class="p">:</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">CheckboxRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">checkbox</span><span class="p">:</span> <span class="n">Checkbox</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">checkbox</span><span class="p">)</span>
 
   <span class="k">override</span> <span class="k">val</span> <span class="py">renderer</span><span class="p">:</span> <span class="n">Renderer</span><span class="p">&lt;</span><span class="n">CheckboxRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">Renderer</span><span class="p">.</span><span class="n">create</span> <span class="p">{</span> <span class="n">model</span> <span class="p">-&gt;</span>
@@ -454,7 +454,7 @@
   <span class="p">}</span> 
 <span class="p">}</span>
 
-<span class="k">class</span> <span class="nc">NotificationSettingsRenderView</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">root</span><span class="p">:</span> <span class="n">View</span><span class="p">)</span> <span class="p">:</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">NotificationSettingsRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
+<span class="k">class</span> <span class="nc">NotificationSettingsRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">View</span><span class="p">)</span> <span class="p">:</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">NotificationSettingsRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">messagePushNotification</span> <span class="p">=</span> <span class="n">CheckboxRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">message_push_checkbox</span><span class="p">))</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">promotionalPushNotifications</span> <span class="p">=</span> <span class="n">CheckboxRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">promotional_push_checkbox</span><span class="p">))</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">marketingEmailNotifications</span> <span class="p">=</span> <span class="n">CheckboxRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">marketing_email_checkbox</span><span class="p">))</span>
@@ -550,7 +550,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../messages/" title="Messages" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../input/" title="Using Input" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -559,7 +559,7 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Messages
+                Using Input
               </span>
             </div>
           </a>
