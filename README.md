@@ -3,6 +3,7 @@ A functional reactive framework for managing state and side effects based on RxJ
 deterministic, composable, testable applications.
 
 [Check documentation](https://instacart.github.io/formula/)
+
 [Check samples](samples)
 
 ## Android Module
