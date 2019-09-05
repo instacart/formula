@@ -8,10 +8,32 @@ import io.reactivex.Observable
 interface RxStream<Message> : Stream<Message> {
     companion object {
         /**
-         * Creates a [Stream] from an [Observable] factory [create] which doesn't take any parameters.
+         * Creates a [Stream] from an [Observable] factory [create].
          *
          * ```
          * events(RxStream.fromObservable { locationManager.updates() }) { event ->
+         *   transition()
+         * }
+         * ```
+         */
+        inline fun <Message> fromObservable(
+            crossinline create: () -> Observable<Message>
+        ): Stream<Message> {
+            return object : RxStream<Message> {
+
+                override fun observable(): Observable<Message> {
+                    return create()
+                }
+
+                override fun key(): Any = Unit
+            }
+        }
+
+        /**
+         * Creates a [Stream] from an [Observable] factory [create].
+         *
+         * ```
+         * events(RxStream.fromObservable(itemId) { repo.fetchItem(itemId) }) { event ->
          *   transition()
          * }
          * ```
@@ -19,7 +41,7 @@ interface RxStream<Message> : Stream<Message> {
          * @param key Used to distinguish this [Stream] from other streams.
          */
         inline fun <Message> fromObservable(
-            key: Any = Unit,
+            key: Any,
             crossinline create: () -> Observable<Message>
         ): Stream<Message> {
             return object : RxStream<Message> {
