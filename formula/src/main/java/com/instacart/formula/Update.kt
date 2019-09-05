@@ -1,27 +1,16 @@
 package com.instacart.formula
 
-import kotlin.reflect.KClass
-
-class Update<Data : Any, Message>(
+class Update<Message>(
     val key: Any,
-    val data: Data,
-    val stream: Stream<Data, Message>,
+    val stream: Stream<Message>,
     initial: (Message) -> Unit
 ) {
-    /**
-     * A way to ensure uniqueness and equality between [Update]s.
-     */
-    data class Key(
-        val data: Any,
-        val type: KClass<*>,
-        val extra: Any? = null
-    )
 
     internal var handler: (Message) -> Unit = initial
     internal var cancelable: Cancelable? = null
 
     internal fun start() {
-        cancelable = stream.start(data) { message ->
+        cancelable = stream.start() { message ->
             handler.invoke(message)
         }
     }
@@ -35,7 +24,7 @@ class Update<Data : Any, Message>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Update<*, *>
+        other as Update<*>
 
         if (key != other.key) return false
 

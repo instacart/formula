@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.Observable
 
@@ -108,7 +109,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*, *>>
+    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*>>
 
     /**
      * Scopes [create] block with a [key].
@@ -130,41 +131,7 @@ abstract class FormulaContext<State> internal constructor(
     class UpdateBuilder<State>(
         @PublishedApi internal val transitionCallback: (Transition<State>) -> Unit
     ) {
-        internal val updates = mutableListOf<Update<*, *>>()
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param stream An instance of [Stream].
-         * @param input An object passed to the [Stream] for instantiation. This can
-         * @param transition Callback invoked when [Stream] sends us a [Message].
-         */
-        inline fun <Data : Any, Message> events(
-            stream: Stream<Data, Message>,
-            input: Data,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ) {
-            events("", stream, input, transition)
-        }
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param key an extra parameter used to distinguish between different streams.
-         * @param stream an instance of [Stream].
-         * @param input An object passed to the [Stream] for instantiation. This can
-         * @param transition Callback invoked when [Stream] sends us a [Message].
-         */
-        inline fun <Data : Any, Message> events(
-            key: String,
-            stream: Stream<Data, Message>,
-            input: Data,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ) {
-            add(createConnection(key, stream, input, transition))
-        }
+        internal val updates = mutableListOf<Update<*>>()
 
         /**
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
@@ -173,24 +140,10 @@ abstract class FormulaContext<State> internal constructor(
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
         inline fun <Message> events(
-            stream: Stream<Unit, Message>,
+            stream: Stream<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events("", stream, transition)
-        }
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param key An extra parameter used to distinguish between streams.
-         */
-        inline fun <Message> events(
-            key: String,
-            stream: Stream<Unit, Message>,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ) {
-            events(key, stream, Unit, transition)
+            add(createConnection(stream, transition))
         }
 
         /**
@@ -201,7 +154,7 @@ abstract class FormulaContext<State> internal constructor(
             observable: Observable<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events("", RxStream.fromObservable { observable }, transition)
+            events(RxStream.fromObservable { observable }, transition)
         }
 
         /**
@@ -215,10 +168,10 @@ abstract class FormulaContext<State> internal constructor(
             observable: Observable<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events(key, RxStream.fromObservable { observable }, transition)
+            events(RxStream.fromObservable(key) { observable }, transition)
         }
 
-        @PublishedApi internal fun add(connection: Update<*, *>) {
+        @PublishedApi internal fun add(connection: Update<*>) {
             if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
             }
@@ -226,20 +179,17 @@ abstract class FormulaContext<State> internal constructor(
             updates.add(connection)
         }
 
-        @PublishedApi internal inline fun <Data : Any, Message> createConnection(
-            key: Any? = null,
-            stream: Stream<Data, Message>,
-            data: Data,
+        @PublishedApi internal inline fun <Message> createConnection(
+            stream: Stream<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ): Update<Data, Message> {
+        ): Update<Message> {
             val callback: (Message) -> Unit = {
                 val value = transition(Transition.Factory, it)
                 transitionCallback(value)
             }
 
             return Update(
-                key = Update.Key(data, callback::class, key),
-                data = data,
+                key = JoinedKey(stream.key(), callback::class),
                 stream = stream,
                 initial = callback
             )

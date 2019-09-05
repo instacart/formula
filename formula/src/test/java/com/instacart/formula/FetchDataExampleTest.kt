@@ -20,22 +20,20 @@ class FetchDataExampleTest {
             }
     }
 
-    class FetchDataStream : RxStream<FetchDataStream.Request, FetchDataStream.Response> {
-        data class Request(val dataId: String)
-
+    class DataRepo {
         data class Response(val id: String, val name: String)
 
-        override fun observable(parameter: Request): Observable<Response> {
-            return Observable.just(Response(id = parameter.dataId, name = "response: ${parameter.dataId}"))
+        fun fetch(id: String) = RxStream.fromObservable(id) {
+            Observable.just(Response(id = id, name = "response: $id"))
         }
     }
 
     class MyFormula : Formula<Unit, MyFormula.State, MyFormula.RenderModel> {
-        private val fetchStream = FetchDataStream()
+        private val dataRepo = DataRepo()
 
         data class State(
             val selectedId: String? = null,
-            val response: FetchDataStream.Response? = null
+            val response: DataRepo.Response? = null
         )
 
         class RenderModel(
@@ -59,7 +57,7 @@ class FetchDataExampleTest {
                 ),
                 updates = context.updates {
                     if (state.selectedId != null) {
-                        events(fetchStream, FetchDataStream.Request(state.selectedId)) { response ->
+                        events(dataRepo.fetch(state.selectedId)) { response ->
                             state.copy(response = response).noMessages()
                         }
                     }

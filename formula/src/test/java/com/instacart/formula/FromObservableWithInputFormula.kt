@@ -22,7 +22,10 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
         return Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                events(RxStream.withParameter(repo::fetchItem), input.itemId) {
+                val fetchItem = RxStream.fromObservable(key = input.itemId) {
+                    repo.fetchItem(input.itemId)
+                }
+                events(fetchItem) {
                     message(input.onItem, it)
                 }
             }

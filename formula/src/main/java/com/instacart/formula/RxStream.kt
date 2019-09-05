@@ -5,7 +5,7 @@ import io.reactivex.Observable
 /**
  * Formula [Stream] adapter to enable RxJava use.
  */
-interface RxStream<Parameter, Message> : Stream<Parameter, Message> {
+interface RxStream<Message> : Stream<Message> {
     companion object {
         /**
          * Creates a [Stream] from an [Observable] factory [create] which doesn't take any parameters.
@@ -15,41 +15,28 @@ interface RxStream<Parameter, Message> : Stream<Parameter, Message> {
          *   transition()
          * }
          * ```
+         *
+         * @param key Used to distinguish this [Stream] from other streams.
          */
         inline fun <Message> fromObservable(
+            key: Any = Unit,
             crossinline create: () -> Observable<Message>
-        ): Stream<Unit, Message> {
-            return object : RxStream<Unit, Message> {
-                override fun observable(parameter: Unit): Observable<Message> {
+        ): Stream<Message> {
+            return object : RxStream<Message> {
+
+                override fun observable(): Observable<Message> {
                     return create()
                 }
-            }
-        }
 
-        /**
-         * Creates a [Stream] from an [Observable] factory [create] which takes a single [Parameter].
-         *
-         * ```
-         * events(RxStream.withParameter(itemRepository::fetchItem), itemId) {
-         *   transition()
-         * }
-         * ```
-         */
-        inline fun <Parameter, Message> withParameter(
-            crossinline create: (Parameter) -> Observable<Message>
-        ): Stream<Parameter, Message> {
-            return object : RxStream<Parameter, Message> {
-                override fun observable(parameter: Parameter): Observable<Message> {
-                    return create(parameter)
-                }
+                override fun key(): Any = key
             }
         }
     }
 
-    fun observable(parameter: Parameter): Observable<Message>
+    fun observable(): Observable<Message>
 
-    override fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable? {
-        val disposable = observable(parameter).subscribe(send)
+    override fun start(send: (Message) -> Unit): Cancelable? {
+        val disposable = observable().subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }

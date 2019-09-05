@@ -2,7 +2,7 @@ package com.instacart.formula
 
 class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderModel> {
 
-    val incrementEvents = IncrementRxStream()
+    val incrementEvents = IncrementRelay()
 
     data class State(
         val listenForEvents: Boolean = false,
@@ -25,9 +25,9 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
         return Evaluation(
             updates = context.updates {
                 if (state.listenForEvents) {
-                    events(incrementEvents, transition = {
+                    events(incrementEvents.stream()) {
                         state.copy(count = state.count + 1).noMessages()
-                    })
+                    }
                 }
             },
             renderModel = RenderModel(

@@ -19,6 +19,11 @@ class ManyEmissionStreamTest {
     }
 
     class TestFormula : Formula<Unit, Int, Int> {
+        private val stream = RxStream.fromObservable {
+            val values = 1..EMISSION_COUNT
+            Observable.fromIterable(values)
+        }
+
         override fun initialState(input: Unit): Int = 0
 
         override fun evaluate(
@@ -29,19 +34,12 @@ class ManyEmissionStreamTest {
 
             return Evaluation(
                 updates = context.updates {
-                    events(MyStream()) {
+                    events(stream) {
                         transition(state + 1)
                     }
                 },
                 renderModel = state
             )
-        }
-    }
-
-    class MyStream : RxStream<Unit, Int> {
-        override fun observable(parameter: Unit): Observable<Int> {
-            val values = 1..EMISSION_COUNT
-            return Observable.fromIterable(values)
         }
     }
 }
