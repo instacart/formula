@@ -33,8 +33,9 @@ interface Stream<Message> {
         }
 
         /**
-         * Emits a message when [Stream] is initialized or when [data] has changed. Use this stream to send a message
-         * with latest [Data] value.
+         * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
+         *
+         * Use this stream to send a message with latest [Data] value.
          * ```
          * events(Stream.onData(itemId)) {
          *   message(api::fetchItem, itemId)
