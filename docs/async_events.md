@@ -30,8 +30,8 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
 
 Formula uses a `Stream` interface to define an asynchronous event producers/sources.
 ```kotlin
-interface Stream<Parameter, Message> {
-  fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable?
+interface Stream<Message> {
+  fun start(send: (Message) -> Unit): Cancelable?
 }
 ```
 
@@ -81,8 +81,8 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
   ): Evaluation<RenderModel> {
     return Evaluation(
       updates = context.updates {
-        val fetchTask = RxStream.withParameter(taskRepo::fetchTask)
-        events(fetchTask, input.taskId) { taskResponse ->
+        val fetchTask = RxStream.fromObservable(key = input.taskId) { taskRepo.fetchTask(input.taskId) }
+        events(fetchTask) { taskResponse ->
           transition(state.copy(task = taskResponse))
         }
       }
@@ -91,40 +91,8 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
 }
 ```
 
-We can also extend `RxStream`:
-```kotlin
-class FetchTaskStream(val taskRepo: TaskRepo): RxStream<Request, Task> {
-
-  data class Request(val taskId: String)
-
-  override fun observable(parameter: Request): Observable<Task> {
-    return taskRepo.fetchTask(parameter.taskId)
-  }
-}
-```
-
-And then update the formula to:
-```kotlin
-class TaskFormula(val fetchTask: FetchTasktream): Formula {
-
-  override fun evaluate(
-    input: Input,
-    state: State,
-    context: FormulaContext<..>
-  ): Evaluation<RenderModel> {
-    return Evaluation(
-      updates = context.updates {
-        events(fetchTask, FetchTaskStream.Request(input.itemId)) { taskResponse ->
-          transition(state.copy(task = taskResponse))
-        }
-      }
-    )
-  }
-}
-```
-
-Formula will call `Stream.start` with `input.itemId`. If `itemId` changes, Formula will cancel the previous instance
-of the `Stream` and call `Stream.start` with new `itemId.`
+The `key` parameter enables us to distinguish between different streams. If `input.taskId` changes, we will
+cancel the currently running `Stream` and start a new one.
 
 ```
 Note: we are not handling errors in this example. The best practice is to emit errors as data using the onNext instead
@@ -134,8 +102,8 @@ of emitting them through onError.
 ### Extending Stream Interface
 If you need to use a different mechanism for asynchronous events, you can extend `Stream` interface.
 ```kotlin
-interface Stream<Parameter, Message> {
-  fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable?
+interface Stream<Message> {
+  fun start(send: (Message) -> Unit): Cancelable?
 }
 ```
 
@@ -144,9 +112,9 @@ For example, let's say we want to track network status (I'm going to use mock ne
 ```kotlin
 class NetworkStatusStream(
   val manager: NetworkStatusManager
-) : Stream<Unit, NetworkStatus> {
+) : Stream<NetworkStatus> {
 
-  override fun start(parameter: Unit, send: (NetworkStatus) -> Unit): Cancelable? {
+  override fun start(send: (NetworkStatus) -> Unit): Cancelable? {
     val listener = object: NetworkStatusListener {
       override fun onNetworkStatusChanged(status: NetworkStatus) = send(status)
     }

@@ -3,12 +3,10 @@ package com.instacart.formula
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
-class IncrementRxStream : RxStream<Unit, Unit> {
+class IncrementRelay {
     private val relay = PublishRelay.create<Unit>()
 
-    override fun observable(parameter: Unit): Observable<Unit> {
-        return relay
-    }
+    fun stream() = RxStream.fromObservable { relay }
 
     fun triggerIncrement() = relay.accept(Unit)
 }

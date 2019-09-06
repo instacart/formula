@@ -1,7 +1,5 @@
 package com.instacart.formula
 
-import io.reactivex.Observable
-
 /**
  * A [Stream] defines an asynchronous event(s).
  *
@@ -16,10 +14,9 @@ import io.reactivex.Observable
  * )
  * ```
  *
- * @param Parameter Type of parameter that is used to initialize the stream. Use [Unit] if the stream doesn't require any parameters to run.
  * @param Message A type of messages that the stream produces.
  */
-interface Stream<Parameter, Message> {
+interface Stream<Message> {
     companion object {
 
         /**
@@ -30,23 +27,23 @@ interface Stream<Parameter, Message> {
          *   message(analytics::trackViewEvent)
          * }
          */
-        fun onInit(): Stream<Unit, Unit> {
+        fun onInit(): Stream<Unit> {
             @Suppress("UNCHECKED_CAST")
-            return StartMessageStream as Stream<Unit, Unit>
+            return StartMessageStream(Unit)
         }
 
         /**
-         * Emits a message when [Stream] is initialized or [Data] has changed. Use this stream to send a message
-         * with latest [Data] value.
+         * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
+         *
+         * Use this stream to send a message with latest [Data] value.
          * ```
-         * events(Stream.onData(), itemId) {
+         * events(Stream.onData(itemId)) {
          *   message(api::fetchItem, itemId)
          * }
          * ```
          */
-        fun <Data> onData(): Stream<Data, Data> {
-            @Suppress("UNCHECKED_CAST")
-            return StartMessageStream as Stream<Data, Data>
+        fun <Data : Any> onData(data: Data): Stream<Data> {
+            return StartMessageStream(data)
         }
 
         /**
@@ -60,7 +57,7 @@ interface Stream<Parameter, Message> {
          * Note that transitions to new state will be discarded because [Formula] is terminated. This is best to
          * use to notify other services/analytics of [Formula] termination.
          */
-        fun onTerminate(): Stream<Unit, Unit> {
+        fun onTerminate(): Stream<Unit> {
             return TerminateMessageStream
         }
     }
@@ -71,26 +68,38 @@ interface Stream<Parameter, Message> {
      * @param send Use this callback to pass messages back to [Formula].
      *             Note: you need to call this on the main thread.
      */
-    fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable?
+    fun start(send: (Message) -> Unit): Cancelable?
+
+    /**
+     * Used to distinguish between different types of Streams.
+     */
+    fun key(): Any
 }
 
 /**
  * Emits a message as soon as [Stream] is initialized.
  */
-internal object StartMessageStream : Stream<Any, Any> {
-    override fun start(parameter: Any, send: (Any) -> Unit): Cancelable? {
-        send(parameter)
+internal class StartMessageStream<Data : Any>(
+    private val data: Data
+) : Stream<Data> {
+
+    override fun start(send: (Data) -> Unit): Cancelable? {
+        send(data)
         return null
     }
+
+    override fun key(): Any = data
 }
 
 /**
  * Emits a message when [Formula] is terminated.
  */
-internal object TerminateMessageStream : Stream<Unit, Unit> {
-    override fun start(parameter: Unit, send: (Unit) -> Unit): Cancelable? {
+internal object TerminateMessageStream : Stream<Unit> {
+    override fun start(send: (Unit) -> Unit): Cancelable? {
         return Cancelable {
-            send(parameter)
+            send(Unit)
         }
     }
+
+    override fun key(): Any = Unit
 }

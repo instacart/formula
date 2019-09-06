@@ -386,11 +386,11 @@ class FormulaRuntimeTest {
     @Test
     fun `same stream declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(EmptyStream()) {
+            events(EmptyStream.init()) {
                 transition(Unit)
             }
 
-            events(EmptyStream()) {
+            events(EmptyStream.init()) {
                 transition(Unit)
             }
         }
@@ -422,7 +422,7 @@ class FormulaRuntimeTest {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyStream()) {
+                events(EmptyStream.init()) {
                     none()
                 }
             }
@@ -438,7 +438,7 @@ class FormulaRuntimeTest {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events("$it", EmptyStream()) {
+                events(EmptyStream.init(it)) {
                     none()
                 }
             }
@@ -473,11 +473,11 @@ class FormulaRuntimeTest {
     fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Stream.onData(), it) {
+            events(Stream.onData(it)) {
                 message { executed += 1 }
             }
 
-            events(Stream.onData(), it) {
+            events(Stream.onData(it)) {
                 message { executed += 1 }
             }
         }

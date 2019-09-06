@@ -29,7 +29,7 @@ class FormulaContextImpl<State> internal constructor(
         transitionCallback.invoke(transition)
     }
 
-    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*, *>> {
+    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*>> {
         ensureNotRunning()
         val builder = UpdateBuilder(transitionCallback)
         builder.init()

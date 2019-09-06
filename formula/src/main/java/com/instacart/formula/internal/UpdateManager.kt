@@ -12,14 +12,14 @@ internal class UpdateManager(
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private val updates: LinkedHashSet<Update<*, *>> = LinkedHashSet()
+    private val updates: LinkedHashSet<Update<*>> = LinkedHashSet()
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
      * terminated streams.
      */
     @Suppress("UNCHECKED_CAST")
-    fun updateEventListeners(new: List<Update<*, *>>) {
+    fun updateEventListeners(new: List<Update<*>>) {
         updates.forEach { existing ->
             val update = new.firstOrNull { it == existing }
             if (update != null) {
@@ -33,7 +33,7 @@ internal class UpdateManager(
     /**
      * Returns true if there was a transition while updating streams.
      */
-    fun terminateOld(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
+    fun terminateOld(new: List<Update<*>>, transitionNumber: Long): Boolean {
         val iterator = updates.iterator()
         while (iterator.hasNext()) {
             val existing = iterator.next()
@@ -51,7 +51,7 @@ internal class UpdateManager(
         return false
     }
 
-    fun startNew(new: List<Update<*, *>>, transitionNumber: Long): Boolean {
+    fun startNew(new: List<Update<*>>, transitionNumber: Long): Boolean {
         new.forEach { update ->
             if (!updates.contains(update)) {
                 updates.add(update)
@@ -75,7 +75,7 @@ internal class UpdateManager(
         }
     }
 
-    private fun tearDownStream(stream: Update<*, *>) {
+    private fun tearDownStream(stream: Update<*>) {
         stream.tearDown()
         stream.handler = NO_OP
     }

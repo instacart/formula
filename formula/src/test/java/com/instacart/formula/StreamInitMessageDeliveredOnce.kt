@@ -13,7 +13,7 @@ object StreamInitMessageDeliveredOnce {
             return Evaluation(
                 renderModel = Unit,
                 updates = context.updates {
-                    events("init key", Stream.onInit()) {
+                    events(Stream.onInit()) {
                         message {
                             timesInitializedCalled += 1
                         }

@@ -29,7 +29,7 @@ class DynamicStreamSubject {
                 renderModel = Unit,
                 updates = context.updates {
                     input.forEach { key ->
-                        events(key, stream(key)) {
+                        events(stream(key)) {
                             none()
                         }
                     }
@@ -37,14 +37,16 @@ class DynamicStreamSubject {
             )
         }
 
-        private fun stream(key: String): Stream<Unit, Unit> {
-            return object : Stream<Unit, Unit> {
-                override fun start(parameter: Unit, send: (Unit) -> Unit): Cancelable? {
+        private fun stream(key: String): Stream<Unit> {
+            return object : Stream<Unit> {
+                override fun start(send: (Unit) -> Unit): Cancelable? {
                     running.add(key)
                     return Cancelable {
                         running.remove(key)
                     }
                 }
+
+                override fun key(): Any = key
             }
         }
     }

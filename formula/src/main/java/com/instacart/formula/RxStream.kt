@@ -5,10 +5,10 @@ import io.reactivex.Observable
 /**
  * Formula [Stream] adapter to enable RxJava use.
  */
-interface RxStream<Parameter, Message> : Stream<Parameter, Message> {
+interface RxStream<Message> : Stream<Message> {
     companion object {
         /**
-         * Creates a [Stream] from an [Observable] factory [create] which doesn't take any parameters.
+         * Creates a [Stream] from an [Observable] factory [create].
          *
          * ```
          * events(RxStream.fromObservable { locationManager.updates() }) { event ->
@@ -18,38 +18,47 @@ interface RxStream<Parameter, Message> : Stream<Parameter, Message> {
          */
         inline fun <Message> fromObservable(
             crossinline create: () -> Observable<Message>
-        ): Stream<Unit, Message> {
-            return object : RxStream<Unit, Message> {
-                override fun observable(parameter: Unit): Observable<Message> {
+        ): Stream<Message> {
+            return object : RxStream<Message> {
+
+                override fun observable(): Observable<Message> {
                     return create()
                 }
+
+                override fun key(): Any = Unit
             }
         }
 
         /**
-         * Creates a [Stream] from an [Observable] factory [create] which takes a single [Parameter].
+         * Creates a [Stream] from an [Observable] factory [create].
          *
          * ```
-         * events(RxStream.withParameter(itemRepository::fetchItem), itemId) {
+         * events(RxStream.fromObservable(itemId) { repo.fetchItem(itemId) }) { event ->
          *   transition()
          * }
          * ```
+         *
+         * @param key Used to distinguish this [Stream] from other streams.
          */
-        inline fun <Parameter, Message> withParameter(
-            crossinline create: (Parameter) -> Observable<Message>
-        ): Stream<Parameter, Message> {
-            return object : RxStream<Parameter, Message> {
-                override fun observable(parameter: Parameter): Observable<Message> {
-                    return create(parameter)
+        inline fun <Message> fromObservable(
+            key: Any,
+            crossinline create: () -> Observable<Message>
+        ): Stream<Message> {
+            return object : RxStream<Message> {
+
+                override fun observable(): Observable<Message> {
+                    return create()
                 }
+
+                override fun key(): Any = key
             }
         }
     }
 
-    fun observable(parameter: Parameter): Observable<Message>
+    fun observable(): Observable<Message>
 
-    override fun start(parameter: Parameter, send: (Message) -> Unit): Cancelable? {
-        val disposable = observable(parameter).subscribe(send)
+    override fun start(send: (Message) -> Unit): Cancelable? {
+        val disposable = observable().subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }
