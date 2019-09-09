@@ -1,6 +1,7 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Formula
+import com.instacart.formula.Stream
 import io.reactivex.Observable
 
 /**
@@ -38,3 +39,6 @@ fun <State, RenderModel : Any, F: Formula<Unit, State, RenderModel>> F.test(
     builder: ChildFormulaRegistryBuilder.() -> Unit = {}
 ) = test(Unit, builder)
 
+
+
+fun <Message> Stream<Message>.test() = TestStreamObserver(this)
