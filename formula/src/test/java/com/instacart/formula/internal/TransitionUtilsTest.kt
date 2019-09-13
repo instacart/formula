@@ -21,4 +21,12 @@ class TransitionUtilsTest {
         val transition = Transition<String>(messages = listOf(UnitMessage {}))
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
+
+    @Test fun `simple transition create`() {
+        val transition = Transition.create {
+            transition("new state")
+        }
+
+        assertThat(transition.state).isEqualTo("new state")
+    }
 }
