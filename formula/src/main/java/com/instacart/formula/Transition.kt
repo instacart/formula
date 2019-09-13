@@ -1,7 +1,5 @@
 package com.instacart.formula
 
-import com.instacart.formula.Transition.Factory.noMessages
-
 /**
  * Defines an intent to transition by emitting a new [State] and 0..N number of messages.
  *
@@ -12,6 +10,21 @@ data class Transition<out State> @PublishedApi internal constructor(
     val state: State? = null,
     val messages: List<Message> = emptyList()
 ) {
+    companion object {
+        /**
+         * A convenience method to define transitions.
+         *
+         * ```
+         * fun nameChanged(state: FormState, newName: String) = Transition.create {
+         *   transition(state.copy(name = newName))
+         * }
+         * ```
+         */
+        inline fun <State> create(init: Factory.() -> Transition<State>): Transition<State> {
+            return init(Factory)
+        }
+    }
+
     object Factory {
         private val NONE = Transition<Any>()
 
