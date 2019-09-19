@@ -384,7 +384,7 @@ class MyApp : Application() {
                                 "$time seconds"
                             }
                             
-                        // update ensures that if configuration changes happen that
+                        // update ensures that if configuration changes happen then
                         // we send the last state to the new activity instance.    
                         update(timerState, MyActivity::renderTime)
                     }

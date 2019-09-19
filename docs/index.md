@@ -3,7 +3,7 @@ deterministic, composable, testable applications.
 
 ### Quick example
 To demonstrate some of the concepts we will make a simple counter application. It shows the current count and 
-has two buttons to increment and decrement itq.
+has two buttons to increment and decrement it.
 
 One of the best practises when working with Formula is to first think what the UI needs for rendering and what 
 actions the user will be able to take. This concept is called a `RenderModel` and is represented by a Kotlin data class.
@@ -151,7 +151,7 @@ class MyActivity : FormulaAppCompatActivity() {
     counterRenderView = CounterRenderView(findViewById(R.id.counter))
   }
   
-  fun render(model: CounterRenderView) {
+  fun render(model: CounterRenderModel) {
     counterRenderView.renderer.render(model)
   }
 }
