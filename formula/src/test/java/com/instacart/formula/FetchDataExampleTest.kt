@@ -2,14 +2,15 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
+import com.instacart.formula.utils.TestUtils
 import io.reactivex.Observable
 import org.junit.Test
 
 class FetchDataExampleTest {
 
     @Test fun `fake network example`() {
-
-        MyFormula()
+        MyFormula
+            .create()
             .test()
             .apply {
                 values().last().onChangeId("1")
@@ -28,9 +29,7 @@ class FetchDataExampleTest {
         }
     }
 
-    class MyFormula : Formula<Unit, MyFormula.State, MyFormula.RenderModel> {
-        private val dataRepo = DataRepo()
-
+    object MyFormula {
         data class State(
             val selectedId: String? = null,
             val response: DataRepo.Response? = null
@@ -41,29 +40,25 @@ class FetchDataExampleTest {
             val onChangeId: (String) -> Unit
         )
 
-        override fun initialState(input: Unit): State = State()
-
-        override fun evaluate(
-            input: Unit,
-            state: State,
-            context: FormulaContext<State>
-        ): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
-                    title = state.response?.name ?: "",
-                    onChangeId = context.eventCallback { id ->
-                        state.copy(selectedId = id).noMessages()
-                    }
-                ),
-                updates = context.updates {
-                    if (state.selectedId != null) {
-                        events(dataRepo.fetch(state.selectedId)) { response ->
-                            state.copy(response = response).noMessages()
+        fun create(): Formula<Unit, State, RenderModel> {
+            val dataRepo = DataRepo()
+            return TestUtils.create(State()) { state, context ->
+                Evaluation(
+                    renderModel = RenderModel(
+                        title = state.response?.name ?: "",
+                        onChangeId = context.eventCallback { id ->
+                            state.copy(selectedId = id).noMessages()
+                        }
+                    ),
+                    updates = context.updates {
+                        if (state.selectedId != null) {
+                            events(dataRepo.fetch(state.selectedId)) { response ->
+                                state.copy(response = response).noMessages()
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
-
 }

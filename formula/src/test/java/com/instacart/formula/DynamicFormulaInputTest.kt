@@ -1,20 +1,19 @@
 package com.instacart.formula
 
+import com.instacart.formula.utils.TestUtils
 import io.reactivex.Observable
 import org.junit.Test
 
 class DynamicFormulaInputTest {
 
     @Test fun `using dynamic input`() {
-        TestFormula()
+        formula()
             .start(input = Observable.just(1, 2, 3))
             .test()
             .assertValues(1, 2, 3)
     }
 
-    class TestFormula:  StatelessFormula<Int, Int>() {
-        override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
-            return Evaluation(renderModel = input)
-        }
+    fun formula() = TestUtils.stateless { input: Int, context ->
+        Evaluation(renderModel = input)
     }
 }

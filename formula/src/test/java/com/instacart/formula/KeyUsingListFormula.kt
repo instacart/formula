@@ -1,12 +1,9 @@
 package com.instacart.formula
 
 import com.instacart.formula.test.test
+import com.instacart.formula.utils.TestUtils
 
-class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.RenderModel> {
-    companion object {
-        fun test(items: List<String>) = KeyUsingListFormula().test(Input(items))
-    }
-
+object KeyUsingListFormula {
     data class State(val items: List<String>)
 
     data class RenderModel(val items: List<ItemRenderModel>)
@@ -18,22 +15,18 @@ class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormu
 
     data class Input(val items: List<String>)
 
-    override fun initialState(input: Input) = State(input.items)
+    fun test(items: List<String>) = create().test(Input(items))
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<RenderModel> {
-
-        val items = state.items.map { itemName ->
-            context.key(itemName) {
-                ItemRenderModel(itemName, onDeleteSelected = context.callback {
-                    state.copy(items = state.items.minus(itemName)).noMessages()
-                })
+    private fun create() = TestUtils
+        .lazyState(initialState = { input: Input -> State(input.items) }) { input, state, context ->
+            val items = state.items.map { itemName ->
+                context.key(itemName) {
+                    ItemRenderModel(itemName, onDeleteSelected = context.callback {
+                        state.copy(items = state.items.minus(itemName)).noMessages()
+                    })
+                }
             }
-        }
 
-        return Evaluation(renderModel = RenderModel(items))
-    }
+            Evaluation(renderModel = RenderModel(items))
+        }
 }

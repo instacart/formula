@@ -1,12 +1,13 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.utils.TestUtils
 import org.junit.Test
 
 class ChildrenRemovalTest {
 
     @Test fun `remove all children`() {
-        ParentFormula()
+        createParent()
             .start(Unit)
             .test()
             .apply {
@@ -17,7 +18,7 @@ class ChildrenRemovalTest {
 
     @Test fun `child side effects are performed after removal`() {
         var timesLoggedCalled = 0
-        ParentFormula(logExit = { timesLoggedCalled += 1 })
+        createParent(logExit = { timesLoggedCalled += 1 })
             .start(Unit)
             .test()
             .apply {
@@ -28,65 +29,45 @@ class ChildrenRemovalTest {
             }
     }
 
-    class ParentFormula(
-        private val logExit: () -> Unit = {}
-    ) : Formula<Unit, List<Int>, ParentFormula.RenderModel> {
-        class RenderModel(
-            val children: List<ChildFormula.RenderModel>,
-            val onClearAll: () -> Unit
-        )
+    class ParentRenderModel(
+        val children: List<ChildRenderModel>,
+        val onClearAll: () -> Unit
+    )
 
-        override fun initialState(input: Unit) = listOf(1, 2, 3)
-
-        override fun evaluate(
-            input: Unit,
-            state: List<Int>,
-            context: FormulaContext<List<Int>>
-        ): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
-                    children = state.map { id ->
-                        context
-                            .child("child-$id", ChildFormula(logExit))
-                            .input(ChildFormula.Input(
-                                exit = context.callback("exit-$id") {
-                                    transition(state.minus(id))
-                                }
-                            ))
-                    },
-                    onClearAll = context.callback {
-                        transition(emptyList())
-                    }
-                )
+    fun createParent(
+        logExit: () -> Unit = {}
+    ) = TestUtils.create(listOf(1, 2, 3)) { state, context ->
+        Evaluation(
+            renderModel = ParentRenderModel(
+                children = state.map { id ->
+                    context
+                        .child("child-$id", childFormula(logExit))
+                        .input(ChildInput(
+                            exit = context.callback("exit-$id") {
+                                transition(state.minus(id))
+                            }
+                        ))
+                },
+                onClearAll = context.callback {
+                    transition(emptyList())
+                }
             )
-        }
+        )
     }
 
-    class ChildFormula(
-        val logExit: () -> Unit
-    ) : Formula<ChildFormula.Input, Unit, ChildFormula.RenderModel> {
+    data class ChildInput(val exit: () -> Unit)
+    data class ChildRenderModel(val onExit: () -> Unit)
 
-        class Input(
-            val exit: () -> Unit
-        )
-
-        class RenderModel(
-            val onExit: () -> Unit
-        )
-
-        override fun initialState(input: Input) = Unit
-
-        override fun evaluate(input: Input, state: Unit, context: FormulaContext<Unit>): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
-                    onExit = context.callback {
-                        state.withMessages {
-                            message(input.exit)
-                            message(logExit)
-                        }
+    fun childFormula(logExit: () -> Unit) = TestUtils.stateless { input: ChildInput, context ->
+        Evaluation(
+            renderModel = ChildRenderModel(
+                onExit = context.callback {
+                    transition {
+                        message(input.exit)
+                        message(logExit)
                     }
-                )
+                }
             )
-        }
+        )
     }
 }

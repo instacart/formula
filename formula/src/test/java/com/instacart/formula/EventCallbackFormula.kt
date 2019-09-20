@@ -1,16 +1,16 @@
 package com.instacart.formula
 
-class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.RenderModel> {
+import com.instacart.formula.utils.TestUtils
+
+object EventCallbackFormula {
 
     data class RenderModel(
         val state: String,
         val changeState: (String) -> Unit
     )
 
-    override fun initialState(input: Unit): String = ""
-
-    override fun evaluate(input: Unit, state: String, context: FormulaContext<String>): Evaluation<RenderModel> {
-        return Evaluation(
+    fun create() = TestUtils.create("") { state, context ->
+        Evaluation(
             renderModel = RenderModel(
                 state = state,
                 changeState = context.eventCallback { newState ->

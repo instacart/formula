@@ -40,7 +40,7 @@ data class Transition<out State> @PublishedApi internal constructor(
          * Creates a transition to a new [State] and emits messages added within [buildMessages] block.
          */
         inline fun <State> transition(
-            state: State?,
+            state: State? = null,
             buildMessages: MessageBuilder.() -> Unit
         ): Transition<State> {
             val messages = MessageBuilder().apply(buildMessages).list

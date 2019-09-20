@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth
+import com.instacart.formula.utils.TestUtils
 import io.reactivex.Observable
 import org.junit.Test
 
@@ -8,11 +9,9 @@ class FakeDbSideEffectTest {
 
     @Test fun `fake saving to db test`() {
         val saveCalls = mutableListOf<String>()
-        TestFormula(
+        formula(
             nameChanges = Observable.just("first", "second", "third", "third"),
-            saveToDb = {
-                saveCalls.add(it)
-            }
+            saveToDb = { saveCalls.add(it) }
         )
             .start(Unit)
             .test()
@@ -21,26 +20,21 @@ class FakeDbSideEffectTest {
         Truth.assertThat(saveCalls).containsExactly("first", "second", "third", "third")
     }
 
-    class TestFormula(
-        private val nameChanges: Observable<String>,
-        private val saveToDb: (name: String) -> Unit
-    ) : Formula<Unit, TestFormula.State, String> {
+    data class State(val name: String)
 
-        data class State(val name: String)
-
-        override fun initialState(input: Unit): State = State(name = "")
-
-        override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<String> {
-            return Evaluation(
-                renderModel = state.name,
-                updates = context.updates {
-                    events(nameChanges) { newName ->
-                        transition(state.copy(name = newName)) {
-                            message(saveToDb, newName)
-                        }
+    fun formula (
+        nameChanges: Observable<String>,
+        saveToDb: (name: String) -> Unit
+    ) = TestUtils.create(initialState = State(name = "")) { state, context ->
+        Evaluation(
+            renderModel = state.name,
+            updates = context.updates {
+                events(nameChanges) { newName ->
+                    transition(state.copy(name = newName)) {
+                        message(saveToDb, newName)
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }

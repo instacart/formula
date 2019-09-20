@@ -4,10 +4,10 @@ import com.google.common.truth.Truth
 import com.instacart.formula.test.test
 
 class ChildRemovedOnMessage {
-    private val subject = OptionalChildFormula(
+    private val subject = OptionalChildFormula.create(
         child = MessageFormula(),
         childInput = { state ->
-            MessageFormula.Input(
+            MessageInput(
                 messageHandler = eventCallback {
                     state.copy(showChild = false).noMessages()
                 }

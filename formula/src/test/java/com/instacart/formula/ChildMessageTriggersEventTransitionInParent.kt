@@ -1,11 +1,10 @@
 package com.instacart.formula
 
+import com.instacart.formula.utils.TestUtils
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
 object ChildMessageTriggersEventTransitionInParent {
-    fun formula() = TestFormula()
-
     class Service {
         private val relay: PublishRelay<Unit> = PublishRelay.create()
 
@@ -18,24 +17,17 @@ object ChildMessageTriggersEventTransitionInParent {
         }
     }
 
-    class TestFormula : Formula<Unit, Int, TestFormula.RenderModel> {
-        private val service = Service()
-        private val childFormula = SideEffectFormula(service::trigger)
+    data class TestRenderModel(
+        val count: Int,
+        val child: SideEffectFormula.RenderModel
+    )
 
-        class RenderModel(
-            val count: Int,
-            val child: SideEffectFormula.RenderModel
-        )
-
-        override fun initialState(input: Unit): Int = 0
-
-        override fun evaluate(
-            input: Unit,
-            state: Int,
-            context: FormulaContext<Int>
-        ): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
+    fun formula(): Formula<Unit, Int, TestRenderModel> {
+        val service = Service()
+        val childFormula = SideEffectFormula.create(service::trigger)
+        return TestUtils.create(0) { input, state, context ->
+            Evaluation(
+                renderModel = TestRenderModel(
                     count = state,
                     child = context.child(childFormula).input(Unit)
                 ),

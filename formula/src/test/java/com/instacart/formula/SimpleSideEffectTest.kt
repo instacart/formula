@@ -2,15 +2,17 @@ package com.instacart.formula
 
 import com.instacart.formula.test.messages.TestCallback
 import com.instacart.formula.test.test
+import com.instacart.formula.utils.TestUtils
 import io.reactivex.Observable
 import org.junit.Test
 
 class SimpleSideEffectTest {
 
-    @Test fun `side effect test`() {
+    @Test
+    fun `side effect test`() {
         val intRange = 1..100
         val gameOverCallback = TestCallback()
-        TestFormula(
+        create(
             increment = Observable.fromIterable(intRange.map { Unit }),
             onGameOver = gameOverCallback
         ).test()
@@ -18,29 +20,25 @@ class SimpleSideEffectTest {
         gameOverCallback.assertTimesCalled(1)
     }
 
-    class TestFormula(
-        private val increment: Observable<Unit>,
-        private val onGameOver: () -> Unit
-    ) : Formula<Unit, TestFormula.State, Int> {
-        data class State(val count: Int)
+    data class State(val count: Int)
 
-        override fun initialState(input: Unit): State = State(count = 0)
+    fun create(
+        increment: Observable<Unit>,
+        onGameOver: () -> Unit
+    ) = TestUtils.create(State(0)) { state, context ->
+        Evaluation(
+            renderModel = state.count,
+            updates = context.updates {
+                events(increment) {
+                    val updated = state.copy(count = state.count + 1)
 
-        override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<Int> {
-            return Evaluation(
-                renderModel = state.count,
-                updates = context.updates {
-                    events(increment) {
-                        val updated = state.copy(count = state.count + 1)
-
-                        if (updated.count == 5) {
-                            updated.withMessage(onGameOver)
-                        } else {
-                            updated.noMessages()
-                        }
+                    if (updated.count == 5) {
+                        updated.withMessage(onGameOver)
+                    } else {
+                        updated.noMessages()
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }

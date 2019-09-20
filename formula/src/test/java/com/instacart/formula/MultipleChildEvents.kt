@@ -1,8 +1,8 @@
 package com.instacart.formula
 
 object MultipleChildEvents {
-    fun formula() = HasChildFormula(MessageFormula()) {
-        MessageFormula.Input(messageHandler = eventCallback {
+    fun formula() = HasChildFormula.create(MessageFormula()) {
+        MessageInput(messageHandler = eventCallback {
             transition(it)
         })
     }

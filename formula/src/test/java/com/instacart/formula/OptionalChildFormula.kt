@@ -1,15 +1,8 @@
 package com.instacart.formula
 
-class OptionalChildFormula<ChildInput, ChildRenderModel>(
-    private val child: Formula<ChildInput, *, ChildRenderModel>,
-    private val childInput: FormulaContext<State>.(State) -> ChildInput
-): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<ChildRenderModel>> {
-    companion object {
-        operator fun <ChildRenderModel> invoke(child: Formula<Unit, *, ChildRenderModel>) = run {
-            OptionalChildFormula(child) { Unit }
-        }
-    }
+import com.instacart.formula.utils.TestUtils
 
+object OptionalChildFormula {
     data class State(
         val showChild: Boolean = true
     )
@@ -19,26 +12,31 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
         val toggleChild: () -> Unit
     )
 
-    override fun initialState(input: Unit) = State()
+    fun <ChildInput, ChildRenderModel> create(
+        child: Formula<ChildInput, *, ChildRenderModel>,
+        childInput: FormulaContext<State>.(State) -> ChildInput
+    ): Formula<Unit, State, RenderModel<ChildRenderModel>> {
+        return TestUtils.create(State()) { state, context ->
+            val childRM = if (state.showChild) {
+                context.child(child).input { childInput(context, state) }
+            } else {
+                null
+            }
 
-    override fun evaluate(
-        input: Unit,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<RenderModel<ChildRenderModel>> {
-        val childRM = if (state.showChild) {
-            context.child(child).input { childInput(context, state) }
-        } else {
-            null
-        }
-
-        return Evaluation(
-            renderModel = RenderModel(
-                child = childRM,
-                toggleChild = context.callback {
-                    state.copy(showChild = !state.showChild).noMessages()
-                }
+            Evaluation(
+                renderModel = RenderModel(
+                    child = childRM,
+                    toggleChild = context.callback {
+                        state.copy(showChild = !state.showChild).noMessages()
+                    }
+                )
             )
-        )
+        }
+    }
+
+    fun <ChildRenderModel> create(
+        child: Formula<Unit, *, ChildRenderModel>
+    ): Formula<Unit, State, RenderModel<ChildRenderModel>> {
+        return create(child) { Unit }
     }
 }

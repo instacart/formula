@@ -12,12 +12,13 @@ class FormulaRuntimeTest {
 
     @Test
     fun `multiple event updates`() {
-        StreamFormula()
+        val incrementRelay = IncrementRelay()
+        StreamFormula(incrementRelay)
             .test()
             .renderModel { startListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 0, 1, 2, 3)
             }
@@ -25,13 +26,14 @@ class FormulaRuntimeTest {
 
     @Test
     fun `no state changes after event stream is removed`() {
-        StreamFormula()
+        val incrementRelay = IncrementRelay()
+        StreamFormula(incrementRelay)
             .test()
             .renderModel { startListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
             .renderModel { stopListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
+            .apply { incrementRelay.triggerIncrement() }
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 0, 1, 1)
             }
@@ -121,7 +123,7 @@ class FormulaRuntimeTest {
     fun `runtime emits messages`() {
         val messageHandler = TestEventCallback<Int>()
         MessageFormula()
-            .test(MessageFormula.Input(messageHandler = messageHandler))
+            .test(MessageInput(messageHandler = messageHandler))
             .renderModel { triggerMessage() }
             .assertRenderModelCount(1) // no state change, so no re-evaluation
             .apply {
@@ -133,7 +135,7 @@ class FormulaRuntimeTest {
     fun `message after no re-evaluation pass`() {
         val messageHandler = TestEventCallback<Int>()
         MessageFormula()
-            .test(MessageFormula.Input(messageHandler = messageHandler))
+            .test(MessageInput(messageHandler = messageHandler))
             .renderModel { triggerMessage() }
             .renderModel { triggerMessage() }
             .assertRenderModelCount(1)
@@ -189,7 +191,7 @@ class FormulaRuntimeTest {
     @Test
     fun `multiple callbacks using the same render model`() {
         MessageFormula()
-            .test(MessageFormula.Input(messageHandler = {}))
+            .test(MessageInput(messageHandler = {}))
             .renderModel {
                 incrementAndMessage()
                 incrementAndMessage()
@@ -202,7 +204,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `multiple event callbacks using the same render model`() {
-        EventCallbackFormula().test()
+        EventCallbackFormula.create().test()
             .renderModel {
                 changeState("one")
                 changeState("two")
@@ -213,8 +215,8 @@ class FormulaRuntimeTest {
 
     @Test
     fun `using a removed child callback should do nothing`() {
-        OptionalChildFormula(MessageFormula()) {
-            MessageFormula.Input(messageHandler = eventCallback { none() })
+        OptionalChildFormula.create(MessageFormula()) {
+            MessageInput(messageHandler = eventCallback { none() })
         }
             .test()
             .renderModel {
@@ -231,7 +233,7 @@ class FormulaRuntimeTest {
     @Test
     fun `callbacks are equal across render model changes`() {
         MessageFormula()
-            .test(MessageFormula.Input(messageHandler = {}))
+            .test(MessageInput(messageHandler = {}))
             .renderModel { incrementAndMessage() }
             .renderModel { incrementAndMessage() }
             .assertRenderModelCount(3)
@@ -242,7 +244,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `event callbacks are equal across render model changes`() {
-        EventCallbackFormula().test()
+        EventCallbackFormula.create().test()
             .renderModel {
                 changeState("one")
                 changeState("two")
@@ -255,7 +257,8 @@ class FormulaRuntimeTest {
 
     @Test
     fun `removed callback is disabled`() {
-        OptionalCallbackFormula()
+        OptionalCallbackFormula
+            .create()
             .test()
             .renderModel {
 
@@ -270,7 +273,8 @@ class FormulaRuntimeTest {
 
     @Test
     fun `callbacks are not the same after removing then adding it again`() {
-        OptionalCallbackFormula()
+        OptionalCallbackFormula
+            .create()
             .test()
             .renderModel {
                 toggleCallback()
@@ -283,7 +287,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `removed event callback is disabled`() {
-        OptionalEventCallbackFormula()
+        OptionalEventCallbackFormula
             .test()
             .renderModel {
                 callback?.invoke(1)
@@ -297,7 +301,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `event callbacks are not the same after removing then adding it again`() {
-        OptionalEventCallbackFormula()
+        OptionalEventCallbackFormula
             .test()
             .renderModel {
                 toggleCallback()
@@ -319,7 +323,8 @@ class FormulaRuntimeTest {
 
     @Test
     fun `using key to scope callbacks within another function`() {
-        UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
+        UsingKeyToScopeCallbacksWithinAnotherFunction
+            .formula()
             .test()
             .assertRenderModelCount(1)
     }
@@ -385,7 +390,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `same stream declarations are okay`() {
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             events(EmptyStream.init()) {
                 transition(Unit)
             }
@@ -402,7 +407,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `same observable declarations are okay`() {
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             events("same", Observable.just(1)) {
                 none()
             }
@@ -419,7 +424,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `key is required when stream is declared in a loop`() {
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
                 events(EmptyStream.init()) {
@@ -435,7 +440,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `using key for stream declared in a loop`() {
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
                 events(EmptyStream.init(it)) {
@@ -450,7 +455,7 @@ class FormulaRuntimeTest {
     @Test
     fun `multiple event streams without key`() {
         var executed = 0
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             events(Stream.onInit()) {
                 message {
                     executed += 1
@@ -472,7 +477,7 @@ class FormulaRuntimeTest {
     @Test
     fun `multiple events with input and without key`() {
         var executed = 0
-        val formula = OnlyUpdateFormula<Int> {
+        val formula = OnlyUpdateFormula.create<Int> {
             events(Stream.onData(it)) {
                 message { executed += 1 }
             }
@@ -489,7 +494,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `key is required for events in a loop`() {
-        val formula = OnlyUpdateFormula<Unit> {
+        val formula = OnlyUpdateFormula.create<Unit> {
             val list = listOf(0, 1, 2)
             list.forEach {
                 events(Stream.onInit()) {
@@ -519,7 +524,7 @@ class FormulaRuntimeTest {
     @Test
     fun `removing child formula triggers terminate message`() {
         val terminateFormula = TerminateFormula()
-        OptionalChildFormula(terminateFormula)
+        OptionalChildFormula.create(terminateFormula)
             .test()
             .apply {
                 assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
@@ -534,7 +539,7 @@ class FormulaRuntimeTest {
     fun `terminate message is scoped to latest input`() {
         var emissions = 0
         var terminateCallback = -1
-        val formula = OnlyUpdateFormula<Int> { input ->
+        val formula = OnlyUpdateFormula.create<Int> { input ->
             events(Stream.onTerminate()) {
                 message {
                     emissions += 1
@@ -555,7 +560,7 @@ class FormulaRuntimeTest {
     @Test
     fun `parent removal triggers childs terminate message`() {
         val terminateFormula = TerminateFormula()
-        val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
+        val formula = OptionalChildFormula.create(HasChildFormula.create(terminateFormula))
 
         formula.test().renderModel { toggleChild() }.apply {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
@@ -565,7 +570,8 @@ class FormulaRuntimeTest {
     @Test
     fun `canceling terminate stream does not emit terminate message`() {
         val terminateCallback = TestCallback()
-        RemovingTerminateStreamSendsNoMessagesFormula()
+        RemovingTerminateStreamSendsNoMessagesFormula
+            .create()
             .test(
                 input = Observable.just(
                     RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback),
@@ -580,7 +586,8 @@ class FormulaRuntimeTest {
     @Test
     fun `using from observable with input`() {
         val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
-        FromObservableWithInputFormula()
+        FromObservableWithInputFormula
+            .create()
             .test(
                 input = Observable.just("1", "2").map {
                     FromObservableWithInputFormula.Input(it, onItem = onItem)

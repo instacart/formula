@@ -5,8 +5,9 @@ import com.instacart.formula.test.test
 
 class ChildStreamEvents {
 
-    private val child = StreamFormula()
-    private val subject = HasChildFormula(child).test()
+    private val incrementRelay = IncrementRelay()
+    private val child = StreamFormula(incrementRelay)
+    private val subject = HasChildFormula.create(child).test()
 
     fun startListening() = apply {
         subject.renderModel { child.startListening() }
@@ -19,7 +20,7 @@ class ChildStreamEvents {
     fun incrementBy(step: Int) = apply {
         val range = 1..step
         range.forEach {
-            child.incrementEvents.triggerIncrement()
+            incrementRelay.triggerIncrement()
         }
     }
 

@@ -1,14 +1,16 @@
 package com.instacart.formula
 
-class OnlyUpdateFormula<Input>(
-    private val build: FormulaContext.UpdateBuilder<Unit>.(Input) -> Unit
-) : StatelessFormula<Input, Unit>() {
+import com.instacart.formula.utils.TestUtils
 
-    override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
-        return Evaluation(
+object OnlyUpdateFormula {
+
+    fun <Input> create(
+        build: FormulaContext.UpdateBuilder<Unit>.(Input) -> Unit
+    ) = TestUtils.stateless { input: Input, context ->
+        Evaluation(
             renderModel = Unit,
             updates = context.updates {
-                build(this, input)
+                build(input)
             }
         )
     }

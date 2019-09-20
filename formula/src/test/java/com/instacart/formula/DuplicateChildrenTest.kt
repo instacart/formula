@@ -1,35 +1,26 @@
 package com.instacart.formula
 
+import com.instacart.formula.utils.TestUtils
 import org.junit.Test
 import java.lang.IllegalStateException
 
 class DuplicateChildrenTest {
 
     @Test fun `adding duplicate child throws an exception`() {
-        ParentFormula().start(Unit).test().assertError {
+        parent().start(Unit).test().assertError {
             it is IllegalStateException
         }
     }
 
-    class ParentFormula : Formula<Unit, Unit, List<Unit>> {
-        override fun initialState(input: Unit) = Unit
-
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit>): Evaluation<List<Unit>> {
-            return Evaluation(
-                renderModel = listOf(1, 2, 3).map {
-                    context.child(ChildFormula()).input(Unit)
-                }
-            )
-        }
+    fun parent() = TestUtils.stateless { context ->
+        Evaluation(
+            renderModel = listOf(1, 2, 3).map {
+                context.child(child()).input(Unit)
+            }
+        )
     }
 
-    class ChildFormula: Formula<Unit, Unit, Unit> {
-        override fun initialState(input: Unit) = Unit
-
-        override fun evaluate(input: Unit, state: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
-            return Evaluation(
-                renderModel = Unit
-            )
-        }
+    fun child() = TestUtils.stateless { context ->
+        Evaluation(renderModel = Unit)
     }
 }

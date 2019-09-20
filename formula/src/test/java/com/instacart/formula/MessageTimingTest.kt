@@ -2,13 +2,15 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
+import com.instacart.formula.utils.TestUtils
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import org.junit.Test
 
 class MessageTimingTest {
 
-    @Test fun `state change triggered by a message handler is scoped correctly`() {
+    @Test
+    fun `state change triggered by a message handler is scoped correctly`() {
         val relay = PublishRelay.create<Unit>()
         val input = Input(
             external = relay,
@@ -17,7 +19,7 @@ class MessageTimingTest {
             }
         )
 
-        TestFormula()
+        create()
             .test(input)
             .renderModel { trigger() }
             .renderModel {
@@ -37,30 +39,21 @@ class MessageTimingTest {
 
     class RenderModel(val events: List<State>, val trigger: () -> Unit)
 
-    class TestFormula : Formula<Input, List<State>, RenderModel> {
-
-        override fun initialState(input: Input): List<State> = emptyList()
-
-        override fun evaluate(
-            input: Input,
-            state: List<State>,
-            context: FormulaContext<List<State>>
-        ): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
-                    events = state,
-                    trigger = context.callback {
-                        state.plus(State.INTERNAL).withMessages {
-                            message(input.trigger)
-                        }
-                    }
-                ),
-                updates = context.updates {
-                    events(input.external) {
-                        state.plus(State.EXTERNAL).noMessages()
+    fun create() = TestUtils.create(emptyList<State>()) { input: Input, state, context ->
+        Evaluation(
+            renderModel = RenderModel(
+                events = state,
+                trigger = context.callback {
+                    state.plus(State.INTERNAL).withMessages {
+                        message(input.trigger)
                     }
                 }
-            )
-        }
+            ),
+            updates = context.updates {
+                events(input.external) {
+                    state.plus(State.EXTERNAL).noMessages()
+                }
+            }
+        )
     }
 }

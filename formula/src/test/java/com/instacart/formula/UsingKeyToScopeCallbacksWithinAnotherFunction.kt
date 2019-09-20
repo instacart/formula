@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.utils.TestUtils
+
 object UsingKeyToScopeCallbacksWithinAnotherFunction {
 
     class ChildRenderModel(
@@ -11,26 +13,24 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
         val second: ChildRenderModel
     )
 
-    class TestFormula : StatelessFormula<Unit, TestRenderModel>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestRenderModel> {
-            return Evaluation(
-                renderModel = TestRenderModel(
-                    first = context.key("first") {
-                        createChild(context)
-                    },
-                    second = context.key("second") {
-                        createChild(context)
-                    }
-                )
-            )
-        }
-
-        private fun createChild(context: FormulaContext<Unit>): ChildRenderModel {
-            return ChildRenderModel(
-                callback = context.callback {
-                    none()
+    fun formula() = TestUtils.stateless { context ->
+        Evaluation(
+            renderModel = TestRenderModel(
+                first = context.key("first") {
+                    createChild(context)
+                },
+                second = context.key("second") {
+                    createChild(context)
                 }
             )
-        }
+        )
+    }
+
+    private fun createChild(context: FormulaContext<Unit>): ChildRenderModel {
+        return ChildRenderModel(
+            callback = context.callback {
+                none()
+            }
+        )
     }
 }

@@ -1,44 +1,35 @@
 package com.instacart.formula
 
-class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderModel> {
+import com.instacart.formula.utils.TestUtils
 
-    val incrementEvents = IncrementRelay()
+data class StreamState(
+    val listenForEvents: Boolean = false,
+    val count: Int = 0
+)
 
-    data class State(
-        val listenForEvents: Boolean = false,
-        val count: Int = 0
-    )
+class StreamRenderModel(
+    val state: Int,
+    val startListening: () -> Unit,
+    val stopListening: () -> Unit
+)
 
-    class RenderModel(
-        val state: Int,
-        val startListening: () -> Unit,
-        val stopListening: () -> Unit
-    )
-
-    override fun initialState(input: Unit): State = State()
-
-    override fun evaluate(
-        input: Unit,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<RenderModel> {
-        return Evaluation(
-            updates = context.updates {
-                if (state.listenForEvents) {
-                    events(incrementEvents.stream()) {
-                        state.copy(count = state.count + 1).noMessages()
-                    }
+fun StreamFormula(incrementEvents: IncrementRelay) = TestUtils.create(StreamState()) { state, context ->
+    Evaluation(
+        updates = context.updates {
+            if (state.listenForEvents) {
+                events(incrementEvents.stream()) {
+                    state.copy(count = state.count + 1).noMessages()
                 }
+            }
+        },
+        renderModel = StreamRenderModel(
+            state = state.count,
+            startListening = context.callback {
+                state.copy(listenForEvents = true).noMessages()
             },
-            renderModel = RenderModel(
-                state = state.count,
-                startListening = context.callback {
-                    state.copy(listenForEvents = true).noMessages()
-                },
-                stopListening = context.callback {
-                    state.copy(listenForEvents = false).noMessages()
-                }
-            )
+            stopListening = context.callback {
+                state.copy(listenForEvents = false).noMessages()
+            }
         )
-    }
+    )
 }

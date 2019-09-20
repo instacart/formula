@@ -1,21 +1,20 @@
 package com.instacart.formula
 
 import com.instacart.formula.test.test
+import com.instacart.formula.utils.TestUtils
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
-    fun test() = TestFormula().test()
+    fun test() = create().test()
 
-    class TestFormula : Formula<Unit, Int, Int> {
-        private val initial = Observable.just(Unit, Unit, Unit, Unit)
-        private val incrementRelay: PublishRelay<Unit> = PublishRelay.create()
+    private fun create(): Formula<Unit, Int, Int> {
+        val initial = Observable.just(Unit, Unit, Unit, Unit)
+        val incrementRelay: PublishRelay<Unit> = PublishRelay.create()
 
-        override fun initialState(input: Unit): Int = 0
-
-        override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int>): Evaluation<Int> {
-            return Evaluation(
+        return TestUtils.create(0) { state, context ->
+            Evaluation(
                 renderModel = state,
                 updates = context.updates {
                     events(initial) {

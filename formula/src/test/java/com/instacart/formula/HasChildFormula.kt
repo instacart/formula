@@ -1,31 +1,22 @@
 package com.instacart.formula
 
-class HasChildFormula<ChildInput, ChildRenderModel>(
-    private val child: Formula<ChildInput, *, ChildRenderModel>,
-    private val createChildInput: FormulaContext<Int>.(Int) -> ChildInput
-) : Formula<Unit, Int, HasChildFormula.RenderModel<ChildRenderModel>> {
-    companion object {
-        operator fun <ChildRenderModel> invoke(
-            child: Formula<Unit, *, ChildRenderModel>
-        ): HasChildFormula<Unit, ChildRenderModel> {
-            return HasChildFormula(child) { Unit }
-        }
-    }
+import com.instacart.formula.utils.TestUtils
 
-
+object HasChildFormula {
     class RenderModel<ChildRenderModel>(
         val state: Int,
         val child: ChildRenderModel
     )
 
-    override fun initialState(input: Unit): Int = 0
+    fun <ChildRenderModel> create(
+        child: Formula<Unit, *, ChildRenderModel>
+    ) = create(child) { Unit }
 
-    override fun evaluate(
-        input: Unit,
-        state: Int,
-        context: FormulaContext<Int>
-    ): Evaluation<RenderModel<ChildRenderModel>> {
-        return Evaluation(
+    fun <ChildInput, ChildRenderModel> create(
+        child: Formula<ChildInput, *, ChildRenderModel>,
+        createChildInput: FormulaContext<Int>.(Int) -> ChildInput
+    ) = TestUtils.create(0) { state, context ->
+        Evaluation(
             renderModel = RenderModel(
                 state = state,
                 child = context

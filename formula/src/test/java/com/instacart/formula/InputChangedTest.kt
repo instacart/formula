@@ -1,12 +1,13 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.utils.TestUtils
 import org.junit.Test
 
 class InputChangedTest {
 
     @Test fun `input changes`() {
-        ParentFormula().start(Unit).test().apply {
+        parent().start(Unit).test().apply {
             values().last().onChildNameChanged("first")
             values().last().onChildNameChanged("second")
         }.apply {
@@ -14,20 +15,14 @@ class InputChangedTest {
         }
     }
 
-    class ParentFormula : Formula<Unit, String, ParentFormula.RenderModel> {
-        private val childFormula = ChildFormula()
+    data class ParentRenderModel(val childName: String, val onChildNameChanged: (String) -> Unit)
 
-        class RenderModel(val childName: String, val onChildNameChanged: (String) -> Unit)
+    fun parent() = run {
+        val childFormula = child()
 
-        override fun initialState(input: Unit): String = "default"
-
-        override fun evaluate(
-            input: Unit,
-            state: String,
-            context: FormulaContext<String>
-        ): Evaluation<RenderModel> {
-            return Evaluation(
-                renderModel = RenderModel(
+        TestUtils.create("default") { state, context ->
+            Evaluation(
+                renderModel = ParentRenderModel(
                     childName = context.child(childFormula).input(state),
                     onChildNameChanged = context.eventCallback { name ->
                         name.noMessages()
@@ -37,20 +32,12 @@ class InputChangedTest {
         }
     }
 
-    class ChildFormula : Formula<String, String, String> {
-        override fun initialState(input: String): String = input
-
-        override fun onInputChanged(oldInput: String, input: String, state: String): String {
-            // We override our state with what parent provides.
-            return input
+    fun child() = TestUtils.lazyState(
+        initialState = { input: String -> input },
+        // We override our state with what parent provides.
+        onInputChanged = { _, new, _ -> new},
+        evaluate = { state, context ->
+            Evaluation(renderModel = state)
         }
-
-        override fun evaluate(
-            input: String,
-            state: String,
-            context: FormulaContext<String>
-        ): Evaluation<String> {
-            return Evaluation(renderModel = state)
-        }
-    }
+    )
 }

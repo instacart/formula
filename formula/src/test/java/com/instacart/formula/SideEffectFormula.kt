@@ -1,17 +1,15 @@
 package com.instacart.formula
 
-class SideEffectFormula(
-    private val onSideEffect: () -> Unit
-) : Formula<Unit, Int, SideEffectFormula.RenderModel> {
+import com.instacart.formula.utils.TestUtils
+
+object SideEffectFormula {
 
     class RenderModel(
         val triggerSideEffect: () -> Unit
     )
 
-    override fun initialState(input: Unit): Int = 0
-
-    override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int>): Evaluation<RenderModel> {
-        return Evaluation(
+    fun create(onSideEffect: () -> Unit) = TestUtils.create(0) { state, context ->
+        Evaluation(
             renderModel = RenderModel(
                 triggerSideEffect = context.callback {
                     message(onSideEffect)

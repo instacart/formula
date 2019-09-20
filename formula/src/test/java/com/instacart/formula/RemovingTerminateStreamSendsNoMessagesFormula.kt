@@ -1,13 +1,15 @@
 package com.instacart.formula
 
-class RemovingTerminateStreamSendsNoMessagesFormula : StatelessFormula<RemovingTerminateStreamSendsNoMessagesFormula.Input, Unit>() {
+import com.instacart.formula.utils.TestUtils
+
+object RemovingTerminateStreamSendsNoMessagesFormula {
 
     data class Input(
         val onTerminate: (() -> Unit)? = null
     )
 
-    override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
-        return Evaluation(
+    fun create() = TestUtils.stateless { input: Input, context ->
+        Evaluation(
             renderModel = Unit,
             updates = context.updates {
                 if (input.onTerminate != null) {
