@@ -461,8 +461,8 @@ a task repository that exposes an RxJava <code>Observable&lt;List&lt;Task&gt;&gt
 
 
 <p>Formula uses a <code>Stream</code> interface to define an asynchronous event producers/sources.</p>
-<div class="codehilite"><pre><span></span><span class="k">interface</span> <span class="nc">Stream</span><span class="p">&lt;</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">Message</span><span class="p">&gt;</span> <span class="p">{</span>
-  <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span>
+<div class="codehilite"><pre><span></span><span class="k">interface</span> <span class="nc">Stream</span><span class="p">&lt;</span><span class="n">Message</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -510,8 +510,8 @@ anymore and the runtime will unsubscribe.</p>
   <span class="p">):</span> <span class="n">Evaluation</span><span class="p">&lt;</span><span class="n">RenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
       <span class="n">updates</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
-        <span class="k">val</span> <span class="py">fetchTask</span> <span class="p">=</span> <span class="n">RxStream</span><span class="p">.</span><span class="n">withParameter</span><span class="p">(</span><span class="n">taskRepo</span><span class="o">::</span><span class="n">fetchTask</span><span class="p">)</span>
-        <span class="n">events</span><span class="p">(</span><span class="n">fetchTask</span><span class="p">,</span> <span class="n">input</span><span class="p">.</span><span class="n">taskId</span><span class="p">)</span> <span class="p">{</span> <span class="n">taskResponse</span> <span class="p">-&gt;</span>
+        <span class="k">val</span> <span class="py">fetchTask</span> <span class="p">=</span> <span class="n">RxStream</span><span class="p">.</span><span class="n">fromObservable</span><span class="p">(</span><span class="n">key</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="n">taskId</span><span class="p">)</span> <span class="p">{</span> <span class="n">taskRepo</span><span class="p">.</span><span class="n">fetchTask</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">taskId</span><span class="p">)</span> <span class="p">}</span>
+        <span class="n">events</span><span class="p">(</span><span class="n">fetchTask</span><span class="p">)</span> <span class="p">{</span> <span class="n">taskResponse</span> <span class="p">-&gt;</span>
           <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">task</span> <span class="p">=</span> <span class="n">taskResponse</span><span class="p">))</span>
         <span class="p">}</span>
       <span class="p">}</span>
@@ -521,40 +521,8 @@ anymore and the runtime will unsubscribe.</p>
 </pre></div>
 
 
-<p>We can also extend <code>RxStream</code>:</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">FetchTaskStream</span><span class="p">(</span><span class="k">val</span> <span class="py">taskRepo</span><span class="p">:</span> <span class="n">TaskRepo</span><span class="p">):</span> <span class="n">RxStream</span><span class="p">&lt;</span><span class="n">Request</span><span class="p">,</span> <span class="n">Task</span><span class="p">&gt;</span> <span class="p">{</span>
-
-  <span class="k">data</span> <span class="k">class</span> <span class="nc">Request</span><span class="p">(</span><span class="k">val</span> <span class="py">taskId</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span>
-
-  <span class="k">override</span> <span class="k">fun</span> <span class="nf">observable</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="n">Request</span><span class="p">):</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">taskRepo</span><span class="p">.</span><span class="n">fetchTask</span><span class="p">(</span><span class="n">parameter</span><span class="p">.</span><span class="n">taskId</span><span class="p">)</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>And then update the formula to:</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">TaskFormula</span><span class="p">(</span><span class="k">val</span> <span class="py">fetchTask</span><span class="p">:</span> <span class="n">FetchTasktream</span><span class="p">):</span> <span class="n">Formula</span> <span class="p">{</span>
-
-  <span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(</span>
-    <span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
-    <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span>
-    <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">&lt;..&gt;</span>
-  <span class="p">):</span> <span class="n">Evaluation</span><span class="p">&lt;</span><span class="n">RenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
-      <span class="n">updates</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">updates</span> <span class="p">{</span>
-        <span class="n">events</span><span class="p">(</span><span class="n">fetchTask</span><span class="p">,</span> <span class="n">FetchTaskStream</span><span class="p">.</span><span class="n">Request</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">itemId</span><span class="p">))</span> <span class="p">{</span> <span class="n">taskResponse</span> <span class="p">-&gt;</span>
-          <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">task</span> <span class="p">=</span> <span class="n">taskResponse</span><span class="p">))</span>
-        <span class="p">}</span>
-      <span class="p">}</span>
-    <span class="p">)</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>Formula will call <code>Stream.start</code> with <code>input.itemId</code>. If <code>itemId</code> changes, Formula will cancel the previous instance
-of the <code>Stream</code> and call <code>Stream.start</code> with new <code>itemId.</code></p>
+<p>The <code>key</code> parameter enables us to distinguish between different streams. If <code>input.taskId</code> changes, we will
+cancel the currently running <code>Stream</code> and start a new one.</p>
 <div class="codehilite"><pre><span></span>Note: we are not handling errors in this example. The best practice is to emit errors as data using the onNext instead
 of emitting them through onError.
 </pre></div>
@@ -562,8 +530,8 @@ of emitting them through onError.
 
 <h3 id="extending-stream-interface">Extending Stream Interface</h3>
 <p>If you need to use a different mechanism for asynchronous events, you can extend <code>Stream</code> interface.</p>
-<div class="codehilite"><pre><span></span><span class="k">interface</span> <span class="nc">Stream</span><span class="p">&lt;</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">Message</span><span class="p">&gt;</span> <span class="p">{</span>
-  <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span>
+<div class="codehilite"><pre><span></span><span class="k">interface</span> <span class="nc">Stream</span><span class="p">&lt;</span><span class="n">Message</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -571,9 +539,9 @@ of emitting them through onError.
 <p>For example, let's say we want to track network status (I'm going to use mock network status APIs).</p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">NetworkStatusStream</span><span class="p">(</span>
   <span class="k">val</span> <span class="py">manager</span><span class="p">:</span> <span class="n">NetworkStatusManager</span>
-<span class="p">)</span> <span class="p">:</span> <span class="n">Stream</span><span class="p">&lt;</span><span class="n">Unit</span><span class="p">,</span> <span class="n">NetworkStatus</span><span class="p">&gt;</span> <span class="p">{</span>
+<span class="p">)</span> <span class="p">:</span> <span class="n">Stream</span><span class="p">&lt;</span><span class="n">NetworkStatus</span><span class="p">&gt;</span> <span class="p">{</span>
 
-  <span class="k">override</span> <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="n">Unit</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">NetworkStatus</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span> <span class="p">{</span>
+  <span class="k">override</span> <span class="k">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">NetworkStatus</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span><span class="p">):</span> <span class="n">Cancelable</span><span class="p">?</span> <span class="p">{</span>
     <span class="k">val</span> <span class="py">listener</span> <span class="p">=</span> <span class="k">object</span><span class="p">:</span> <span class="n">NetworkStatusListener</span> <span class="p">{</span>
       <span class="k">override</span> <span class="k">fun</span> <span class="nf">onNetworkStatusChanged</span><span class="p">(</span><span class="n">status</span><span class="p">:</span> <span class="n">NetworkStatus</span><span class="p">)</span> <span class="p">=</span> <span class="n">send</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
     <span class="p">}</span>

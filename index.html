@@ -546,7 +546,7 @@
 deterministic, composable, testable applications.</p>
 <h3 id="quick-example">Quick example</h3>
 <p>To demonstrate some of the concepts we will make a simple counter application. It shows the current count and 
-has two buttons to increment and decrement itq.</p>
+has two buttons to increment and decrement it.</p>
 <p>One of the best practises when working with Formula is to first think what the UI needs for rendering and what 
 actions the user will be able to take. This concept is called a <code>RenderModel</code> and is represented by a Kotlin data class.</p>
 <h4 id="render-model">Render Model</h4>
@@ -680,7 +680,7 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
     <span class="n">counterRenderView</span> <span class="p">=</span> <span class="n">CounterRenderView</span><span class="p">(</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">counter</span><span class="p">))</span>
   <span class="p">}</span>
 
-  <span class="k">fun</span> <span class="nf">render</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CounterRenderView</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">fun</span> <span class="nf">render</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CounterRenderModel</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">counterRenderView</span><span class="p">.</span><span class="n">renderer</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
   <span class="p">}</span>
 <span class="p">}</span>
