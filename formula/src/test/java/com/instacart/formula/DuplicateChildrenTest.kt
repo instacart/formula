@@ -6,7 +6,7 @@ import java.lang.IllegalStateException
 class DuplicateChildrenTest {
 
     @Test fun `adding duplicate child throws an exception`() {
-        ParentFormula().state(Unit).test().assertError {
+        ParentFormula().start(Unit).test().assertError {
             it is IllegalStateException
         }
     }

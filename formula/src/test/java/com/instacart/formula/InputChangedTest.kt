@@ -6,7 +6,7 @@ import org.junit.Test
 class InputChangedTest {
 
     @Test fun `input changes`() {
-        ParentFormula().state(Unit).test().apply {
+        ParentFormula().start(Unit).test().apply {
             values().last().onChildNameChanged("first")
             values().last().onChildNameChanged("second")
         }.apply {
