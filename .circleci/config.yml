@@ -99,6 +99,10 @@ commands:
           command: |
             ./gradlew :samples:counter:assembleRelease
       - run:
+          name: Assemble Stopwatch Sample
+          command: |
+            ./gradlew :samples:stopwatch:assembleRelease
+      - run:
           name: Assemple Todo App
           command: |
             ./gradlew :samples:todoapp:assembleRelease
