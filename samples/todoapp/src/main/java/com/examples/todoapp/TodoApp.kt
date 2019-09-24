@@ -4,6 +4,7 @@ import android.app.Application
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.start
 import com.instacart.formula.state
 
 class TodoApp : Application() {
@@ -23,7 +24,7 @@ class TodoApp : Application() {
                                 }
                             })
 
-                            component.createTaskListFormula().state(input)
+                            component.createTaskListFormula().start(input)
                         }
                     }
                 )

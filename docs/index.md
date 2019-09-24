@@ -132,7 +132,7 @@ Formula is agnostic to other layers of abstraction. It can be used within activi
 convert `Formula` to RxJava2 Observable by using `state` extension function. 
 ```kotlin
 val formula = CounterFormula()
-val state: Observable<CounterRenderModel> = formula.state(input = Unit)
+val state: Observable<CounterRenderModel> = formula.start(input = Unit)
 ```
 
 Ideally, it would be placed within a surface that survives configuration changes such as Android Components ViewModel. 
@@ -169,7 +169,7 @@ class MyApp : Application() {
         store(
           streams = {
             val formula = CounterFormula()
-            update(formula.state(Unit), MyActivity::render)
+            update(formula.start(Unit), MyActivity::render)
           }
         )
       }

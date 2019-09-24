@@ -7,7 +7,7 @@ class DynamicFormulaInputTest {
 
     @Test fun `using dynamic input`() {
         TestFormula()
-            .state(input = Observable.just(1, 2, 3))
+            .start(input = Observable.just(1, 2, 3))
             .test()
             .assertValues(1, 2, 3)
     }
