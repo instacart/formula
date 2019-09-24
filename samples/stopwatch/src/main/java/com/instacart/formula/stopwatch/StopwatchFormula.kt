@@ -65,7 +65,6 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                 append('0')
             }
             append(millisPassed)
-            append("ms")
         }
     }
 
