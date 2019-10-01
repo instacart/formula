@@ -3,7 +3,7 @@ package com.instacart.formula.stopwatch
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.start
-import com.instacart.formula.state
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
 class StopwatchActivity : FragmentActivity() {
@@ -16,8 +16,8 @@ class StopwatchActivity : FragmentActivity() {
 
         val renderView = StopwatchRenderView(findViewById(R.id.activity_content))
 
-        val formula = StopwatchFormula()
-        disposables.add(formula.start(Unit).subscribe(renderView.renderer::render))
+        val renderModels: Observable<StopwatchRenderModel> = StopwatchFormula().start(Unit)
+        disposables.add(renderModels.subscribe(renderView.renderer::render))
     }
 
     override fun onDestroy() {
