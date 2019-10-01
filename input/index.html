@@ -391,7 +391,7 @@ pass an item id to <code>ItemDetailFormula</code>. </p>
 <p>To pass the input to <code>ItemDetailFormula</code></p>
 <div class="codehilite"><pre><span></span><span class="k">val</span> <span class="py">itemDetailFormula</span><span class="p">:</span> <span class="n">ItemDetailFormula</span> <span class="p">=</span> <span class="p">...</span>
 <span class="n">itemDetailFormula</span>
-  <span class="p">.</span><span class="n">state</span><span class="p">(</span><span class="n">ItemDetailFormula</span><span class="p">.</span><span class="n">Input</span><span class="p">(</span><span class="n">itemId</span> <span class="p">=</span> <span class="s">&quot;1&quot;</span><span class="p">))</span>
+  <span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">ItemDetailFormula</span><span class="p">.</span><span class="n">Input</span><span class="p">(</span><span class="n">itemId</span> <span class="p">=</span> <span class="s">&quot;1&quot;</span><span class="p">))</span>
   <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">renderModel</span> <span class="p">-&gt;</span>
 
   <span class="p">}</span>
@@ -401,7 +401,7 @@ pass an item id to <code>ItemDetailFormula</code>. </p>
 <p>You could also pass an <code>Observable&lt;ItemDetailFormula.Input&gt;</code></p>
 <div class="codehilite"><pre><span></span><span class="k">val</span> <span class="py">itemDetailInput</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">ItemDetailFormula</span><span class="p">.</span><span class="n">Input</span><span class="p">&gt;</span> <span class="p">=</span> <span class="p">...</span>
 <span class="n">itemDetailFormula</span>
-  <span class="p">.</span><span class="n">state</span><span class="p">(</span><span class="n">itemDetailInput</span><span class="p">)</span>
+  <span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">itemDetailInput</span><span class="p">)</span>
   <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">renderModel</span> <span class="p">-&gt;</span>
 
   <span class="p">}</span>

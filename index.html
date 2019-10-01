@@ -662,7 +662,7 @@ utility functions (take a look at that class for other utility functions).</p>
 <p>Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
 convert <code>Formula</code> to RxJava2 Observable by using <code>state</code> extension function. </p>
 <div class="codehilite"><pre><span></span><span class="k">val</span> <span class="py">formula</span> <span class="p">=</span> <span class="n">CounterFormula</span><span class="p">()</span>
-<span class="k">val</span> <span class="py">state</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">formula</span><span class="p">.</span><span class="n">state</span><span class="p">(</span><span class="n">input</span> <span class="p">=</span> <span class="n">Unit</span><span class="p">)</span>
+<span class="k">val</span> <span class="py">state</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">formula</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">input</span> <span class="p">=</span> <span class="n">Unit</span><span class="p">)</span>
 </pre></div>
 
 
@@ -698,7 +698,7 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
         <span class="n">store</span><span class="p">(</span>
           <span class="n">streams</span> <span class="p">=</span> <span class="p">{</span>
             <span class="k">val</span> <span class="py">formula</span> <span class="p">=</span> <span class="n">CounterFormula</span><span class="p">()</span>
-            <span class="n">update</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="n">state</span><span class="p">(</span><span class="n">Unit</span><span class="p">),</span> <span class="n">MyActivity</span><span class="o">::</span><span class="n">render</span><span class="p">)</span>
+            <span class="n">update</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">Unit</span><span class="p">),</span> <span class="n">MyActivity</span><span class="o">::</span><span class="n">render</span><span class="p">)</span>
           <span class="p">}</span>
         <span class="p">)</span>
       <span class="p">}</span>
@@ -720,8 +720,8 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
 
 <p>And add the library to your list of dependencies:</p>
 <div class="codehilite"><pre><span></span><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula:0.4.0-alpha2&#39;</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-android:0.4.0-alpha2&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula:0.5.0&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-android:0.5.0&#39;</span>
 <span class="o">}</span>
 </pre></div>
 
