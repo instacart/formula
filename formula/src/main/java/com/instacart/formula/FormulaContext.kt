@@ -157,20 +157,6 @@ abstract class FormulaContext<State> internal constructor(
             events(RxStream.fromObservable { observable }, transition)
         }
 
-        /**
-         * Adds an [Observable] as part of this [Evaluation]. Observable will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param key Primary way to distinguish between different observables.
-         */
-        inline fun <Message> events(
-            key: String,
-            observable: Observable<Message>,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ) {
-            events(RxStream.fromObservable(key) { observable }, transition)
-        }
-
         @PublishedApi internal fun add(connection: Update<*>) {
             if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
