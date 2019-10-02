@@ -19,12 +19,12 @@ data class CounterRenderModel(
 )
 ```
 
-Once we define a Render Model, we can create a `RenderView` which is responsible for taking `RenderModel`
+Once we define a Render Model, we can create a `RenderView` which is responsible for taking a `RenderModel`
 and applying it to Android Views.
 
 #### Render View
 Render View is an interface that we extend. It requires us to create a `Renderer` that takes `RenderModel` and 
-applies to it Android Views. Renderer has an internal mechanism that checks the previous Render Model applied 
+applies it to Android Views. Renderer has an internal mechanism that checks the previous Render Model applied
 and only re-renders if it has changed. 
 
 ```kotlin
@@ -61,7 +61,7 @@ example, we need to keep track of the current count.
 data class CounterState(val count: Int)
 ```
 
-Given, this is a simple state, you could also use `Int` directly.
+Given that this is a simple state, you could also use `Int` directly.
 
 #### Formula
 Formula is responsible for creating the Render Model. It can define an internal `State` class and respond to 
@@ -122,27 +122,27 @@ onDecrement = context.callback {
 }
 ```
 
-The callback block uses dsl to provide access to `Transition.Factory` which has the `transition` and `none`
+The callback block uses a DSL to provide access to `Transition.Factory` which has the `transition` and `none`
 utility functions (take a look at that class for other utility functions).
 
 Now that we defined our state management, let's connect it to our `RenderView`.
 
 #### Using Formula
 Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
-convert `Formula` to RxJava2 Observable by using `state` extension function. 
+convert `Formula` to an RxJava2 `Observable` by using `start` extension function.
 ```kotlin
 val formula = CounterFormula()
 val state: Observable<CounterRenderModel> = formula.start(input = Unit)
 ```
 
 Ideally, it would be placed within a surface that survives configuration changes such as Android Components ViewModel. 
-In this example, we will use Formula Android module. For using Formula with AndroidX ViewModel take 
+In this example, we will use Formula Android module. For using Formula with AndroidX ViewModel, take
 a look at [AndroidX Guide](using_android_view_model.md).
  
 Let's first define our Activity.
 ```kotlin
 class MyActivity : FormulaAppCompatActivity() {
-  lateinit var counterRenderView: CounterRenderView
+  private lateinit var counterRenderView: CounterRenderView
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(state)
