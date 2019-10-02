@@ -10,7 +10,7 @@ ext {
     mockitoVersion = "2.22.0"
     mockitoKotlinVersion = "1.6.0"
     okhttpVersion = "3.13.1"
-    robolectricVersion = "4.3"
+    robolectricVersion = "4.1" // be aware of updating https://github.com/robolectric/robolectric/pull/4736
     truthVersion = "1.0"
 
     libraries = [
