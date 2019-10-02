@@ -1,5 +1,5 @@
 ext {
-    arrowVersion = '0.8.2'
+    arrowVersion = '0.10.0'
     androidXVersion = '1.0.0'
     androidTestVersion = "1.1.0"
     androidJUnitVersion = "1.1.0"
@@ -10,8 +10,8 @@ ext {
     mockitoVersion = "2.22.0"
     mockitoKotlinVersion = "1.6.0"
     okhttpVersion = "3.13.1"
-    robolectricVersion = "4.1"
-    truthVersion = "0.42"
+    robolectricVersion = "4.3"
+    truthVersion = "1.0"
 
     libraries = [
             androidx             : [
@@ -53,9 +53,9 @@ ext {
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
-            rxjava               : "io.reactivex.rxjava2:rxjava:2.2.5",
-            rxandroid            : "io.reactivex.rxjava2:rxandroid:2.1.0",
-            rxrelays             : "com.jakewharton.rxrelay2:rxrelay:2.1.0",
+            rxjava               : "io.reactivex.rxjava2:rxjava:2.2.12",
+            rxandroid            : "io.reactivex.rxjava2:rxandroid:2.1.1",
+            rxrelays             : "com.jakewharton.rxrelay2:rxrelay:2.1.1",
             truth                : "com.google.truth:truth:$truthVersion"
     ]
 }
