@@ -95,7 +95,7 @@ commands:
     description: Assemble Samples
     steps:
       - run:
-          name: Assemple Counter
+          name: Assemble Counter
           command: |
             ./gradlew :samples:counter:assembleRelease
       - run:
@@ -103,7 +103,7 @@ commands:
           command: |
             ./gradlew :samples:stopwatch:assembleRelease
       - run:
-          name: Assemple Todo App
+          name: Assemble Todo App
           command: |
             ./gradlew :samples:todoapp:assembleRelease
 

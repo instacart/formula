@@ -3,10 +3,11 @@ The Android module provides a declarative API to connect reactive state manageme
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
 Some of the goals for this module are:
-- Use single RxJava stream to drive the UI.
-- Separate state management from Android UI lifecycle.
-- Ability to group multiple fragments into a flow and share state between them.
-- Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
+
+    - Use single RxJava stream to drive the UI.
+    - Separate state management from Android UI lifecycle.
+    - Ability to group multiple fragments into a flow and share state between them.
+    - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
 
 ## Getting Started
 For the getting started guide, we will build a timer which you can reset. This is a simple example, but 
@@ -182,7 +183,7 @@ class MyActivity : FragmentActivity() {
 }
 ```
 
-We can then use a `ActivityProxy<MyActivity>` to trigger this effect.
+We can then use `send` to trigger this effect. If the activity is not connected, it will do nothing.
 ```kotlin
 activity(MyActivity::class) {
     store {
@@ -348,6 +349,7 @@ class MyActivity : FragmentActivity() {
      }
 }
 ```
+This is already in place for you if you use `FormulaAppCompatActivity`.
 
 ## Activity state management
 One of the goals of Formula is to make doing the right thing easy. As part of that we wanted to provide an easy

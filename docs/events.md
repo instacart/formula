@@ -70,7 +70,7 @@ context.eventCallback { newName: String ->
 // Updating onSaveSelected to include validation
 context.callback {
   if (state.name.isBlank()) {
-    // Sending a single message
+    // Sending a single message (transition is called internally)
     message(input.showNotification, "Name cannot be empty!")
   } else {
     // No state change, sending two messages
