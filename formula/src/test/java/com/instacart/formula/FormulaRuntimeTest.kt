@@ -403,11 +403,11 @@ class FormulaRuntimeTest {
     @Test
     fun `same observable declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events("same", Observable.just(1)) {
+            events(RxStream.fromObservable("same") { Observable.just(1) }) {
                 none()
             }
 
-            events("same", Observable.just(1)) {
+            events(RxStream.fromObservable("same") { Observable.just(1) }) {
                 none()
             }
         }
