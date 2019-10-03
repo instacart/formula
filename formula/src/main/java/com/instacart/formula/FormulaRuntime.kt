@@ -23,7 +23,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
 
     companion object {
         /**
-         * RuntimeExtensions.kt [state] calls this method.
+         * RuntimeExtensions.kt [start] calls this method.
          */
         fun <Input : Any, State,  RenderModel : Any> start(
             input: Observable<Input>,
