@@ -400,7 +400,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../contributing/" title="Contributing" class="md-nav__link">
+    <a href="../../CONTRIBUTING.md" title="Contributing" class="md-nav__link">
       Contributing
     </a>
   </li>
@@ -554,7 +554,7 @@ is called again and the message handlers are recreated.</p>
 <span class="c1">// Updating onSaveSelected to include validation</span>
 <span class="n">context</span><span class="p">.</span><span class="n">callback</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">isBlank</span><span class="p">())</span> <span class="p">{</span>
-    <span class="c1">// Sending a single message</span>
+    <span class="c1">// Sending a single message (transition is called internally)</span>
     <span class="n">message</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">showNotification</span><span class="p">,</span> <span class="s">&quot;Name cannot be empty!&quot;</span><span class="p">)</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
     <span class="c1">// No state change, sending two messages</span>

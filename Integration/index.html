@@ -476,7 +476,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../contributing/" title="Contributing" class="md-nav__link">
+    <a href="../../CONTRIBUTING.md" title="Contributing" class="md-nav__link">
       Contributing
     </a>
   </li>
@@ -641,11 +641,14 @@
                 <h2 id="formula-android">Formula Android</h2>
 <p>The Android module provides a declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.</p>
-<p>Some of the goals for this module are:
-- Use single RxJava stream to drive the UI.
+<p>Some of the goals for this module are:</p>
+<div class="codehilite"><pre><span></span>- Use single RxJava stream to drive the UI.
 - Separate state management from Android UI lifecycle.
 - Ability to group multiple fragments into a flow and share state between them.
-- Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)</p>
+- Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
+</pre></div>
+
+
 <h2 id="getting-started">Getting Started</h2>
 <p>For the getting started guide, we will build a timer which you can reset. This is a simple example, but 
 it will be sufficient to display some of the concepts around this module.</p>
@@ -814,7 +817,7 @@ declared navigation destination. We dispose of the stream only when user exits t
 </pre></div>
 
 
-<p>We can then use a <code>ActivityProxy&lt;MyActivity&gt;</code> to trigger this effect.</p>
+<p>We can then use <code>send</code> to trigger this effect. If the activity is not connected, it will do nothing.</p>
 <div class="codehilite"><pre><span></span><span class="n">activity</span><span class="p">(</span><span class="n">MyActivity</span><span class="o">::</span><span class="k">class</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">store</span> <span class="p">{</span>
         <span class="n">bind</span><span class="p">(</span><span class="n">ItemDetailContract</span><span class="o">::</span><span class="k">class</span><span class="p">)</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">contract</span> <span class="p">-&gt;</span>
@@ -978,6 +981,7 @@ implements <code>BackCallback</code> and will invoke it.</p>
 </pre></div>
 
 
+<p>This is already in place for you if you use <code>FormulaAppCompatActivity</code>.</p>
 <h2 id="activity-state-management">Activity state management</h2>
 <p>One of the goals of Formula is to make doing the right thing easy. As part of that we wanted to provide an easy
 way for state streams to survive configuration changes by default. </p>

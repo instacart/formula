@@ -428,7 +428,7 @@
 
 
   <li class="md-nav__item">
-    <a href="contributing/" title="Contributing" class="md-nav__link">
+    <a href="../CONTRIBUTING.md" title="Contributing" class="md-nav__link">
       Contributing
     </a>
   </li>
@@ -560,11 +560,11 @@ it will also contain callbacks that will be invoked when user interacts with the
 </pre></div>
 
 
-<p>Once we define a Render Model, we can create a <code>RenderView</code> which is responsible for taking <code>RenderModel</code>
+<p>Once we define a Render Model, we can create a <code>RenderView</code> which is responsible for taking a <code>RenderModel</code>
 and applying it to Android Views.</p>
 <h4 id="render-view">Render View</h4>
 <p>Render View is an interface that we extend. It requires us to create a <code>Renderer</code> that takes <code>RenderModel</code> and 
-applies to it Android Views. Renderer has an internal mechanism that checks the previous Render Model applied 
+applies it to Android Views. Renderer has an internal mechanism that checks the previous Render Model applied
 and only re-renders if it has changed. </p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">CounterRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">ViewGroup</span><span class="p">):</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">decrementButton</span><span class="p">:</span> <span class="n">Button</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">decrement_button</span><span class="p">)</span>
@@ -599,7 +599,7 @@ example, we need to keep track of the current count. </p>
 </pre></div>
 
 
-<p>Given, this is a simple state, you could also use <code>Int</code> directly.</p>
+<p>Given that this is a simple state, you could also use <code>Int</code> directly.</p>
 <h4 id="formula">Formula</h4>
 <p>Formula is responsible for creating the Render Model. It can define an internal <code>State</code> class and respond to 
 various events by transitioning to a new state. </p>
@@ -655,23 +655,23 @@ prevent this.</p>
 </pre></div>
 
 
-<p>The callback block uses dsl to provide access to <code>Transition.Factory</code> which has the <code>transition</code> and <code>none</code>
+<p>The callback block uses a DSL to provide access to <code>Transition.Factory</code> which has the <code>transition</code> and <code>none</code>
 utility functions (take a look at that class for other utility functions).</p>
 <p>Now that we defined our state management, let's connect it to our <code>RenderView</code>.</p>
 <h4 id="using-formula">Using Formula</h4>
 <p>Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
-convert <code>Formula</code> to RxJava2 Observable by using <code>state</code> extension function. </p>
+convert <code>Formula</code> to an RxJava2 <code>Observable</code> by using <code>start</code> extension function.</p>
 <div class="codehilite"><pre><span></span><span class="k">val</span> <span class="py">formula</span> <span class="p">=</span> <span class="n">CounterFormula</span><span class="p">()</span>
 <span class="k">val</span> <span class="py">state</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">formula</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">input</span> <span class="p">=</span> <span class="n">Unit</span><span class="p">)</span>
 </pre></div>
 
 
 <p>Ideally, it would be placed within a surface that survives configuration changes such as Android Components ViewModel. 
-In this example, we will use Formula Android module. For using Formula with AndroidX ViewModel take 
+In this example, we will use Formula Android module. For using Formula with AndroidX ViewModel, take
 a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
 <p>Let's first define our Activity.</p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">MyActivity</span> <span class="p">:</span> <span class="n">FormulaAppCompatActivity</span><span class="p">()</span> <span class="p">{</span>
-  <span class="k">lateinit</span> <span class="k">var</span> <span class="py">counterRenderView</span><span class="p">:</span> <span class="n">CounterRenderView</span>
+  <span class="k">private</span> <span class="k">lateinit</span> <span class="k">var</span> <span class="py">counterRenderView</span><span class="p">:</span> <span class="n">CounterRenderView</span>
 
   <span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">Bundle</span><span class="p">?)</span> <span class="p">{</span>
     <span class="k">super</span><span class="p">.</span><span class="n">onCreate</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
@@ -698,7 +698,7 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
         <span class="n">store</span><span class="p">(</span>
           <span class="n">streams</span> <span class="p">=</span> <span class="p">{</span>
             <span class="k">val</span> <span class="py">formula</span> <span class="p">=</span> <span class="n">CounterFormula</span><span class="p">()</span>
-            <span class="n">update</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">Unit</span><span class="p">),</span> <span class="n">MyActivity</span><span class="o">::</span><span class="n">render</span><span class="p">)</span>
+            <span class="n">update</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">MyActivity</span><span class="o">::</span><span class="n">render</span><span class="p">)</span>
           <span class="p">}</span>
         <span class="p">)</span>
       <span class="p">}</span>
@@ -720,8 +720,8 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
 
 <p>And add the library to your list of dependencies:</p>
 <div class="codehilite"><pre><span></span><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula:0.5.0&#39;</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-android:0.5.0&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula:0.5.1&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-android:0.5.1&#39;</span>
 <span class="o">}</span>
 </pre></div>
 
