@@ -7,7 +7,7 @@ class ChildrenRemovalTest {
 
     @Test fun `remove all children`() {
         ParentFormula()
-            .start(Unit)
+            .start()
             .test()
             .apply {
                 values().last().onClearAll()
@@ -18,7 +18,7 @@ class ChildrenRemovalTest {
     @Test fun `child side effects are performed after removal`() {
         var timesLoggedCalled = 0
         ParentFormula(logExit = { timesLoggedCalled += 1 })
-            .start(Unit)
+            .start()
             .test()
             .apply {
                 values().last().children.first().onExit()

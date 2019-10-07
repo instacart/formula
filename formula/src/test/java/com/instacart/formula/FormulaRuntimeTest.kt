@@ -428,7 +428,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.start(Unit).test().assertError {
+        formula.start().test().assertError {
             it is IllegalStateException
         }
     }
@@ -498,7 +498,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.start(Unit).test().assertError {
+        formula.start().test().assertError {
             it is IllegalStateException
         }
     }

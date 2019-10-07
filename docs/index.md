@@ -169,7 +169,7 @@ class MyApp : Application() {
         store(
           streams = {
             val formula = CounterFormula()
-            update(formula.start(Unit), MyActivity::render)
+            update(formula.start(), MyActivity::render)
           }
         )
       }

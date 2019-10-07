@@ -4,7 +4,7 @@ class CounterViewModel() : ViewModel {
   private val formula = CounterFormula()
   private val disposables = CompositeDisposable()
     
-  val renderModels = formula.start(Unit).replay(1).apply {
+  val renderModels = formula.start().replay(1).apply {
     connect { disposables.add(it) }
   }
 
