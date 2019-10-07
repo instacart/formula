@@ -2,7 +2,7 @@ package com.instacart.formula
 
 object UsingCallbacksWithinAnotherFunction {
 
-    fun test() = TestFormula().start(Unit).test()
+    fun test() = TestFormula().start().test()
 
     class TestRenderModel(
         val first: () -> Unit,

@@ -14,7 +14,7 @@ class FakeDbSideEffectTest {
                 saveCalls.add(it)
             }
         )
-            .start(Unit)
+            .start()
             .test()
             .assertNoErrors()
 

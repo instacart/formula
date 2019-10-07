@@ -2,6 +2,10 @@ package com.instacart.formula
 
 import io.reactivex.Observable
 
+fun <State, RenderModel : Any> Formula<Unit, State, RenderModel>.start(): Observable<RenderModel> {
+    return start(input = Unit)
+}
+
 fun <Input : Any, State, RenderModel : Any> Formula<Input, State, RenderModel>.start(
     input: Input
 ): Observable<RenderModel> {

@@ -16,7 +16,7 @@ class CounterActivity : FragmentActivity() {
         val renderView = CounterRenderView(findViewById(R.id.activity_content))
 
         val formula = CounterFormula()
-        disposables.add(formula.start(Unit).subscribe(renderView.renderer::render))
+        disposables.add(formula.start().subscribe(renderView.renderer::render))
     }
 
     override fun onDestroy() {
