@@ -16,7 +16,7 @@ class OptionalCallbackFormula : Formula<Unit, OptionalCallbackFormula.State, Opt
 
     override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<RenderModel> {
         val callback = if (state.callbackEnabled) {
-            context.callback { state.copy(state = state.state + 1).noMessages() }
+            context.callback { state.copy(state = state.state + 1).noEffects() }
         } else {
             null
         }
@@ -26,7 +26,7 @@ class OptionalCallbackFormula : Formula<Unit, OptionalCallbackFormula.State, Opt
                 state = state.state,
                 callback = callback,
                 toggleCallback = context.callback {
-                    state.copy(callbackEnabled = !state.callbackEnabled).noMessages()
+                    state.copy(callbackEnabled = !state.callbackEnabled).noEffects()
                 }
             )
         )

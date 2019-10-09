@@ -6,7 +6,7 @@ import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
 
-class MultipleMessageTest {
+class MultipleEffectTest {
 
     @Test fun `multiple message order should be maintained`() {
         val triggerEventHandler = TestEventCallback<Int>()
@@ -35,8 +35,8 @@ class MultipleMessageTest {
                 updates = context.updates {
                     events(Observable.range(0, 4)) {
                         val updated = state + 1
-                        updated.withMessages {
-                            message(input.trigger, state)
+                        transition(updated) {
+                            input.trigger(state)
                         }
                     }
                 }

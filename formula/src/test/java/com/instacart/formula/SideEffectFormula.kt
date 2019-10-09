@@ -14,7 +14,7 @@ class SideEffectFormula(
         return Evaluation(
             renderModel = RenderModel(
                 triggerSideEffect = context.callback {
-                    message(onSideEffect)
+                    transition { onSideEffect() }
                 }
             )
         )

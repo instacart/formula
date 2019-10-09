@@ -33,10 +33,10 @@ class SimpleSideEffectTest {
                     events(increment) {
                         val updated = state.copy(count = state.count + 1)
 
-                        if (updated.count == 5) {
-                            updated.withMessage(onGameOver)
-                        } else {
-                            updated.noMessages()
+                        transition(updated) {
+                            if (updated.count == 5) {
+                                onGameOver()
+                            }
                         }
                     }
                 }

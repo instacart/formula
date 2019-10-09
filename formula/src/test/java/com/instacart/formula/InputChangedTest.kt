@@ -30,7 +30,7 @@ class InputChangedTest {
                 renderModel = RenderModel(
                     childName = context.child(childFormula).input(state),
                     onChildNameChanged = context.eventCallback { name ->
-                        name.noMessages()
+                        name.noEffects()
                     }
                 )
             )

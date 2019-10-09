@@ -8,7 +8,7 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
             renderModel = Unit,
             updates = context.updates {
                 events(Stream.onData(input)) {
-                    message { messages.add(it) }
+                    transition { messages.add(it) }
                 }
             }
         )

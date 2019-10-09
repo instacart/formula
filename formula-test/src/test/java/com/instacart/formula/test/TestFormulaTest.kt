@@ -22,7 +22,7 @@ class TestFormulaTest {
             }
     }
 
-    @Test fun `send message using formula class`() {
+    @Test fun `trigger callback using formula class`() {
         subject
             .childInput(ChildFormula::class) { onChangeName("my name") }
             .renderModel {
@@ -30,7 +30,7 @@ class TestFormulaTest {
             }
     }
 
-    @Test fun `send message using formula instance`() {
+    @Test fun `trigger callback using formula instance`() {
         subject
             .childInput(childFormula) { onChangeName("my name") }
             .renderModel {
@@ -71,7 +71,7 @@ class TestFormulaTest {
                             ChildFormula.Input(
                                 name = state.name,
                                 onChangeName = context.eventCallback {
-                                    state.copy(name = it).noMessages()
+                                    state.copy(name = it).noEffects()
                                 }
                             )
                         }
@@ -92,7 +92,7 @@ class TestFormulaTest {
         override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Button> {
             return Evaluation(
                 renderModel = Button(onNameChanged = context.eventCallback {
-                    message(input.onChangeName, input.name)
+                    transition { input.onChangeName(input.name) }
                 })
             )
         }

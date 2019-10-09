@@ -52,13 +52,13 @@ class FetchDataExampleTest {
                 renderModel = RenderModel(
                     title = state.response?.name ?: "",
                     onChangeId = context.eventCallback { id ->
-                        state.copy(selectedId = id).noMessages()
+                        state.copy(selectedId = id).noEffects()
                     }
                 ),
                 updates = context.updates {
                     if (state.selectedId != null) {
                         events(dataRepo.fetch(state.selectedId)) { response ->
-                            state.copy(response = response).noMessages()
+                            state.copy(response = response).noEffects()
                         }
                     }
                 }

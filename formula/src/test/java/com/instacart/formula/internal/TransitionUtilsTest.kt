@@ -2,7 +2,6 @@ package com.instacart.formula.internal
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Transition
-import com.instacart.formula.UnitMessage
 import org.junit.Test
 
 class TransitionUtilsTest {
@@ -18,7 +17,7 @@ class TransitionUtilsTest {
     }
 
     @Test fun `transition with messages is not empty`() {
-        val transition = Transition<String>(messages = listOf(UnitMessage {}))
+        val transition = Transition<String>(effects = {})
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 

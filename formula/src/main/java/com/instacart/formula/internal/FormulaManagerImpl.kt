@@ -2,7 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.Message
+import com.instacart.formula.Effects
 import com.instacart.formula.Transition
 
 /**
@@ -28,12 +28,12 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     private var terminated = false
 
     private var state: State = state
-    private var onTransition: ((List<Message>, isValid: Boolean) -> Unit)? = null
+    private var onTransition: ((Effects?, isValid: Boolean) -> Unit)? = null
 
     private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
         if (terminated) {
             // We only pass messages up.
-            onTransition?.invoke(transition.messages, true)
+            onTransition?.invoke(transition.effects, true)
             return
         }
 
@@ -45,10 +45,10 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         }
 
         val isValid = frame != null && frame.isValid()
-        onTransition?.invoke(transition.messages, isValid)
+        onTransition?.invoke(transition.effects, isValid)
     }
 
-    override fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit) {
+    override fun setTransitionListener(listener: (Effects?, isValid: Boolean) -> Unit) {
         this.onTransition = listener
     }
 
@@ -165,8 +165,8 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
                 throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
             } as FormulaManager<ChildInput, ChildState, ChildRenderModel>
 
-        manager.setTransitionListener { messages, isValid ->
-            handleTransition(Transition(messages = messages), !isValid)
+        manager.setTransitionListener { message, isValid ->
+            handleTransition(Transition(effects = message), !isValid)
         }
 
         return manager.evaluate(formula, input, processingPass).renderModel

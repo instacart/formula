@@ -20,11 +20,11 @@ interface Stream<Message> {
     companion object {
 
         /**
-         * Emits a message when [Stream] is initialized. Use this stream to send a message when [Formula]
+         * Emits a effects when [Stream] is initialized. Use this stream to send a effects when [Formula]
          * is initialized.
          * ```
          * events(Stream.onInit()) {
-         *   message(analytics::trackViewEvent)
+         *   effects(analytics::trackViewEvent)
          * }
          */
         fun onInit(): Stream<Unit> {
@@ -33,12 +33,12 @@ interface Stream<Message> {
         }
 
         /**
-         * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
+         * Emits a effects with [data] when [Stream] is initialized. Uses [data] as key.
          *
-         * Use this stream to send a message with latest [Data] value.
+         * Use this stream to send a effects with latest [Data] value.
          * ```
          * events(Stream.onData(itemId)) {
-         *   message(api::fetchItem, itemId)
+         *   effects(api::fetchItem, itemId)
          * }
          * ```
          */
@@ -47,10 +47,10 @@ interface Stream<Message> {
         }
 
         /**
-         * Emits a message when [Formula] is terminated.
+         * Emits a effects when [Formula] is terminated.
          * ```
          * events(Stream.onTerminate()) {
-         *   message(analytics::trackCloseEvent)
+         *   effects(analytics::trackCloseEvent)
          * }
          * ```
          *
@@ -77,7 +77,7 @@ interface Stream<Message> {
 }
 
 /**
- * Emits a message as soon as [Stream] is initialized.
+ * Emits a effects as soon as [Stream] is initialized.
  */
 internal class StartMessageStream<Data : Any>(
     private val data: Data
@@ -92,7 +92,7 @@ internal class StartMessageStream<Data : Any>(
 }
 
 /**
- * Emits a message when [Formula] is terminated.
+ * Emits a effects when [Formula] is terminated.
  */
 internal object TerminateMessageStream : Stream<Unit> {
     override fun start(send: (Unit) -> Unit): Cancelable? {

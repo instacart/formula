@@ -57,7 +57,8 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     private var hasInitialFinished = false
     private var lastRenderModel: RenderModel? = null
 
-    private val messageQueue = LinkedList<Message>()
+    private val effectQueue = LinkedList<Effects>()
+    private var processingEffects: Boolean = false
 
     private var input: Input? = null
 
@@ -74,11 +75,11 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                     childManagerFactory = childManagerFactory
                 )
 
-            processorManager.setTransitionListener { messages, isValid ->
+            processorManager.setTransitionListener { message, isValid ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
-                messages.forEach {
-                    messageQueue.push(it)
+                if (message != null) {
+                    effectQueue.push(message)
                 }
 
                 process(isValid)
@@ -119,15 +120,16 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
             return
         }
 
-        while (messageQueue.isNotEmpty()) {
-            val message = messageQueue.pollFirst()
-            if (message != null) {
-                message.deliver()
-
-                if (lock.hasTransitioned(processingPass)) {
-                    return
+        // Each effect is fully executed before next one is started.
+        if (!processingEffects) {
+            processingEffects = true
+            while (effectQueue.isNotEmpty()) {
+                val effects = effectQueue.pollFirst()
+                if (effects != null) {
+                    effects()
                 }
             }
+            processingEffects = false
         }
 
         if (hasInitialFinished && !isValid) {

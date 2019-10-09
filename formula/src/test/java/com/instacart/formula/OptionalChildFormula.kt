@@ -36,7 +36,7 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
             renderModel = RenderModel(
                 child = childRM,
                 toggleChild = context.callback {
-                    state.copy(showChild = !state.showChild).noMessages()
+                    state.copy(showChild = !state.showChild).noEffects()
                 }
             )
         )

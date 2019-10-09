@@ -29,14 +29,18 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
                     text = task.title,
                     isSelected = task.isCompleted,
                     onClick = context.callback {
-                        message(input.showToast, "Task selected: ${task.title}")
+                        transition {
+                            input.showToast("Task selected: ${task.title}")
+                        }
                     },
                     onToggle = context.callback {
-                        val event = TaskCompletedEvent(
-                            taskId = task.id,
-                            isCompleted = !task.isCompleted
-                        )
-                        message(repo::onTaskCompleted, event)
+                        transition {
+                            val event = TaskCompletedEvent(
+                                taskId = task.id,
+                                isCompleted = !task.isCompleted
+                            )
+                            repo.onTaskCompleted(event)
+                        }
                     }
                 )
             }
@@ -45,7 +49,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
         return Evaluation(
             updates = context.updates {
                 events(RxStream.fromObservable(repo::tasks)) {
-                    state.copy(taskState = it).noMessages()
+                    state.copy(taskState = it).noEffects()
                 }
             },
             renderModel = TaskListRenderModel(
@@ -74,7 +78,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
                 TaskFilterRenderModel(
                     title = type.name,
                     onSelected = context.callback {
-                        state.copy(filterType = type).noMessages()
+                        state.copy(filterType = type).noEffects()
                     }
                 )
             }
