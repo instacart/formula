@@ -20,11 +20,11 @@ interface Stream<Message> {
     companion object {
 
         /**
-         * Emits a effects when [Stream] is initialized. Use this stream to send a effects when [Formula]
+         * Emits a message when [Stream] is initialized. Use this stream to send effects when [Formula]
          * is initialized.
          * ```
          * events(Stream.onInit()) {
-         *   effects(analytics::trackViewEvent)
+         *   transition { analytics.trackViewEvent() }
          * }
          */
         fun onInit(): Stream<Unit> {
@@ -33,12 +33,12 @@ interface Stream<Message> {
         }
 
         /**
-         * Emits a effects with [data] when [Stream] is initialized. Uses [data] as key.
+         * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
          *
          * Use this stream to send a effects with latest [Data] value.
          * ```
          * events(Stream.onData(itemId)) {
-         *   effects(api::fetchItem, itemId)
+         *   transition { api.fetchItem(itemId) }
          * }
          * ```
          */
@@ -47,10 +47,10 @@ interface Stream<Message> {
         }
 
         /**
-         * Emits a effects when [Formula] is terminated.
+         * Emits a message when [Formula] is terminated.
          * ```
          * events(Stream.onTerminate()) {
-         *   effects(analytics::trackCloseEvent)
+         *   transition { analytics.trackCloseEvent() }
          * }
          * ```
          *
@@ -77,7 +77,7 @@ interface Stream<Message> {
 }
 
 /**
- * Emits a effects as soon as [Stream] is initialized.
+ * Emits a message as soon as [Stream] is initialized.
  */
 internal class StartMessageStream<Data : Any>(
     private val data: Data
@@ -92,7 +92,7 @@ internal class StartMessageStream<Data : Any>(
 }
 
 /**
- * Emits a effects when [Formula] is terminated.
+ * Emits a message when [Formula] is terminated.
  */
 internal object TerminateMessageStream : Stream<Unit> {
     override fun start(send: (Unit) -> Unit): Cancelable? {
