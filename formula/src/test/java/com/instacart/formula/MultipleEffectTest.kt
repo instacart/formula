@@ -8,7 +8,7 @@ import org.junit.Test
 
 class MultipleEffectTest {
 
-    @Test fun `multiple message order should be maintained`() {
+    @Test fun `multiple effect order should be maintained`() {
         val triggerEventHandler = TestEventCallback<Int>()
         TestFormula()
             .test(TestFormula.Input(trigger = triggerEventHandler))

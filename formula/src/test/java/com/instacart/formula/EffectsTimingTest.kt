@@ -8,7 +8,7 @@ import org.junit.Test
 
 class EffectsTimingTest {
 
-    @Test fun `state change triggered by a message handler is scoped correctly`() {
+    @Test fun `side effect triggers a state change`() {
         val relay = PublishRelay.create<Unit>()
         val input = Input(
             external = relay,
