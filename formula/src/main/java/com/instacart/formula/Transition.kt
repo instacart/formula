@@ -26,14 +26,13 @@ data class Transition<out State> @PublishedApi internal constructor(
     }
 
     object Factory {
-        private val NONE = Transition<Any>()
+        private val NONE = Transition<Nothing>()
 
         /**
          * A transition that does nothing.
          */
-        fun <State> none(): Transition<State> {
-            @Suppress("UNCHECKED_CAST")
-            return NONE as Transition<State>
+        fun none(): Transition<Nothing> {
+            return NONE
         }
 
         /**
@@ -50,9 +49,9 @@ data class Transition<out State> @PublishedApi internal constructor(
         /**
          * Creates a transition that only executes [invokeEffects].
          */
-        fun <State> transition(
+        fun transition(
             invokeEffects: () -> Unit
-        ): Transition<State> {
+        ): Transition<Nothing> {
             return transition(null, invokeEffects)
         }
 

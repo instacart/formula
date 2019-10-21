@@ -7,7 +7,7 @@ import org.junit.Test
 class TransitionUtilsTest {
 
     @Test fun `none transition is empty`() {
-        val none = Transition.Factory.none<String>()
+        val none = Transition.Factory.none()
         assertThat(TransitionUtils.isEmpty(none)).isTrue()
     }
 

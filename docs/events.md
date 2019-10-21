@@ -44,9 +44,7 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
           transition { input.close() }
         } else {
           // Update failed, ask parent to show an error message.
-          transition {
-            input.showNotification(event.errorMessage)
-          }
+          transition { input.showNotification(event.errorMessage) }
         }
       }
     }
