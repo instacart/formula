@@ -18,8 +18,6 @@ All callbacks should be created within `Formula.evaluate` block.
 override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
   return Evaluation(
     renderModel = FormRenderModel(
-      name = state.name,
-
       // Use FormulaContext.eventCallback for callbacks that have a parameter.
       onNameChanged = context.eventCallback { newName ->
         // Use "newName" to perform a transition

@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.test.messages.TestCallback
+import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test

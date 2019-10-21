@@ -1,4 +1,4 @@
-package com.instacart.formula.test.messages
+package com.instacart.formula.test
 
 class TestCallback : () -> Unit {
     private var invocationCount: Int = 0

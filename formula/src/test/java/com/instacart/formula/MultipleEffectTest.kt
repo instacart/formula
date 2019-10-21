@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.test.messages.TestEventCallback
+import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
