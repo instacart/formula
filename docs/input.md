@@ -1,4 +1,4 @@
-Input is a Kotlin data class used to pass data and message handlers to the Formula instance. Let's say we need to 
+Input is a Kotlin data class used to pass data and event callbacks to the Formula instance. Let's say we need to 
 pass an item id to `ItemDetailFormula`. 
 ```kotlin
 class ItemDetailFormula() : Formula<ItemDetailFormula.Input, ..., ...> {
