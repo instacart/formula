@@ -1,7 +1,8 @@
-Event handling in Formula is based on callback functions. Callbacks can have zero or 
+Event handling in Formula is based on simple callback functions. Callbacks can have zero or 
 one parameter to pass data as part of the event.
 
-For example, to handle UI events, declare a function on the `Render Model` for each type of UI event you care about.
+### UI Events
+To handle UI events, declare a function on the `Render Model` for each type of UI event you care about.
 ```kotlin
 data class FormRenderModel(
   // A callback with no parameters
@@ -27,27 +28,13 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
 
       // Use FormulaContext.callback for callbacks with no parameters.
       onSaveSelected = context.callback {
-        // No state change, performing two side-effects.
+        // No state change, performing side-effects.
         transition {
           userService.updateName(state.name)  
           analytics.trackNameUpdated(state.name)
         }
       }
-    ),
-    updates = context.updates {
-      val updateNameResponses = RxStream.fromObservable {
-        userService.updateNameResponses()
-      }
-      events(updateNameResponses) { event ->
-        if (event.isSuccess) {
-          // Successful update, let's ask the parent to close us.
-          transition { input.close() }
-        } else {
-          // Update failed, ask parent to show an error message.
-          transition { input.showNotification(event.errorMessage) }
-        }
-      }
-    }
+    )
   )
 }
 ```
@@ -75,7 +62,7 @@ context.callback {
       input.showNotification("Name cannot be empty!")
     }
   } else {
-    // No state change, performing couple side-effects as part of the transition
+    // No state change, performing side-effects as part of the transition
     transition {
       userService.updateName(state.name)
       analytics.trackNameUpdated(state.name)
@@ -126,6 +113,7 @@ There are a few events that every formula can listen to and respond.
 
 ```kotlin
 Evaluation(
+  renderModel = ...,
   updates = context.updates {
     // Performs a side effect when formula is initialized
     events(Stream.onInit()) {
