@@ -14,7 +14,7 @@ class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.RenderMo
             renderModel = RenderModel(
                 state = state,
                 changeState = context.eventCallback { newState ->
-                    newState.noMessages()
+                    transition(newState)
                 }
             )
         )

@@ -2,11 +2,11 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.Message
+import com.instacart.formula.Effects
 
 interface FormulaManager<Input, State, RenderModel> {
 
-    fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit)
+    fun setTransitionListener(listener: (Effects?, isValid: Boolean) -> Unit)
 
     fun updateTransitionNumber(number: Long)
 

@@ -80,9 +80,9 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     onExit = context.callback {
-                        state.withMessages {
-                            message(input.exit)
-                            message(logExit)
+                        transition {
+                            input.exit()
+                            logExit()
                         }
                     }
                 )

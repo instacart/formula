@@ -26,17 +26,17 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
             updates = context.updates {
                 if (state.listenForEvents) {
                     events(incrementEvents.stream()) {
-                        state.copy(count = state.count + 1).noMessages()
+                        state.copy(count = state.count + 1).noEffects()
                     }
                 }
             },
             renderModel = RenderModel(
                 state = state.count,
                 startListening = context.callback {
-                    state.copy(listenForEvents = true).noMessages()
+                    state.copy(listenForEvents = true).noEffects()
                 },
                 stopListening = context.callback {
-                    state.copy(listenForEvents = false).noMessages()
+                    state.copy(listenForEvents = false).noEffects()
                 }
             )
         )

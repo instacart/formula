@@ -14,9 +14,7 @@ object StreamInitMessageDeliveredOnce {
                 renderModel = Unit,
                 updates = context.updates {
                     events(Stream.onInit()) {
-                        message {
-                            timesInitializedCalled += 1
-                        }
+                        transition { timesInitializedCalled += 1 }
                     }
                 }
             )

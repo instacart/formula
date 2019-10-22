@@ -2,7 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.Message
+import com.instacart.formula.Effects
 import com.instacart.formula.internal.FormulaManager
 
 /**
@@ -13,10 +13,10 @@ class TestFormulaManager<Input, State, RenderModel>(
     private val renderModel: RenderModel
 ) : FormulaManager<Input, State, RenderModel> {
 
-    private var transitionListener: ((List<Message>, Boolean) -> Unit) = { _, _ -> Unit }
+    private var transitionListener: ((Effects?, Boolean) -> Unit) = { _, _ -> Unit }
     private val inputs = mutableListOf<Input>()
 
-    override fun setTransitionListener(listener: (List<Message>, isValid: Boolean) -> Unit) {
+    override fun setTransitionListener(listener: (Effects?, isValid: Boolean) -> Unit) {
         transitionListener = listener
     }
 

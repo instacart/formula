@@ -2,8 +2,8 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.streams.EmptyStream
-import com.instacart.formula.test.messages.TestCallback
-import com.instacart.formula.test.messages.TestEventCallback
+import com.instacart.formula.test.TestCallback
+import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
@@ -452,13 +452,13 @@ class FormulaRuntimeTest {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
             events(Stream.onInit()) {
-                message {
+                transition {
                     executed += 1
                 }
             }
 
             events(Stream.onInit()) {
-                message {
+                transition {
                     executed += 1
                 }
             }
@@ -474,11 +474,11 @@ class FormulaRuntimeTest {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
             events(Stream.onData(it)) {
-                message { executed += 1 }
+                transition { executed += 1 }
             }
 
             events(Stream.onData(it)) {
-                message { executed += 1 }
+                transition { executed += 1 }
             }
         }
 
@@ -536,7 +536,7 @@ class FormulaRuntimeTest {
         var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
             events(Stream.onTerminate()) {
-                message {
+                transition {
                     emissions += 1
                     terminateCallback = input
                 }

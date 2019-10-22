@@ -4,7 +4,7 @@ object ChildMessageWithParentStateChange {
     fun formula() = HasChildFormula(MessageFormula()) { state ->
         MessageFormula.Input(
             messageHandler = eventCallback {
-                Transition(state + 1)
+                transition(state + 1)
             }
         )
     }

@@ -8,9 +8,7 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
             renderModel = Unit,
             updates = context.updates {
                 events(Stream.onTerminate()) {
-                    message {
-                        timesTerminateCalled += 1
-                    }
+                    transition { timesTerminateCalled += 1 }
                 }
             }
         )

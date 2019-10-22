@@ -12,7 +12,7 @@ class RemovingTerminateStreamSendsNoMessagesFormula : StatelessFormula<RemovingT
             updates = context.updates {
                 if (input.onTerminate != null) {
                     events(Stream.onTerminate()) {
-                        message(input.onTerminate)
+                        transition(input.onTerminate)
                     }
                 }
             }

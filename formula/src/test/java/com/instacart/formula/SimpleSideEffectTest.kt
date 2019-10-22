@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.test.messages.TestCallback
+import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
 import org.junit.Test
@@ -33,10 +33,10 @@ class SimpleSideEffectTest {
                     events(increment) {
                         val updated = state.copy(count = state.count + 1)
 
-                        if (updated.count == 5) {
-                            updated.withMessage(onGameOver)
-                        } else {
-                            updated.noMessages()
+                        transition(updated) {
+                            if (updated.count == 5) {
+                                onGameOver()
+                            }
                         }
                     }
                 }

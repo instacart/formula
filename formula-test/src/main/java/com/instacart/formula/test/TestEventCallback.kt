@@ -1,4 +1,4 @@
-package com.instacart.formula.test.messages
+package com.instacart.formula.test
 
 
 /**

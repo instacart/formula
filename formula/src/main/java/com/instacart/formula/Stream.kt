@@ -20,11 +20,11 @@ interface Stream<Message> {
     companion object {
 
         /**
-         * Emits a message when [Stream] is initialized. Use this stream to send a message when [Formula]
+         * Emits a message when [Stream] is initialized. Use this stream to send effects when [Formula]
          * is initialized.
          * ```
          * events(Stream.onInit()) {
-         *   message(analytics::trackViewEvent)
+         *   transition { analytics.trackViewEvent() }
          * }
          */
         fun onInit(): Stream<Unit> {
@@ -35,10 +35,10 @@ interface Stream<Message> {
         /**
          * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
          *
-         * Use this stream to send a message with latest [Data] value.
+         * Use this stream to send a effects with latest [Data] value.
          * ```
          * events(Stream.onData(itemId)) {
-         *   message(api::fetchItem, itemId)
+         *   transition { api.fetchItem(itemId) }
          * }
          * ```
          */
@@ -50,7 +50,7 @@ interface Stream<Message> {
          * Emits a message when [Formula] is terminated.
          * ```
          * events(Stream.onTerminate()) {
-         *   message(analytics::trackCloseEvent)
+         *   transition { analytics.trackCloseEvent() }
          * }
          * ```
          *

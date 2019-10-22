@@ -26,7 +26,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
                     repo.fetchItem(input.itemId)
                 }
                 events(fetchItem) {
-                    message(input.onItem, it)
+                    transition { input.onItem(it) }
                 }
             }
         )
