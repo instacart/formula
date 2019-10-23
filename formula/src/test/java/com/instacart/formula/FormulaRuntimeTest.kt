@@ -6,6 +6,7 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
+import org.junit.Ignore
 import org.junit.Test
 
 class FormulaRuntimeTest {
@@ -592,5 +593,21 @@ class FormulaRuntimeTest {
                     FromObservableWithInputFormula.Item("2")
                 )
             }
+    }
+
+    @Test
+    fun `mixing callback use with key use`() {
+        MixingCallbackUseWithKeyUse.ParentFormula()
+            .test()
+            .assertRenderModelCount(1)
+    }
+
+    // TODO: maybe worth adding support eventually.
+    @Test
+    fun `nested keys are not allowed`() {
+        NestedKeyFormula()
+            .start()
+            .test()
+            .assertError { it is java.lang.IllegalStateException && it.message.orEmpty().startsWith("Nested scopes are not supported currently.") }
     }
 }

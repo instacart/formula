@@ -10,6 +10,7 @@ internal class ScopedCallbacks private constructor(
 
     private val callbacks: SingleRequestMap<Any, Callbacks> = mutableMapOf()
 
+    private var lastCallbacks: Callbacks? = null
     private var lastKey: Any? = null
     private var currentKey: Any = rootKey
     private var current: Callbacks? = null
@@ -28,8 +29,12 @@ internal class ScopedCallbacks private constructor(
 
     fun enterScope(key: Any) {
         ensureNotRunning()
+        if (currentKey != rootKey) {
+            throw IllegalStateException("Nested scopes are not supported currently. Current scope: $currentKey")
+        }
 
         lastKey = currentKey
+        lastCallbacks = current
         currentKey = JoinedKey(lastKey, key)
         current = null
     }
@@ -42,6 +47,10 @@ internal class ScopedCallbacks private constructor(
         }
 
         currentKey = lastKey ?: rootKey
+        current = lastCallbacks
+
+        lastKey = null
+        lastCallbacks = null
     }
 
     fun evaluationStarted() {

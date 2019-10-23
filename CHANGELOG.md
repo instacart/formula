@@ -1,4 +1,8 @@
 # Changelog
+
+## [0.5.2-alpha2] - October 22, 2019
+- Bugfix: Fix `context.key` exit scope logic.
+
 ## [0.5.2-alpha1] - October 22, 2019
 - **Breaking**: Replacing `message` API with post transition side-effect block. [#115](https://github.com/instacart/formula/pull/115)
 
