@@ -1,0 +1,20 @@
+apply plugin: "signing"
+
+
+if (project.gradle.startParameter.taskNames.contains("uploadArchives")) {
+    println "configuring signing key"
+
+    Properties properties = new Properties()
+    if (project.rootProject.file('local.properties').exists()) {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    }
+
+    signing {
+        def signingKeyFilename = properties.signingKey
+
+        def signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
+        def signingPassword = properties.signingPassword
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+}

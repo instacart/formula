@@ -25,7 +25,10 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "com.github.laimiux:gradle-android-junit-jacoco-plugin:a910712557"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.25.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.26.0"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.18"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
+        classpath "com.vanniktech:gradle-maven-publish-plugin:0.8.0"
     }
 }
 

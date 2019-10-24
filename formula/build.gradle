@@ -1,5 +1,9 @@
 apply plugin: 'kotlin'
-apply plugin: 'maven'
+apply plugin: "com.vanniktech.maven.publish"
+apply plugin: 'org.jetbrains.dokka'
+
+apply from: rootProject.file('.buildscript/configure-dokka.gradle')
+apply from: rootProject.file('.buildscript/configure-signing.gradle')
 
 repositories {
     mavenCentral()
@@ -7,21 +11,6 @@ repositories {
 
 sourceCompatibility = 1.8 // java 8
 targetCompatibility = 1.8
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    setArchiveClassifier('sources')
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    setArchiveClassifier('javadoc')
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
 
 dependencies {
     implementation libraries.kotlin
