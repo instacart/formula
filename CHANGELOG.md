@@ -1,4 +1,6 @@
 # Changelog
+## [0.5.2] - October 25, 2019
+- Maven central release
 
 ## [0.5.2-alpha2] - October 22, 2019
 - Bugfix: Fix `context.key` exit scope logic.
