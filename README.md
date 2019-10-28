@@ -13,21 +13,12 @@ This module has been designed for gradual adoption. You can use as much or as li
 To learn more, see our [Integration Guide](docs/Integration.md).
 
 ## Download
-
-Add [JitPack](https://jitpack.io) to your list of repositories:
-
-```groovy
-repositories {
-    maven { url 'https://jitpack.io' }
-}
-```
-
-And add the library to your list of dependencies:
+Add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.github.instacart:formula:0.5.1'
-    implementation 'com.github.instacart:formula-android:0.5.1'
+    implementation 'com.github.instacart:formula:0.5.2'
+    implementation 'com.github.instacart:formula-android:0.5.2'
 }
 ```
 

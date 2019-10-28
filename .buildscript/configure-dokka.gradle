@@ -1,0 +1,9 @@
+// Must be afterEvaluate or else com.vanniktech.maven.publish will overwrite our dokka configuration.
+afterEvaluate { project ->
+    project.tasks.dokka {
+        jdkVersion = 8
+        reportUndocumented = false
+        skipDeprecated = true
+        skipEmptyPackages = true
+    }
+}
