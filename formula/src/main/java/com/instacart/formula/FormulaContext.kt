@@ -102,7 +102,7 @@ abstract class FormulaContext<State> internal constructor(
      * @param key A unique identifier for this formula.
      */
     abstract fun <ChildInput, ChildState, ChildRenderModel> child(
-        key: String,
+        key: Any,
         formula: Formula<ChildInput, ChildState, ChildRenderModel>
     ): Child<State, ChildInput, ChildRenderModel>
 

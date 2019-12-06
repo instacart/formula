@@ -46,7 +46,7 @@ class FormulaContextImpl<State> internal constructor(
     }
 
     override fun <ChildInput, ChildState, ChildRenderModel> child(
-        key: String,
+        key: Any,
         formula: Formula<ChildInput, ChildState, ChildRenderModel>
     ): Child<State, ChildInput, ChildRenderModel>  {
         ensureNotRunning()
