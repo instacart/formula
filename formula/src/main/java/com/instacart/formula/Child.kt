@@ -13,7 +13,7 @@ class Child<State, ChildInput, ChildRenderModel> internal constructor(
     @PublishedApi internal var key: Any? = null
     private var formula: Formula<ChildInput, *, ChildRenderModel>? = null
 
-    internal fun initialize(key: String, formula: Formula<ChildInput, *, ChildRenderModel>) {
+    internal fun initialize(key: Any, formula: Formula<ChildInput, *, ChildRenderModel>) {
         if (this.formula != null) {
             throw IllegalStateException("unfinished child definition: ${this.formula}")
         }
