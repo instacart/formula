@@ -1,4 +1,7 @@
 # Changelog
+## [0.5.3] - December 10, 2019
+- Change child formula key from String to Any.
+
 ## [0.5.2] - October 25, 2019
 - Maven central release
 
