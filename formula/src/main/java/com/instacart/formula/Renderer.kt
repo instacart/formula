@@ -18,7 +18,7 @@ class Renderer<in RenderModel> private constructor(
         /**
          * Creates a basic renderer
          */
-        fun <State> create(render: (State) -> Unit): Renderer<State> {
+        fun <RenderModel> create(render: (RenderModel) -> Unit): Renderer<RenderModel> {
             return Renderer(renderFunction = render)
         }
     }
@@ -28,12 +28,12 @@ class Renderer<in RenderModel> private constructor(
     private var last: RenderModel? = null
 
     /**
-     * Render the passed render model, first checking to see if a render is already in progress, or the passed state
-     * is equivalent to the last state.
+     * Render the passed render model, first checking to see if a render is already in progress, or the passed render model
+     * is equivalent to the last render model.
      */
-    fun render(state: RenderModel) {
+    fun render(renderModel: RenderModel) {
         if (inProgress) {
-            pending = state
+            pending = renderModel
             return
         }
 
@@ -41,11 +41,11 @@ class Renderer<in RenderModel> private constructor(
 
         val local = last
 
-        if (local == null || local != state) {
-            renderFunction(state)
+        if (local == null || local != renderModel) {
+            renderFunction(renderModel)
         }
 
-        last = state
+        last = renderModel
         inProgress = false
 
         // Check if there is a pending update and execute it.
