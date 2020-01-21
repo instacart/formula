@@ -29,16 +29,12 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
-     * @param key Unique identifier that describes this callback
+     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
     inline fun callback(
-        key: String,
+        key: Any,
         crossinline transition: Transition.Factory.() -> Transition<State>
     ): () -> Unit {
-        if (key.isBlank()) {
-            throw IllegalStateException("Key cannot be blank.")
-        }
-
         val callback = callbacks.initOrFindCallback(key)
         callback.callback = {
             performTransition(transition(Transition.Factory))
@@ -66,16 +62,12 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback that takes a [UIEvent] and performs a [Transition].
      *
-     * @param key Unique identifier that describes this callback
+     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
     inline fun <UIEvent> eventCallback(
-        key: String,
+        key: Any,
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
-        if (key.isBlank()) {
-            throw IllegalStateException("Key cannot be blank.")
-        }
-
         val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
         callback.callback = {
             performTransition(transition(Transition.Factory, it))
