@@ -23,7 +23,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     }
 
     private val contract: FragmentContract<RenderModel> by lazy(LazyThreadSafetyMode.NONE) {
-        arguments!!.getParcelable<FragmentContract<RenderModel>>(ARG_CONTRACT)
+        arguments!!.getParcelable<FragmentContract<RenderModel>>(ARG_CONTRACT)!!
     }
 
     // State relay + disposable
