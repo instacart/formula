@@ -1,6 +1,7 @@
 # Changelog
 ## [0.5.4] - TODO
 - Change callback key type from String to Any.
+- Removed deprecated `state()` extension
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.
