@@ -41,13 +41,17 @@ class FragmentFlowRenderView(
     private var removedEarly = mutableListOf<FragmentContract<*>>()
 
     init {
+        activity.supportFragmentManager.addOnBackStackChangedListener {
+            recordBackstackChange()
+        }
+
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(object :
             FragmentManager.FragmentLifecycleCallbacks() {
 
             override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
                 super.onFragmentViewCreated(fm, f, v, savedInstanceState)
 
-                recordBackstackChange()
+                backstackEntries = activity.supportFragmentManager.backStackEntryCount
 
                 val tag = f.tag
                 if (tag != null) {
@@ -84,8 +88,6 @@ class FragmentFlowRenderView(
             override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
                 super.onFragmentViewDestroyed(fm, f)
                 visibleFragments.remove(f.tag)
-
-                recordBackstackChange()
 
                 notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
                 // This means that fragment is removed due to backstack change.
