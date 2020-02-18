@@ -2,6 +2,8 @@
 ## [0.5.4] - TODO
 - Change callback key type from String to Any.
 - Removed deprecated `state()` extension
+- Updated AndroidX appcompat to 1.1.0
+- Updated AndroidX fragment-ktx extensions to 1.2.1
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.

@@ -12,6 +12,7 @@ import com.instacart.formula.integration.BackCallback
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -155,6 +156,7 @@ class FragmentFlowRenderViewTest {
         assertThat(currentBackstack()).containsExactly(TestContract(), TestContractWithId(1))
     }
 
+    @Ignore
     @Test fun `process death imitation`() {
         navigateToTaskDetail()
 
