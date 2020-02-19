@@ -23,8 +23,14 @@ class Renderer<in RenderModel> private constructor(
         }
     }
 
-    private var pending: RenderModel? = null
-    private var inProgress: Boolean = false
+    private enum class State {
+        NOT_INITIALIZED,
+        INITIALIZED,
+        UPDATE_IN_PROGRESS
+    }
+
+    private var state: State = State.NOT_INITIALIZED
+    private var pending: (() -> Unit)? = null
     private var last: RenderModel? = null
 
     /**
@@ -32,27 +38,26 @@ class Renderer<in RenderModel> private constructor(
      * is equivalent to the last render model.
      */
     fun render(renderModel: RenderModel) {
-        if (inProgress) {
-            pending = renderModel
+        val lastState = this.state
+        if (lastState == State.UPDATE_IN_PROGRESS) {
+            pending = { render(renderModel) }
             return
         }
 
-        inProgress = true
+        state = State.UPDATE_IN_PROGRESS
 
         val local = last
+        last = renderModel
 
-        if (local == null || local != renderModel) {
+        if (lastState == State.NOT_INITIALIZED || local != renderModel) {
             renderFunction(renderModel)
         }
 
-        last = renderModel
-        inProgress = false
+        state = State.INITIALIZED
 
         // Check if there is a pending update and execute it.
         val localPending = pending
         pending = null
-        if (localPending != null) {
-            render(localPending)
-        }
+        localPending?.invoke()
     }
 }
