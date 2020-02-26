@@ -29,10 +29,11 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
 
     private var state: State = state
     private var onTransition: ((Effects?, isValid: Boolean) -> Unit)? = null
+    private var pendingRemoval: MutableList<FormulaManager<*, *, *>>? = null
 
     private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
         if (terminated) {
-            // We only pass messages up.
+            // State transitions are ignored, only side effects are passed up to be executed.
             onTransition?.invoke(transition.effects, true)
             return
         }
@@ -68,7 +69,6 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         transitionId: Long
     ): Evaluation<RenderModel> {
         // TODO: assert main thread.
-
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
             updateTransitionNumber(transitionId)
@@ -91,15 +91,28 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
 
         callbacks.evaluationFinished()
 
-        // Set pending removal of children.
         children.clearUnrequested {
+            pendingRemoval = pendingRemoval ?: mutableListOf()
             it.markAsTerminated()
+            pendingRemoval?.add(it)
         }
 
         transitionCallback.running = true
         return result
     }
 
+    override fun terminateDetachedChildren(currentTransition: Long): Boolean {
+        val local = pendingRemoval
+        pendingRemoval = null
+        local?.forEach { it.performTerminationSideEffects() }
+        if (transitionLock.hasTransitioned(currentTransition)) {
+            return true
+        }
+
+        return children.any { it.value.value.terminateDetachedChildren(currentTransition) }
+    }
+
+    // TODO: should probably terminate children streams, then self.
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
@@ -139,6 +152,10 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
      * Returns true if has transition while moving to next frame.
      */
     fun nextFrame(currentTransition: Long): Boolean {
+        if (terminateDetachedChildren(currentTransition)) {
+            return true
+        }
+
         if (terminateOldUpdates(currentTransition)) {
             return true
         }
@@ -159,15 +176,15 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         @Suppress("UNCHECKED_CAST")
         val manager = children
             .findOrInit(key) {
-                childManagerFactory.createChildManager(formula, input, transitionLock)
+                childManagerFactory.createChildManager(formula, input, transitionLock).apply {
+                    setTransitionListener { message, isValid ->
+                        handleTransition(Transition(effects = message), !isValid)
+                    }
+                }
             }
             .requestAccess {
                 throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
             } as FormulaManager<ChildInput, ChildState, ChildRenderModel>
-
-        manager.setTransitionListener { message, isValid ->
-            handleTransition(Transition(effects = message), !isValid)
-        }
 
         return manager.evaluate(formula, input, processingPass).renderModel
     }
@@ -175,13 +192,17 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     override fun markAsTerminated() {
         terminated = true
         frame?.transitionCallbackWrapper?.terminated = true
-
         callbacks.disableAll()
-        updateManager.terminate()
         children.forEachValue { it.markAsTerminated() }
+    }
+
+    override fun performTerminationSideEffects() {
+        children.forEachValue { it.performTerminationSideEffects() }
+        updateManager.terminate()
     }
 
     fun terminate() {
         markAsTerminated()
+        performTerminationSideEffects()
     }
 }

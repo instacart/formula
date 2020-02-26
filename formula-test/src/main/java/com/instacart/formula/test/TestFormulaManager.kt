@@ -33,6 +33,8 @@ class TestFormulaManager<Input, State, RenderModel>(
         return Evaluation(renderModel = renderModel)
     }
 
+    override fun terminateDetachedChildren(currentTransition: Long) = false
+
     override fun terminateOldUpdates(currentTransition: Long): Boolean {
         return false
     }
@@ -42,6 +44,8 @@ class TestFormulaManager<Input, State, RenderModel>(
     }
 
     override fun markAsTerminated() = Unit
+
+    override fun performTerminationSideEffects() = Unit
 
     fun lastInput(): Input {
         return inputs.last()
