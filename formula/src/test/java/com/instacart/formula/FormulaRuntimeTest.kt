@@ -6,7 +6,6 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
-import org.junit.Ignore
 import org.junit.Test
 
 class FormulaRuntimeTest {
@@ -561,6 +560,29 @@ class FormulaRuntimeTest {
         formula.test().renderModel { toggleChild() }.apply {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
+    }
+
+    @Test
+    fun `multiple termination side-effects`() {
+        val terminateFormula = TerminateFormula()
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
+                (0 until 10).forEach {
+                    context.child(it, terminateFormula).input(Unit)
+                }
+                return Evaluation(Unit)
+            }
+        }
+        formula.test().dispose()
+        assertThat(terminateFormula.timesTerminateCalled).isEqualTo(10)
+    }
+
+    @Test fun `nested termination with input changed`() {
+        NestedTerminationWithInputChanged()
+            .test(Observable.just(false, true, false))
+            .apply {
+                assertThat(formula.terminateFormula.timesTerminateCalled).isEqualTo(1)
+            }
     }
 
     @Test
