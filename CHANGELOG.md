@@ -5,6 +5,7 @@
 - Updated AndroidX appcompat to 1.1.0
 - Updated AndroidX fragment-ktx extensions to 1.2.1
 - Bugfix: Fix `Stream.onTerminate` causing illegal state exception.
+- **Breaking**: In formula-android, replacing lastEntry() with visibleState() in FragmentFlowState.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.

@@ -115,7 +115,7 @@ class FragmentFlowStoreTest {
         }
 
         return FragmentFlowState(
-            backStack = BackStack(states.map { it.first }),
+            activeKeys = states.map { it.first },
             states = keyStates
         )
     }

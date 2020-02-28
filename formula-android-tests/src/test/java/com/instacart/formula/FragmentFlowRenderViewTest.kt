@@ -12,7 +12,6 @@ import com.instacart.formula.integration.BackCallback
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -64,20 +63,20 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `add fragment lifecycle event`() {
-        assertThat(currentBackstack()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract())
     }
 
     @Test fun `pop backstack lifecycle event`() {
         navigateToTaskDetail()
         navigateBack()
 
-        assertThat(currentBackstack()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract())
     }
 
     @Test fun `navigating forward should have both keys in backstack`() {
         navigateToTaskDetail()
 
-        assertThat(currentBackstack()).containsExactly(
+        assertThat(activeContracts()).containsExactly(
             TestContract(),
             TestContractWithId(1)
         )
@@ -92,7 +91,8 @@ class FragmentFlowRenderViewTest {
                 .commitNow()
         }
 
-        assertThat(currentBackstack()).containsExactly(TestContract())
+        assertVisibleContract(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract())
     }
 
     @Test fun `render model is passed to visible fragment`() {
@@ -152,11 +152,11 @@ class FragmentFlowRenderViewTest {
         val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
-        // Both contracts should be in the backstack.
-        assertThat(currentBackstack()).containsExactly(TestContract(), TestContractWithId(1))
+        assertVisibleContract(TestContractWithId(1))
+        // Both contracts should be active.
+        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1))
     }
 
-    @Ignore
     @Test fun `process death imitation`() {
         navigateToTaskDetail()
 
@@ -169,12 +169,15 @@ class FragmentFlowRenderViewTest {
         val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
-        // When activity is recreated, it only triggers event for current fragment
-        assertThat(currentBackstack()).containsExactly(TestContractWithId(1))
+        // When activity is recreated, it first triggers current fragment and
+        // then loads ones from backstack
+        assertVisibleContract(TestContractWithId(1))
+        assertThat(activeContracts()).containsExactly(TestContractWithId(1), TestContract())
 
         navigateBack()
 
-        assertThat(currentBackstack()).containsExactly(TestContract())
+        assertVisibleContract(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract())
     }
 
     private fun navigateBack() {
@@ -196,10 +199,15 @@ class FragmentFlowRenderViewTest {
         return scenario.activity()
     }
 
-    private fun currentBackstack(): List<FragmentContract<*>> {
+    private fun activeContracts(): List<FragmentContract<*>> {
         return scenario.get {
-            lastState!!.backStack.keys
+            lastState!!.activeKeys
         }
+    }
+
+    private fun assertVisibleContract(contract: FragmentContract<*>) {
+        // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
+        assertThat(scenario.get { lastState?.visibleKeys?.lastOrNull() }).isEqualTo(contract)
     }
 
     private fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {
