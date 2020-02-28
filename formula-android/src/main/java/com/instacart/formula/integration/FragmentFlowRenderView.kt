@@ -14,6 +14,7 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.fragment.getFragmentContract
 import com.instacart.formula.integration.internal.forEachIndices
 import java.util.LinkedList
 
@@ -144,11 +145,7 @@ internal class FragmentFlowRenderView(
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
-        if (fragment is BaseFormulaFragment<*>) {
-            onLifecycleState?.let {
-                it.invoke(fragment.getFragmentContract(), newState)
-            }
-        }
+        onLifecycleState?.invoke(fragment.getFragmentContract(), newState)
     }
 
     private fun updateVisibleFragments(state: FragmentFlowState) {
