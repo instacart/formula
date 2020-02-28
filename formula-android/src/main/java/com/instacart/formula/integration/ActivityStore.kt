@@ -63,4 +63,8 @@ class ActivityStore<Activity : FragmentActivity>(
         }
         context.holder.updateFragmentLifecycleState(contract, state)
     }
+
+    fun onFragmentViewStateChanged(contract: FragmentContract<*>, isVisible: Boolean) {
+        fragmentFlowStore.onVisibilityChanged(contract, isVisible)
+    }
 }
