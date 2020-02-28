@@ -5,7 +5,9 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
+import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
+import io.reactivex.functions.BiFunction
 
 /**
  * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.
@@ -36,11 +38,47 @@ class FragmentFlowStore(
         }
     }
 
+    private val visibleContractEvents = PublishRelay.create<FragmentContract<*>>()
+    private val hiddenContractEvents = PublishRelay.create<FragmentContract<*>>()
+
     fun onLifecycleEffect(event: FragmentLifecycleEvent) {
         contractStore.onLifecycleEffect(event)
     }
 
+    internal fun onVisibilityChanged(contract: FragmentContract<*>, visible: Boolean) {
+        if (visible) {
+            visibleContractEvents.accept(contract)
+        } else {
+            hiddenContractEvents.accept(contract)
+        }
+    }
+
     fun state(): Observable<FragmentFlowState> {
-        return store.state()
+        val contractShown = visibleContractEvents.map { contract ->
+            { list: List<FragmentContract<*>> ->
+                list + contract
+            }
+        }
+
+        val contractHidden = hiddenContractEvents.map { contract ->
+            { list: List<FragmentContract<*>> ->
+                list - contract
+            }
+        }
+
+        val visibleContracts = Observable.merge(contractShown, contractHidden)
+            .scan(emptyList<FragmentContract<*>>()) { list, reducer -> reducer(list) }
+            .distinctUntilChanged()
+
+        return Observable.combineLatest(
+            visibleContracts,
+            store.state(),
+            BiFunction { visible, state ->
+                FragmentFlowState(
+                    activeKeys = state.backStack.keys,
+                    visibleKeys = visible,
+                    states = state.states
+                )
+            })
     }
 }

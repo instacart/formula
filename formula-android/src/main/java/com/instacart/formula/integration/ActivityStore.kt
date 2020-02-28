@@ -1,6 +1,8 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
@@ -27,12 +29,12 @@ class ActivityStore<Activity : FragmentActivity>(
     onFragmentFlowStateChanged: (FragmentFlowState) -> Unit
 ) {
 
-    val state = fragmentFlowStore
+    internal val state = fragmentFlowStore
         .state()
         .doOnNext(onFragmentFlowStateChanged)
         .replay(1)
 
-    val subscription: Disposable
+    internal val subscription: Disposable
 
     init {
         if (start != null) {
@@ -48,5 +50,17 @@ class ActivityStore<Activity : FragmentActivity>(
     fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         fragmentFlowStore.onLifecycleEffect(event)
         onFragmentLifecycleEvent?.invoke(event)
+    }
+
+    fun onLifecycleState(contract: FragmentContract<*>, state: Lifecycle.State) {
+        val fragmentContractShownEvent = when {
+            state == Lifecycle.State.CREATED -> true
+            state == Lifecycle.State.DESTROYED -> false
+            else -> null
+        }
+        fragmentContractShownEvent?.let { visible ->
+            fragmentFlowStore.onVisibilityChanged(contract, visible)
+        }
+        context.holder.updateFragmentLifecycleState(contract, state)
     }
 }
