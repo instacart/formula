@@ -55,12 +55,16 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     private var manager: FormulaManagerImpl<Input, State, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
+    private var emitRenderModel = false
     private var lastRenderModel: RenderModel? = null
+    private var processingRequested: Boolean = false
 
     private val effectQueue = LinkedList<Effects>()
     private var processingEffects: Boolean = false
 
     private var input: Input? = null
+    private var isProcessing: Boolean = false
+//    private var isValid: Boolean? = null
 
     fun onInput(input: Input) {
         val initialization = this.input == null
@@ -82,19 +86,19 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                     effectQueue.push(message)
                 }
 
-                process(isValid)
+                process2(isValid)
             }
 
             manager = processorManager
 
-            process(false)
+            process2(false)
             hasInitialFinished = true
 
             lastRenderModel?.let {
                 onRenderModel(it)
             }
         } else {
-            process(false)
+            process2(false)
         }
     }
 
@@ -111,6 +115,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
             lock.next()
         }
 
+        isProcessing = true
         if (!isValid) {
             val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
             lastRenderModel = result.renderModel
@@ -131,9 +136,63 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
             }
             processingEffects = false
         }
+        isProcessing = false
 
         if (hasInitialFinished && !isValid) {
             onRenderModel(checkNotNull(lastRenderModel))
+        }
+    }
+
+    /**
+     * Processes the next frame.
+     */
+    private fun process2(isValid: Boolean) {
+        val localManager = checkNotNull(manager)
+        val currentInput = checkNotNull(input)
+
+        val processingPass = if (isValid) {
+            lock.processingPass
+        } else {
+            lock.next()
+        }
+        processingRequested = true
+
+        if (!isValid) {
+            val result: Evaluation<RenderModel> =
+                localManager.evaluate(formula, currentInput, processingPass)
+            lastRenderModel = result.renderModel
+            emitRenderModel = true
+        }
+
+        if (isProcessing) return
+
+        isProcessing = true
+        while (processingRequested) {
+            processingRequested = false
+            processPass(localManager, lock.processingPass)
+        }
+        isProcessing = false
+
+        if (hasInitialFinished && emitRenderModel) {
+            emitRenderModel = false
+            onRenderModel(checkNotNull(lastRenderModel))
+        }
+    }
+
+    private fun processPass(
+        localManager: FormulaManagerImpl<Input, State, RenderModel>,
+        processingPass: Long
+    ) {
+
+        if (localManager.nextFrame(processingPass)) {
+            return
+        }
+
+        while (effectQueue.isNotEmpty() && !lock.hasTransitioned(processingPass)) {
+            val effects = effectQueue.pollFirst()
+            if (effects != null) {
+                effects()
+            }
         }
     }
 }
