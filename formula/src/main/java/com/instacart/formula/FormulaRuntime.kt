@@ -60,11 +60,9 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     private var processingRequested: Boolean = false
 
     private val effectQueue = LinkedList<Effects>()
-    private var processingEffects: Boolean = false
 
     private var input: Input? = null
     private var isProcessing: Boolean = false
-//    private var isValid: Boolean? = null
 
     fun onInput(input: Input) {
         val initialization = this.input == null
@@ -86,19 +84,19 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                     effectQueue.push(message)
                 }
 
-                process2(isValid)
+                process(isValid)
             }
 
             manager = processorManager
 
-            process2(false)
+            process(false)
             hasInitialFinished = true
 
             lastRenderModel?.let {
                 onRenderModel(it)
             }
         } else {
-            process2(false)
+            process(false)
         }
     }
 
@@ -106,47 +104,6 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
      * Processes the next frame.
      */
     private fun process(isValid: Boolean) {
-        val localManager = checkNotNull(manager)
-        val currentInput = checkNotNull(input)
-
-        val processingPass = if (isValid) {
-            lock.processingPass
-        } else {
-            lock.next()
-        }
-
-        isProcessing = true
-        if (!isValid) {
-            val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
-            lastRenderModel = result.renderModel
-        }
-
-        if (localManager.nextFrame(processingPass)) {
-            return
-        }
-
-        // Each effect is fully executed before next one is started.
-        if (!processingEffects) {
-            processingEffects = true
-            while (effectQueue.isNotEmpty()) {
-                val effects = effectQueue.pollFirst()
-                if (effects != null) {
-                    effects()
-                }
-            }
-            processingEffects = false
-        }
-        isProcessing = false
-
-        if (hasInitialFinished && !isValid) {
-            onRenderModel(checkNotNull(lastRenderModel))
-        }
-    }
-
-    /**
-     * Processes the next frame.
-     */
-    private fun process2(isValid: Boolean) {
         val localManager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
