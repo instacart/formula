@@ -6,6 +6,7 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.Observable
+import org.junit.Ignore
 import org.junit.Test
 
 class FormulaRuntimeTest {
@@ -615,6 +616,28 @@ class FormulaRuntimeTest {
                     FromObservableWithInputFormula.Item("2")
                 )
             }
+    }
+
+    @Test
+    fun `initialize 100 levels nested formula`() {
+        ExtremelyNestedFormula.nested(100).test().renderModel {
+            assertThat(this).isEqualTo(100)
+        }
+    }
+
+    @Test
+    fun `initialize 250 levels nested formula`() {
+        ExtremelyNestedFormula.nested(250).test().renderModel {
+            assertThat(this).isEqualTo(250)
+        }
+    }
+
+    @Ignore("stack overflows when there are 500 nested child formulas")
+    @Test
+    fun `initialize 500 levels nested formula`() {
+        ExtremelyNestedFormula.nested(500).test().renderModel {
+            assertThat(this).isEqualTo(500)
+        }
     }
 
     @Test
