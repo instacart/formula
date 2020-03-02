@@ -38,7 +38,8 @@ internal class StoreManager(
         val renderView = FragmentFlowRenderView(
             activity = activity,
             onLifecycleEvent = store::onLifecycleEvent,
-            onLifecycleState = store::onLifecycleState
+            onLifecycleState = store::onLifecycleState,
+            onFragmentViewStateChanged = store::onFragmentViewStateChanged
         )
 
         renderViewMap[activity] = renderView
