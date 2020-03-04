@@ -55,12 +55,14 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     private var manager: FormulaManagerImpl<Input, State, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
+    private var emitRenderModel = false
     private var lastRenderModel: RenderModel? = null
+    private var processingRequested: Boolean = false
 
     private val effectQueue = LinkedList<Effects>()
-    private var processingEffects: Boolean = false
 
     private var input: Input? = null
+    private var isProcessing: Boolean = false
 
     fun onInput(input: Input) {
         val initialization = this.input == null
@@ -110,30 +112,44 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         } else {
             lock.next()
         }
+        processingRequested = true
 
         if (!isValid) {
-            val result: Evaluation<RenderModel> = localManager.evaluate(formula, currentInput, processingPass)
+            val result: Evaluation<RenderModel> =
+                localManager.evaluate(formula, currentInput, processingPass)
             lastRenderModel = result.renderModel
+            emitRenderModel = true
         }
+
+        if (isProcessing) return
+
+        isProcessing = true
+        while (processingRequested) {
+            processingRequested = false
+            processPass(localManager, lock.processingPass)
+        }
+        isProcessing = false
+
+        if (hasInitialFinished && emitRenderModel) {
+            emitRenderModel = false
+            onRenderModel(checkNotNull(lastRenderModel))
+        }
+    }
+
+    private fun processPass(
+        localManager: FormulaManagerImpl<Input, State, RenderModel>,
+        processingPass: Long
+    ) {
 
         if (localManager.nextFrame(processingPass)) {
             return
         }
 
-        // Each effect is fully executed before next one is started.
-        if (!processingEffects) {
-            processingEffects = true
-            while (effectQueue.isNotEmpty()) {
-                val effects = effectQueue.pollFirst()
-                if (effects != null) {
-                    effects()
-                }
+        while (effectQueue.isNotEmpty() && !lock.hasTransitioned(processingPass)) {
+            val effects = effectQueue.pollFirst()
+            if (effects != null) {
+                effects()
             }
-            processingEffects = false
-        }
-
-        if (hasInitialFinished && !isValid) {
-            onRenderModel(checkNotNull(lastRenderModel))
         }
     }
 }
