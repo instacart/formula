@@ -132,7 +132,7 @@ internal class FragmentFlowRenderView(
     }
 
     fun onBackPressed(): Boolean {
-        val lastFragment = visibleFragments.last()
+        val lastFragment = visibleFragments.lastOrNull()
         if (lastFragment is BaseFormulaFragment<*>) {
             val state = fragmentState?.states?.get(lastFragment.getFragmentContract())?.renderModel
             return state is BackCallback && state.onBackPressed()
