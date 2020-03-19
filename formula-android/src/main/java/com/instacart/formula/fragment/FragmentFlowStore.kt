@@ -56,7 +56,12 @@ class FragmentFlowStore(
     fun state(): Observable<FragmentFlowState> {
         val contractShown = visibleContractEvents.map { contract ->
             { list: List<FragmentContract<*>> ->
-                list + contract
+                if (!list.contains(contract)) {
+                    list + contract
+                } else {
+                    // TODO: should we log this duplicate visibility event?
+                    list
+                }
             }
         }
 

@@ -53,14 +53,6 @@ class ActivityStore<Activity : FragmentActivity>(
     }
 
     fun onLifecycleState(contract: FragmentContract<*>, state: Lifecycle.State) {
-        val fragmentContractShownEvent = when {
-            state == Lifecycle.State.CREATED -> true
-            state == Lifecycle.State.DESTROYED -> false
-            else -> null
-        }
-        fragmentContractShownEvent?.let { visible ->
-            fragmentFlowStore.onVisibilityChanged(contract, visible)
-        }
         context.holder.updateFragmentLifecycleState(contract, state)
     }
 
