@@ -206,8 +206,13 @@ class FragmentFlowRenderViewTest {
     }
 
     private fun assertVisibleContract(contract: FragmentContract<*>) {
+        assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
         assertThat(scenario.get { lastState?.visibleKeys?.lastOrNull() }).isEqualTo(contract)
+    }
+
+    private fun assertNoDuplicates(contract: FragmentContract<*>) {
+        assertThat(lastState?.visibleKeys?.count { it == contract }).isEqualTo(1)
     }
 
     private fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {
