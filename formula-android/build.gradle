@@ -52,7 +52,6 @@ dependencies {
     implementation libraries.androidx.annotation
     implementation libraries.androidx.appcompat
 
-    api libraries.arrow.core
     api libraries.rxandroid
     api libraries.rxrelays
 

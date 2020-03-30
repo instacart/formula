@@ -28,7 +28,7 @@ class FragmentLifecycleTest {
                         contract = TestLifecycleContract()
                         initialContract = contract
                     },
-                    contracts = {
+                    fragments = {
                         bind(TestLifecycleContract::class) { _ ->
                             Observable.empty()
                         }

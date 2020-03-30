@@ -35,7 +35,7 @@ class FragmentFlowRenderViewTest {
                         onRenderFragmentState = { a, state ->
                             lastState = state
                         },
-                        contracts = {
+                        fragments = {
                             bind { key: TestContract ->
                                 stateChanges(key)
                             }

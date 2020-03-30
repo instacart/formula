@@ -41,8 +41,7 @@ class ActivityUpdateTimingTest {
                     store(
                         streams = {
                             update(updateRelay, TestActivity::applyUpdate)
-                        },
-                        contracts = {}
+                        }
                     )
                 }
             }

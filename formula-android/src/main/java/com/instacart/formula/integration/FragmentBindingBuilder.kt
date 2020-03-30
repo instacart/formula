@@ -30,7 +30,8 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
         type : KClass<T>,
         integration: Integration<Component, T, RenderModel>
     ) = apply {
-        bind(SingleBinding(type.java, integration) as Binding<Component, FragmentContract<*>>)
+        val binding = SingleBinding(type.java, integration)
+        bind(binding as Binding<Component, FragmentContract<*>>)
     }
 
     /**

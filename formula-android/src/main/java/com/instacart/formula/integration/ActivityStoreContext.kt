@@ -7,8 +7,6 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.BiFunction
@@ -20,58 +18,43 @@ import io.reactivex.functions.BiFunction
  *
  * @param Activity Type of activity that this class provides context for.
  */
-class ActivityStoreContext<Activity : FragmentActivity>(
-    @PublishedApi internal val holder: ActivityHolder<Activity>
-) {
-    private val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
-    private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
+abstract class ActivityStoreContext<out Activity : FragmentActivity> {
 
-    internal fun onActivityResult(result: ActivityResult) {
-        activityResultRelay.accept(result)
-    }
+    // TODO: might be okay to remove in favor of startedActivity
+    @PublishedApi internal abstract fun currentActivity(): Activity?
+
+    @PublishedApi internal abstract fun startedActivity(): Activity?
+
+    @PublishedApi internal abstract fun activityAttachEvents(): Observable<Boolean>
+
+    @PublishedApi internal abstract fun activityStartedEvents(): Observable<Unit>
 
     /**
      * Events for [FragmentActivity.onActivityResult].
      */
-    fun activityResults(): Observable<ActivityResult> {
-        return activityResultRelay
-    }
+    abstract fun activityResults(): Observable<ActivityResult>
 
     /**
      * Returns RxJava stream that emits Activity lifecycle state [Lifecycle.State].
      */
-    fun activityLifecycleState(): Observable<Lifecycle.State> {
-        return holder.lifecycleStates
-    }
+    abstract fun activityLifecycleState(): Observable<Lifecycle.State>
 
     /**
      * Returns RxJava stream that emits [FragmentFlowStore] state changes.
      */
-    fun fragmentFlowState(): Observable<FragmentFlowState> {
-        return fragmentFlowStateRelay
-    }
+    abstract fun fragmentFlowState(): Observable<FragmentFlowState>
 
     /**
      * Returns RxJava stream that emits true if fragment with [FragmentContract] has either [Lifecycle.State.STARTED]
      * or [Lifecycle.State.RESUMED] lifecycle state.
      */
-    fun isFragmentStarted(contract: FragmentContract<*>): Observable<Boolean> {
-        return holder
-            .fragmentLifecycleState(contract)
-            .map { it.isAtLeast(Lifecycle.State.STARTED) }
-            .distinctUntilChanged()
-    }
+    abstract fun isFragmentStarted(contract: FragmentContract<*>): Observable<Boolean>
 
     /**
      * Returns RxJava stream that emits true if fragment with [FragmentContract]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
-    fun isFragmentResumed(contract: FragmentContract<*>): Observable<Boolean> {
-        return holder
-            .fragmentLifecycleState(contract)
-            .map { it.isAtLeast(Lifecycle.State.RESUMED) }
-            .distinctUntilChanged()
-    }
+    abstract fun isFragmentResumed(contract: FragmentContract<*>): Observable<Boolean>
 
     /**
      * Creates an [ActivityStore].
@@ -82,25 +65,23 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
      * @param streams This provides ability to configure arbitrary RxJava streams that survive
      *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts [FragmentFlowStore] used to provide state management for individual screens.
+     * @param fragments [FragmentFlowStore] used to provide state management for individual screens.
      */
-    fun store(
-        configureActivity: (Activity.() -> Unit)? = null,
-        onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
+    fun <ActivityT : FragmentActivity> store(
+        configureActivity: (ActivityT.() -> Unit)? = null,
+        onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
-        contracts: FragmentFlowStore
-    ) : ActivityStore<Activity> {
-        val streamStart = createStreamStartFunction(streams)
+        fragments: FragmentFlowStore
+    ): ActivityStore<ActivityT> {
+        val streamStart = streams?.let { streams(it) }
 
         return ActivityStore(
-            onFragmentFlowStateChanged = fragmentFlowStateRelay::accept,
-            context = this,
-            fragmentFlowStore = contracts,
+            fragments = fragments,
             configureActivity = configureActivity,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             onRenderFragmentState = onRenderFragmentState,
-            start = streamStart
+            streams = streamStart
         )
     }
 
@@ -113,31 +94,31 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
      * @param streams This provides ability to configure arbitrary RxJava streams that survive
      *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
+     * @param fragments Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
      */
-    inline fun store(
-        noinline configureActivity: (Activity.() -> Unit)? = null,
-        noinline onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
+    inline fun <ActivityT : FragmentActivity> store(
+        noinline configureActivity: (ActivityT.() -> Unit)? = null,
+        noinline onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         noinline streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
-        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit
-    ) : ActivityStore<Activity> {
+        crossinline fragments: FragmentBindingBuilder<Unit>.() -> Unit = {}
+    ): ActivityStore<ActivityT> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             streams = streams,
-            contracts = contracts(Unit, contracts)
+            fragments = fragments(Unit, fragments)
         )
     }
 
     /**
      * Creates [FragmentFlowStore] with a [Component] instance.
      */
-    inline fun <Component> contracts(
+    inline fun <Component> fragments(
         rootComponent: Component,
         crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
-    ) : FragmentFlowStore {
+    ): FragmentFlowStore {
         return FragmentFlowStore.init(rootComponent, contracts)
     }
 
@@ -147,7 +128,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      */
     inline fun send(effect: Activity.() -> Unit) {
         // We allow emitting effects only after activity has started
-        holder.startedActivity()?.effect() ?: run {
+        startedActivity()?.effect() ?: run {
             // Log missing activity.
         }
     }
@@ -157,32 +138,31 @@ class ActivityStoreContext<Activity : FragmentActivity>(
      *
      * @param Event Type of event
      */
-    inline fun <Event> selectActivityEvents(crossinline select: Activity.() -> Observable<Event>): Observable<Event> {
-        return holder.latestActivity().switchMap {
-            val activity = it.orNull()
-            if (activity == null) {
-                Observable.empty<Event>()
-            } else {
-                select(activity)
+    inline fun <Event> selectActivityEvents(
+        crossinline select: Activity.() -> Observable<Event>
+    ): Observable<Event> {
+        // TODO: should probably use startedActivity
+        return activityAttachEvents()
+            .switchMap {
+                val activity = currentActivity()
+                if (activity == null) {
+                    Observable.empty<Event>()
+                } else {
+                    select(activity)
+                }
             }
-        }
     }
 
-    private fun createStreamStartFunction(
-        stream: (StreamConfigurator<Activity>.() -> Disposable)?
-    ): (() -> Disposable)? {
-        return stream?.let { configure ->
-            {
-                StreamConfigurator(this).configure()
-            }
-        }
+    private fun streams(configure: StreamConfigurator<Activity>.() -> Disposable): () -> Disposable {
+        return { StreamConfigurator(this).configure() }
     }
 
     /**
      * Provides ability to configure RxJava streams that will survive configuration changes.
      */
-    class StreamConfigurator<Activity : FragmentActivity>(private val context: ActivityStoreContext<Activity>) {
-
+    class StreamConfigurator<out Activity : FragmentActivity>(
+        private val context: ActivityStoreContext<Activity>
+    ) {
         /**
          * Keeps activity in-sync with state observable updates. On activity configuration
          * changes, the last update is applied to new activity instance.
@@ -194,13 +174,13 @@ class ActivityStoreContext<Activity : FragmentActivity>(
             // To keep activity & state in sync, we re-emit state on every activity change.
             val stateEmissions = Observable.combineLatest(
                 state,
-                context.holder.activityStartedEvents(),
+                context.activityStartedEvents(),
                 BiFunction<State, Unit, State> { state, event ->
                     state
                 }
             )
             return stateEmissions.subscribe { state ->
-                context.holder.startedActivity()?.let {
+                context.startedActivity()?.let {
                     update(it, state)
                 }
             }

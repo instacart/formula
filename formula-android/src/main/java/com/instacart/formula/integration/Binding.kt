@@ -42,5 +42,9 @@ abstract class Binding<in ParentComponent, Key> {
      * @param component A component associated with the parent. Often this will map to the parent dagger component.
      * @param backstack A stream that emits the current back stack state.
      */
-    abstract fun state(component: ParentComponent, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>>
+    abstract fun state(
+        environment: FlowEnvironment<Key>,
+        component: ParentComponent,
+        backstack: Observable<BackStack<Key>>
+    ): Observable<KeyState<Key>>
 }

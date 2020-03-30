@@ -3,6 +3,7 @@ package com.instacart.formula.integration.internal
 import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.ComponentFactory
+import com.instacart.formula.integration.FlowEnvironment
 import com.instacart.formula.integration.KeyState
 import io.reactivex.Observable
 
@@ -23,14 +24,18 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
         return bindings.any { it.binds(key) }
     }
 
-    override fun state(component: ParentComponent, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>> {
+    override fun state(
+        environment: FlowEnvironment<Key>,
+        component: ParentComponent,
+        backstack: Observable<BackStack<Key>>
+    ): Observable<KeyState<Key>> {
         return backstack
             .isInScope()
             .switchMap { enterScope ->
                 if (enterScope) {
                     val disposableScope = scopeFactory.invoke(component)
                     val updates = bindings.map {
-                        it.state(disposableScope.component, backstack)
+                        it.state(environment, disposableScope.component, backstack)
                     }
 
                     Observable.merge(updates).doOnDispose { disposableScope.dispose() }

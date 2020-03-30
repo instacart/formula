@@ -24,7 +24,7 @@ class FragmentAndroidEventTest {
                         configureActivity = {
                             initialContract = TestLifecycleContract()
                         },
-                        contracts = {
+                        fragments = {
                             bind(TestLifecycleContract::class) { _ ->
                                 activityResults().flatMap {
                                     activityResults.add(it)

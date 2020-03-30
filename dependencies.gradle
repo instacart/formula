@@ -1,5 +1,4 @@
 ext {
-    arrowVersion = '0.10.0'
     androidXVersion = '1.1.0'
     androidTestVersion = "1.1.0"
     androidJUnitVersion = "1.1.0"
@@ -46,9 +45,6 @@ ext {
                             rules   : "androidx.test:rules:$androidTestVersion",
                             runner  : "androidx.test:runner:$androidTestVersion"
                     ]
-            ],
-            arrow                : [
-                "core"  : "io.arrow-kt:arrow-core:$arrowVersion"
             ],
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",

@@ -17,13 +17,15 @@ class FragmentFlowStore(
     private val store: FlowStore<FragmentContract<*>>
 ) {
     companion object {
-        inline fun init(crossinline init: FragmentBindingBuilder<Unit>.() -> Unit): FragmentFlowStore {
+        inline fun init(
+            crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
+        ): FragmentFlowStore {
             return init(Unit, init)
         }
 
         inline fun <Component> init(
             rootComponent: Component,
-            crossinline init: FragmentBindingBuilder<Component>.() -> Unit
+            crossinline fragments: FragmentBindingBuilder<Component>.() -> Unit
         ): FragmentFlowStore {
             val contractStore = BackStackStore<FragmentContract<*>>()
 
@@ -31,7 +33,7 @@ class FragmentFlowStore(
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val bindings = FragmentBindingBuilder.build(init)
+            val bindings = FragmentBindingBuilder.build(fragments)
             val root = Binding.composite(factory, bindings)
             val store = FlowStore(contractStore.stateChanges(), root)
             return FragmentFlowStore(contractStore, store)
@@ -53,7 +55,7 @@ class FragmentFlowStore(
         }
     }
 
-    fun state(): Observable<FragmentFlowState> {
+    fun state(environment: FragmentEnvironment): Observable<FragmentFlowState> {
         val contractShown = visibleContractEvents.map { contract ->
             { list: List<FragmentContract<*>> ->
                 if (!list.contains(contract)) {
@@ -77,7 +79,7 @@ class FragmentFlowStore(
 
         return Observable.combineLatest(
             visibleContracts,
-            store.state(),
+            store.state(environment),
             BiFunction { visible, state ->
                 FragmentFlowState(
                     activeKeys = state.backStack.keys,

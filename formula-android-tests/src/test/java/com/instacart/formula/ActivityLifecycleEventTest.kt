@@ -30,8 +30,7 @@ class ActivityLifecycleEventTest {
                             activityLifecycleState().subscribe {
                                 events.add(it)
                             }
-                        },
-                        contracts = {}
+                        }
                     )
                 }
             }

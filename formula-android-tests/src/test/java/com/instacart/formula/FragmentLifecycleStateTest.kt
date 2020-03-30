@@ -31,7 +31,7 @@ class FragmentLifecycleStateTest {
                         configureActivity = {
                             initialContract = TestContract()
                         },
-                        contracts = {
+                        fragments = {
                             bind { key: TestContract ->
                                 stateChanges(key)
                             }

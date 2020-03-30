@@ -2,6 +2,7 @@ package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.test.TestAccountFragmentContract
 import com.instacart.formula.integration.test.TestLoginFragmentContract
@@ -55,7 +56,7 @@ class FragmentFlowStoreTest {
         val appComponent = AppComponent()
         val store = createStore(appComponent)
         store
-            .state()
+            .state(FragmentEnvironment())
             .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(TestLoginFragmentContract()))
@@ -71,7 +72,7 @@ class FragmentFlowStoreTest {
         val appComponent = AppComponent()
         val store = createStore(appComponent)
         store
-            .state()
+            .state(FragmentEnvironment())
             .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(TestLoginFragmentContract()))
@@ -93,7 +94,7 @@ class FragmentFlowStoreTest {
         val appComponent = AppComponent()
         val store = createStore(appComponent)
         store
-            .state()
+            .state(FragmentEnvironment())
             .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(TestLoginFragmentContract()))
