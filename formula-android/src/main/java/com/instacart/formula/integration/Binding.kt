@@ -1,28 +1,13 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.FormulaContext
 import com.instacart.formula.integration.internal.CompositeBinding
-import com.instacart.formula.integration.internal.SingleBinding
-import io.reactivex.rxjava3.core.Observable
-import kotlin.reflect.KClass
 
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<in ParentComponent, Key> {
+abstract class Binding<ParentComponent, Key : Any> {
     companion object {
-        fun <Component, Key : Any, State : Any> single(
-            type: KClass<Key>,
-            stateInit: (Component, Key) -> Observable<State>
-        ): Binding<Component, Key> {
-            val integration = object : Integration<Component, Key, State>() {
-                override fun create(component: Component, key: Key): Observable<State> {
-                    return stateInit(component, key)
-                }
-            }
-
-            return SingleBinding(type.java, integration)
-        }
-
         fun <ParentComponent, Component, Key : Any> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
             bindings: Bindings<Component, Key>
@@ -31,22 +16,23 @@ abstract class Binding<in ParentComponent, Key> {
         }
     }
 
+    data class Input<Component, Key : Any>(
+        val environment: FlowEnvironment<Key>,
+        val component: Component,
+        val activeKeys: List<Key>,
+        val onStateChanged: (KeyState<Key>) -> Unit
+    )
+
+
     internal abstract fun types(): Set<Class<*>>
 
     /**
      * Returns true if this binding handles this [key]
      */
-    abstract fun binds(key: Any): Boolean
+    internal abstract fun binds(key: Any): Boolean
 
     /**
-     * Listens to the back stack changes and returns a stream of [KeyState] updates for keys that it [binds] to.
-     *
-     * @param component A component associated with the parent. Often this will map to the parent dagger component.
-     * @param backstack A stream that emits the current back stack state.
+     * Listens for active key changes and triggers [Input.onStateChanged] events.
      */
-    abstract fun state(
-        environment: FlowEnvironment<Key>,
-        component: ParentComponent,
-        backstack: Observable<BackStack<Key>>
-    ): Observable<KeyState<Key>>
+    internal abstract fun bind(context: FormulaContext<*>, input: Input<ParentComponent, Key>)
 }
