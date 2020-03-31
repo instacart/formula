@@ -45,9 +45,7 @@ class ActivityHolder<Activity : FragmentActivity> {
     }
 
     fun detachActivity(activity: Activity) {
-        if (this.activity == activity) {
-            this.activity = null
-        }
+        this.activity = null
         lifecycleEventRelay.accept(Unit)
     }
 

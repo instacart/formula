@@ -200,7 +200,7 @@ class ActivityStoreContext<Activity : FragmentActivity>(
                 }
             )
             return stateEmissions.subscribe { state ->
-                context.holder.currentActivity()?.let {
+                context.holder.startedActivity()?.let {
                     update(it, state)
                 }
             }
