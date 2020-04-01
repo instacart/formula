@@ -49,11 +49,18 @@ class Renderer<in RenderModel> private constructor(
         val local = last
         last = renderModel
 
-        if (lastState == State.NOT_INITIALIZED || local != renderModel) {
-            renderFunction(renderModel)
+        try {
+            if (lastState == State.NOT_INITIALIZED || local != renderModel) {
+                renderFunction(renderModel)
+            }
+            state = State.INITIALIZED
+        } catch (e: Throwable) {
+            // Reset state
+            last = local
+            state = lastState
+            // Rethrow the exception
+            throw e
         }
-
-        state = State.INITIALIZED
 
         // Check if there is a pending update and execute it.
         val localPending = pending

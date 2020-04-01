@@ -64,6 +64,26 @@ class RendererTest {
         subject.assertRenderedValues(null)
     }
 
+    @Test fun `handling exceptions in rendering`() {
+        var crash: Boolean = true
+        val subject = TestSubject<String?> { renderer, value ->
+            if (crash) {
+                crash = false
+                throw IllegalStateException("you can't do this")
+            }
+        }
+
+        try {
+            subject.render(null)
+        } catch (e: Throwable) {
+            // Should log exceptions
+        } finally {
+            subject.render(null)
+        }
+
+        subject.assertRenderedValues(null, null)
+    }
+
     class TestSubject<T>(private val postRender: (Renderer<T>, T) -> Unit = { _, _ -> Unit }) {
         private val results = mutableListOf<T>()
         lateinit var reference: Renderer<T>
