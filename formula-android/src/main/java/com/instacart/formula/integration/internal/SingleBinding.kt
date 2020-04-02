@@ -2,13 +2,15 @@ package com.instacart.formula.integration.internal
 
 import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
+import com.instacart.formula.integration.FlowEnvironment
 import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import io.reactivex.Observable
+import io.reactivex.functions.Function
 
 /**
- * Defines how a specific key should be bound to it's [Integration],
+ * Defines how a specific key should be bound to its [Integration],
  */
 internal class SingleBinding<Component, Key, State : Any>(
     private val type: Class<Key>,
@@ -17,9 +19,16 @@ internal class SingleBinding<Component, Key, State : Any>(
     /**
      * Helper method to select state from active backstack.
      */
-    override fun state(component: Component, backstack: Observable<BackStack<Key>>): Observable<KeyState<Key>> {
+    override fun state(
+        environment: FlowEnvironment<Key>,
+        component: Component,
+        backstack: Observable<BackStack<Key>>
+    ): Observable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            integration.create(component, key)
+            integration.create(component, key).onErrorResumeNext(Function {
+                environment.onScreenError(key, it)
+                Observable.empty()
+            })
         }
     }
 

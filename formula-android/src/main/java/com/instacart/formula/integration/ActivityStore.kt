@@ -1,12 +1,9 @@
 package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
 /**
@@ -14,49 +11,18 @@ import io.reactivex.disposables.Disposable
  * navigation destination [com.instacart.formula.fragment.FragmentContract] to its state
  * management stream.
  *
- * @param configureActivity this is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
+ * @param contracts Fragment state management defined for this [Activity].
+ * @param streams This provides ability to configure arbitrary RxJava streams that survive
+ *                configuration changes. Check [ActivityStoreContext.StreamConfigurator] for utility methods.
+ * @param configureActivity This is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
  *                          use this callback to inject the activity.
- * @param onRenderFragmentState this is invoked after [FragmentFlowState] has been updated.
- * @param onFragmentLifecycleEvent this is callback for when a fragment is added or removed.
+ * @param onRenderFragmentState This is invoked after [FragmentFlowState] has been updated.
+ * @param onFragmentLifecycleEvent This is callback for when a fragment is added or removed.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    val context: ActivityStoreContext<Activity>,
-    val fragmentFlowStore: FragmentFlowStore,
-    val start: (() -> Disposable)? = null,
+    val contracts: FragmentFlowStore,
+    val streams: (() -> Disposable)? = null,
     val configureActivity: ((Activity) -> Unit)? = null,
     val onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
-    private val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
-    onFragmentFlowStateChanged: (FragmentFlowState) -> Unit
-) {
-
-    internal val state = fragmentFlowStore
-        .state()
-        .doOnNext(onFragmentFlowStateChanged)
-        .replay(1)
-
-    internal val subscription: Disposable
-
-    init {
-        if (start != null) {
-            val disposables = CompositeDisposable()
-            disposables.add(state.connect())
-            disposables.add(start.invoke())
-            subscription = disposables
-        } else {
-            subscription = state.connect()
-        }
-    }
-
-    fun onLifecycleEvent(event: FragmentLifecycleEvent) {
-        fragmentFlowStore.onLifecycleEffect(event)
-        onFragmentLifecycleEvent?.invoke(event)
-    }
-
-    fun onLifecycleState(contract: FragmentContract<*>, state: Lifecycle.State) {
-        context.holder.updateFragmentLifecycleState(contract, state)
-    }
-
-    fun onFragmentViewStateChanged(contract: FragmentContract<*>, isVisible: Boolean) {
-        fragmentFlowStore.onVisibilityChanged(contract, isVisible)
-    }
-}
+    val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null
+)

@@ -48,9 +48,11 @@ class FlowStore<Key : Any> constructor(
     private val reducerFactory = FlowReducers(root)
     private val keyState = keyState.replay(1).refCount()
 
-    fun state(): Observable<FlowState<Key>> {
+    fun state(environment: FlowEnvironment<Key> = FlowEnvironment()): Observable<FlowState<Key>> {
         val backstackChangeReducer = keyState.map(reducerFactory::onBackstackChange)
-        val stateChangeReducers = root.state(Unit, keyState).map(reducerFactory::onScreenStateChanged)
+        val stateChangeReducers = root
+            .state(environment, Unit, keyState)
+            .map(reducerFactory::onScreenStateChanged)
 
         val reducers = Observable.merge(backstackChangeReducer, stateChangeReducers)
 

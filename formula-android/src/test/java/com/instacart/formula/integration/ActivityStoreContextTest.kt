@@ -2,6 +2,7 @@ package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
+import com.instacart.formula.android.internal.ActivityStoreContextImpl
 import com.instacart.formula.fragment.FragmentContract
 import com.jakewharton.rxrelay2.PublishRelay
 import com.nhaarman.mockito_kotlin.mock
@@ -19,13 +20,11 @@ class ActivityStoreContextTest {
         fun doSomething() {}
     }
 
-    lateinit var holder: ActivityHolder<FakeActivity>
-    lateinit var context: ActivityStoreContext<FakeActivity>
+    private lateinit var context: ActivityStoreContextImpl<FakeActivity>
     val fakeEventRelay = PublishRelay.create<String>()
 
     @Before fun setup() {
-        holder = ActivityHolder()
-        context = ActivityStoreContext(holder)
+        context = ActivityStoreContextImpl()
     }
 
     @Test fun `select activity events only runs when activity is attached`() {
@@ -39,12 +38,12 @@ class ActivityStoreContextTest {
             .assertEmpty()
             .apply {
                 val activity = createFakeActivity()
-                holder.attachActivity(activity)
+                context.attachActivity(activity)
 
                 fakeEventRelay.accept("first")
                 fakeEventRelay.accept("second")
 
-                holder.detachActivity(activity)
+                context.detachActivity(activity)
 
                 fakeEventRelay.accept("third")
             }
@@ -53,7 +52,7 @@ class ActivityStoreContextTest {
 
     @Test fun `send drops events if activity is not started`() {
         val activity = createFakeActivity()
-        holder.attachActivity(activity)
+        context.attachActivity(activity)
 
         context.send {
             doSomething()
@@ -64,8 +63,8 @@ class ActivityStoreContextTest {
 
     @Test fun `send event success`() {
         val activity = createFakeActivity()
-        holder.attachActivity(activity)
-        holder.onActivityStarted(activity)
+        context.attachActivity(activity)
+        context.onActivityStarted(activity)
 
         context.send {
             doSomething()
@@ -79,7 +78,7 @@ class ActivityStoreContextTest {
         context.isFragmentStarted(contract)
             .test()
             .apply {
-                holder.updateFragmentLifecycleState(contract, Lifecycle.State.STARTED)
+                context.updateFragmentLifecycleState(contract, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
     }
@@ -89,7 +88,7 @@ class ActivityStoreContextTest {
         context.isFragmentResumed(contract)
             .test()
             .apply {
-                holder.updateFragmentLifecycleState(contract, Lifecycle.State.RESUMED)
+                context.updateFragmentLifecycleState(contract, Lifecycle.State.RESUMED)
             }
             .assertValues(false, true)
     }

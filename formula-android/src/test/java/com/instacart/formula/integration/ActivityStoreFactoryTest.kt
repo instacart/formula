@@ -2,24 +2,26 @@ package com.instacart.formula.integration
 
 import androidx.fragment.app.FragmentActivity
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.internal.ActivityStoreFactory
+import com.instacart.formula.fragment.FragmentEnvironment
 import com.nhaarman.mockito_kotlin.mock
 import org.junit.Test
 
-class AppStoreFactoryTest {
+class ActivityStoreFactoryTest {
 
     class FakeActivity : FragmentActivity()
 
     @Test fun `initialized store is live`() {
-
-        val factory = AppStoreFactory.Builder()
-            .apply {
+        val factory = ActivityStoreFactory(
+            environment = FragmentEnvironment(),
+            activities = {
                 activity(FakeActivity::class) {
                     store { }
                 }
             }
-            .build()
+        )
 
         val store = factory.init(mock<FakeActivity>())!!
-        assertThat(store.subscription.isDisposed).isFalse()
+        assertThat(store.stateSubscription.isDisposed).isFalse()
     }
 }

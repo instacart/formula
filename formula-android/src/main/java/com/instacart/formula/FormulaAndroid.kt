@@ -5,28 +5,41 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
+import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.activity.ActivityResult
-import com.instacart.formula.integration.AppStoreFactory
-import com.instacart.formula.integration.StoreManager
+import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.fragment.FragmentEnvironment
+import com.instacart.formula.android.internal.ActivityStoreFactory
+import com.instacart.formula.android.AppManager
 import java.lang.IllegalStateException
 
 object FormulaAndroid {
 
     private var application: Application? = null
-    private var storeManager: StoreManager? = null
+    private var appManager: AppManager? = null
 
-    fun init(application: Application, init: AppStoreFactory.Builder.() -> Unit) {
+    /**
+     * Initializes Formula Android integration. Should be called within [Application.onCreate].
+     *
+     * @param onFragmentError A global handler for fragment errors. Override this to log the crashes.
+     */
+    fun init(
+        application: Application,
+        onFragmentError: (FragmentContract<*>, Throwable) -> Unit = { _, it -> throw it },
+        activities: ActivityConfigurator.() -> Unit
+    ) {
         // Should we allow re-initialization?
-        if (storeManager != null) {
+        if (appManager != null) {
             throw IllegalStateException("can only initialize the store once.")
         }
 
-        val factory = AppStoreFactory.Builder().apply { init() }.build()
-        val manager = StoreManager(factory)
-        application.registerActivityLifecycleCallbacks(manager)
+        val fragmentEnvironment = FragmentEnvironment(onFragmentError)
+        val factory = ActivityStoreFactory(fragmentEnvironment, activities)
+        val appManager = AppManager(factory)
+        application.registerActivityLifecycleCallbacks(appManager)
 
         this.application = application
-        this.storeManager = manager
+        this.appManager = appManager
     }
 
     /**
@@ -63,8 +76,8 @@ object FormulaAndroid {
         return managerOrThrow(activity).onBackPressed(activity)
     }
 
-    private fun managerOrThrow(activity: FragmentActivity): StoreManager {
-        return storeManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
+    private fun managerOrThrow(activity: FragmentActivity): AppManager {
+        return appManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
     }
 
     /**
@@ -72,9 +85,9 @@ object FormulaAndroid {
      */
     @VisibleForTesting fun reset() {
         val app = application ?: throw IllegalStateException("not initialized")
-        app.unregisterActivityLifecycleCallbacks(storeManager)
+        app.unregisterActivityLifecycleCallbacks(appManager)
 
         application = null
-        storeManager = null
+        appManager = null
     }
 }

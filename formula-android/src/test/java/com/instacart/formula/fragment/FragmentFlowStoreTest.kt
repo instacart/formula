@@ -1,7 +1,6 @@
 package com.instacart.formula.fragment
 
 import android.view.View
-import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay2.PublishRelay
@@ -40,6 +39,7 @@ class FragmentFlowStoreTest {
     @Before fun setup() {
         updateRelay = PublishRelay.create()
 
+        FragmentEnvironment()
         store = FragmentFlowStore.init {
             bind(Master::class) { key ->
                 state(key)
@@ -54,7 +54,7 @@ class FragmentFlowStoreTest {
         val master = Master(1)
         val detail = Detail(1)
         store
-            .state()
+            .state(FragmentEnvironment())
             .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(master))
@@ -79,7 +79,7 @@ class FragmentFlowStoreTest {
     }
 
     @Test fun `various fragments added`() {
-        store.state().test()
+        store.state(FragmentEnvironment()).test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(Master(1)))
                 store.onLifecycleEffect(LifecycleEvent.Added(Detail(1)))

@@ -38,8 +38,7 @@ class ActivityUpdateTest {
                     store(
                         streams = {
                             update(updateRelay, TestActivity::applyUpdate)
-                        },
-                        contracts = {}
+                        }
                     )
                 }
             }
