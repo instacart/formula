@@ -19,7 +19,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 ) {
 
     private val fragmentState = store
-        .fragments
+        .contracts
         .state(environment)
         .doOnNext(delegate.fragmentFlowStateRelay::accept)
         .replay(1)
@@ -47,11 +47,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
         fragmentRenderView = FragmentFlowRenderView(
             activity = activity,
             onLifecycleEvent = {
-                store.fragments.onLifecycleEffect(it)
+                store.contracts.onLifecycleEffect(it)
                 store.onFragmentLifecycleEvent?.invoke(it)
             },
             onLifecycleState = delegate::updateFragmentLifecycleState,
-            onFragmentViewStateChanged = store.fragments::onVisibilityChanged
+            onFragmentViewStateChanged = store.contracts::onVisibilityChanged
         )
     }
 

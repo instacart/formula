@@ -25,7 +25,7 @@ class FragmentFlowStore(
 
         inline fun <Component> init(
             rootComponent: Component,
-            crossinline fragments: FragmentBindingBuilder<Component>.() -> Unit
+            crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
         ): FragmentFlowStore {
             val contractStore = BackStackStore<FragmentContract<*>>()
 
@@ -33,7 +33,7 @@ class FragmentFlowStore(
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val bindings = FragmentBindingBuilder.build(fragments)
+            val bindings = FragmentBindingBuilder.build(contracts)
             val root = Binding.composite(factory, bindings)
             val store = FlowStore(contractStore.stateChanges(), root)
             return FragmentFlowStore(contractStore, store)

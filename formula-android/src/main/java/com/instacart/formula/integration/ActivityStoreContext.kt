@@ -65,19 +65,19 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
      * @param streams This provides ability to configure arbitrary RxJava streams that survive
      *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param fragments [FragmentFlowStore] used to provide state management for individual screens.
+     * @param contracts [FragmentFlowStore] used to provide state management for individual screens.
      */
     fun <ActivityT : FragmentActivity> store(
         configureActivity: (ActivityT.() -> Unit)? = null,
         onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
-        fragments: FragmentFlowStore
+        contracts: FragmentFlowStore
     ): ActivityStore<ActivityT> {
         val streamStart = streams?.let { streams(it) }
 
         return ActivityStore(
-            fragments = fragments,
+            contracts =  contracts,
             configureActivity = configureActivity,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             onRenderFragmentState = onRenderFragmentState,
@@ -94,28 +94,28 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
      * @param streams This provides ability to configure arbitrary RxJava streams that survive
      *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param fragments Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
+     * @param contracts Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
      */
     inline fun <ActivityT : FragmentActivity> store(
         noinline configureActivity: (ActivityT.() -> Unit)? = null,
         noinline onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         noinline streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
-        crossinline fragments: FragmentBindingBuilder<Unit>.() -> Unit = {}
+        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit = {}
     ): ActivityStore<ActivityT> {
         return store(
             configureActivity = configureActivity,
             onRenderFragmentState = onRenderFragmentState,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             streams = streams,
-            fragments = fragments(Unit, fragments)
+            contracts =  contracts(Unit, contracts)
         )
     }
 
     /**
      * Creates [FragmentFlowStore] with a [Component] instance.
      */
-    inline fun <Component> fragments(
+    inline fun <Component> contracts(
         rootComponent: Component,
         crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
     ): FragmentFlowStore {

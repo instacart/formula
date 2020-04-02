@@ -6,7 +6,6 @@
 - Updated AndroidX fragment-ktx extensions to 1.2.1
 - Bugfix: Fix `Stream.onTerminate` causing illegal state exception.
 - **Breaking**: In formula-android, replacing lastEntry() with visibleState() in FragmentFlowState.
-- **Breaking**: In formula-android, renamed `contracts` to `fragments`.
 - Allow down-casting `ActivityStoreContext<MyActivity>` to `ActivityStoreContext<FragmentActivity>`
 - Enable global fragment error logging.
 

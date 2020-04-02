@@ -22,7 +22,7 @@ class TodoApp : Application() {
                     val component = TodoAppComponent()
 
                     store(
-                        fragments = fragments(component) {
+                        contracts =  contracts(component) {
                             bind(TaskListContract::class) { component, key ->
                                 val input = TaskListFormula.Input(showToast = { message ->
                                     send {
