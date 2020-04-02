@@ -54,7 +54,7 @@ class Renderer<in RenderModel> private constructor(
                 renderFunction(renderModel)
             }
             state = State.INITIALIZED
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             // Reset state
             last = local
             state = lastState

@@ -13,7 +13,8 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     companion object {
         private const val ARG_CONTRACT = "formula fragment contract"
 
-        @JvmStatic fun <State> newInstance(contract: FragmentContract<State>): FormulaFragment<State> {
+        @JvmStatic
+        fun <State> newInstance(contract: FragmentContract<State>): FormulaFragment<State> {
             return FormulaFragment<State>().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_CONTRACT, contract)
@@ -27,6 +28,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     }
 
     // State relay + disposable
+    private lateinit var fragmentEnvironment: FragmentEnvironment
     private val stateRelay: BehaviorRelay<RenderModel> = BehaviorRelay.create()
     private var disposable: Disposable? = null
 
@@ -46,8 +48,11 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
                 // Timber.d("render / ${this@FormulaFragment}")
             }
             .subscribe {
-                // TODO: add try / catch error handling in the future.
-                component.renderView.renderer.render(it)
+                try {
+                    component.renderView.renderer.render(it)
+                } catch (exception: Exception) {
+                    fragmentEnvironment.onScreenError(contract, exception)
+                }
             }
 
         this.lifecycleCallback = component.lifecycleCallbacks
@@ -113,6 +118,10 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     }
 
     fun renderView(): RenderView<RenderModel>? = renderView
+
+    fun setEnvironment(environment: FragmentEnvironment) {
+        this.fragmentEnvironment = environment
+    }
 
     override fun toString(): String {
         return "${contract.tag} -> $contract"

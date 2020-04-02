@@ -10,7 +10,9 @@ import androidx.lifecycle.Lifecycle
 import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
 import com.instacart.formula.fragment.BaseFormulaFragment
+import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
@@ -28,6 +30,7 @@ import java.util.LinkedList
  */
 internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
+    private val fragmentEnvironment: FragmentEnvironment,
     private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
     private val onLifecycleState: (FragmentContract<*>, Lifecycle.State) -> Unit,
     private val onFragmentViewStateChanged: (FragmentContract<*>, isVisible: Boolean) -> Unit
@@ -51,6 +54,10 @@ internal class FragmentFlowRenderView(
 
             backstackEntries = activity.supportFragmentManager.backStackEntryCount
             visibleFragments.add(f)
+
+            if (f is FormulaFragment<*>) {
+                f.setEnvironment(fragmentEnvironment)
+            }
 
             fragmentState?.let {
                 updateVisibleFragments(it)
