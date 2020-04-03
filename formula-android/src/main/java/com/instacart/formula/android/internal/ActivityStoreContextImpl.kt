@@ -25,8 +25,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
     internal val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
 
-    override fun currentActivity(): Activity? = activity
-
     override fun startedActivity(): Activity? = activity.takeIf { hasStarted }
 
     override fun activityAttachEvents(): Observable<Boolean> = attachEventRelay
@@ -49,6 +47,21 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         return fragmentLifecycleState(contract)
             .map { it.isAtLeast(Lifecycle.State.RESUMED) }
             .distinctUntilChanged()
+    }
+
+    override fun <Event> selectActivityEvents(
+        select: Activity.() -> Observable<Event>
+    ): Observable<Event> {
+        // TODO: should probably use startedActivity
+        return activityAttachEvents()
+            .switchMap {
+                val activity = activity
+                if (activity == null) {
+                    Observable.empty<Event>()
+                } else {
+                    select(activity)
+                }
+            }
     }
 
     fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.accept(state)

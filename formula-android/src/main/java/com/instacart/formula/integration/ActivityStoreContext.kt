@@ -20,9 +20,6 @@ import io.reactivex.functions.BiFunction
  */
 abstract class ActivityStoreContext<out Activity : FragmentActivity> {
 
-    // TODO: might be okay to remove in favor of startedActivity
-    @PublishedApi internal abstract fun currentActivity(): Activity?
-
     @PublishedApi internal abstract fun startedActivity(): Activity?
 
     @PublishedApi internal abstract fun activityAttachEvents(): Observable<Boolean>
@@ -138,20 +135,9 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      *
      * @param Event Type of event
      */
-    inline fun <Event> selectActivityEvents(
-        crossinline select: Activity.() -> Observable<Event>
-    ): Observable<Event> {
-        // TODO: should probably use startedActivity
-        return activityAttachEvents()
-            .switchMap {
-                val activity = currentActivity()
-                if (activity == null) {
-                    Observable.empty<Event>()
-                } else {
-                    select(activity)
-                }
-            }
-    }
+    abstract fun <Event> selectActivityEvents(
+        select: Activity.() -> Observable<Event>
+    ): Observable<Event>
 
     private fun streams(configure: StreamConfigurator<Activity>.() -> Disposable): () -> Disposable {
         return { StreamConfigurator(this).configure() }
@@ -170,7 +156,10 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
          * @param state a state observable
          * @param update an update function
          */
-        fun <State> update(state: Observable<State>, update: (Activity, State) -> Unit): Disposable {
+        fun <State> update(
+            state: Observable<State>,
+            update: (Activity, State) -> Unit
+        ): Disposable {
             // To keep activity & state in sync, we re-emit state on every activity change.
             val stateEmissions = Observable.combineLatest(
                 state,
