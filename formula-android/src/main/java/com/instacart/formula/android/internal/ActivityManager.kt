@@ -32,7 +32,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         stateSubscription = if (store.streams != null) {
             val disposables = CompositeDisposable()
             disposables.add(fragmentState.connect())
-            disposables.add(store.streams.invoke())
+            disposables.add(store.streams.invoke(StreamConfiguratorIml(delegate)))
             disposables
         } else {
             fragmentState.connect()
