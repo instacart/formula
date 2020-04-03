@@ -10,6 +10,9 @@ import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 
+/**
+ * Implementation of [ActivityStoreContext].
+ */
 internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityStoreContext<Activity>() {
 
     private val attachEventRelay = BehaviorRelay.createDefault(false)
@@ -24,12 +27,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private val lifecycleStates = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
     internal val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
-
-    override fun startedActivity(): Activity? = activity.takeIf { hasStarted }
-
-    override fun activityAttachEvents(): Observable<Boolean> = attachEventRelay
-
-    override fun activityStartedEvents(): Observable<Unit> = startedRelay
 
     override fun activityLifecycleState(): Observable<Lifecycle.State> = lifecycleStates
 
@@ -64,6 +61,17 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
             }
     }
 
+    override fun send(effect: Activity.() -> Unit) {
+        // We allow emitting effects only after activity has started
+        startedActivity()?.effect() ?: run {
+            // Log missing activity.
+        }
+    }
+
+    fun startedActivity(): Activity? = activity.takeIf { hasStarted }
+
+    fun activityStartedEvents(): Observable<Unit> = startedRelay
+
     fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.accept(state)
 
     fun onActivityResult(result: ActivityResult) {
@@ -97,6 +105,8 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
         fragmentStateUpdated.accept(contract.tag)
     }
+
+    private fun activityAttachEvents(): Observable<Boolean> = attachEventRelay
 
     private fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.State> {
         val key = contract.tag
