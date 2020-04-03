@@ -75,7 +75,7 @@ class RendererTest {
 
         try {
             subject.render(null)
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             // Should log exceptions
         } finally {
             subject.render(null)

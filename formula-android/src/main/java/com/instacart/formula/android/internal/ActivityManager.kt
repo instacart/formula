@@ -46,6 +46,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         // Initialize render view
         fragmentRenderView = FragmentFlowRenderView(
             activity = activity,
+            fragmentEnvironment = environment,
             onLifecycleEvent = {
                 store.contracts.onLifecycleEffect(it)
                 store.onFragmentLifecycleEvent?.invoke(it)
