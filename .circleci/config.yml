@@ -106,6 +106,10 @@ commands:
           name: Assemble Todo App
           command: |
             ./gradlew :samples:todoapp:assembleRelease
+      - run:
+          name: Assemble Custom Stream App
+          command: |
+            ./gradlew :samples:custom-network-state-stream:assembleRelease
 
 executors:
   android:
