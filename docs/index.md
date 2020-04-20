@@ -23,10 +23,10 @@ Once we define a Render Model, we can create a `RenderView` which is responsible
 and applying it to Android Views.
 
 #### Render View
-Render View is an interface that we extend. It requires us to create a `Render` function that takes `RenderModel` and 
-applies it to Android Views. Render is a class that has an internal mechanism that checks the previous Render Model applied
-and only re-renders if it has changed. 
-
+Render View is an interface which is responsible for applying `RenderModel` to Android Views.
+This interface requires us to provide a `render` implementation by creating a `Renderer`. Renderer 
+is a class that has an internal mechanism that checks the previous Render Model applied 
+and only re-renders if it has changed.  
 ```kotlin
 class CounterRenderView(root: ViewGroup): RenderView<CounterRenderModel> {
   private val decrementButton: Button = root.findViewById(R.id.decrement_button)

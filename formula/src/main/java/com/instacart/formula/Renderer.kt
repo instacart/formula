@@ -1,9 +1,8 @@
 package com.instacart.formula
 
 /**
- * Render class defines how to apply a [RenderModel] to a UI interface. It avoids
- * duplicate updates. Use the [create] method to construct a [Renderer]
- *
+ * A function which takes a [RenderModel] and applies it to a UI interface. The implementation
+ * ensures that duplicate render model updates are ignored.
  * ```
  * val renderText = Renderer<String> { text ->
  *   myView.setText(text)
