@@ -33,7 +33,7 @@ class CounterRenderView(root: ViewGroup): RenderView<CounterRenderModel> {
   private val incrementButton: Button = root.findViewById(R.id.increment_button)
   private val countTextView: TextView = root.findViewById(R.id.count_text_view)
 
-  override val render: Render<CounterRenderModel> = Render { model ->
+  override val render: Renderer<CounterRenderModel> = Renderer { model ->
     countTextView.text = model.count
     decrementButton.setOnClickListener {
       model.onDecrement()

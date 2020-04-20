@@ -3,7 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-class RenderTest {
+class RendererTest {
 
     @Test fun `basic rendering`() {
         val subject = TestSubject<String>()
@@ -84,10 +84,10 @@ class RenderTest {
         subject.assertRenderedValues(null, null)
     }
 
-    class TestSubject<T>(private val postRender: (Render<T>, T) -> Unit = { _, _ -> Unit }) {
+    class TestSubject<T>(private val postRender: (Renderer<T>, T) -> Unit = { _, _ -> Unit }) {
         private val results = mutableListOf<T>()
-        lateinit var reference: Render<T>
-        val render = Render.create<T> {
+        lateinit var reference: Renderer<T>
+        val render = Renderer.create<T> {
             results.add(it)
             postRender(reference, it)
         }

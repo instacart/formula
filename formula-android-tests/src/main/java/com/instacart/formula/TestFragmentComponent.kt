@@ -10,7 +10,7 @@ object TestFragmentComponent {
     fun <T> create(contract: FragmentContract<T>, view: View): FragmentComponent<T> {
         return FragmentComponent.create(
             renderView = object : RenderView<T> {
-                override val render: Render<T> = Render {
+                override val render: Renderer<T> = Renderer {
                     (view.context as TestFragmentActivity).renderCalls.add(Pair(contract, it))
                 }
             },

@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import com.instacart.formula.Render
+import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
@@ -132,7 +132,7 @@ internal class FragmentFlowRenderView(
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, false)
     }
 
-    override val render: Render<FragmentFlowState> = Render {
+    override val render: Renderer<FragmentFlowState> = Renderer {
         updateVisibleFragments(it)
 
         fragmentState = it

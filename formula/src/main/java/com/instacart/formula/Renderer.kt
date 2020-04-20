@@ -2,10 +2,10 @@ package com.instacart.formula
 
 /**
  * Render class defines how to apply a [RenderModel] to a UI interface. It avoids
- * duplicate updates. Use the [create] method to construct a [Render]
+ * duplicate updates. Use the [create] method to construct a [Renderer]
  *
  * ```
- * val renderText = Render<String> { text ->
+ * val renderText = Renderer<String> { text ->
  *   myView.setText(text)
  * }
  * renderText("first")
@@ -13,7 +13,7 @@ package com.instacart.formula
  * renderText("three")
  * ```
  */
-class Render<in RenderModel> private constructor(
+class Renderer<in RenderModel> private constructor(
     private val renderFunction: (RenderModel) -> Unit
 ) : (RenderModel) -> Unit {
 
@@ -27,15 +27,15 @@ class Render<in RenderModel> private constructor(
         /**
          * Creates a render function.
          */
-        operator fun <RenderModel> invoke(render: (RenderModel) -> Unit): Render<RenderModel> {
-            return Render(renderFunction = render)
+        operator fun <RenderModel> invoke(render: (RenderModel) -> Unit): Renderer<RenderModel> {
+            return Renderer(renderFunction = render)
         }
 
         /**
          * Creates a render function.
          */
-        fun <RenderModel> create(render: (RenderModel) -> Unit): Render<RenderModel> {
-            return Render(render)
+        fun <RenderModel> create(render: (RenderModel) -> Unit): Renderer<RenderModel> {
+            return Renderer(render)
         }
     }
 

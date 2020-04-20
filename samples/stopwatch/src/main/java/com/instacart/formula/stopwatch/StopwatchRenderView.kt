@@ -3,7 +3,7 @@ package com.instacart.formula.stopwatch
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import com.instacart.formula.Render
+import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
 
 class StopwatchRenderView(root: ViewGroup): RenderView<StopwatchRenderModel> {
@@ -11,7 +11,7 @@ class StopwatchRenderView(root: ViewGroup): RenderView<StopwatchRenderModel> {
     private val startStopButton: Button = root.findViewById(R.id.start_stop_button)
     private val resetButton: Button = root.findViewById(R.id.reset_button)
 
-    override val render: Render<StopwatchRenderModel> = Render { model ->
+    override val render: Renderer<StopwatchRenderModel> = Renderer { model ->
         timePassed.text = model.timePassed
 
         startStopButton.text = model.startStopButton.text

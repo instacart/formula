@@ -1,6 +1,6 @@
 package com.instacart.formula.fragment
 
-import com.instacart.formula.Render
+import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
 
 /**
@@ -31,7 +31,7 @@ class FragmentComponent<in RenderModel> private constructor(
         ): FragmentComponent<T> {
             return create(
                 renderView = object : RenderView<T> {
-                    override val render: Render<T> = Render.create(render)
+                    override val render: Renderer<T> = Renderer.create(render)
                 },
                 lifecycleCallbacks = null
             )
@@ -49,7 +49,7 @@ class FragmentComponent<in RenderModel> private constructor(
         ): FragmentComponent<T> {
             return create(
                 renderView = object : RenderView<T> {
-                    override val render: Render<T> = Render(render)
+                    override val render: Renderer<T> = Renderer(render)
                 },
                 lifecycleCallbacks = lifecycleCallbacks
             )
