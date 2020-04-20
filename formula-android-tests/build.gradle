@@ -11,8 +11,8 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.instacart.formula.samples"
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion minSdk
+        targetSdkVersion 28 // Using sdk 28 for robolectric tests.
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
