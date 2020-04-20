@@ -10,7 +10,7 @@ androidExtensions {
 android {
     compileSdkVersion compileSdk
     defaultConfig {
-        applicationId "com.examples.todoapp"
+        applicationId "com.instacart.formula.samples.networkstate"
         minSdkVersion minSdk
         targetSdkVersion targetSdk
         versionCode 1
@@ -34,25 +34,18 @@ android {
 
 dependencies {
     implementation project(":formula")
-    implementation project(":formula-android")
-
-    implementation libraries.androidx.appcompat
-    implementation libraries.androidx.recyclerview
-    implementation libraries.androidx.constraintlayout
 
     implementation libraries.kotlin
+    implementation libraries.androidx.appcompat
     implementation libraries.rxrelays
-
-    implementation libraries.androidx.lifecycle.extensions
+    implementation libraries.rxandroid
 
     testImplementation libraries.junit
     testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
-    testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
-    testImplementation project(":formula-test")
 
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner
     testImplementation libraries.androidx.test.espresso.core
     testImplementation libraries.robolectric
+    testImplementation project(":formula-test")
 }
