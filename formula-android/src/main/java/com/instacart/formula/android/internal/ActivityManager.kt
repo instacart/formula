@@ -61,7 +61,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
         uiSubscription = fragmentState.subscribe {
-            renderView.renderer.render(it)
+            renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
     }

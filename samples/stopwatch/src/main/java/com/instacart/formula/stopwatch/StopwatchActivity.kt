@@ -17,7 +17,7 @@ class StopwatchActivity : FragmentActivity() {
         val renderView = StopwatchRenderView(findViewById(R.id.activity_content))
 
         val renderModels: Observable<StopwatchRenderModel> = StopwatchFormula().start()
-        disposables.add(renderModels.subscribe(renderView.renderer::render))
+        disposables.add(renderModels.subscribe(renderView.render))
     }
 
     override fun onDestroy() {

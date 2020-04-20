@@ -49,7 +49,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
             }
             .subscribe {
                 try {
-                    component.renderView.renderer.render(it)
+                    component.renderView.render(it)
                 } catch (exception: Exception) {
                     fragmentEnvironment.onScreenError(contract, exception)
                 }

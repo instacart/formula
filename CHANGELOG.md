@@ -8,6 +8,7 @@
 - **Breaking**: In formula-android, replacing lastEntry() with visibleState() in FragmentFlowState.
 - Allow down-casting `ActivityStoreContext<MyActivity>` to `ActivityStoreContext<FragmentActivity>`
 - Enable global fragment error logging.
+- **Breaking**: Replacing `Renderer` with a `Render` class. Also, breaking changes in `RenderView`.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.

@@ -1,8 +1,8 @@
 package com.instacart.formula
 
 /**
- * A [RenderView] is a provider of a [Renderer] that can render specified [RenderModel].
+ * Render view defines how to render a model of type [RenderModel].
  */
 interface RenderView<in RenderModel> {
-    val renderer: Renderer<RenderModel>
+    val render: Render<RenderModel>
 }

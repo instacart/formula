@@ -23,8 +23,8 @@ Once we define a Render Model, we can create a `RenderView` which is responsible
 and applying it to Android Views.
 
 #### Render View
-Render View is an interface that we extend. It requires us to create a `Renderer` that takes `RenderModel` and 
-applies it to Android Views. Renderer has an internal mechanism that checks the previous Render Model applied
+Render View is an interface that we extend. It requires us to create a `Render` function that takes `RenderModel` and 
+applies it to Android Views. Render is a class that has an internal mechanism that checks the previous Render Model applied
 and only re-renders if it has changed. 
 
 ```kotlin
@@ -33,7 +33,7 @@ class CounterRenderView(root: ViewGroup): RenderView<CounterRenderModel> {
   private val incrementButton: Button = root.findViewById(R.id.increment_button)
   private val countTextView: TextView = root.findViewById(R.id.count_text_view)
 
-  override val renderer: Renderer<CounterRenderModel> = Renderer.create { model ->
+  override val render: Render<CounterRenderModel> = Render { model ->
     countTextView.text = model.count
     decrementButton.setOnClickListener {
       model.onDecrement()
@@ -48,7 +48,7 @@ class CounterRenderView(root: ViewGroup): RenderView<CounterRenderModel> {
 We now defined a single entry-point to our rendering (this makes debugging issues a lot easier). Anytime 
 you need to update UI, just set a new Render Model.
 ```kotlin
-renderView.renderer.render(renderModel)
+renderView.render(renderModel)
 ```
 
 Now that we have our rendering logic setup, let's define how we create the Render Model and handle user events. To have
@@ -152,7 +152,7 @@ class MyActivity : FormulaAppCompatActivity() {
   }
   
   fun render(model: CounterRenderModel) {
-    counterRenderView.renderer.render(model)
+    counterRenderView.render(model)
   }
 }
 ```

@@ -1,25 +1,41 @@
 package com.instacart.formula
 
 /**
- * A [Renderer] encapsulates how to apply [RenderModel] to a UI interface. It avoids
- * duplicate updates. Use the [create] method to construct a [Renderer]
+ * Render class defines how to apply a [RenderModel] to a UI interface. It avoids
+ * duplicate updates. Use the [create] method to construct a [Render]
+ *
+ * ```
+ * val renderText = Render<String> { text ->
+ *   myView.setText(text)
+ * }
+ * renderText("first")
+ * renderText("two")
+ * renderText("three")
+ * ```
  */
-class Renderer<in RenderModel> private constructor(
+class Render<in RenderModel> private constructor(
     private val renderFunction: (RenderModel) -> Unit
-) {
+) : (RenderModel) -> Unit {
 
     companion object {
 
         /**
-         * Creates an empty renderer
+         * Creates a render function that does nothing.
          */
         fun <T> empty() = create<T> { }
 
         /**
-         * Creates a basic renderer
+         * Creates a render function.
          */
-        fun <RenderModel> create(render: (RenderModel) -> Unit): Renderer<RenderModel> {
-            return Renderer(renderFunction = render)
+        operator fun <RenderModel> invoke(render: (RenderModel) -> Unit): Render<RenderModel> {
+            return Render(renderFunction = render)
+        }
+
+        /**
+         * Creates a render function.
+         */
+        fun <RenderModel> create(render: (RenderModel) -> Unit): Render<RenderModel> {
+            return Render(render)
         }
     }
 
@@ -33,14 +49,11 @@ class Renderer<in RenderModel> private constructor(
     private var pending: (() -> Unit)? = null
     private var last: RenderModel? = null
 
-    /**
-     * Render the passed render model, first checking to see if a render is already in progress, or the passed render model
-     * is equivalent to the last render model.
-     */
-    fun render(renderModel: RenderModel) {
+
+    override fun invoke(renderModel: RenderModel) {
         val lastState = this.state
         if (lastState == State.UPDATE_IN_PROGRESS) {
-            pending = { render(renderModel) }
+            pending = { invoke(renderModel) }
             return
         }
 

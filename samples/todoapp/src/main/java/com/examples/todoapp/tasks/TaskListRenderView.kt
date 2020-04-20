@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.examples.todoapp.R
+import com.instacart.formula.Render
 import com.instacart.formula.RenderView
-import com.instacart.formula.Renderer
 
 class TaskListRenderView(private val root: View) : RenderView<TaskListRenderModel> {
     private val toolbar: Toolbar = root.findViewById(R.id.toolbar)
@@ -33,7 +33,7 @@ class TaskListRenderView(private val root: View) : RenderView<TaskListRenderMode
         filterMenuItem = toolbar.menu.findItem(R.id.menu_filter)
     }
 
-    override val renderer: Renderer<TaskListRenderModel> = Renderer.create { model ->
+    override val render: Render<TaskListRenderModel> = Render { model ->
         val diff = DiffUtil.calculateDiff(TaskDiffCallback(adapter.items, model.items))
         adapter.items = model.items
         diff.dispatchUpdatesTo(adapter)

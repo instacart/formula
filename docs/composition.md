@@ -20,7 +20,7 @@ You can also do the same in your Render View layer.
 class CheckboxRenderView(root: View) : RenderView<CheckboxRenderModel> {
   private val checkbox: Checkbox = root.findViewById(R.id.checkbox)
   
-  override val renderer: Renderer<CheckboxRenderModel> = Renderer.create { model ->
+  override val render: Render<CheckboxRenderModel> = Render { model ->
     checkbox.text = model.title
     checkbox.isChecked = model.isChecked
     checkbox.setOnCheckedListener {
@@ -35,11 +35,11 @@ class NotificationSettingsRenderView(root: View) : RenderView<NotificationSettin
   private val marketingEmailNotifications = CheckboxRenderView(root.findViewById(R.id.marketing_email_checkbox))
   private val saveButton = FooterButtonRenderView(root.findViewById(R.id.save_button))
   
-  override val renderer: Renderer<NotificationSettingsRenderModel> = Renderer.create { model ->
-    messagePushNotification.renderer.render(model.messagePushNotification)
-    promotionalPushNotifications.renderer.render(model.promotionalPushNotifications)
-    marketingEmailNotifications.renderer.render(model.marketingEmailNotifications)
-    saveButton.renderer.render(model.saveSettingsButton)
+  override val render: Render<NotificationSettingsRenderModel> = Render { model ->
+    messagePushNotification.render(model.messagePushNotification)
+    promotionalPushNotifications.render(model.promotionalPushNotifications)
+    marketingEmailNotifications.render(model.marketingEmailNotifications)
+    saveButton.render(model.saveSettingsButton)
   } 
 }
 ```
