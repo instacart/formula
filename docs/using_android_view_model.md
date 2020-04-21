@@ -27,7 +27,7 @@ class MyActivity : AppCompatActivity() {
     val renderView = CounterRenderView(findViewById(R.id.counter))
     val viewModel = ViewModelProviders.of(this).get(CounterViewModel::class.java)
         
-    disposables.add(viewModel.renderModels.subscribe(renderView.renderer::render))
+    disposables.add(viewModel.renderModels.subscribe(renderView.render))
   }
     
   override fun onDestroy() {

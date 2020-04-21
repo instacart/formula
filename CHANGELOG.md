@@ -1,5 +1,5 @@
 # Changelog
-## [0.5.4] - TODO
+## [0.6.0] - TODO
 - Change callback key type from String to Any.
 - Removed deprecated `state()` extension
 - Updated AndroidX appcompat to 1.1.0
@@ -8,6 +8,8 @@
 - **Breaking**: In formula-android, replacing lastEntry() with visibleState() in FragmentFlowState.
 - Allow down-casting `ActivityStoreContext<MyActivity>` to `ActivityStoreContext<FragmentActivity>`
 - Enable global fragment error logging.
+- **Breaking**: Replacing `Renderer` function `render` with `invoke`. You can now directly call `renderer(value)`. 
+- **Breaking**: Renaming `RenderView` property `renderer` to `render`.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.
