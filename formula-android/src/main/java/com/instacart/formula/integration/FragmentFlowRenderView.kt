@@ -39,9 +39,10 @@ internal class FragmentFlowRenderView(
     private var fragmentState: FragmentFlowState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
-    private var backstackEntries: Int = 0
-    private var backstackPopped: Boolean = false
     private var removedEarly = mutableListOf<FragmentContract<*>>()
+    private var backStackEntries = mutableListOf<FragmentManager.BackStackEntry>()
+    private var awaitingRemoval = mutableListOf<String>()
+    private var stateRestored: Boolean = false
 
     private val callback = object : FragmentManager.FragmentLifecycleCallbacks() {
         override fun onFragmentViewCreated(
@@ -52,7 +53,13 @@ internal class FragmentFlowRenderView(
         ) {
             super.onFragmentViewCreated(fm, f, v, savedInstanceState)
 
-            backstackEntries = activity.supportFragmentManager.backStackEntryCount
+            if (!stateRestored) {
+                for (i in 0 until activity.supportFragmentManager.backStackEntryCount) {
+                    backStackEntries.add(activity.supportFragmentManager.getBackStackEntryAt(i))
+                }
+                stateRestored = true
+            }
+
             visibleFragments.add(f)
 
             if (f is FormulaFragment<*>) {
@@ -94,10 +101,7 @@ internal class FragmentFlowRenderView(
             onFragmentViewStateChanged(f.getFragmentContract(), false)
             notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
             // This means that fragment is removed due to backstack change.
-            if (backstackPopped) {
-                // Reset
-                backstackPopped = false
-
+            if (awaitingRemoval.remove(f.tag)) {
                 val event = FragmentLifecycle.createRemovedEvent(f)
                 removedEarly.add(event.key)
                 onLifecycleEvent(event)
@@ -169,10 +173,19 @@ internal class FragmentFlowRenderView(
     }
 
     private fun recordBackstackChange() {
-        val newBackstackSize = activity.supportFragmentManager.backStackEntryCount
-        if (backstackEntries > newBackstackSize) {
-            backstackPopped = true
+        val backStackEntryCount = backStackEntries.size
+        val newBackStackEntryCount = activity.supportFragmentManager.backStackEntryCount
+        if (backStackEntryCount > newBackStackEntryCount) {
+            for (i in newBackStackEntryCount until backStackEntryCount) {
+                val poppedFragmentName = backStackEntries.removeAt(i).name
+                if (poppedFragmentName != null && visibleFragments.find { it.tag == poppedFragmentName } != null) {
+                    awaitingRemoval.add(poppedFragmentName)
+                }
+            }
+        } else if (backStackEntryCount < newBackStackEntryCount) {
+            for (i in backStackEntryCount until newBackStackEntryCount) {
+                backStackEntries.add(activity.supportFragmentManager.getBackStackEntryAt(i))
+            }
         }
-        backstackEntries = newBackstackSize
     }
 }
