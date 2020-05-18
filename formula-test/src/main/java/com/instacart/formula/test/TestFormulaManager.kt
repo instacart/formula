@@ -13,12 +13,7 @@ class TestFormulaManager<Input, State, RenderModel>(
     private val renderModel: RenderModel
 ) : FormulaManager<Input, RenderModel> {
 
-    private var transitionListener: ((Effects?, Boolean) -> Unit) = { _, _ -> Unit }
     private val inputs = mutableListOf<Input>()
-
-    override fun setTransitionListener(listener: (Effects?, isValid: Boolean) -> Unit) {
-        transitionListener = listener
-    }
 
     override fun updateTransitionNumber(number: Long) {
         // no-op

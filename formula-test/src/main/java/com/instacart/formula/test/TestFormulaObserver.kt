@@ -5,6 +5,7 @@ import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerFactory
 import com.instacart.formula.internal.FormulaManagerFactoryImpl
+import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLock
 import io.reactivex.Observable
 import kotlin.reflect.KClass
@@ -20,10 +21,11 @@ class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Inp
         override fun <Input, State, RenderModel> createChildManager(
             formula: Formula<Input, State, RenderModel>,
             input: Input,
-            transitionLock: TransitionLock
+            transitionLock: TransitionLock,
+            transitionListener: TransitionListener
         ): FormulaManager<Input, RenderModel> {
             if (!observer.testManagers.containsKey(formula::class) && observer.defaultToRealFormula) {
-                return FormulaManagerFactoryImpl().createChildManager(formula, input, transitionLock)
+                return FormulaManagerFactoryImpl().createChildManager(formula, input, transitionLock, transitionListener)
             }
 
             return observer.findManager(formula::class)

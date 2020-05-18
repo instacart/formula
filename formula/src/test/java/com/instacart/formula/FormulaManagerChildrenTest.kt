@@ -5,6 +5,7 @@ import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
+import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLockImpl
 import org.junit.Test
 
@@ -20,12 +21,11 @@ class FormulaManagerChildrenTest {
             initialInput = Unit,
             callbacks = ScopedCallbacks(formula),
             transitionLock = transitionLock,
-            childManagerFactory = FormulaManagerFactoryImpl()
+            childManagerFactory = FormulaManagerFactoryImpl(),
+            transitionListener = TransitionListener { effects, isValid ->
+                transitionLock.next()
+            }
         )
-
-        manager.setTransitionListener { list, isValid ->
-            transitionLock.next()
-        }
 
         val result = manager.evaluate(Unit, transitionLock.processingPass)
         assertThat(manager.children[JoinedKey("", StreamFormula::class)]).isNotNull()

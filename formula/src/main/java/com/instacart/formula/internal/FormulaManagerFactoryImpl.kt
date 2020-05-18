@@ -7,8 +7,9 @@ class FormulaManagerFactoryImpl : FormulaManagerFactory {
     override fun <Input, State, RenderModel> createChildManager(
         formula: Formula<Input, State, RenderModel>,
         input: Input,
-        transitionLock: TransitionLock
+        transitionLock: TransitionLock,
+        transitionListener: TransitionListener
     ): FormulaManager<Input, RenderModel> {
-        return FormulaManagerImpl(formula, input, ScopedCallbacks(formula), transitionLock, this)
+        return FormulaManagerImpl(formula, input, ScopedCallbacks(formula), transitionLock, this, transitionListener)
     }
 }

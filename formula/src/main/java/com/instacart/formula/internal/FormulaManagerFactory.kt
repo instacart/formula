@@ -7,6 +7,7 @@ interface FormulaManagerFactory {
     fun <Input, State, RenderModel> createChildManager(
         formula: Formula<Input, State, RenderModel>,
         input: Input,
-        transitionLock: TransitionLock
+        transitionLock: TransitionLock,
+        transitionListener: TransitionListener
     ): FormulaManager<Input, RenderModel>
 }
