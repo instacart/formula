@@ -10,13 +10,13 @@ import java.lang.IllegalStateException
 class FormulaContextImpl<State> internal constructor(
     private val processingPass: Long,
     callbacks: ScopedCallbacks,
-    private val delegate: Delegate<State>,
+    private val delegate: Delegate,
     private val transitionCallback: TransitionCallbackWrapper<State>
 ) : FormulaContext<State>(callbacks) {
 
     private val childBuilder: Child<State, *, *> = Child<State, Any, Any>(this)
 
-    interface Delegate<State> {
+    interface Delegate {
         fun <ChildInput, ChildState, ChildRenderModel> child(
             formula: Formula<ChildInput, ChildState, ChildRenderModel>,
             input: ChildInput,

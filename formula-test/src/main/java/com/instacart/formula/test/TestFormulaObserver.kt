@@ -11,7 +11,7 @@ import io.reactivex.Observable
 import kotlin.reflect.KClass
 
 class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Input, *, RenderModel>>(
-    private val testManagers: Map<KClass<*>, TestFormulaManager<*, *, *>>,
+    private val testManagers: Map<KClass<*>, TestFormulaManager<*, *>>,
     private val input: Observable<Input>,
     val formula: FormulaT,
     private val defaultToRealFormula: Boolean = true
@@ -77,12 +77,12 @@ class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Inp
     @PublishedApi
     internal fun <Input, State, RenderModel> findManager(
         type: KClass<out Formula<Input, State, RenderModel>>
-    ): TestFormulaManager<Input, State, RenderModel> {
+    ): TestFormulaManager<Input, RenderModel> {
         val manager = checkNotNull(testManagers[type]) {
             "missing manager registration for $type"
         }
 
         @Suppress("UNCHECKED_CAST")
-        return manager as TestFormulaManager<Input, State, RenderModel>
+        return manager as TestFormulaManager<Input, RenderModel>
     }
 }

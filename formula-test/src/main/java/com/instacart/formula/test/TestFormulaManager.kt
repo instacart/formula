@@ -2,14 +2,13 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.Effects
 import com.instacart.formula.internal.FormulaManager
 
 /**
  * Used within tests to inspect the values parent [Formula] passes to the child [Formula] and
  * to emit child messages to the parent [Formula].
  */
-class TestFormulaManager<Input, State, RenderModel>(
+class TestFormulaManager<Input, RenderModel>(
     private val renderModel: RenderModel
 ) : FormulaManager<Input, RenderModel> {
 

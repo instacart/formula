@@ -21,7 +21,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory,
     transitionListener: TransitionListener
-) : FormulaContextImpl.Delegate<State>, FormulaManager<Input, RenderModel> {
+) : FormulaContextImpl.Delegate, FormulaManager<Input, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
