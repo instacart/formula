@@ -9,7 +9,6 @@ class FormulaManagerFactoryImpl : FormulaManagerFactory {
         input: Input,
         transitionLock: TransitionLock
     ): FormulaManager<Input, State, RenderModel> {
-        val initial = formula.initialState(input)
-        return FormulaManagerImpl(initial, ScopedCallbacks(formula), transitionLock, this)
+        return FormulaManagerImpl(formula, input, ScopedCallbacks(formula), transitionLock, this)
     }
 }

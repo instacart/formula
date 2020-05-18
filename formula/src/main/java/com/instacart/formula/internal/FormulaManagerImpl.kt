@@ -15,7 +15,8 @@ import com.instacart.formula.Transition
  * 4. Prepare parent and alive children for updates.
  */
 internal class FormulaManagerImpl<Input, State, RenderModel>(
-    state: State,
+    private val formula: Formula<Input, State, RenderModel>,
+    initialInput: Input,
     private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
@@ -27,7 +28,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
 
-    private var state: State = state
+    private var state: State = formula.initialState(initialInput) // state
     private var onTransition: ((Effects?, isValid: Boolean) -> Unit)? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *, *>>? = null
 

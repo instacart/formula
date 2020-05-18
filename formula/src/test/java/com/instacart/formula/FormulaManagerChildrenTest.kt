@@ -15,8 +15,9 @@ class FormulaManagerChildrenTest {
 
         val formula = OptionalChildFormula(StreamFormula())
         val transitionLock = TransitionLockImpl()
-        val manager = FormulaManagerImpl<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<StreamFormula.RenderModel>>(
-            OptionalChildFormula.State(),
+        val manager = FormulaManagerImpl(
+            formula = formula,
+            initialInput = Unit,
             callbacks = ScopedCallbacks(formula),
             transitionLock = transitionLock,
             childManagerFactory = FormulaManagerFactoryImpl()

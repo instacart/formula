@@ -71,7 +71,8 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         if (initialization) {
             val processorManager: FormulaManagerImpl<Input, State, RenderModel> =
                 FormulaManagerImpl(
-                    state = formula.initialState(input),
+                    formula = formula,
+                    initialInput = input,
                     callbacks = ScopedCallbacks(formula),
                     transitionLock = lock,
                     childManagerFactory = childManagerFactory
