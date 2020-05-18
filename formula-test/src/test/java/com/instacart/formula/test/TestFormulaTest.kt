@@ -4,42 +4,33 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.StatelessFormula
+import com.instacart.formula.IFormula
 import org.junit.Before
 import org.junit.Test
 
 class TestFormulaTest {
-    lateinit var childFormula: ChildFormula
+    lateinit var childFormula: FakeChildFormula
     lateinit var parentFormula: ParentFormula
     lateinit var subject: TestFormulaObserver<Unit, ParentFormula.RenderModel, ParentFormula>
 
     @Before fun setup() {
-        childFormula = ChildFormula()
+        childFormula = FakeChildFormula()
         parentFormula = ParentFormula(childFormula)
-        subject = ParentFormula(childFormula = childFormula)
-            .test {
-                child(ChildFormula::class, ChildFormula.Button({}))
-            }
+        subject = ParentFormula(childFormula = childFormula).test()
     }
 
-    @Test fun `trigger callback using formula class`() {
+    @Test fun `trigger callback using child input`() {
         subject
-            .childInput(ChildFormula::class) { onChangeName("my name") }
-            .renderModel {
-                assertThat(name).isEqualTo("my name")
+            .apply {
+                childFormula.input { onChangeName("my name") }
             }
-    }
-
-    @Test fun `trigger callback using formula instance`() {
-        subject
-            .childInput(childFormula) { onChangeName("my name") }
             .renderModel {
                 assertThat(name).isEqualTo("my name")
             }
     }
 
     @Test fun `input passed to formula`() {
-        subject.childInput(childFormula) {
+        childFormula.input {
             assertThat(name).isEqualTo("")
         }
     }
@@ -80,7 +71,7 @@ class TestFormulaTest {
         }
     }
 
-    class ChildFormula : StatelessFormula<ChildFormula.Input, ChildFormula.Button>() {
+    interface ChildFormula : IFormula<ChildFormula.Input, ChildFormula.Button> {
 
         data class Input(
             val name: String,
@@ -88,13 +79,9 @@ class TestFormulaTest {
         )
 
         class Button(val onNameChanged: (String) -> Unit)
+    }
 
-        override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Button> {
-            return Evaluation(
-                renderModel = Button(onNameChanged = context.eventCallback {
-                    transition { input.onChangeName(input.name) }
-                })
-            )
-        }
+    class FakeChildFormula : TestFormula<ChildFormula.Input, ChildFormula.Button>(), ChildFormula {
+        override fun initialRenderModel() = ChildFormula.Button {}
     }
 }

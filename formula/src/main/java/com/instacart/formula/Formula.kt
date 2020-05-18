@@ -7,7 +7,7 @@ package com.instacart.formula
  * @param State Internal state that is used within this formula.
  * @param RenderModel A type that is used to render UI.
  */
-interface Formula<Input, State, RenderModel> {
+interface Formula<Input, State, RenderModel> : IFormula<Input, RenderModel> {
 
     /**
      * Instantiate initial [State].
@@ -44,4 +44,8 @@ interface Formula<Input, State, RenderModel> {
         state: State,
         context: FormulaContext<State>
     ): Evaluation<RenderModel>
+
+    override fun implementation(): Formula<Input, *, RenderModel> {
+        return this
+    }
 }

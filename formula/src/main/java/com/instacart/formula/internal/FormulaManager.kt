@@ -4,6 +4,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 
 interface FormulaManager<Input, RenderModel> {
+    fun nextFrame(currentTransition: Long): Boolean
 
     fun updateTransitionNumber(number: Long)
 
@@ -42,4 +43,6 @@ interface FormulaManager<Input, RenderModel> {
      * Called when we are ready to perform termination side-effects.
      */
     fun performTerminationSideEffects()
+
+    fun terminate()
 }

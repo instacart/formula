@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.Child
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Formula
+import com.instacart.formula.IFormula
 import com.instacart.formula.Transition
 import com.instacart.formula.Update
 import java.lang.IllegalStateException
@@ -14,11 +15,11 @@ class FormulaContextImpl<State> internal constructor(
     private val transitionCallback: TransitionCallbackWrapper<State>
 ) : FormulaContext<State>(callbacks) {
 
-    private val childBuilder: Child<State, *, *> = Child<State, Any, Any>(this)
+    private val childBuilder: Child<*, *> = Child<Any, Any>(this)
 
     interface Delegate {
-        fun <ChildInput, ChildState, ChildRenderModel> child(
-            formula: Formula<ChildInput, ChildState, ChildRenderModel>,
+        fun <ChildInput, ChildRenderModel> child(
+            formula: IFormula<ChildInput, ChildRenderModel>,
             input: ChildInput,
             key: Any,
             processingPass: Long
@@ -36,22 +37,22 @@ class FormulaContextImpl<State> internal constructor(
         return builder.updates
     }
 
-    fun <ChildInput, ChildState, ChildRenderModel> child(
+    fun <ChildInput, ChildRenderModel> child(
         key: Any,
-        formula: Formula<ChildInput, ChildState, ChildRenderModel>,
+        formula: IFormula<ChildInput, ChildRenderModel>,
         input: ChildInput
     ): ChildRenderModel {
         ensureNotRunning()
         return delegate.child(formula, input, key, processingPass)
     }
 
-    override fun <ChildInput, ChildState, ChildRenderModel> child(
+    override fun <ChildInput, ChildRenderModel> child(
         key: Any,
-        formula: Formula<ChildInput, ChildState, ChildRenderModel>
-    ): Child<State, ChildInput, ChildRenderModel>  {
+        formula: IFormula<ChildInput, ChildRenderModel>
+    ): Child<ChildInput, ChildRenderModel>  {
         ensureNotRunning()
         @Suppress("UNCHECKED_CAST")
-        val casted = childBuilder as Child<State, ChildInput, ChildRenderModel>
+        val casted = childBuilder as Child<ChildInput, ChildRenderModel>
         casted.initialize(key, formula)
         return casted
     }

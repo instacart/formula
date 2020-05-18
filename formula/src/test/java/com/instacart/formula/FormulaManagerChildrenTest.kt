@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
@@ -21,7 +20,6 @@ class FormulaManagerChildrenTest {
             initialInput = Unit,
             callbacks = ScopedCallbacks(formula),
             transitionLock = transitionLock,
-            childManagerFactory = FormulaManagerFactoryImpl(),
             transitionListener = TransitionListener { effects, isValid ->
                 transitionLock.next()
             }

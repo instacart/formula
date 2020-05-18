@@ -1,9 +1,7 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.FormulaManagerFactory
-import com.instacart.formula.internal.FormulaManagerFactoryImpl
+import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
-import com.instacart.formula.internal.ScopedCallbacks
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLockImpl
@@ -15,10 +13,9 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class FormulaRuntime<Input : Any, State, RenderModel : Any>(
+class FormulaRuntime<Input : Any, RenderModel : Any>(
     private val threadChecker: ThreadChecker,
-    private val formula: Formula<Input, State, RenderModel>,
-    private val childManagerFactory: FormulaManagerFactory,
+    private val formula: IFormula<Input, RenderModel>,
     private val onRenderModel: (RenderModel) -> Unit
 ) {
 
@@ -26,16 +23,15 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         /**
          * RuntimeExtensions.kt [start] calls this method.
          */
-        fun <Input : Any, State,  RenderModel : Any> start(
+        fun <Input : Any, RenderModel : Any> start(
             input: Observable<Input>,
-            formula: Formula<Input, State, RenderModel>,
-            childManagerFactory: FormulaManagerFactory = FormulaManagerFactoryImpl()
+            formula: IFormula<Input, RenderModel>
         ): Observable<RenderModel> {
             val threadChecker = ThreadChecker()
             return Observable.create<RenderModel> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = FormulaRuntime(threadChecker, formula, childManagerFactory, emitter::onNext)
+                val runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
@@ -54,7 +50,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         }
     }
 
-    private var manager: FormulaManagerImpl<Input, State, RenderModel>? = null
+    private var manager: FormulaManager<Input, RenderModel>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
     private var emitRenderModel = false
@@ -71,23 +67,19 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         this.input = input
 
         if (initialization) {
-            val processorManager: FormulaManagerImpl<Input, State, RenderModel> =
-                FormulaManagerImpl(
-                    formula = formula,
-                    initialInput = input,
-                    callbacks = ScopedCallbacks(formula),
-                    transitionLock = lock,
-                    childManagerFactory = childManagerFactory,
-                    transitionListener = TransitionListener { effects, isValid ->
-                        threadChecker.check("Only thread that created it can trigger transitions.")
+            val transitionListener = TransitionListener { effects, isValid ->
+                threadChecker.check("Only thread that created it can trigger transitions.")
 
-                        if (effects != null) {
-                            effectQueue.addLast(effects)
-                        }
+                if (effects != null) {
+                    effectQueue.addLast(effects)
+                }
 
-                        process(isValid)
-                    }
-                )
+                process(isValid)
+            }
+
+            val implementation = formula.implementation()
+            val processorManager: FormulaManager<Input, RenderModel> =
+                FormulaManagerImpl(implementation, input, lock, transitionListener)
 
             manager = processorManager
 
@@ -139,7 +131,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
     }
 
     private fun processPass(
-        localManager: FormulaManagerImpl<Input, State, RenderModel>,
+        localManager: FormulaManager<Input, RenderModel>,
         processingPass: Long
     ) {
 

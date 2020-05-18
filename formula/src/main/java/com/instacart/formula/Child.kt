@@ -6,14 +6,14 @@ import com.instacart.formula.internal.JoinedKey
 /**
  * A stateful child [Formula] builder. It is initialized by calling [FormulaContext.child].
  */
-class Child<State, ChildInput, ChildRenderModel> internal constructor(
-    @PublishedApi internal val context: FormulaContextImpl<State>
+class Child<ChildInput, ChildRenderModel> internal constructor(
+    @PublishedApi internal val context: FormulaContextImpl<*>
 ) {
 
     @PublishedApi internal var key: Any? = null
-    private var formula: Formula<ChildInput, *, ChildRenderModel>? = null
+    private var formula: IFormula<ChildInput, ChildRenderModel>? = null
 
-    internal fun initialize(key: Any, formula: Formula<ChildInput, *, ChildRenderModel>) {
+    internal fun initialize(key: Any, formula: IFormula<ChildInput, ChildRenderModel>) {
         if (this.formula != null) {
             throw IllegalStateException("unfinished child definition: ${this.formula}")
         }

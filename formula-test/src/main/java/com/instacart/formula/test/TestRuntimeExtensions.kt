@@ -9,10 +9,9 @@ import io.reactivex.rxjava3.core.Observable
  * @param builder Enables to set a mock render model for children formulas.
  */
 fun <Input : Any, State, RenderModel : Any, F: Formula<Input, State, RenderModel>> F.test(
-    input: Input,
-    builder: ChildFormulaRegistryBuilder.() -> Unit = {}
+    input: Input
 ): TestFormulaObserver<Input, RenderModel, F> {
-    return test(Observable.just(input), builder)
+    return test(Observable.just(input))
 }
 
 
@@ -21,12 +20,9 @@ fun <Input : Any, State, RenderModel : Any, F: Formula<Input, State, RenderModel
  * @param builder Enables to set a mock render model for children formulas.
  */
 fun <Input : Any, State, RenderModel : Any, F: Formula<Input, State, RenderModel>> F.test(
-    input: Observable<Input>,
-    builder: ChildFormulaRegistryBuilder.() -> Unit = {}
+    input: Observable<Input>
 ): TestFormulaObserver<Input, RenderModel, F> {
-    val managers = ChildFormulaRegistryBuilder().apply(builder).testManagers
     return TestFormulaObserver(
-        testManagers = managers,
         input = input,
         formula = this
     )
@@ -35,10 +31,6 @@ fun <Input : Any, State, RenderModel : Any, F: Formula<Input, State, RenderModel
 /**
  * @param builder Enables to set a mock render model for children formulas.
  */
-fun <State, RenderModel : Any, F: Formula<Unit, State, RenderModel>> F.test(
-    builder: ChildFormulaRegistryBuilder.() -> Unit = {}
-) = test(Unit, builder)
-
-
+fun <State, RenderModel : Any, F: Formula<Unit, State, RenderModel>> F.test() = test(Unit)
 
 fun <Message> Stream<Message>.test() = TestStreamObserver(this)
