@@ -11,7 +11,7 @@ import com.instacart.formula.internal.FormulaManager
  */
 class TestFormulaManager<Input, State, RenderModel>(
     private val renderModel: RenderModel
-) : FormulaManager<Input, State, RenderModel> {
+) : FormulaManager<Input, RenderModel> {
 
     private var transitionListener: ((Effects?, Boolean) -> Unit) = { _, _ -> Unit }
     private val inputs = mutableListOf<Input>()
@@ -25,7 +25,6 @@ class TestFormulaManager<Input, State, RenderModel>(
     }
 
     override fun evaluate(
-        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel> {

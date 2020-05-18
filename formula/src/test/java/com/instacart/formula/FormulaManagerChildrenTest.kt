@@ -27,12 +27,12 @@ class FormulaManagerChildrenTest {
             transitionLock.next()
         }
 
-        val result = manager.evaluate(formula, Unit, transitionLock.processingPass)
+        val result = manager.evaluate(Unit, transitionLock.processingPass)
         assertThat(manager.children[JoinedKey("", StreamFormula::class)]).isNotNull()
 
         result.renderModel.toggleChild()
 
-        val next = manager.evaluate(formula, Unit, transitionLock.processingPass)
+        val next = manager.evaluate(Unit, transitionLock.processingPass)
         assertThat(next.renderModel.child).isNull()
 
         assertThat(manager.children[JoinedKey("", StreamFormula::class)]).isNull()

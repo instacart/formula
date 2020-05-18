@@ -117,7 +117,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
 
         if (!isValid) {
             val result: Evaluation<RenderModel> =
-                localManager.evaluate(formula, currentInput, processingPass)
+                localManager.evaluate(currentInput, processingPass)
             lastRenderModel = result.renderModel
             emitRenderModel = true
         }

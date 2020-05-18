@@ -20,17 +20,17 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val childManagerFactory: FormulaManagerFactory
-) : FormulaContextImpl.Delegate<State>, FormulaManager<Input, State, RenderModel> {
+) : FormulaContextImpl.Delegate<State>, FormulaManager<Input, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *>> = mutableMapOf()
+    internal val children: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
 
-    private var state: State = formula.initialState(initialInput) // state
+    private var state: State = formula.initialState(initialInput)
     private var onTransition: ((Effects?, isValid: Boolean) -> Unit)? = null
-    private var pendingRemoval: MutableList<FormulaManager<*, *, *>>? = null
+    private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
     private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
         if (terminated) {
@@ -65,7 +65,6 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     override fun evaluate(
-        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel> {
@@ -185,9 +184,9 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
             }
             .requestAccess {
                 throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
-            } as FormulaManager<ChildInput, ChildState, ChildRenderModel>
+            } as FormulaManager<ChildInput, ChildRenderModel>
 
-        return manager.evaluate(formula, input, processingPass).renderModel
+        return manager.evaluate(input, processingPass).renderModel
     }
 
     override fun markAsTerminated() {

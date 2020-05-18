@@ -21,7 +21,7 @@ class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Inp
             formula: Formula<Input, State, RenderModel>,
             input: Input,
             transitionLock: TransitionLock
-        ): FormulaManager<Input, State, RenderModel> {
+        ): FormulaManager<Input, RenderModel> {
             if (!observer.testManagers.containsKey(formula::class) && observer.defaultToRealFormula) {
                 return FormulaManagerFactoryImpl().createChildManager(formula, input, transitionLock)
             }
