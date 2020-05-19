@@ -5,6 +5,7 @@ import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ScopedCallbacks
 import com.instacart.formula.internal.ThreadChecker
+import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLockImpl
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -71,21 +72,21 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         if (initialization) {
             val processorManager: FormulaManagerImpl<Input, State, RenderModel> =
                 FormulaManagerImpl(
-                    state = formula.initialState(input),
+                    formula = formula,
+                    initialInput = input,
                     callbacks = ScopedCallbacks(formula),
                     transitionLock = lock,
-                    childManagerFactory = childManagerFactory
+                    childManagerFactory = childManagerFactory,
+                    transitionListener = TransitionListener { effects, isValid ->
+                        threadChecker.check("Only thread that created it can trigger transitions.")
+
+                        if (effects != null) {
+                            effectQueue.push(effects)
+                        }
+
+                        process(isValid)
+                    }
                 )
-
-            processorManager.setTransitionListener { message, isValid ->
-                threadChecker.check("Only thread that created it can trigger transitions.")
-
-                if (message != null) {
-                    effectQueue.push(message)
-                }
-
-                process(isValid)
-            }
 
             manager = processorManager
 
@@ -116,7 +117,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
 
         if (!isValid) {
             val result: Evaluation<RenderModel> =
-                localManager.evaluate(formula, currentInput, processingPass)
+                localManager.evaluate(currentInput, processingPass)
             lastRenderModel = result.renderModel
             emitRenderModel = true
         }

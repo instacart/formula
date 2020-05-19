@@ -15,26 +15,28 @@ import com.instacart.formula.Transition
  * 4. Prepare parent and alive children for updates.
  */
 internal class FormulaManagerImpl<Input, State, RenderModel>(
-    state: State,
+    private val formula: Formula<Input, State, RenderModel>,
+    initialInput: Input,
     private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
-    private val childManagerFactory: FormulaManagerFactory
-) : FormulaContextImpl.Delegate<State>, FormulaManager<Input, State, RenderModel> {
+    private val childManagerFactory: FormulaManagerFactory,
+    transitionListener: TransitionListener
+) : FormulaContextImpl.Delegate, FormulaManager<Input, RenderModel> {
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: SingleRequestMap<Any, FormulaManager<*, *, *>> = mutableMapOf()
+    internal val children: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
     internal var frame: Frame<Input, State, RenderModel>? = null
     private var terminated = false
 
-    private var state: State = state
-    private var onTransition: ((Effects?, isValid: Boolean) -> Unit)? = null
-    private var pendingRemoval: MutableList<FormulaManager<*, *, *>>? = null
+    private var state: State = formula.initialState(initialInput)
+    private var onTransition: (Effects?, isValid: Boolean) -> Unit = transitionListener::onTransition
+    private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
     private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            onTransition?.invoke(transition.effects, true)
+            onTransition.invoke(transition.effects, true)
             return
         }
 
@@ -46,11 +48,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         }
 
         val isValid = frame != null && frame.isValid()
-        onTransition?.invoke(transition.effects, isValid)
-    }
-
-    override fun setTransitionListener(listener: (Effects?, isValid: Boolean) -> Unit) {
-        this.onTransition = listener
+        onTransition.invoke(transition.effects, isValid)
     }
 
     override fun updateTransitionNumber(number: Long) {
@@ -64,7 +62,6 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
      * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
      */
     override fun evaluate(
-        formula: Formula<Input, State, RenderModel>,
         input: Input,
         transitionId: Long
     ): Evaluation<RenderModel> {
@@ -176,17 +173,16 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         @Suppress("UNCHECKED_CAST")
         val manager = children
             .findOrInit(key) {
-                childManagerFactory.createChildManager(formula, input, transitionLock).apply {
-                    setTransitionListener { message, isValid ->
-                        handleTransition(Transition(effects = message), !isValid)
-                    }
+                val childTransitionListener = TransitionListener { effects, isValid ->
+                    handleTransition(Transition(effects = effects), !isValid)
                 }
+                childManagerFactory.createChildManager(formula, input, transitionLock, childTransitionListener)
             }
             .requestAccess {
-                throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: String] parameter.")
-            } as FormulaManager<ChildInput, ChildState, ChildRenderModel>
+                throw IllegalStateException("There already is a child with same key: $key. Use [key: Any] parameter.")
+            } as FormulaManager<ChildInput, ChildRenderModel>
 
-        return manager.evaluate(formula, input, processingPass).renderModel
+        return manager.evaluate(input, processingPass).renderModel
     }
 
     override fun markAsTerminated() {

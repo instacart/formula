@@ -7,9 +7,9 @@ class FormulaManagerFactoryImpl : FormulaManagerFactory {
     override fun <Input, State, RenderModel> createChildManager(
         formula: Formula<Input, State, RenderModel>,
         input: Input,
-        transitionLock: TransitionLock
-    ): FormulaManager<Input, State, RenderModel> {
-        val initial = formula.initialState(input)
-        return FormulaManagerImpl(initial, ScopedCallbacks(formula), transitionLock, this)
+        transitionLock: TransitionLock,
+        transitionListener: TransitionListener
+    ): FormulaManager<Input, RenderModel> {
+        return FormulaManagerImpl(formula, input, ScopedCallbacks(formula), transitionLock, this, transitionListener)
     }
 }
