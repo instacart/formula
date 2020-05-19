@@ -179,7 +179,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
                 childManagerFactory.createChildManager(formula, input, transitionLock, childTransitionListener)
             }
             .requestAccess {
-                throw java.lang.IllegalStateException("There already is a child with same key: $key. Use [key: Any] parameter.")
+                throw IllegalStateException("There already is a child with same key: $key. Use [key: Any] parameter.")
             } as FormulaManager<ChildInput, ChildRenderModel>
 
         return manager.evaluate(input, processingPass).renderModel
