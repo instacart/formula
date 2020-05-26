@@ -68,7 +68,7 @@ class MyApp : Application() {
                     bind(TimerContract::class) { _, contract ->
                         val resetRelay = PublishRelay.create<Unit>()
                         
-                        resetRelay.startWith(Unit).switchMap { 
+                        resetRelay.startWith(Observable.just(Unit)).switchMap {
                             Observable
                                 .interval(0, 1, TimeUnit.SECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())

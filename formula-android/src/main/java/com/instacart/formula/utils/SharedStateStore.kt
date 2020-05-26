@@ -1,8 +1,8 @@
 package com.instacart.formula.utils
 
 import com.instacart.formula.internal.mapNotNull
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.core.Observable
 
 class SharedStateStore<T> {
 

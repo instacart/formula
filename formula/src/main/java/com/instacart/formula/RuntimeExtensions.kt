@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 fun <State, RenderModel : Any> Formula<Unit, State, RenderModel>.start(): Observable<RenderModel> {
     return start(input = Unit)

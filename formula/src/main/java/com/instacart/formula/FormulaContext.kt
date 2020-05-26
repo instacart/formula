@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create

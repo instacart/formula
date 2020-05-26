@@ -12,6 +12,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 dependencies {
     implementation libraries.kotlin
     implementation project(":formula")

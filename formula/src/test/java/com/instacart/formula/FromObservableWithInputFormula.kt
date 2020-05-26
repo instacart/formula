@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputFormula.Input, Unit>() {
     data class Input(

@@ -1,9 +1,9 @@
 package com.examples.todoapp.data
 
 import com.examples.todoapp.tasks.TaskCompletedEvent
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
 class TaskRepo {

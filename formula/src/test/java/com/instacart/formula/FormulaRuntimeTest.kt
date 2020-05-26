@@ -5,7 +5,7 @@ import com.instacart.formula.streams.EmptyStream
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Test
 

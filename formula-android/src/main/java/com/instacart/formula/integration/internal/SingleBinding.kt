@@ -6,8 +6,7 @@ import com.instacart.formula.integration.FlowEnvironment
 import com.instacart.formula.integration.Integration
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
-import io.reactivex.Observable
-import io.reactivex.functions.Function
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Defines how a specific key should be bound to its [Integration],
@@ -25,10 +24,10 @@ internal class SingleBinding<Component, Key, State : Any>(
         backstack: Observable<BackStack<Key>>
     ): Observable<KeyState<Key>> {
         return backstack.createStateUpdates(type) { key ->
-            integration.create(component, key).onErrorResumeNext(Function {
+            integration.create(component, key).onErrorResumeNext {
                 environment.onScreenError(key, it)
                 Observable.empty()
-            })
+            }
         }
     }
 

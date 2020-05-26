@@ -5,7 +5,7 @@ import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.test.TestAccountFragmentContract
 import com.instacart.formula.integration.test.TestLoginFragmentContract
 import com.instacart.formula.integration.test.TestSignUpFragmentContract
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 import kotlin.reflect.KClass
 

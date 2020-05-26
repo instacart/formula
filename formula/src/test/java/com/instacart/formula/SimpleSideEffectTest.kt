@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.test
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 
 class SimpleSideEffectTest {

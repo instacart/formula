@@ -2,7 +2,7 @@ package com.instacart.formula.integration
 
 import com.instacart.formula.integration.internal.BaseBindingBuilder
 import com.instacart.formula.integration.internal.CompositeBinding
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import kotlin.reflect.KClass
 
 class BindingBuilder<Component, Key : Any> : BaseBindingBuilder<Component, Key>() {

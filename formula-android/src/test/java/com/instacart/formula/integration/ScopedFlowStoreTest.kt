@@ -1,8 +1,8 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.observers.TestObserver
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

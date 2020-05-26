@@ -1,8 +1,8 @@
 package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * Provides ability to configure RxJava streams that will survive configuration changes.

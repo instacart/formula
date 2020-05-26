@@ -5,7 +5,7 @@ import com.instacart.formula.android.StreamConfigurator
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * An ActivityStore is responsible for managing state of multiple fragments. It maps each

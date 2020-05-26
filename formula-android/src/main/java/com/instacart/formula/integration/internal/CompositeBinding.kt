@@ -5,7 +5,7 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.ComponentFactory
 import com.instacart.formula.integration.FlowEnvironment
 import com.instacart.formula.integration.KeyState
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Defines how a group of keys should be bound to their integrations.

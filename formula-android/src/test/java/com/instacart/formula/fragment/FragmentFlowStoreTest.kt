@@ -3,8 +3,8 @@ package com.instacart.formula.fragment
 import android.view.View
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
+import com.jakewharton.rxrelay3.PublishRelay
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.android.parcel.Parcelize
 import org.junit.Before
 import org.junit.Test
@@ -122,6 +122,6 @@ class FragmentFlowStoreTest {
 
     private fun state(key: FragmentContract<*>): Observable<String> {
         val updates = updateRelay.filter { it.first == key }.map { it.second }
-        return updates.startWith("${key.tag}-state")
+        return updates.startWith(Observable.just("${key.tag}-state"))
     }
 }

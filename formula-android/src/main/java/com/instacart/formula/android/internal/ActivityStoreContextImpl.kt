@@ -6,9 +6,9 @@ import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.integration.ActivityStoreContext
-import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
+import com.jakewharton.rxrelay3.BehaviorRelay
+import com.jakewharton.rxrelay3.PublishRelay
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Implementation of [ActivityStoreContext].
@@ -112,7 +112,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         val key = contract.tag
         return fragmentStateUpdated
             .filter { it == key }
-            .startWith(key)
+            .startWith(Observable.just(key))
             .map {
                 fragmentLifecycleStates[key] ?: Lifecycle.State.DESTROYED
             }

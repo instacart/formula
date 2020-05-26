@@ -2,7 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Formula
 import com.instacart.formula.Stream
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * @param input Input passed to [Formula].

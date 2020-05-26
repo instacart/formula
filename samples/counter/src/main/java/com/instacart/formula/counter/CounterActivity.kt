@@ -3,7 +3,7 @@ package com.instacart.formula.counter
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.start
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class CounterActivity : FragmentActivity() {
 

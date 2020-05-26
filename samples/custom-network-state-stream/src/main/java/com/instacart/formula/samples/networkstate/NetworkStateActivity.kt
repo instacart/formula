@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.start
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class NetworkStateActivity : FragmentActivity() {
 
