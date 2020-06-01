@@ -105,7 +105,7 @@ commands:
       - run:
           name: Assemble Todo App
           command: |
-            ./gradlew :samples:todoapp:assembleRelease
+            ./gradlew :samples:todoapp:assembleRelease --no-daemon
       - run:
           name: Assemble Custom Stream App
           command: |
