@@ -97,19 +97,19 @@ commands:
       - run:
           name: Assemble Counter
           command: |
-            ./gradlew :samples:counter:assembleRelease
+            ./gradlew :samples:counter:assembleRelease --no-daemon
       - run:
           name: Assemble Stopwatch Sample
           command: |
-            ./gradlew :samples:stopwatch:assembleRelease
+            ./gradlew :samples:stopwatch:assembleRelease --no-daemon
       - run:
           name: Assemble Todo App
           command: |
-            ./gradlew :samples:todoapp:assembleRelease
+            ./gradlew :samples:todoapp:assembleRelease --no-daemon
       - run:
           name: Assemble Custom Stream App
           command: |
-            ./gradlew :samples:custom-network-state-stream:assembleRelease
+            ./gradlew :samples:custom-network-state-stream:assembleRelease --no-daemon
 
 executors:
   android:

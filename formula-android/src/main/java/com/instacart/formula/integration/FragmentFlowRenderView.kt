@@ -54,9 +54,7 @@ internal class FragmentFlowRenderView(
             super.onFragmentViewCreated(fm, f, v, savedInstanceState)
 
             if (!stateRestored) {
-                for (i in 0 until activity.supportFragmentManager.backStackEntryCount) {
-                    backStackEntries.add(activity.supportFragmentManager.getBackStackEntryAt(i))
-                }
+                recordBackstackChange()
                 stateRestored = true
             }
 
@@ -176,11 +174,13 @@ internal class FragmentFlowRenderView(
         val backStackEntryCount = backStackEntries.size
         val newBackStackEntryCount = activity.supportFragmentManager.backStackEntryCount
         if (backStackEntryCount > newBackStackEntryCount) {
-            for (i in newBackStackEntryCount until backStackEntryCount) {
-                val poppedFragmentName = backStackEntries.removeAt(i).name
+            val removedEntries = backStackEntries.drop(newBackStackEntryCount)
+            removedEntries.forEach { removed ->
+                val poppedFragmentName = removed.name
                 if (poppedFragmentName != null && visibleFragments.find { it.tag == poppedFragmentName } != null) {
                     awaitingRemoval.add(poppedFragmentName)
                 }
+                backStackEntries.remove(removed)
             }
         } else if (backStackEntryCount < newBackStackEntryCount) {
             for (i in backStackEntryCount until newBackStackEntryCount) {
