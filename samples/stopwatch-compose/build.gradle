@@ -1,0 +1,124 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+// Create a configuration which allows us to intercept the JARs, and add them to
+// Kotlin Compiler freeCompilerArgs. This is needed because we can't currently use the
+// built-in `compose` feature in AGP, since it depends on the old Compose Compiler artifacts.
+// TODO: Remove this once AGP uses the new Compose Compiler artifact name
+def compilerPluginConfig = project.configurations.create("kotlinCompilerPlugin")
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach { compile ->
+    kotlinOptions {
+        // Treat all Kotlin warnings as errors
+        allWarningsAsErrors = true
+
+        // Set JVM target to 1.8
+        jvmTarget = "1.8"
+
+        // Allow use of @OptIn
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+
+        freeCompilerArgs += "-Xallow-jvm-ir-dependencies"
+        // Turn on JVM default methods
+        freeCompilerArgs += "-Xjvm-default=all"
+    }
+
+    compile.dependsOn(compilerPluginConfig)
+    compile.doFirst {
+        if (!compilerPluginConfig.isEmpty()) {
+            // Add the compiler plugin JARs using the -Xplugin flag
+            compile.kotlinOptions.freeCompilerArgs +=
+                    "-Xplugin=${compilerPluginConfig.files.first()}"
+            // Need to turn on the IR compiler too
+            compile.kotlinOptions.useIR = true
+        }
+    }
+}
+
+androidExtensions {
+    experimental = true
+    features = ['parcelize']
+}
+
+android {
+    compileSdkVersion androidCompileSdkVersion
+
+    defaultConfig {
+        applicationId "com.instacart.formula.compose.stopwatch"
+        minSdkVersion 21
+        targetSdkVersion targetSdk
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        // We turn off the Compose feature for now, due to using Compose SNAPSHOTs where the
+        // Compose compiler artifact has changed artifact group/name.
+        // Instead we add the compiler manually below in the dependencies {}. Also see
+        // the root build.gradle for info on how to apply the plugin.
+        // TODO: remove this once we upgrade to an AGP version which uses the new artifact details
+
+        // compose true
+    }
+
+    // Set both the Java and Kotlin compilers to target Java 8.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+        useIR = true
+    }
+
+    composeOptions {
+        kotlinCompilerVersion "1.4.0"
+        kotlinCompilerExtensionVersion "1.0.0-alpha07"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+}
+
+dependencies {
+    implementation project(":formula-rxjava3")
+
+    implementation libraries.kotlin
+    implementation libraries.androidx.appcompat
+    implementation libraries.rxrelays
+    implementation libraries.rxandroid
+
+    def composeVersion = "1.0.0-alpha07"
+    // Temporary workaround (see above)
+    kotlinCompilerPlugin "androidx.compose.compiler:compiler:$composeVersion"
+
+    // You also need to include the following Compose toolkit dependencies.
+    implementation "androidx.compose.ui:ui:$composeVersion"
+    implementation "androidx.ui:ui-tooling:$composeVersion"
+    implementation "androidx.compose.foundation:foundation:$composeVersion"
+    implementation "androidx.compose.foundation:foundation-layout:$composeVersion"
+    implementation "androidx.compose.foundation:foundation-text:$composeVersion"
+    implementation "androidx.compose.material:material:$composeVersion"
+    implementation "androidx.compose.runtime:runtime-rxjava3:$composeVersion"
+
+    testImplementation libraries.junit
+    testImplementation "com.google.truth:truth:$truthVersion"
+
+    testImplementation libraries.androidx.test.rules
+    testImplementation libraries.androidx.test.runner
+    testImplementation libraries.androidx.test.espresso.core
+    testImplementation libraries.robolectric
+    testImplementation project(":formula-test")
+}

@@ -7,5 +7,6 @@ include ':samples:composition'
 include ':samples:counter'
 include ':samples:custom-network-state-stream'
 include ':samples:stopwatch'
+include ':samples:stopwatch-compose'
 include ':samples:todoapp'
 

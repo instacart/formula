@@ -1,4 +1,4 @@
-package com.instacart.formula.stopwatch
+package com.instacart.formula.compose.stopwatch
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
@@ -14,8 +14,6 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         val timePassedInMillis: Long,
         val isRunning: Boolean
     )
-
-    private val analytics = StopwatchAnalytics()
 
     override fun initialState(input: Unit): State = State(
         timePassedInMillis = 0,
@@ -39,7 +37,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                         Observable.interval(1, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
                     }
 
-                    incrementTimePassed.onEvent {
+                    events(incrementTimePassed) {
                         transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
                     }
                 }
@@ -78,9 +76,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                 else -> "Start"
             },
             onSelected = context.callback {
-                transition(state.copy(isRunning = !state.isRunning)) {
-                    analytics.trackClick()
-                }
+                transition(state.copy(isRunning = !state.isRunning))
             }
         )
     }
@@ -89,9 +85,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return ButtonRenderModel(
             text = "Reset",
             onSelected = context.callback {
-                transition(state.copy(timePassedInMillis = 0, isRunning = false)) {
-                    analytics.trackClick()
-                }
+                transition(state.copy(timePassedInMillis = 0, isRunning = false))
             }
         )
     }

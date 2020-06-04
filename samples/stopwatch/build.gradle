@@ -8,7 +8,7 @@ androidExtensions {
 }
 
 android {
-    compileSdkVersion compileSdk
+    compileSdkVersion androidCompileSdkVersion
     defaultConfig {
         applicationId "com.instacart.formula.stopwatch"
         minSdkVersion minSdk
