@@ -20,7 +20,8 @@ class FormulaRuntimeTest {
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply {
-                assertThat(values().map { it.state }).containsExactly(0, 0, 1, 2, 3)
+                val expected = listOf(0, 0, 1, 2, 3)
+                assertThat(values().map { it.state }).isEqualTo(expected)
             }
     }
 
@@ -34,7 +35,8 @@ class FormulaRuntimeTest {
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply {
-                assertThat(values().map { it.state }).containsExactly(0, 0, 1, 1)
+                val expected = listOf(0, 0, 1, 1)
+                assertThat(values().map { it.state }).isEqualTo(expected)
             }
     }
 
@@ -265,7 +267,7 @@ class FormulaRuntimeTest {
                 callback?.invoke()
             }
             .apply {
-                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
             }
     }
 
@@ -292,7 +294,7 @@ class FormulaRuntimeTest {
                 callback?.invoke(5)
             }
             .apply {
-                assertThat(values().map { it.state }).containsExactly(0, 1, 1)
+                assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
             }
     }
 
@@ -357,7 +359,7 @@ class FormulaRuntimeTest {
         StreamInputFormula()
             .test(input = Observable.range(0, 3))
             .apply {
-                assertThat(formula.messages).containsExactly(0, 1, 2)
+                assertThat(formula.messages).containsExactly(0, 1, 2).inOrder()
             }
     }
 
@@ -366,7 +368,7 @@ class FormulaRuntimeTest {
         StreamInputFormula()
             .test(input = Observable.just(0, 0, 0, 0))
             .apply {
-                assertThat(formula.messages).containsExactly(0)
+                assertThat(formula.messages).containsExactly(0).inOrder()
             }
     }
 
@@ -614,7 +616,7 @@ class FormulaRuntimeTest {
                 assertThat(onItem.values()).containsExactly(
                     FromObservableWithInputFormula.Item("1"),
                     FromObservableWithInputFormula.Item("2")
-                )
+                ).inOrder()
             }
     }
 

@@ -18,7 +18,7 @@ class DynamicStreamSubject {
     }
 
     private fun assertRunning(vararg keys: String) = apply {
-        assertThat(subject.formula.running).containsExactly(*keys)
+        assertThat(subject.formula.running).containsExactly(*keys).inOrder()
     }
 
     class TestFormula : StatelessFormula<List<String>, Unit>() {

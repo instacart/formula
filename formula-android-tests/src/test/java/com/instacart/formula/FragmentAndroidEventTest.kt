@@ -52,6 +52,7 @@ class FragmentAndroidEventTest {
     @Test fun `activity result`() {
         FormulaAndroid.onActivityResult(scenario.activity(), 1, 2, null)
 
-        assertThat(activityResults).containsExactly(ActivityResult(1, 2, null))
+        val expected = listOf(ActivityResult(1, 2, null))
+        assertThat(activityResults).isEqualTo(expected)
     }
 }

@@ -16,7 +16,8 @@ class FetchDataExampleTest {
                 values().last().onChangeId("2")
             }
             .apply {
-                assertThat(values().map { it.title }).containsExactly("", "response: 1", "response: 2")
+                val expected = listOf("", "response: 1", "response: 2")
+                assertThat(values().map { it.title }).isEqualTo(expected)
             }
     }
 

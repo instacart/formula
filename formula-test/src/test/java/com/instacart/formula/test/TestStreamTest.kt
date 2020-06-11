@@ -25,7 +25,7 @@ class TestStreamTest {
     inline fun fails(action: () -> Unit): Throwable {
         try {
             action()
-        } catch (t: Exception) {
+        } catch (t: Error) {
             return t
         }
 

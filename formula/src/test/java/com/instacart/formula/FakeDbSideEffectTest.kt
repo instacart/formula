@@ -18,7 +18,7 @@ class FakeDbSideEffectTest {
             .test()
             .assertNoErrors()
 
-        Truth.assertThat(saveCalls).containsExactly("first", "second", "third", "third")
+        Truth.assertThat(saveCalls).containsExactly("first", "second", "third", "third").inOrder()
     }
 
     class TestFormula(

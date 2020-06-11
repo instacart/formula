@@ -97,7 +97,8 @@ class RendererTest {
         }
 
         fun assertRenderedValues(vararg values: T) {
-            assertThat(results).containsExactly(*values)
+            val expected = values.toList()
+            assertThat(results).isEqualTo(expected)
         }
     }
 }

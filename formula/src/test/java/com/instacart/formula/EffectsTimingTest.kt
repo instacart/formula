@@ -21,7 +21,7 @@ class EffectsTimingTest {
             .test(input)
             .renderModel { trigger() }
             .renderModel {
-                assertThat(events).containsExactly(State.INTERNAL, State.EXTERNAL)
+                assertThat(events).containsExactly(State.INTERNAL, State.EXTERNAL).inOrder()
             }
     }
 

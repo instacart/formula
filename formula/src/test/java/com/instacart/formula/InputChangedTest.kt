@@ -10,7 +10,8 @@ class InputChangedTest {
             values().last().onChildNameChanged("first")
             values().last().onChildNameChanged("second")
         }.apply {
-            assertThat(values().map { it.childName }).containsExactly("default", "first", "second")
+            val expected = listOf("default", "first", "second")
+            assertThat(values().map { it.childName }).isEqualTo(expected)
         }
     }
 
