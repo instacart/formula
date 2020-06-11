@@ -58,6 +58,6 @@ class ActivityUpdateTimingTest {
 
     @Test fun `last update arrives`() {
         val updates = scenario.get { updates }
-        assertThat(updates).containsExactly("update-2")
+        assertThat(updates).containsExactly("update-2").inOrder()
     }
 }

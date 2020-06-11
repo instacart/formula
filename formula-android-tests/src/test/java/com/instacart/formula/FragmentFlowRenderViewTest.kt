@@ -63,14 +63,14 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `add fragment lifecycle event`() {
-        assertThat(activeContracts()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
     }
 
     @Test fun `pop backstack lifecycle event`() {
         navigateToTaskDetail()
         navigateBack()
 
-        assertThat(activeContracts()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
     }
 
     @Test fun `navigating forward should have both keys in backstack`() {
@@ -79,7 +79,7 @@ class FragmentFlowRenderViewTest {
         assertThat(activeContracts()).containsExactly(
             TestContract(),
             TestContractWithId(1)
-        )
+        ).inOrder()
     }
 
     @Test fun `ignore headless fragments`() {
@@ -92,13 +92,13 @@ class FragmentFlowRenderViewTest {
         }
 
         assertVisibleContract(TestContract())
-        assertThat(activeContracts()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
     }
 
     @Test fun `render model is passed to visible fragment`() {
         val activity = activity()
         sendStateUpdate(TestContract(), "update")
-        assertThat(activity.renderCalls).containsExactly(TestContract() to "update")
+        assertThat(activity.renderCalls).containsExactly(TestContract() to "update").inOrder()
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
@@ -116,12 +116,12 @@ class FragmentFlowRenderViewTest {
 
         val activity = activity()
         sendStateUpdate(contract, "update")
-        assertThat(activity.renderCalls).containsExactly(contract to "update")
+        assertThat(activity.renderCalls).containsExactly(contract to "update").inOrder()
 
         navigateBack()
 
         sendStateUpdate(contract, "update-two")
-        assertThat(activity.renderCalls).containsExactly(contract to "update")
+        assertThat(activity.renderCalls).containsExactly(contract to "update").inOrder()
     }
 
     @Test fun `delegates back press to current render model`() {
@@ -154,7 +154,7 @@ class FragmentFlowRenderViewTest {
 
         assertVisibleContract(TestContractWithId(1))
         // Both contracts should be active.
-        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1))
+        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1)).inOrder()
     }
 
     @Test fun `process death imitation`() {
@@ -172,12 +172,12 @@ class FragmentFlowRenderViewTest {
         // When activity is recreated, it first triggers current fragment and
         // then loads ones from backstack
         assertVisibleContract(TestContractWithId(1))
-        assertThat(activeContracts()).containsExactly(TestContractWithId(1), TestContract())
+        assertThat(activeContracts()).containsExactly(TestContractWithId(1), TestContract()).inOrder()
 
         navigateBack()
 
         assertVisibleContract(TestContract())
-        assertThat(activeContracts()).containsExactly(TestContract())
+        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
     }
 
     private fun navigateBack() {

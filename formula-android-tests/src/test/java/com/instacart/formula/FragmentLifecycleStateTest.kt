@@ -59,12 +59,12 @@ class FragmentLifecycleStateTest {
 
     @Test fun `is fragment started`() {
         val events = selectStartedEvents(TestContract())
-        assertThat(events).containsExactly(false, true)
+        assertThat(events).containsExactly(false, true).inOrder()
     }
 
     @Test fun `is fragment resumed`() {
         val events = selectResumedEvents(TestContract())
-        assertThat(events).containsExactly(false, true)
+        assertThat(events).containsExactly(false, true).inOrder()
     }
 
     @Test fun `navigate forward`() {
@@ -73,11 +73,11 @@ class FragmentLifecycleStateTest {
         val contract = TestContract()
         val detail = TestContractWithId(1)
 
-        assertThat(selectStartedEvents(contract)).containsExactly(false, true, false)
-        assertThat(selectResumedEvents(contract)).containsExactly(false, true, false)
+        assertThat(selectStartedEvents(contract)).containsExactly(false, true, false).inOrder()
+        assertThat(selectResumedEvents(contract)).containsExactly(false, true, false).inOrder()
 
-        assertThat(selectStartedEvents(detail)).containsExactly(false, true)
-        assertThat(selectResumedEvents(detail)).containsExactly(false, true)
+        assertThat(selectStartedEvents(detail)).containsExactly(false, true).inOrder()
+        assertThat(selectResumedEvents(detail)).containsExactly(false, true).inOrder()
     }
 
     private fun selectStartedEvents(contract: FragmentContract<*>): List<Boolean> {

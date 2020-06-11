@@ -57,7 +57,7 @@ class ActivityUpdateTest {
         updateRelay.accept("update-1")
         updateRelay.accept("update-2")
 
-        assertThat(updates()).containsExactly("update-1", "update-2")
+        assertThat(updates()).containsExactly("update-1", "update-2").inOrder()
     }
 
     @Test fun `last update is applied after configuration changes`() {
@@ -66,7 +66,7 @@ class ActivityUpdateTest {
 
         scenario.recreate()
 
-        assertThat(updates()).containsExactly("update-2")
+        assertThat(updates()).containsExactly("update-2").inOrder()
     }
 
     @Test fun `updates are unsubscribed from when activity is finished`() {

@@ -54,6 +54,6 @@ class ActivityLifecycleEventTest {
         val lifecycle = listOf(CREATED, STARTED, RESUMED, STARTED, CREATED, DESTROYED)
         // We expect two full lifecycles
         val expected = listOf(INITIALIZED) + lifecycle + lifecycle
-        assertThat(events).containsExactlyElementsIn(expected)
+        assertThat(events).containsExactlyElementsIn(expected).inOrder()
     }
 }

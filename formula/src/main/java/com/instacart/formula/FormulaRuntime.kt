@@ -81,7 +81,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                         threadChecker.check("Only thread that created it can trigger transitions.")
 
                         if (effects != null) {
-                            effectQueue.push(effects)
+                            effectQueue.addLast(effects)
                         }
 
                         process(isValid)

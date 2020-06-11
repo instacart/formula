@@ -14,7 +14,7 @@ class ManyEmissionStreamTest {
         TestFormula()
             .test()
             .apply {
-                assertThat(values()).containsExactly(EMISSION_COUNT)
+                assertThat(values()).containsExactly(EMISSION_COUNT).inOrder()
             }
     }
 
