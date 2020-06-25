@@ -7,9 +7,9 @@ import com.instacart.formula.internal.ScopedCallbacks
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLockImpl
-import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposables
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 import java.util.LinkedList
 
 /**
@@ -43,7 +43,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                     runtime.onInput(input)
                 }, emitter::onError))
 
-                disposables.add(Disposables.fromRunnable {
+                disposables.add(Disposable.fromRunnable {
                     threadChecker.check("Need to unsubscribe on the main thread.")
                     runtime.manager?.terminate()
                 })

@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
-import com.jakewharton.rxrelay2.PublishRelay
+import com.jakewharton.rxrelay3.PublishRelay
 
 class DynamicStreamSubject {
     private val streams = PublishRelay.create<List<String>>()

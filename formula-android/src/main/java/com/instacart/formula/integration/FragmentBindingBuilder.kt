@@ -3,7 +3,7 @@ package com.instacart.formula.integration
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.integration.internal.BaseBindingBuilder
 import com.instacart.formula.integration.internal.SingleBinding
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import kotlin.reflect.KClass
 
 /**

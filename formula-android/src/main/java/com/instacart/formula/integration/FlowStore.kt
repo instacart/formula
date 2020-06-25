@@ -1,6 +1,6 @@
 package com.instacart.formula.integration
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * A store that manages render model changes for each entry in the [BackStack].

@@ -6,7 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 
 class TaskListFormulaTest {

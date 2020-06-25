@@ -1,7 +1,7 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
-import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay3.BehaviorRelay
 import org.junit.Before
 import org.junit.Test
 

@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.RenderView
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.disposables.Disposable
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.disposables.Disposable
 
 class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel> {
     companion object {

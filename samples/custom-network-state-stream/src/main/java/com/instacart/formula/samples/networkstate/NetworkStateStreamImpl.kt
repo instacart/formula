@@ -12,7 +12,7 @@ class NetworkStateStreamImpl(private val application: Application) : NetworkStat
 
     override fun start(send: (NetworkState) -> Unit): Cancelable? {
         // Broadcast receiver setup
-        val action = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        val action = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 send(getNetworkState(application))

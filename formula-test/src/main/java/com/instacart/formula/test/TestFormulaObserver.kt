@@ -7,7 +7,7 @@ import com.instacart.formula.internal.FormulaManagerFactory
 import com.instacart.formula.internal.FormulaManagerFactoryImpl
 import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLock
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import kotlin.reflect.KClass
 
 class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : Formula<Input, *, RenderModel>>(

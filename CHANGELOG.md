@@ -1,5 +1,6 @@
 # Changelog
 ## [0.6.0] - TODO
+- **Breaking**: Changing from RxJava 2.x to RxJava 3.x
 - Change callback key type from String to Any.
 - Removed deprecated `state()` extension
 - Updated AndroidX appcompat to 1.1.0

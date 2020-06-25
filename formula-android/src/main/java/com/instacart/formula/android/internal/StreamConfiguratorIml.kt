@@ -2,9 +2,9 @@ package com.instacart.formula.android.internal
 
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.StreamConfigurator
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.BiFunction
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.functions.BiFunction
 
 internal class StreamConfiguratorIml<out Activity : FragmentActivity>(
     private val context: ActivityStoreContextImpl<Activity>
