@@ -112,7 +112,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         val key = contract.tag
         return fragmentStateUpdated
             .filter { it == key }
-            .startWith(Observable.just(key))
+            .startWithItem(key)
             .map {
                 fragmentLifecycleStates[key] ?: Lifecycle.State.DESTROYED
             }

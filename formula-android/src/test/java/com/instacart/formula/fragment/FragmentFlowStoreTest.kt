@@ -122,6 +122,6 @@ class FragmentFlowStoreTest {
 
     private fun state(key: FragmentContract<*>): Observable<String> {
         val updates = updateRelay.filter { it.first == key }.map { it.second }
-        return updates.startWith(Observable.just("${key.tag}-state"))
+        return updates.startWithItem("${key.tag}-state")
     }
 }
