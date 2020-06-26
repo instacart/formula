@@ -48,7 +48,11 @@ apply plugin: "com.vanniktech.android.junit.jacoco"
 apply from: 'gradle/merge-reports.gradle'
 
 junitJacoco {
-    jacocoVersion = '0.8.2' // WARNING! Don't upgrade unless https://github.com/Malinskiy/danger-jacoco/issues/10 is fixed
+    // WARNING! Don't upgrade unless https://github.com/Malinskiy/danger-jacoco/issues/10 is fixed
+    jacocoVersion = '0.8.2'
     includeNoLocationClasses = true
     includeInstrumentationCoverageInMergedReport = true
+    ignoreProjects = [
+            "samples/*"
+    ]
 }
