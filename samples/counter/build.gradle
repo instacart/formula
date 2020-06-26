@@ -8,14 +8,19 @@ androidExtensions {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion compileSdk
     defaultConfig {
         applicationId "com.instacart.formula.counter"
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion minSdk
+        targetSdkVersion targetSdk
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -29,6 +34,12 @@ android {
         unitTests {
             includeAndroidResources = true
         }
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 

@@ -1,7 +1,7 @@
 package com.instacart.formula
 
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
+import com.jakewharton.rxrelay3.PublishRelay
+import io.reactivex.rxjava3.core.Observable
 
 object ChildMessageTriggersEventTransitionInParent {
     fun formula() = TestFormula()

@@ -5,9 +5,9 @@ import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FlowStore
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
-import io.reactivex.functions.BiFunction
+import com.jakewharton.rxrelay3.PublishRelay
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.functions.BiFunction
 
 /**
  * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.

@@ -1,6 +1,6 @@
 package com.instacart.formula.integration
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Defines an integration for a specific [Key].

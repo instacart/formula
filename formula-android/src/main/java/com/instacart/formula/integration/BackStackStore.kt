@@ -1,7 +1,7 @@
 package com.instacart.formula.integration
 
-import io.reactivex.Observable
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 /**
  * A [BackStackStore] maintains back stack state and provides useful operations to modify it.
