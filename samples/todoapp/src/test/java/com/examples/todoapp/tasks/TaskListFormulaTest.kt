@@ -15,10 +15,12 @@ class TaskListFormulaTest {
 
     @Test fun `change filter type`() {
         val repo = mockk<TaskRepo>()
-        every { repo.tasks() } returns Observable.just(listOf(
+        every { repo.tasks() } returns Observable.just(
+            listOf(
             Task("Mow the lawn."),
             Task("Go get a haircut.")
-        ))
+            )
+        )
 
         TaskListFormula(repo)
             .test(TaskListFormula.Input(showToast = {}))
