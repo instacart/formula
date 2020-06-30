@@ -60,6 +60,7 @@ dependencies {
     testImplementation "com.google.truth:truth:$truthVersion"
     testImplementation "org.mockito:mockito-inline:$mockitoVersion"
     testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation libraries.mockk
     testImplementation project(":formula-test")
 
     testImplementation libraries.androidx.test.rules
