@@ -15,7 +15,7 @@ import java.util.LinkedList
 /**
  * Takes a [Formula] and creates an Observable<RenderModel> from it.
  */
-class FormulaRuntime<Input : Any, State, RenderModel : Any>(
+class FormulaRuntime<Input, State, RenderModel>(
     private val threadChecker: ThreadChecker,
     private val formula: Formula<Input, State, RenderModel>,
     private val childManagerFactory: FormulaManagerFactory,
@@ -26,7 +26,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
         /**
          * RuntimeExtensions.kt [start] calls this method.
          */
-        fun <Input : Any, State,  RenderModel : Any> start(
+        fun <Input, State,  RenderModel> start(
             input: Observable<Input>,
             formula: Formula<Input, State, RenderModel>,
             childManagerFactory: FormulaManagerFactory = FormulaManagerFactoryImpl()
@@ -106,7 +106,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
      */
     private fun process(isValid: Boolean) {
         val localManager = checkNotNull(manager)
-        val currentInput = checkNotNull(input)
+        val currentInput = checkAnyNotNull(input)
 
         val processingPass = if (isValid) {
             lock.processingPass
@@ -133,7 +133,7 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
 
         if (hasInitialFinished && emitRenderModel) {
             emitRenderModel = false
-            onRenderModel(checkNotNull(lastRenderModel))
+            onRenderModel(checkAnyNotNull(lastRenderModel))
         }
     }
 
@@ -152,5 +152,9 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                 effects()
             }
         }
+    }
+
+    private fun <T> checkAnyNotNull(value: T?): T {
+        return checkNotNull(value as Any?) as T
     }
 }

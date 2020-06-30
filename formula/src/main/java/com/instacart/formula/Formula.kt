@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import io.reactivex.rxjava3.core.Observable
+
 /**
  * Formula interface defines render model management.
  *
@@ -44,4 +46,20 @@ interface Formula<Input, State, RenderModel> {
         state: State,
         context: FormulaContext<State>
     ): Evaluation<RenderModel>
+
+    fun start(): Observable<RenderModel> {
+        return start(input = Unit as Input)
+    }
+
+    fun start(
+        input: Input
+    ): Observable<RenderModel> {
+        return start(input = Observable.just(input))
+    }
+
+    fun start(
+        input: Observable<Input>
+    ): Observable<RenderModel> {
+        return FormulaRuntime.start(input = input, formula = this)
+    }
 }
