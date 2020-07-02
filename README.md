@@ -27,7 +27,7 @@ dependencies {
 ```
 The Clear BSD License
 
-Copyright (c) 2019 Maplebear Inc. dba Instacart
+Copyright (c) 2020 Maplebear Inc. dba Instacart
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted 

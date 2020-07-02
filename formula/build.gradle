@@ -9,8 +9,10 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8 // java 8
-targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
