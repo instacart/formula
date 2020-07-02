@@ -56,15 +56,9 @@ junitJacoco {
             '**/Manifest*.*',
             '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
             '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
-            '**/*Contract*.*', // Ignore parcelized contracts
-            '**/*$Parcelable*.*',
-            '**/*Creator.class',
             '**/com/instacart/formula/test/**/*.*'
     ]
     ignoreProjects = [
-            "formula-android",
-            "formula-android-tests",
-            "formula-test",
             "samples/*"
     ]
     includeNoLocationClasses = true
