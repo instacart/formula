@@ -1,6 +1,8 @@
-package com.instacart.formula
+package com.instacart.formula.test
 
 import android.view.View
+import com.instacart.formula.RenderView
+import com.instacart.formula.Renderer
 import com.instacart.formula.fragment.FragmentComponent
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentLifecycleCallback

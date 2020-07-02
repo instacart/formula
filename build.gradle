@@ -45,14 +45,29 @@ task clean(type: Delete) {
 }
 
 apply plugin: "com.vanniktech.android.junit.jacoco"
-apply from: 'gradle/merge-reports.gradle'
-
 junitJacoco {
     // WARNING! Don't upgrade unless https://github.com/Malinskiy/danger-jacoco/issues/10 is fixed
     jacocoVersion = '0.8.2'
-    includeNoLocationClasses = true
-    includeInstrumentationCoverageInMergedReport = true
+    excludes = [
+            // Defaults
+            '**/androidx/**/*.*',
+            '**/*$$*',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
+            '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
+            '**/*Contract*.*', // Ignore parcelized contracts
+            '**/*$Parcelable*.*',
+            '**/*Creator.class',
+            '**/com/instacart/formula/test/**/*.*'
+    ]
     ignoreProjects = [
+            "formula-android",
+            "formula-android-tests",
+            "formula-test",
             "samples/*"
     ]
+    includeNoLocationClasses = true
+    includeInstrumentationCoverageInMergedReport = true
 }
+apply from: 'gradle/merge-reports.gradle'

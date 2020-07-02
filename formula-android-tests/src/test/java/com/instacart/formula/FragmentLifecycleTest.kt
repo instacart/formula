@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.TestFragmentActivity
+import com.instacart.formula.test.TestLifecycleContract
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule
