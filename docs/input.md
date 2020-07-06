@@ -81,20 +81,24 @@ you can use `FormulaContext` to instantiate callbacks by using:
 
 **Don't:** Don't instantiate functions within `Formula.evaluate`.
 ```kotlin
-val itemListInput = ItemListInput(
-    onItemSelected = {
-        analytics.track("item_selected")
-    }
-)
+override fun evaluate(...) {
+    val itemListInput = ItemListInput(
+        onItemSelected = {
+            analytics.track("item_selected")
+        }
+    )
+}
 ```
 
 **Do:** Use `eventCallback`
 ```kotlin
-val itemListInput = ItemListInput(
-    onItemSelected = context.eventCallback {
-        transition { analytics.track("item_selected") }
-    }
-)
+override fun evaluate(...) {
+    val itemListInput = ItemListInput(
+        onItemSelected = context.eventCallback {
+            transition { analytics.track("item_selected") }
+        }
+    )
+}
 ```
 
 **Do:** Use already constructed callbacks
@@ -128,9 +132,11 @@ data class MyInput(
 
 **Don't:** create a new observable within `Formula.evaluate`
 ```kotlin
-val input = MyInput(
-    eventObservable = relay.map { Event() }
-)
+override fun evaluate(...) {
+    val input = MyInput(
+        eventObservable = relay.map { Event() }
+    )
+}
 ```
 
 **Do:** create observable outside of `Formula.evaluate`
