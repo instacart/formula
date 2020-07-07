@@ -6,11 +6,11 @@ ext {
 
     espressoVersion = "3.1.1"
     junitVersion = "4.12"
-    mockitoVersion = "2.22.0"
+    mockitoVersion = "3.3.3"
     mockitoKotlinVersion = "1.6.0"
     okhttpVersion = "3.13.1"
     robolectricVersion = "4.1" // be aware of updating https://github.com/robolectric/robolectric/pull/4736
-    truthVersion = "1.0"
+    truthVersion = "1.0.1"
 
     libraries = [
             androidx             : [
@@ -48,6 +48,7 @@ ext {
             ],
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+            kotlinReflect        : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
             rxjava               : "io.reactivex.rxjava3:rxjava:3.0.4",
             rxandroid            : "io.reactivex.rxjava3:rxandroid:3.0.0",

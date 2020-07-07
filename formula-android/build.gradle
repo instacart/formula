@@ -62,6 +62,8 @@ dependencies {
     implementation libraries.androidx.annotation
     implementation libraries.androidx.appcompat
 
+    api libraries.kotlinReflect
+
     api libraries.rxandroid
     api libraries.rxrelays
 
