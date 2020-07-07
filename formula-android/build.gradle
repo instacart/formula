@@ -62,8 +62,6 @@ dependencies {
     implementation libraries.androidx.annotation
     implementation libraries.androidx.appcompat
 
-    api libraries.kotlinReflect
-
     api libraries.rxandroid
     api libraries.rxrelays
 
@@ -74,4 +72,5 @@ dependencies {
     testImplementation libraries.truth
     testImplementation "org.mockito:mockito-inline:$mockitoVersion"
     testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation libraries.kotlinReflect
 }
