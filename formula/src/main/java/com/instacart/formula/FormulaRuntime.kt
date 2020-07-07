@@ -9,7 +9,7 @@ import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionLockImpl
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
 import java.util.LinkedList
 
 /**
@@ -43,10 +43,11 @@ class FormulaRuntime<Input : Any, State, RenderModel : Any>(
                     runtime.onInput(input)
                 }, emitter::onError))
 
-                disposables.add(Disposable.fromRunnable {
+                val runnable = Runnable {
                     threadChecker.check("Need to unsubscribe on the main thread.")
                     runtime.manager?.terminate()
-                })
+                }
+                disposables.add(FormulaDisposableHelper.fromRunnable(runnable))
 
                 emitter.setDisposable(disposables)
             }.distinctUntilChanged()
