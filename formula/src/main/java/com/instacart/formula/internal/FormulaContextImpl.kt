@@ -1,8 +1,6 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Child
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Transition
 import com.instacart.formula.Update
@@ -14,8 +12,6 @@ class FormulaContextImpl<State> internal constructor(
     private val delegate: Delegate,
     private val transitionCallback: TransitionCallbackWrapper<State>
 ) : FormulaContext<State>(callbacks) {
-
-    private val childBuilder: Child<*, *> = Child<Any, Any>(this)
 
     interface Delegate {
         fun <ChildInput, ChildRenderModel> child(
@@ -37,24 +33,13 @@ class FormulaContextImpl<State> internal constructor(
         return builder.updates
     }
 
-    fun <ChildInput, ChildRenderModel> child(
+    override fun <ChildInput, ChildRenderModel> child(
         key: Any,
         formula: IFormula<ChildInput, ChildRenderModel>,
         input: ChildInput
     ): ChildRenderModel {
         ensureNotRunning()
         return delegate.child(formula, input, key, processingPass)
-    }
-
-    override fun <ChildInput, ChildRenderModel> child(
-        key: Any,
-        formula: IFormula<ChildInput, ChildRenderModel>
-    ): Child<ChildInput, ChildRenderModel>  {
-        ensureNotRunning()
-        @Suppress("UNCHECKED_CAST")
-        val casted = childBuilder as Child<ChildInput, ChildRenderModel>
-        casted.initialize(key, formula)
-        return casted
     }
 
     private fun ensureNotRunning() {

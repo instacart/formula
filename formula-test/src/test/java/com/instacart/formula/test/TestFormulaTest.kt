@@ -56,16 +56,12 @@ class TestFormulaTest {
             return Evaluation(
                 renderModel = RenderModel(
                     name = state.name,
-                    button = context
-                        .child(childFormula)
-                        .input {
-                            ChildFormula.Input(
-                                name = state.name,
-                                onChangeName = context.eventCallback {
-                                    state.copy(name = it).noEffects()
-                                }
-                            )
+                    button = context.child(childFormula, ChildFormula.Input(
+                        name = state.name,
+                        onChangeName = context.eventCallback {
+                            state.copy(name = it).noEffects()
                         }
+                    ))
                 )
             )
         }

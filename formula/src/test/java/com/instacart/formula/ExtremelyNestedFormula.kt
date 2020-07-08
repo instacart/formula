@@ -10,7 +10,7 @@ object ExtremelyNestedFormula {
             context: FormulaContext<Int>
         ): Evaluation<Int> {
             val childValue = if (childFormula != null) {
-                context.child(childFormula).input(Unit)
+                context.child(childFormula)
             } else {
                 0
             }

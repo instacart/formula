@@ -29,7 +29,7 @@ class InputChangedTest {
         ): Evaluation<RenderModel> {
             return Evaluation(
                 renderModel = RenderModel(
-                    childName = context.child(childFormula).input(state),
+                    childName = context.child(childFormula, state),
                     onChildNameChanged = context.eventCallback { name ->
                         name.noEffects()
                     }
