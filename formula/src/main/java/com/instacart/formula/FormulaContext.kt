@@ -85,28 +85,14 @@ abstract class FormulaContext<State> internal constructor(
     fun <ChildOutput> child(
         child: IFormula<Unit, ChildOutput>
     ): ChildOutput {
-        return child("", child, Unit)
+        return child(child, Unit)
     }
 
     /**
      * Returns the latest output of the [child] formula. Formula runtime ensures the [child]
      * is running, manages its internal state and will trigger `evaluate` if needed.
-     */
-    fun <ChildInput, ChildOutput> child(
-        formula: IFormula<ChildInput, ChildOutput>,
-        input: ChildInput
-    ): ChildOutput {
-        return child("", formula, input)
-    }
-
-    /**
-     * Returns the latest output of the [child] formula. Formula runtime ensures the [child]
-     * is running, manages its internal state and will trigger `evaluate` if needed.
-     *
-     * @param key Used to distinguish between formulas of same type.
      */
     abstract fun <ChildInput, ChildOutput> child(
-        key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput
     ): ChildOutput

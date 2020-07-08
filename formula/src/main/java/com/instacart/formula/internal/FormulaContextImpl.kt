@@ -17,7 +17,6 @@ class FormulaContextImpl<State> internal constructor(
         fun <ChildInput, ChildOutput> child(
             formula: IFormula<ChildInput, ChildOutput>,
             input: ChildInput,
-            key: Any,
             processingPass: Long
         ): ChildOutput
     }
@@ -34,12 +33,11 @@ class FormulaContextImpl<State> internal constructor(
     }
 
     override fun <ChildInput, ChildOutput> child(
-        key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput
     ): ChildOutput {
         ensureNotRunning()
-        return delegate.child(formula, input, key, processingPass)
+        return delegate.child(formula, input, processingPass)
     }
 
     private fun ensureNotRunning() {

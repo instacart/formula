@@ -15,6 +15,7 @@
 - **Breaking**: `StatelessFormula` no longer implements `Formula`, but rather implements `IFormula`.
 - **Breaking**: Removing `child` builder.
 - **Breaking**: Renaming `Evaluation.renderModel` to `Evaluation.output`.
+- **Breaking**: Moving child `key` into `Formula` and `StatelessFormula` interfaces.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.

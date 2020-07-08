@@ -27,7 +27,7 @@ object ExtremelyNestedFormula {
     }
 
     fun nested(levels: Int): TestFormula {
-        return (1 until levels).fold(TestFormula(null)) { child, value ->
+        return (1 until levels).fold(TestFormula(null)) { child, _ ->
             TestFormula(child)
         }
     }

@@ -35,7 +35,8 @@ can emit an output, check data passed by the parent or pass events back to the p
 val testFormula = TestFormula<MyFormula.Input, MyFormula.Output>(
     initialOutput = MyFormula.Output()
 )
-val formula = mock<MyFormula>()
+// We use spy to ensure that it calls other real methods.
+val formula = spy<MyFormula>()
 whenever(formula.implementation()).thenReturn(testFormula)
 ```
   
