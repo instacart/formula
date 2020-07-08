@@ -705,7 +705,7 @@ when the user enters this destination.</p>
                     <span class="n">bind</span><span class="p">(</span><span class="n">TimerContract</span><span class="o">::</span><span class="k">class</span><span class="p">)</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">contract</span> <span class="p">-&gt;</span>
                         <span class="k">val</span> <span class="py">resetRelay</span> <span class="p">=</span> <span class="n">PublishRelay</span><span class="p">.</span><span class="n">create</span><span class="p">&lt;</span><span class="n">Unit</span><span class="p">&gt;()</span>
 
-                        <span class="n">resetRelay</span><span class="p">.</span><span class="n">startWith</span><span class="p">(</span><span class="n">Unit</span><span class="p">).</span><span class="n">switchMap</span> <span class="p">{</span> 
+                        <span class="n">resetRelay</span><span class="p">.</span><span class="n">startWithItem</span><span class="p">(</span><span class="n">Unit</span><span class="p">).</span><span class="n">switchMap</span> <span class="p">{</span>
                             <span class="n">Observable</span>
                                 <span class="p">.</span><span class="n">interval</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="p">.</span><span class="n">SECONDS</span><span class="p">)</span>
                                 <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">AndroidSchedulers</span><span class="p">.</span><span class="n">mainThread</span><span class="p">())</span>

@@ -87,6 +87,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#equality" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -262,9 +266,56 @@
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
     
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Using Input
+      </label>
+    
     <a href="./" title="Using Input" class="md-nav__link md-nav__link--active">
       Using Input
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#equality" title="Equality" class="md-nav__link">
+    Equality
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maintaining-callback-equality" title="Maintaining callback equality" class="md-nav__link">
+    Maintaining callback equality
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#passing-observables" title="Passing observables" class="md-nav__link">
+    Passing observables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -348,6 +399,55 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#equality" title="Equality" class="md-nav__link">
+    Equality
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maintaining-callback-equality" title="Maintaining callback equality" class="md-nav__link">
+    Maintaining callback equality
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#passing-observables" title="Passing observables" class="md-nav__link">
+    Passing observables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
@@ -405,6 +505,136 @@ pass an item id to <code>ItemDetailFormula</code>. </p>
   <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">renderModel</span> <span class="p">-&gt;</span>
 
   <span class="p">}</span>
+</pre></div>
+
+
+<h2 id="equality">Equality</h2>
+<p>Formula uses input equality to determine if it should re-evaluate. A parent can cause 
+a child formula to re-evaluate by changing the input it passes. This will also trigger
+<code>Formula.onInputChanged</code> callback on the child formula.</p>
+<p>This is a desired behavior as we do want the child to react when the data that we pass changes.</p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">ItemInput</span><span class="p">(</span>
+    <span class="k">val</span> <span class="py">itemId</span><span class="p">:</span> <span class="n">String</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>Making <code>Input</code> a data class and passing data as part of its properties makes it easy to reason
+about its equality. In some cases though, we want to pass objects that don't have property based
+equality such as callback functions or observables. </p>
+<h3 id="maintaining-callback-equality">Maintaining callback equality</h3>
+<p>In many cases we want to pass callbacks to listen to formula events. </p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">ItemListInput</span><span class="p">(</span>
+    <span class="k">val</span> <span class="py">onItemSelected</span><span class="p">:</span> <span class="p">(</span><span class="n">Item</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>Formula provides an easy way to maintain callback equality. Within your parent formula, 
+you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
+<ul>
+<li><code>FormulaContext.callback</code></li>
+<li><code>FormulaContext.eventCallback</code> </li>
+</ul>
+<p><strong>Don't:</strong> Don't instantiate functions within <code>Formula.evaluate</code>.</p>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">itemListInput</span> <span class="p">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
+        <span class="n">onItemSelected</span> <span class="p">=</span> <span class="p">{</span>
+            <span class="n">analytics</span><span class="p">.</span><span class="n">track</span><span class="p">(</span><span class="s">&quot;item_selected&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> Use <code>eventCallback</code></p>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">itemListInput</span> <span class="p">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
+        <span class="n">onItemSelected</span> <span class="p">=</span> <span class="n">context</span><span class="p">.</span><span class="n">eventCallback</span> <span class="p">{</span>
+            <span class="n">transition</span> <span class="p">{</span> <span class="n">analytics</span><span class="p">.</span><span class="n">track</span><span class="p">(</span><span class="s">&quot;item_selected&quot;</span><span class="p">)</span> <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> Use already constructed callbacks</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Router is constructed outside of the &quot;evaluate&quot; function block</span>
+<span class="k">val</span> <span class="py">router</span><span class="p">:</span> <span class="n">ItemRouter</span> <span class="p">=</span> <span class="p">...</span>
+
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...):</span> <span class="p">...</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">itemListInput</span> <span class="p">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
+        <span class="n">onItemSelected</span> <span class="p">=</span> <span class="n">router</span><span class="o">::</span><span class="n">onItemSelected</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> Delegate to parent input directly</p>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="p">...):</span> <span class="p">...</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">itemListInput</span> <span class="p">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
+        <span class="n">onItemSelected</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="n">onItemSelected</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="passing-observables">Passing observables</h3>
+<p>Observables have identity equality which make maintaining input equality a bit tricky.</p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">MyInput</span><span class="p">(</span>
+  <span class="k">val</span> <span class="py">eventObservable</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Don't:</strong> create a new observable within <code>Formula.evaluate</code></p>
+<div class="codehilite"><pre><span></span><span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">input</span> <span class="p">=</span> <span class="n">MyInput</span><span class="p">(</span>
+        <span class="n">eventObservable</span> <span class="p">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">Event</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> create observable outside of <code>Formula.evaluate</code></p>
+<div class="codehilite"><pre><span></span><span class="k">private</span> <span class="k">val</span> <span class="py">eventObservable</span> <span class="p">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">Event</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">input</span> <span class="p">=</span> <span class="n">MyInput</span><span class="p">(</span>
+        <span class="n">eventObservable</span> <span class="p">=</span> <span class="n">eventObservable</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> use State to instantiate observable once</p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">State</span><span class="p">(</span>
+    <span class="k">val</span> <span class="py">eventObservable</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">Event</span><span class="p">&gt;</span>
+<span class="p">)</span>
+
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">)</span> <span class="p">=</span> <span class="n">State</span><span class="p">(</span>
+  <span class="n">eventObservable</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="n">eventObservable</span><span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">Event</span><span class="p">()</span> <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">input</span> <span class="p">=</span> <span class="n">MyInput</span><span class="p">(</span>
+        <span class="n">eventObservable</span> <span class="p">=</span> <span class="n">state</span><span class="p">.</span><span class="n">eventObservable</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>Don't:</strong> pass data observables</p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">Input</span><span class="p">(</span>
+    <span class="k">val</span> <span class="py">dataObservable</span><span class="p">:</span> <span class="n">Observable</span><span class="p">&lt;</span><span class="n">Data</span><span class="p">&gt;</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Do:</strong> pass data directly</p>
+<div class="codehilite"><pre><span></span><span class="k">data</span> <span class="k">class</span> <span class="nc">Input</span><span class="p">(</span>
+    <span class="k">val</span> <span class="py">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">?</span>
+<span class="p">)</span>
 </pre></div>
                 
                   

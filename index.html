@@ -563,15 +563,16 @@ it will also contain callbacks that will be invoked when user interacts with the
 <p>Once we define a Render Model, we can create a <code>RenderView</code> which is responsible for taking a <code>RenderModel</code>
 and applying it to Android Views.</p>
 <h4 id="render-view">Render View</h4>
-<p>Render View is an interface that we extend. It requires us to create a <code>Renderer</code> that takes <code>RenderModel</code> and 
-applies it to Android Views. Renderer has an internal mechanism that checks the previous Render Model applied
-and only re-renders if it has changed. </p>
+<p>Render View is an interface which is responsible for applying <code>RenderModel</code> to Android Views.
+This interface requires us to provide a <code>render</code> implementation by creating a <code>Renderer</code>. Renderer 
+is a class that has an internal mechanism that checks the previous Render Model applied 
+and only re-renders if it has changed.  </p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">CounterRenderView</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">ViewGroup</span><span class="p">):</span> <span class="n">RenderView</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">{</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">decrementButton</span><span class="p">:</span> <span class="n">Button</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">decrement_button</span><span class="p">)</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">incrementButton</span><span class="p">:</span> <span class="n">Button</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">increment_button</span><span class="p">)</span>
   <span class="k">private</span> <span class="k">val</span> <span class="py">countTextView</span><span class="p">:</span> <span class="n">TextView</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="n">findViewById</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">count_text_view</span><span class="p">)</span>
 
-  <span class="k">override</span> <span class="k">val</span> <span class="py">renderer</span><span class="p">:</span> <span class="n">Renderer</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">Renderer</span><span class="p">.</span><span class="n">create</span> <span class="p">{</span> <span class="n">model</span> <span class="p">-&gt;</span>
+  <span class="k">override</span> <span class="k">val</span> <span class="py">render</span><span class="p">:</span> <span class="n">Renderer</span><span class="p">&lt;</span><span class="n">CounterRenderModel</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">Renderer</span> <span class="p">{</span> <span class="n">model</span> <span class="p">-&gt;</span>
     <span class="n">countTextView</span><span class="p">.</span><span class="n">text</span> <span class="p">=</span> <span class="n">model</span><span class="p">.</span><span class="n">count</span>
     <span class="n">decrementButton</span><span class="p">.</span><span class="n">setOnClickListener</span> <span class="p">{</span>
       <span class="n">model</span><span class="p">.</span><span class="n">onDecrement</span><span class="p">()</span>
@@ -586,7 +587,7 @@ and only re-renders if it has changed. </p>
 
 <p>We now defined a single entry-point to our rendering (this makes debugging issues a lot easier). Anytime 
 you need to update UI, just set a new Render Model.</p>
-<div class="codehilite"><pre><span></span><span class="n">renderView</span><span class="p">.</span><span class="n">renderer</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">renderModel</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><span class="n">renderView</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">renderModel</span><span class="p">)</span>
 </pre></div>
 
 
@@ -681,7 +682,7 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
   <span class="p">}</span>
 
   <span class="k">fun</span> <span class="nf">render</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CounterRenderModel</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">counterRenderView</span><span class="p">.</span><span class="n">renderer</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">counterRenderView</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
