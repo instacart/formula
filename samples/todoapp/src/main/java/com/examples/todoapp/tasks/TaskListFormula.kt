@@ -52,7 +52,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
                     state.copy(taskState = it).noEffects()
                 }
             },
-            renderModel = TaskListRenderModel(
+            output = TaskListRenderModel(
                 items = items,
                 filterOptions = filterOptions(state, context)
             )

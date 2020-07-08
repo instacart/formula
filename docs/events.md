@@ -17,7 +17,7 @@ All callbacks should be created within `Formula.evaluate` block.
 ```kotlin
 override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
   return Evaluation(
-    renderModel = FormRenderModel(
+    output = FormRenderModel(
       // Use FormulaContext.eventCallback for callbacks that have a parameter.
       onNameChanged = context.eventCallback { newName ->
         // Use "newName" to perform a transition
@@ -89,7 +89,7 @@ Now, we can use the `input` passed to us in `Formula.evaluate` to communicate wi
 ```kotlin
 override fun evaluate(input: ItemListInput, state, context): ... {
   return Evaluation(
-    renderModel = state.items.map { item ->
+    output = state.items.map { item ->
       context.key(item.id) {
         ItemRow(
           name = item.name,
@@ -111,7 +111,7 @@ There are a few events that every formula can listen to and respond.
 
 ```kotlin
 Evaluation(
-  renderModel = ...,
+  output = ...,
   updates = context.updates {
     // Performs a side effect when formula is initialized
     events(Stream.onInit()) {

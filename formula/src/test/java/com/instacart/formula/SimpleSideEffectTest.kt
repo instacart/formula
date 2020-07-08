@@ -28,7 +28,7 @@ class SimpleSideEffectTest {
 
         override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<Int> {
             return Evaluation(
-                renderModel = state.count,
+                output = state.count,
                 updates = context.updates {
                     events(increment) {
                         val updated = state.copy(count = state.count + 1)

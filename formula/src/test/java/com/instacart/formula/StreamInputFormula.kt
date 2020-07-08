@@ -5,7 +5,7 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
 
     override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Unit> {
         return Evaluation(
-            renderModel = Unit,
+            output = Unit,
             updates = context.updates {
                 events(Stream.onData(input)) {
                     transition { messages.add(it) }

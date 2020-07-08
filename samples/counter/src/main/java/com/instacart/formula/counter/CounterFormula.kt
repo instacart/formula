@@ -14,7 +14,7 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel> {
         context: FormulaContext<Int>
     ): Evaluation<CounterRenderModel> {
         return Evaluation(
-            renderModel = CounterRenderModel(
+            output = CounterRenderModel(
                 count = "Count: $state",
                 onDecrement = context.callback {
                     transition(state - 1)

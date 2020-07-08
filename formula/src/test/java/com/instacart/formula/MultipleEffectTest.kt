@@ -25,13 +25,13 @@ class MultipleEffectTest {
         val onEvent = TestEventCallback<Event>()
         TestFormula2()
             .test(TestFormula2.Input(onEvent = onEvent))
-            .renderModel { start(1) }
+            .output { start(1) }
 
         val expected = listOf(Event.Started(1), Event.Stopped(1))
         assertThat(onEvent.values()).isEqualTo(expected)
     }
 
-    class TestFormula2 : Formula<TestFormula2.Input, TestFormula2.State, TestFormula2.RenderModel> {
+    class TestFormula2 : Formula<TestFormula2.Input, TestFormula2.State, TestFormula2.Output> {
         sealed class Event {
             data class Started(val id: Int): Event()
             data class Stopped(val id: Int): Event()
@@ -46,7 +46,7 @@ class MultipleEffectTest {
             val started: List<Int> = emptyList()
         )
 
-        data class RenderModel(
+        data class Output(
             val start: (Int) -> Unit
         )
 
@@ -56,10 +56,10 @@ class MultipleEffectTest {
             input: Input,
             state: State,
             context: FormulaContext<State>
-        ): Evaluation<RenderModel> {
+        ): Evaluation<Output> {
             val started = state.started
             return Evaluation(
-                renderModel = RenderModel(
+                output = Output(
                     start = context.eventCallback {
                         transition(state.copy(started = started.plus(it))) {
                             input.onEvent(Event.Started(it))
@@ -94,7 +94,7 @@ class MultipleEffectTest {
             context: FormulaContext<Int>
         ): Evaluation<Unit> {
             return Evaluation(
-                renderModel = Unit,
+                output = Unit,
                 updates = context.updates {
                     events(Observable.range(0, 4)) {
                         val updated = state + 1

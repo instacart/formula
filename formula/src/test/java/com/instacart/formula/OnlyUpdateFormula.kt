@@ -6,7 +6,7 @@ class OnlyUpdateFormula<Input>(
 
     override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
         return Evaluation(
-            renderModel = Unit,
+            output = Unit,
             updates = context.updates {
                 build(this, input)
             }

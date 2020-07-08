@@ -8,7 +8,7 @@ class RemovingTerminateStreamSendsNoMessagesFormula : StatelessFormula<RemovingT
 
     override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
         return Evaluation(
-            renderModel = Unit,
+            output = Unit,
             updates = context.updates {
                 if (input.onTerminate != null) {
                     events(Stream.onTerminate()) {

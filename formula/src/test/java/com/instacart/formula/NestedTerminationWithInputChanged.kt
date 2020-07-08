@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.NestedTerminationWithInputChanged.RenderModel
+import com.instacart.formula.NestedTerminationWithInputChanged.Output
 
 /**
  * In a single formula pass:
@@ -10,8 +10,8 @@ import com.instacart.formula.NestedTerminationWithInputChanged.RenderModel
  * 4. Because Frame object wasn't updated to have the new state, a new evaluation is triggered
  * 5. Parent tries to declare a callback in a bad state.e
  */
-class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, RenderModel> {
-    object RenderModel
+class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output> {
+    object Output
 
     val terminateFormula = TerminateFormula()
     private val passThroughFormula = object : StatelessFormula<Boolean, Unit>() {
@@ -20,7 +20,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, RenderModel> 
                 context.child(terminateFormula)
             }
             return Evaluation(
-                renderModel = Unit
+                output = Unit
             )
         }
     }
@@ -35,13 +35,13 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, RenderModel> 
         input: Boolean,
         state: Boolean,
         context: FormulaContext<Boolean>
-    ): Evaluation<RenderModel> {
+    ): Evaluation<Output> {
         // We use a callback to check if formula runtime is in the right state.
         context.callback { none() }
         context.child(passThroughFormula, state)
 
         return Evaluation(
-            renderModel = RenderModel
+            output = Output
         )
     }
 }

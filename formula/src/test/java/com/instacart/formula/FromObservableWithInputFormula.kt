@@ -20,7 +20,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
 
     override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
         return Evaluation(
-            renderModel = Unit,
+            output = Unit,
             updates = context.updates {
                 val fetchItem = RxStream.fromObservable(key = input.itemId) {
                     repo.fetchItem(input.itemId)

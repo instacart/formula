@@ -14,12 +14,12 @@ class FormulaContextImpl<State> internal constructor(
 ) : FormulaContext<State>(callbacks) {
 
     interface Delegate {
-        fun <ChildInput, ChildRenderModel> child(
-            formula: IFormula<ChildInput, ChildRenderModel>,
+        fun <ChildInput, ChildOutput> child(
+            formula: IFormula<ChildInput, ChildOutput>,
             input: ChildInput,
             key: Any,
             processingPass: Long
-        ): ChildRenderModel
+        ): ChildOutput
     }
 
     override fun performTransition(transition: Transition<State>) {
@@ -33,11 +33,11 @@ class FormulaContextImpl<State> internal constructor(
         return builder.updates
     }
 
-    override fun <ChildInput, ChildRenderModel> child(
+    override fun <ChildInput, ChildOutput> child(
         key: Any,
-        formula: IFormula<ChildInput, ChildRenderModel>,
+        formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput
-    ): ChildRenderModel {
+    ): ChildOutput {
         ensureNotRunning()
         return delegate.child(formula, input, key, processingPass)
     }

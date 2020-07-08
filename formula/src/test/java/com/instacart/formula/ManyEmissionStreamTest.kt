@@ -38,7 +38,7 @@ class ManyEmissionStreamTest {
                         transition(state + 1)
                     }
                 },
-                renderModel = state
+                output = state
             )
         }
     }

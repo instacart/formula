@@ -11,24 +11,24 @@ import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
 import java.util.LinkedList
 
 /**
- * Takes a [Formula] and creates an Observable<RenderModel> from it.
+ * Takes a [Formula] and creates an Observable<Output> from it.
  */
-class FormulaRuntime<Input : Any, RenderModel : Any>(
+class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
-    private val formula: IFormula<Input, RenderModel>,
-    private val onRenderModel: (RenderModel) -> Unit
+    private val formula: IFormula<Input, Output>,
+    private val onOutput: (Output) -> Unit
 ) {
 
     companion object {
         /**
          * RuntimeExtensions.kt [start] calls this method.
          */
-        fun <Input : Any, RenderModel : Any> start(
+        fun <Input : Any, Output : Any> start(
             input: Observable<Input>,
-            formula: IFormula<Input, RenderModel>
-        ): Observable<RenderModel> {
+            formula: IFormula<Input, Output>
+        ): Observable<Output> {
             val threadChecker = ThreadChecker()
-            return Observable.create<RenderModel> { emitter ->
+            return Observable.create<Output> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
                 val runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
@@ -50,11 +50,11 @@ class FormulaRuntime<Input : Any, RenderModel : Any>(
         }
     }
 
-    private var manager: FormulaManager<Input, RenderModel>? = null
+    private var manager: FormulaManager<Input, Output>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
-    private var emitRenderModel = false
-    private var lastRenderModel: RenderModel? = null
+    private var emitOutput = false
+    private var lastOutput: Output? = null
     private var processingRequested: Boolean = false
 
     private val effectQueue = LinkedList<Effects>()
@@ -78,7 +78,7 @@ class FormulaRuntime<Input : Any, RenderModel : Any>(
             }
 
             val implementation = formula.implementation()
-            val processorManager: FormulaManager<Input, RenderModel> =
+            val processorManager: FormulaManager<Input, Output> =
                 FormulaManagerImpl(implementation, input, lock, transitionListener)
 
             manager = processorManager
@@ -86,8 +86,8 @@ class FormulaRuntime<Input : Any, RenderModel : Any>(
             process(false)
             hasInitialFinished = true
 
-            lastRenderModel?.let {
-                onRenderModel(it)
+            lastOutput?.let {
+                onOutput(it)
             }
         } else {
             process(false)
@@ -109,10 +109,10 @@ class FormulaRuntime<Input : Any, RenderModel : Any>(
         processingRequested = true
 
         if (!isValid) {
-            val result: Evaluation<RenderModel> =
+            val result: Evaluation<Output> =
                 localManager.evaluate(currentInput, processingPass)
-            lastRenderModel = result.renderModel
-            emitRenderModel = true
+            lastOutput = result.output
+            emitOutput = true
         }
 
         if (isProcessing) return
@@ -124,14 +124,14 @@ class FormulaRuntime<Input : Any, RenderModel : Any>(
         }
         isProcessing = false
 
-        if (hasInitialFinished && emitRenderModel) {
-            emitRenderModel = false
-            onRenderModel(checkNotNull(lastRenderModel))
+        if (hasInitialFinished && emitOutput) {
+            emitOutput = false
+            onOutput(checkNotNull(lastOutput))
         }
     }
 
     private fun processPass(
-        localManager: FormulaManager<Input, RenderModel>,
+        localManager: FormulaManager<Input, Output>,
         processingPass: Long
     ) {
 

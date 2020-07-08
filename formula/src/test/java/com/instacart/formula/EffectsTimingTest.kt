@@ -19,8 +19,8 @@ class EffectsTimingTest {
 
         TestFormula()
             .test(input)
-            .renderModel { trigger() }
-            .renderModel {
+            .output { trigger() }
+            .output {
                 assertThat(events).containsExactly(State.INTERNAL, State.EXTERNAL).inOrder()
             }
     }
@@ -35,9 +35,9 @@ class EffectsTimingTest {
         EXTERNAL
     }
 
-    class RenderModel(val events: List<State>, val trigger: () -> Unit)
+    data class Output(val events: List<State>, val trigger: () -> Unit)
 
-    class TestFormula : Formula<Input, List<State>, RenderModel> {
+    class TestFormula : Formula<Input, List<State>, Output> {
 
         override fun initialState(input: Input): List<State> = emptyList()
 
@@ -45,9 +45,9 @@ class EffectsTimingTest {
             input: Input,
             state: List<State>,
             context: FormulaContext<List<State>>
-        ): Evaluation<RenderModel> {
+        ): Evaluation<Output> {
             return Evaluation(
-                renderModel = RenderModel(
+                output = Output(
                     events = state,
                     trigger = context.callback {
                         transition(state.plus(State.INTERNAL)) {

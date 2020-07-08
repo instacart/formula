@@ -26,7 +26,7 @@ class DynamicStreamSubject {
 
         override fun evaluate(input: List<String>, context: FormulaContext<Unit>): Evaluation<Unit> {
             return Evaluation(
-                renderModel = Unit,
+                output = Unit,
                 updates = context.updates {
                     input.forEach { key ->
                         events(stream(key)) {

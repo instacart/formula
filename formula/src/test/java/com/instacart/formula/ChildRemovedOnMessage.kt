@@ -16,7 +16,7 @@ class ChildRemovedOnMessage {
         .test()
 
     fun assertChildIsVisible(visible: Boolean) = apply {
-        subject.renderModel {
+        subject.output {
             if (visible) {
                 Truth.assertThat(child).isNotNull()
             } else {
@@ -26,6 +26,6 @@ class ChildRemovedOnMessage {
     }
 
     fun closeByChildMessage() = apply {
-        subject.renderModel { child!!.incrementAndMessage() }
+        subject.output { child!!.incrementAndMessage() }
     }
 }

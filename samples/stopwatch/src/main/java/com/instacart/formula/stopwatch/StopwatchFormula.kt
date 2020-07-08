@@ -26,7 +26,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         context: FormulaContext<State>
     ): Evaluation<StopwatchRenderModel> {
         return Evaluation(
-            renderModel = StopwatchRenderModel(
+            output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.timePassedInMillis),
                 startStopButton = startStopButton(state, context),
                 resetButton = resetButton(state, context)

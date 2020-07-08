@@ -4,15 +4,15 @@ object UsingCallbacksWithinAnotherFunction {
 
     fun test() = TestFormula().start().test()
 
-    class TestRenderModel(
+    class TestOutput(
         val first: () -> Unit,
         val second: () -> Unit
     )
 
-    class TestFormula : StatelessFormula<Unit, TestRenderModel>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestRenderModel> {
+    class TestFormula : StatelessFormula<Unit, TestOutput>() {
+        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestOutput> {
             return Evaluation(
-                renderModel = TestRenderModel(
+                output = TestOutput(
                     first = createDefaultCallback(context),
                     second = createDefaultCallback(context)
                 )

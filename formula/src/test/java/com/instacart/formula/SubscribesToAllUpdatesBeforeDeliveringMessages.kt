@@ -16,7 +16,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
         override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int>): Evaluation<Int> {
             return Evaluation(
-                renderModel = state,
+                output = state,
                 updates = context.updates {
                     events(initial) {
                         transition { incrementRelay.accept(Unit) }
