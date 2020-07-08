@@ -32,18 +32,16 @@ interface Formula<Input, State, Output> : IFormula<Input, Output> {
     ): State = state
 
     /**
-     * This method is called any time there is:
-     * 1. A [State] change
-     * 2. A parent [Formula] calls [FormulaContext.child] with a new [Input].
-     * 3. A child [Formula] has an internal state change.
+     * The primary purpose of evaluate is to create an [output][Evaluation.renderModel]. Within
+     * this method, we can also [compose][FormulaContext.child] child formulas, handle
+     * callbacks [with data][FormulaContext.eventCallback] or [without data][FormulaContext.callback],
+     * and [respond][FormulaContext.updates] to arbitrary asynchronous events.
      *
-     * As part of this method:
-     * 1. Use [FormulaContext.child] to define children formulas.
-     * 2. Use [FormulaContext.updates] to define side effects and asynchronous event listeners.
-     * 3. Return an [Evaluation] with the current [Output].
+     * Evaluate will be called whenever [input][Input], [internal state][State] or child output changes.
      *
-     * Do not emit side-effects internally before returning [Evaluation]. All side-effects should happen as part of
-     * event callbacks or [Evaluation.updates].
+     * ### Warning
+     * Do not access mutable state or emit side-effects as part of [evaluate] function.
+     * All side-effects should happen as part of event callbacks or [updates][Evaluation.updates].
      */
     fun evaluate(
         input: Input,
