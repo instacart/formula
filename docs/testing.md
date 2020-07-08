@@ -1,34 +1,75 @@
-To simplify testing your Formulas, you can use `formula-test` module.
+### Dependency
+To simplify testing your Formulas, use `formula-test` module.
 ```
-testImplementation 'com.github.instacart:formula-test:{latest_version}'
+testImplementation 'com.instacart.formula:formula-test:{latest_version}'
 ```
 
-Testing the last render model emission
+### Basic example 
+Use `test` extension to start testing your formula. Then, you can use `renderModel` 
+function to make assertions on the output or invoke callbacks.
+
 ```kotlin
-val subject = MyFormula().test().renderModel {
-    assertThat(this.name).isEqualTo("my name")
+CounterFormula()
+    .test()
+    // Making assertion on the initial output
+    .renderModel {
+        assertThat(count).isEqualTo("Count: 0")
+    }
+    // Invoking the callbacks that live on the render model.
+    .renderModel { onIncrement() }
+    .renderModel { onIncrement() }
+    // Making assertion on final output
+    .renderModel {
+       assertThat(count).isEqualTo("Count: 2")
+    }
+```
+Note: you can find the `CounterFormula` in the `samples` folder in the repository.
+
+
+### Fakes and Mocks
+In some tests, we want to provide a fake/mock implementation of formula that
+can emit an output, check data passed by the parent or pass events back to the parent.
+
+#### Mockito example
+```kotlin
+val testFormula = TestFormula<MyFormula.Input, MyFormula.Output>(
+    initialOutput = MyFormula.Output()
+)
+val formula = mock<MyFormula>()
+whenever(formula.implementation()).thenReturn(testFormula)
+```
+  
+#### Using interfaces and fakes in your testing
+```kotlin
+interface MyFormula : IFormula<MyFormula.Input, MyFormula.Output> {
+    class MyInput()
+    class MyOutput()
+}
+
+// Test fake implementation
+class FakeMyFormula : MyFormula {
+  val testFormula = TestFormula<MyFormula.Input, MyFormula.Output>(
+      initialOutput = MyFormula.Output()
+  )
+  
+  override fun implementation() = testFormula
 }
 ```
 
-If your Formula has children, you can replace their render model output
+#### Interacting with Test Formula
 ```kotlin
-val subject = MyFormula().test {
-    // We are using mockito to mock ChildRenderModel.
-    // You could also manually create it.
-    child(MyChildFormula::class, mock<ChildRenderModel>())
-}
-```
+val testFormula = TestFormula()
 
-To inspect the input that was passed to the child
-```kotlin
-subject.childInput(MyChildFormula::class) {
-    assertThat(this.property).isEqualTo("property")
+// Assert on the data passed
+testFormula.input {  
+    assertThat(this.id).isEqualTo(1)
 }
-```
 
-You can fake child events
-```kotlin
-subject.childInput(MyChildFormula::class) {
-    this.onEvent("fake data")
+// Trigger a callback
+testFormula.input {
+    this.onTextChanged("new text")
 }
+
+// Emit a new output
+testFormula.output(MyFormula.Output())
 ```

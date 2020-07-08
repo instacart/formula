@@ -1,12 +1,12 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Formula
+import com.instacart.formula.IFormula
 
 @PublishedApi
 internal class ScopedCallbacks private constructor(
     private val rootKey: Any
 ) {
-    constructor(formula: Formula<*, *, *>) : this(formula::class)
+    constructor(formula: IFormula<*, *>) : this(formula::class)
 
     private val callbacks: SingleRequestMap<Any, Callbacks> = mutableMapOf()
 

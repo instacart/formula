@@ -80,9 +80,9 @@ abstract class FormulaContext<State> internal constructor(
      * will be managed by the runtime. Call [Child.input] to finish declaring the child
      * and receive the [ChildRenderModel].
      */
-    fun <ChildInput, ChildState, ChildRenderModel> child(
-        formula: Formula<ChildInput, ChildState, ChildRenderModel>
-    ): Child<State, ChildInput, ChildRenderModel> {
+    fun <ChildInput, ChildRenderModel> child(
+        formula: IFormula<ChildInput, ChildRenderModel>
+    ): Child<ChildInput, ChildRenderModel> {
         return child("", formula)
     }
 
@@ -93,10 +93,10 @@ abstract class FormulaContext<State> internal constructor(
      *
      * @param key A unique identifier for this formula.
      */
-    abstract fun <ChildInput, ChildState, ChildRenderModel> child(
+    abstract fun <ChildInput, ChildRenderModel> child(
         key: Any,
-        formula: Formula<ChildInput, ChildState, ChildRenderModel>
-    ): Child<State, ChildInput, ChildRenderModel>
+        formula: IFormula<ChildInput, ChildRenderModel>
+    ): Child<ChildInput, ChildRenderModel>
 
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.

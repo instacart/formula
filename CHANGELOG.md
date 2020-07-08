@@ -11,6 +11,7 @@
 - Enable global fragment error logging.
 - **Breaking**: Replacing `Renderer` function `render` with `invoke`. You can now directly call `renderer(value)`. 
 - **Breaking**: Renaming `RenderView` property `renderer` to `render`.
+- **Breaking**: Replaced `TestFormulaObserver.childInput` functions with `TestFormula`.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.
