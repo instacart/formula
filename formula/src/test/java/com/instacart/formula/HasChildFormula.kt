@@ -1,12 +1,12 @@
 package com.instacart.formula
 
 class HasChildFormula<ChildInput, ChildRenderModel>(
-    private val child: Formula<ChildInput, *, ChildRenderModel>,
+    private val child: IFormula<ChildInput, ChildRenderModel>,
     private val createChildInput: FormulaContext<Int>.(Int) -> ChildInput
 ) : Formula<Unit, Int, HasChildFormula.RenderModel<ChildRenderModel>> {
     companion object {
         operator fun <ChildRenderModel> invoke(
-            child: Formula<Unit, *, ChildRenderModel>
+            child: IFormula<Unit, ChildRenderModel>
         ): HasChildFormula<Unit, ChildRenderModel> {
             return HasChildFormula(child) { Unit }
         }
