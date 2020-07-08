@@ -175,8 +175,9 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         processingPass: Long
     ): ChildRenderModel {
         @Suppress("UNCHECKED_CAST")
+        val compositeKey = JoinedKey(key, formula::class)
         val manager = children
-            .findOrInit(key) {
+            .findOrInit(compositeKey) {
                 val childTransitionListener = TransitionListener { effects, isValid ->
                     handleTransition(Transition(effects = effects), !isValid)
                 }
@@ -184,7 +185,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
                 FormulaManagerImpl(implementation, input, transitionLock, childTransitionListener)
             }
             .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $key. Use [key: Any] parameter.")
+                throw IllegalStateException("There already is a child with same key: $compositeKey. Use [key: Any] parameter.")
             } as FormulaManager<ChildInput, ChildRenderModel>
 
         return manager.evaluate(input, processingPass).renderModel

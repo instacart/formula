@@ -28,9 +28,7 @@ class HasChildFormula<ChildInput, ChildRenderModel>(
         return Evaluation(
             renderModel = RenderModel(
                 state = state,
-                child = context
-                    .child(child)
-                    .input(createChildInput(context, state))
+                child = context.child(child, createChildInput(context, state))
             )
         )
     }

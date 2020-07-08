@@ -46,13 +46,13 @@ class ChildrenRemovalTest {
             return Evaluation(
                 renderModel = RenderModel(
                     children = state.map { id ->
-                        context
-                            .child("child-$id", ChildFormula(logExit))
-                            .input(ChildFormula.Input(
-                                exit = context.callback("exit-$id") {
-                                    transition(state.minus(id))
-                                }
-                            ))
+                        val key = "child-$id"
+                        val childInput = ChildFormula.Input(
+                            exit = context.callback("exit-$id") {
+                                transition(state.minus(id))
+                            }
+                        )
+                        context.child(key, ChildFormula(logExit), childInput)
                     },
                     onClearAll = context.callback {
                         transition(emptyList())

@@ -37,7 +37,7 @@ object ChildMessageTriggersEventTransitionInParent {
             return Evaluation(
                 renderModel = RenderModel(
                     count = state,
-                    child = context.child(childFormula).input(Unit)
+                    child = context.child(childFormula)
                 ),
                 updates = context.updates {
                     events(service.serviceEvents()) {

@@ -27,7 +27,7 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
         context: FormulaContext<State>
     ): Evaluation<RenderModel<ChildRenderModel>> {
         val childRM = if (state.showChild) {
-            context.child(child).input { childInput(context, state) }
+            context.child(child, childInput(context, state))
         } else {
             null
         }

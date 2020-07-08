@@ -77,20 +77,14 @@ class MainPageFormula(
     
     override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
         // "context.child" returns a RenderModel 
-        val listRenderModel = context
-            .child(listFormula)
-            .input { createListInput(state) }
+        val listRenderModel = context.child(listFormula, createListInput(state))
 
-        val headerRenderModel = context
-            .child(headerFormula)
-            .input { createHeaderInput(state) }
+        val headerRenderModel = context.child(headerFormula, createHeaderInput(state))
 
         // We can make decisions using the current `state` about 
         // what children to show
         val dialog = if (state.showDialog) {
-            context
-                .child(dialogFormula)
-                .input(Unit)
+            context.child(dialogFormula, Unit)
         } else {
             null
         }

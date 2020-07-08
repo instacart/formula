@@ -5,8 +5,10 @@ import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.rxjava3.core.Observable
 
 /**
- * This interface provides ability to [Formula] to trigger transitions, instantiate updates and create
- * child formulas.
+ * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
+ * child formulas, handle events [with data][FormulaContext.eventCallback] or
+ * [without data][FormulaContext.callback], and [respond][FormulaContext.updates] to arbitrary
+ * asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
     @PublishedApi internal val callbacks: ScopedCallbacks
@@ -76,27 +78,38 @@ abstract class FormulaContext<State> internal constructor(
     }
 
     /**
-     * Starts building a child [Formula]. The state management of child [Formula]
-     * will be managed by the runtime. Call [Child.input] to finish declaring the child
-     * and receive the [ChildRenderModel].
+     * A convenience method to run a formula that takes no input. Returns the latest output
+     * of the [child] formula. Formula runtime ensures the [child] is running, manages
+     * its internal state and will trigger `evaluate` if needed.
      */
-    fun <ChildInput, ChildRenderModel> child(
-        formula: IFormula<ChildInput, ChildRenderModel>
-    ): Child<ChildInput, ChildRenderModel> {
-        return child("", formula)
+    fun <ChildOutput> child(
+        child: IFormula<Unit, ChildOutput>
+    ): ChildOutput {
+        return child("", child, Unit)
     }
 
     /**
-     * Starts building a child [Formula]. The state management of child [Formula]
-     * will be managed by the runtime. Call [Child.input] to finish declaring the child
-     * and receive the [ChildRenderModel].
-     *
-     * @param key A unique identifier for this formula.
+     * Returns the latest output of the [child] formula. Formula runtime ensures the [child]
+     * is running, manages its internal state and will trigger `evaluate` if needed.
      */
-    abstract fun <ChildInput, ChildRenderModel> child(
+    fun <ChildInput, ChildOutput> child(
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput
+    ): ChildOutput {
+        return child("", formula, input)
+    }
+
+    /**
+     * Returns the latest output of the [child] formula. Formula runtime ensures the [child]
+     * is running, manages its internal state and will trigger `evaluate` if needed.
+     *
+     * @param key Used to distinguish between formulas of same type.
+     */
+    abstract fun <ChildInput, ChildOutput> child(
         key: Any,
-        formula: IFormula<ChildInput, ChildRenderModel>
-    ): Child<ChildInput, ChildRenderModel>
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput
+    ): ChildOutput
 
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
