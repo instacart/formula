@@ -5,7 +5,7 @@ import java.util.Objects
 /**
  * Used due to issue with [Disposable.fromRunnable], please ignore outside of the internal library.
  */
-object FormulaDisposableHelper {
+internal object FormulaDisposableHelper {
 
     /**
      * Identical to [Disposable.fromRunnable]
