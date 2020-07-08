@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderModel> {
+class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.Output> {
 
     val incrementEvents = IncrementRelay()
 
@@ -9,7 +9,7 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
         val count: Int = 0
     )
 
-    class RenderModel(
+    class Output(
         val state: Int,
         val startListening: () -> Unit,
         val stopListening: () -> Unit
@@ -21,7 +21,7 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
         input: Unit,
         state: State,
         context: FormulaContext<State>
-    ): Evaluation<RenderModel> {
+    ): Evaluation<Output> {
         return Evaluation(
             updates = context.updates {
                 if (state.listenForEvents) {
@@ -30,7 +30,7 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.RenderMod
                     }
                 }
             },
-            renderModel = RenderModel(
+            output = Output(
                 state = state.count,
                 startListening = context.callback {
                     state.copy(listenForEvents = true).noEffects()

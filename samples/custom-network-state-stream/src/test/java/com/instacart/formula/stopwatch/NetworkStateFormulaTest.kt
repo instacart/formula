@@ -2,7 +2,6 @@ package com.instacart.formula.stopwatch
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Cancelable
-import com.instacart.formula.Stream
 import com.instacart.formula.samples.networkstate.NetworkState
 import com.instacart.formula.samples.networkstate.NetworkStateFormula
 import com.instacart.formula.samples.networkstate.NetworkStateStream
@@ -14,7 +13,7 @@ class NetworkStateFormulaTest {
     @Test fun offline() {
         formula(isOnline = false)
             .test(Unit)
-            .renderModel {
+            .output {
                 assertThat(status).isEqualTo("Network state: OFFLINE")
             }
     }
@@ -22,7 +21,7 @@ class NetworkStateFormulaTest {
     @Test fun connected() {
         formula(isOnline = true)
             .test(Unit)
-            .renderModel {
+            .output {
                 assertThat(status).isEqualTo("Network state: CONNECTED")
             }
     }

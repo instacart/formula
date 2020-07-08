@@ -11,7 +11,7 @@ import org.junit.Test
 class TestFormulaTest {
     lateinit var childFormula: FakeChildFormula
     lateinit var parentFormula: ParentFormula
-    lateinit var subject: TestFormulaObserver<Unit, ParentFormula.RenderModel, ParentFormula>
+    lateinit var subject: TestFormulaObserver<Unit, ParentFormula.Output, ParentFormula>
 
     @Before fun setup() {
         childFormula = FakeChildFormula()
@@ -24,7 +24,7 @@ class TestFormulaTest {
             .apply {
                 childFormula.input { onChangeName("my name") }
             }
-            .renderModel {
+            .output {
                 assertThat(name).isEqualTo("my name")
             }
     }
@@ -37,11 +37,11 @@ class TestFormulaTest {
 
     class ParentFormula(
         private val childFormula: ChildFormula
-    ) : Formula<Unit, ParentFormula.State, ParentFormula.RenderModel> {
+    ) : Formula<Unit, ParentFormula.State, ParentFormula.Output> {
 
         data class State(val name: String)
 
-        data class RenderModel(
+        data class Output(
             val name: String,
             val button: ChildFormula.Button
         )
@@ -52,9 +52,9 @@ class TestFormulaTest {
             input: Unit,
             state: State,
             context: FormulaContext<State>
-        ): Evaluation<RenderModel> {
+        ): Evaluation<Output> {
             return Evaluation(
-                renderModel = RenderModel(
+                output = Output(
                     name = state.name,
                     button = context.child(childFormula, ChildFormula.Input(
                         name = state.name,
@@ -78,6 +78,6 @@ class TestFormulaTest {
     }
 
     class FakeChildFormula : TestFormula<ChildFormula.Input, ChildFormula.Button>(), ChildFormula {
-        override fun initialRenderModel() = ChildFormula.Button {}
+        override fun initialOutput() = ChildFormula.Button {}
     }
 }

@@ -1,11 +1,11 @@
 package com.instacart.formula
 
-class OptionalChildFormula<ChildInput, ChildRenderModel>(
-    private val child: IFormula<ChildInput, ChildRenderModel>,
+class OptionalChildFormula<ChildInput, ChildOutput>(
+    private val child: IFormula<ChildInput, ChildOutput>,
     private val childInput: FormulaContext<State>.(State) -> ChildInput
-): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.RenderModel<ChildRenderModel>> {
+): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.Output<ChildOutput>> {
     companion object {
-        operator fun <ChildRenderModel> invoke(child: IFormula<Unit, ChildRenderModel>) = run {
+        operator fun <ChildOutput> invoke(child: IFormula<Unit, ChildOutput>) = run {
             OptionalChildFormula(child) { Unit }
         }
     }
@@ -14,8 +14,8 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
         val showChild: Boolean = true
     )
 
-    class RenderModel<ChildRenderModel>(
-        val child: ChildRenderModel?,
+    class Output<ChildOutput>(
+        val child: ChildOutput?,
         val toggleChild: () -> Unit
     )
 
@@ -25,7 +25,7 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
         input: Unit,
         state: State,
         context: FormulaContext<State>
-    ): Evaluation<RenderModel<ChildRenderModel>> {
+    ): Evaluation<Output<ChildOutput>> {
         val childRM = if (state.showChild) {
             context.child(child, childInput(context, state))
         } else {
@@ -33,7 +33,7 @@ class OptionalChildFormula<ChildInput, ChildRenderModel>(
         }
 
         return Evaluation(
-            renderModel = RenderModel(
+            output = Output(
                 child = childRM,
                 toggleChild = context.callback {
                     state.copy(showChild = !state.showChild).noEffects()

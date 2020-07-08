@@ -16,7 +16,7 @@ object ExtremelyNestedFormula {
             }
 
             return Evaluation(
-                renderModel = state + childValue,
+                output = state + childValue,
                 updates = context.updates {
                     events(Stream.onInit()) {
                         transition(state + 1)

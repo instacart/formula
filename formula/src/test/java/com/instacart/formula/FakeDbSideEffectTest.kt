@@ -32,7 +32,7 @@ class FakeDbSideEffectTest {
 
         override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<String> {
             return Evaluation(
-                renderModel = state.name,
+                output = state.name,
                 updates = context.updates {
                     events(nameChanges) { newName ->
                         transition(state.copy(name = newName)) {

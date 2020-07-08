@@ -2,18 +2,18 @@ package com.instacart.formula
 
 import io.reactivex.rxjava3.core.Observable
 
-fun <RenderModel : Any> IFormula<Unit, RenderModel>.start(): Observable<RenderModel> {
+fun <Output : Any> IFormula<Unit, Output>.start(): Observable<Output> {
     return start(input = Unit)
 }
 
-fun <Input : Any, RenderModel : Any> IFormula<Input, RenderModel>.start(
+fun <Input : Any, Output : Any> IFormula<Input, Output>.start(
     input: Input
-): Observable<RenderModel> {
+): Observable<Output> {
     return start(input = Observable.just(input))
 }
 
-fun <Input : Any, RenderModel : Any> IFormula<Input, RenderModel>.start(
+fun <Input : Any, Output : Any> IFormula<Input, Output>.start(
     input: Observable<Input>
-): Observable<RenderModel> {
+): Observable<Output> {
     return FormulaRuntime.start(input = input, formula = this)
 }

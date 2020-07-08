@@ -3,18 +3,18 @@ package com.instacart.formula.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 
-interface FormulaManager<Input, RenderModel> {
+interface FormulaManager<Input, Output> {
     fun nextFrame(currentTransition: Long): Boolean
 
     fun updateTransitionNumber(number: Long)
 
     /**
-     * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
+     * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
     fun evaluate(
         input: Input,
         transitionId: Long
-    ): Evaluation<RenderModel>
+    ): Evaluation<Output>
 
     /**
      * Called after [evaluate] to terminate children that were removed.

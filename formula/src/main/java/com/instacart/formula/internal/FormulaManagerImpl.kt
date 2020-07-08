@@ -14,16 +14,16 @@ import com.instacart.formula.Transition
  * 3. Terminate removed children
  * 4. Prepare parent and alive children for updates.
  */
-internal class FormulaManagerImpl<Input, State, RenderModel>(
-    private val formula: Formula<Input, State, RenderModel>,
+internal class FormulaManagerImpl<Input, State, Output>(
+    private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val callbacks: ScopedCallbacks,
     private val transitionLock: TransitionLock,
     private val transitionListener: TransitionListener
-) : FormulaContextImpl.Delegate, FormulaManager<Input, RenderModel> {
+) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
 
     constructor(
-        formula: Formula<Input, State, RenderModel>,
+        formula: Formula<Input, State, Output>,
         input: Input,
         transitionLock: TransitionLock,
         transitionListener: TransitionListener
@@ -32,7 +32,7 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     private val updateManager = UpdateManager(transitionLock)
 
     internal val children: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
-    private var frame: Frame<Input, State, RenderModel>? = null
+    private var frame: Frame<Input, State, Output>? = null
     private var terminated = false
 
     private var state: State = formula.initialState(initialInput)
@@ -64,12 +64,12 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
     }
 
     /**
-     * Creates the current [RenderModel] and prepares the next frame that will need to be processed.
+     * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
     override fun evaluate(
         input: Input,
         transitionId: Long
-    ): Evaluation<RenderModel> {
+    ): Evaluation<Output> {
         // TODO: assert main thread.
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
@@ -168,12 +168,12 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
         return transitionLock.hasTransitioned(currentTransition)
     }
 
-    override fun <ChildInput, ChildRenderModel> child(
-        formula: IFormula<ChildInput, ChildRenderModel>,
+    override fun <ChildInput, ChildOutput> child(
+        formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
         key: Any,
         processingPass: Long
-    ): ChildRenderModel {
+    ): ChildOutput {
         @Suppress("UNCHECKED_CAST")
         val compositeKey = JoinedKey(key, formula::class)
         val manager = children
@@ -186,9 +186,9 @@ internal class FormulaManagerImpl<Input, State, RenderModel>(
             }
             .requestAccess {
                 throw IllegalStateException("There already is a child with same key: $compositeKey. Use [key: Any] parameter.")
-            } as FormulaManager<ChildInput, ChildRenderModel>
+            } as FormulaManager<ChildInput, ChildOutput>
 
-        return manager.evaluate(input, processingPass).renderModel
+        return manager.evaluate(input, processingPass).output
     }
 
     override fun markAsTerminated() {

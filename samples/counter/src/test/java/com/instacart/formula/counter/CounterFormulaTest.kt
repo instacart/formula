@@ -10,12 +10,12 @@ class CounterFormulaTest {
 
         CounterFormula()
             .test()
-            .renderModel { onIncrement() }
-            .renderModel { onIncrement() }
-            .renderModel { onIncrement() }
-            .renderModel { onIncrement() }
-            .renderModel { onIncrement() }
-            .renderModel {
+            .output { onIncrement() }
+            .output { onIncrement() }
+            .output { onIncrement() }
+            .output { onIncrement() }
+            .output { onIncrement() }
+            .output {
                assertThat(count).isEqualTo("Count: 5")
             }
     }

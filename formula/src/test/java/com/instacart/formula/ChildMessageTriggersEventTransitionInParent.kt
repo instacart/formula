@@ -24,7 +24,7 @@ object ChildMessageTriggersEventTransitionInParent {
 
         class RenderModel(
             val count: Int,
-            val child: SideEffectFormula.RenderModel
+            val child: SideEffectFormula.Output
         )
 
         override fun initialState(input: Unit): Int = 0
@@ -35,7 +35,7 @@ object ChildMessageTriggersEventTransitionInParent {
             context: FormulaContext<Int>
         ): Evaluation<RenderModel> {
             return Evaluation(
-                renderModel = RenderModel(
+                output = RenderModel(
                     count = state,
                     child = context.child(childFormula)
                 ),

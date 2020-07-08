@@ -29,7 +29,7 @@ class FetchDataExampleTest {
         }
     }
 
-    class MyFormula : Formula<Unit, MyFormula.State, MyFormula.RenderModel> {
+    class MyFormula : Formula<Unit, MyFormula.State, MyFormula.Output> {
         private val dataRepo = DataRepo()
 
         data class State(
@@ -37,7 +37,7 @@ class FetchDataExampleTest {
             val response: DataRepo.Response? = null
         )
 
-        class RenderModel(
+        class Output(
             val title: String,
             val onChangeId: (String) -> Unit
         )
@@ -48,9 +48,9 @@ class FetchDataExampleTest {
             input: Unit,
             state: State,
             context: FormulaContext<State>
-        ): Evaluation<RenderModel> {
+        ): Evaluation<Output> {
             return Evaluation(
-                renderModel = RenderModel(
+                output = Output(
                     title = state.response?.name ?: "",
                     onChangeId = context.eventCallback { id ->
                         state.copy(selectedId = id).noEffects()

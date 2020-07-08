@@ -12,7 +12,7 @@ All asynchronous events have to be declared within `Formula.evaluate` function.
 ```kotlin
 override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
   return Evaluation(
-    renderModel = createRenderModel(state.taskList),
+    output = createRenderModel(state.taskList),
     // All async events need to be declared within "context.updates" block.
     updates = context.updates {
       // Convert RxJava observable to a Formula Stream.
@@ -78,7 +78,7 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
     input: Input,
     state: State,
     context: FormulaContext<..>
-  ): Evaluation<RenderModel> {
+  ): Evaluation<Output> {
     return Evaluation(
       updates = context.updates {
         val fetchTask = RxStream.fromObservable(key = input.taskId) { taskRepo.fetchTask(input.taskId) }

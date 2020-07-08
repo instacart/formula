@@ -1,10 +1,10 @@
 package com.instacart.formula
 
-class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.RenderModel> {
+class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output> {
 
     data class Input(val messageHandler: (Int) -> Unit)
 
-    class RenderModel(
+    class Output(
         val state: Int,
         val triggerMessage: () -> Unit,
         val incrementAndMessage: () -> Unit
@@ -12,9 +12,9 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.RenderM
 
     override fun initialState(input: Input): Int = 0
 
-    override fun evaluate(input: Input, state: Int, context: FormulaContext<Int>): Evaluation<RenderModel> {
+    override fun evaluate(input: Input, state: Int, context: FormulaContext<Int>): Evaluation<Output> {
         return Evaluation(
-            renderModel = RenderModel(
+            output = Output(
                 state = state,
                 triggerMessage = context.callback {
                     transition {

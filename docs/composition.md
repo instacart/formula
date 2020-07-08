@@ -90,7 +90,7 @@ class MainPageFormula(
         }
     
         return Evaluation(
-            renderModel = MainRenderModel(
+            output = MainRenderModel(
                 header = headerRenderModel,
                 list = listRenderModel,
                 dialog = dialog

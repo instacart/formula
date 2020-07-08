@@ -4,7 +4,7 @@ import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import io.reactivex.rxjava3.core.Observable
 
-class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : IFormula<Input, RenderModel>>(
+class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     private val input: Observable<Input>,
     val formula: FormulaT
 ) {
@@ -17,15 +17,15 @@ class TestFormulaObserver<Input : Any, RenderModel : Any, FormulaT : IFormula<In
         .test()
         .assertNoErrors()
 
-    fun values(): List<RenderModel> {
+    fun values(): List<Output> {
         return observer.values()
     }
 
-    inline fun renderModel(assert: RenderModel.() -> Unit) = apply {
+    inline fun output(assert: Output.() -> Unit) = apply {
         assert(values().last())
     }
 
-    fun assertRenderModelCount(count: Int) = apply {
+    fun assertOutputCount(count: Int) = apply {
         val size = values().size
         assert(size == count) {
             "Expected: $count, was: $size"

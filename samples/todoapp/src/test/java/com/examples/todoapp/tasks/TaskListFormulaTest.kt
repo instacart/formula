@@ -22,13 +22,13 @@ class TaskListFormulaTest {
 
         TaskListFormula(repo)
             .test(TaskListFormula.Input(showToast = {}))
-            .renderModel {
+            .output {
                 assertThat(items).hasSize(2)
             }
-            .renderModel {
+            .output {
                 filterOptions.first { it.title == "COMPLETED_TASKS" }.onSelected()
             }
-            .renderModel {
+            .output {
                 assertThat(items).isEmpty()
             }
     }

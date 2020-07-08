@@ -5,21 +5,21 @@ testImplementation 'com.instacart.formula:formula-test:{latest_version}'
 ```
 
 ### Basic example 
-Use `test` extension to start testing your formula. Then, you can use `renderModel` 
+Use `test` extension to start testing your formula. Then, you can use `output` 
 function to make assertions on the output or invoke callbacks.
 
 ```kotlin
 CounterFormula()
     .test()
     // Making assertion on the initial output
-    .renderModel {
+    .output {
         assertThat(count).isEqualTo("Count: 0")
     }
-    // Invoking the callbacks that live on the render model.
-    .renderModel { onIncrement() }
-    .renderModel { onIncrement() }
+    // Invoking the callbacks that live on the output.
+    .output { onIncrement() }
+    .output { onIncrement() }
     // Making assertion on final output
-    .renderModel {
+    .output {
        assertThat(count).isEqualTo("Count: 2")
     }
 ```

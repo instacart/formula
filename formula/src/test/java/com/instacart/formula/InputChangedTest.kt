@@ -15,10 +15,10 @@ class InputChangedTest {
         }
     }
 
-    class ParentFormula : Formula<Unit, String, ParentFormula.RenderModel> {
+    class ParentFormula : Formula<Unit, String, ParentFormula.Output> {
         private val childFormula = ChildFormula()
 
-        class RenderModel(val childName: String, val onChildNameChanged: (String) -> Unit)
+        data class Output(val childName: String, val onChildNameChanged: (String) -> Unit)
 
         override fun initialState(input: Unit): String = "default"
 
@@ -26,9 +26,9 @@ class InputChangedTest {
             input: Unit,
             state: String,
             context: FormulaContext<String>
-        ): Evaluation<RenderModel> {
+        ): Evaluation<Output> {
             return Evaluation(
-                renderModel = RenderModel(
+                output = Output(
                     childName = context.child(childFormula, state),
                     onChildNameChanged = context.eventCallback { name ->
                         name.noEffects()
@@ -51,7 +51,7 @@ class InputChangedTest {
             state: String,
             context: FormulaContext<String>
         ): Evaluation<String> {
-            return Evaluation(renderModel = state)
+            return Evaluation(output = state)
         }
     }
 }

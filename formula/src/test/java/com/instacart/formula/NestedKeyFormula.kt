@@ -1,8 +1,8 @@
 package com.instacart.formula
 
-class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.RenderModel> {
+class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output> {
 
-    class RenderModel(val callback: () -> Unit)
+    class Output(val callback: () -> Unit)
 
     override fun initialState(input: Unit) = Unit
 
@@ -10,7 +10,7 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.RenderModel> {
         input: Unit,
         state: Unit,
         context: FormulaContext<Unit>
-    ): Evaluation<RenderModel> {
+    ): Evaluation<Output> {
 
         val callback = context.key("first level") {
             context.key("second level") {
@@ -21,7 +21,7 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.RenderModel> {
         }
 
         return Evaluation(
-            renderModel = RenderModel(callback)
+            output = Output(callback)
         )
     }
 }

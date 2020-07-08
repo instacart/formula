@@ -2,14 +2,14 @@ package com.instacart.formula
 
 import com.instacart.formula.test.test
 
-class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.RenderModel> {
+class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.Output> {
     companion object {
         fun test(items: List<String>) = KeyUsingListFormula().test(Input(items))
     }
 
     data class State(val items: List<String>)
 
-    data class RenderModel(val items: List<ItemRenderModel>)
+    data class Output(val items: List<ItemRenderModel>)
 
     data class ItemRenderModel(
         val item: String,
@@ -24,7 +24,7 @@ class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormu
         input: Input,
         state: State,
         context: FormulaContext<State>
-    ): Evaluation<RenderModel> {
+    ): Evaluation<Output> {
 
         val items = state.items.map { itemName ->
             context.key(itemName) {
@@ -34,6 +34,6 @@ class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormu
             }
         }
 
-        return Evaluation(renderModel = RenderModel(items))
+        return Evaluation(output = Output(items))
     }
 }

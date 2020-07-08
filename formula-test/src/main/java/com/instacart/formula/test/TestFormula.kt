@@ -19,7 +19,7 @@ abstract class TestFormula<Input, Output> :
          */
         operator fun <Input, Output> invoke(initialOutput: Output): TestFormula<Input, Output> {
             return object : TestFormula<Input, Output>() {
-                override fun initialRenderModel(): Output = initialOutput
+                override fun initialOutput(): Output = initialOutput
             }
         }
     }
@@ -40,10 +40,10 @@ abstract class TestFormula<Input, Output> :
      */
     private val stateMap = mutableMapOf<Input, Value<Input, Output>>()
 
-    abstract fun initialRenderModel(): Output
+    abstract fun initialOutput(): Output
 
     override fun initialState(input: Input): State<Input, Output> {
-        return State(input, input, initialRenderModel())
+        return State(input, input, initialOutput())
     }
 
     override fun onInputChanged(
@@ -67,7 +67,7 @@ abstract class TestFormula<Input, Output> :
         )
 
         return Evaluation(
-            renderModel = state.output,
+            output = state.output,
             updates = context.updates {
                 events(Stream.onTerminate()) {
                     transition {

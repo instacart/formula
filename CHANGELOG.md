@@ -14,6 +14,7 @@
 - **Breaking**: Replaced `TestFormulaObserver.childInput` functions with `TestFormula`.
 - **Breaking**: `StatelessFormula` no longer implements `Formula`, but rather implements `IFormula`.
 - **Breaking**: Removing `child` builder.
+- **Breaking**: Renaming `Evaluation.renderModel` to `Evaluation.output`.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.

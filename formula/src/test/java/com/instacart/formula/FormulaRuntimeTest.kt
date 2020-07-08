@@ -15,7 +15,7 @@ class FormulaRuntimeTest {
     fun `multiple event updates`() {
         StreamFormula()
             .test()
-            .renderModel { startListening() }
+            .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
@@ -29,9 +29,9 @@ class FormulaRuntimeTest {
     fun `no state changes after event stream is removed`() {
         StreamFormula()
             .test()
-            .renderModel { startListening() }
+            .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
-            .renderModel { stopListening() }
+            .output { stopListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply {
@@ -45,10 +45,10 @@ class FormulaRuntimeTest {
         MultipleChildEvents
             .formula()
             .test()
-            .renderModel { child.incrementAndMessage() }
-            .renderModel { child.incrementAndMessage() }
-            .renderModel { child.incrementAndMessage() }
-            .renderModel { assertThat(state).isEqualTo(3) }
+            .output { child.incrementAndMessage() }
+            .output { child.incrementAndMessage() }
+            .output { child.incrementAndMessage() }
+            .output { assertThat(state).isEqualTo(3) }
     }
 
     @Test
@@ -83,9 +83,9 @@ class FormulaRuntimeTest {
         TransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
             .test()
-            .renderModel { triggerSideEffect() }
-            .renderModel { triggerSideEffect() }
-            .assertRenderModelCount(1)
+            .output { triggerSideEffect() }
+            .output { triggerSideEffect() }
+            .assertOutputCount(1)
             .apply {
                 sideEffectCallback.assertTimesCalled(2)
             }
@@ -97,9 +97,9 @@ class FormulaRuntimeTest {
         ChildTransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
             .test()
-            .renderModel { child.triggerSideEffect() }
-            .renderModel { child.triggerSideEffect() }
-            .assertRenderModelCount(1)
+            .output { child.triggerSideEffect() }
+            .output { child.triggerSideEffect() }
+            .assertOutputCount(1)
             .apply {
                 sideEffectCallback.assertTimesCalled(2)
             }
@@ -112,9 +112,9 @@ class FormulaRuntimeTest {
         NestedChildTransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
             .test()
-            .renderModel { child.child.triggerSideEffect() }
-            .renderModel { child.child.triggerSideEffect() }
-            .assertRenderModelCount(1)
+            .output { child.child.triggerSideEffect() }
+            .output { child.child.triggerSideEffect() }
+            .assertOutputCount(1)
             .apply {
                 sideEffectCallback.assertTimesCalled(2)
             }
@@ -125,8 +125,8 @@ class FormulaRuntimeTest {
         val messageHandler = TestEventCallback<Int>()
         MessageFormula()
             .test(MessageFormula.Input(messageHandler = messageHandler))
-            .renderModel { triggerMessage() }
-            .assertRenderModelCount(1) // no state change, so no re-evaluation
+            .output { triggerMessage() }
+            .assertOutputCount(1) // no state change, so no re-evaluation
             .apply {
                 assertThat(messageHandler.values()).hasSize(1)
             }
@@ -137,9 +137,9 @@ class FormulaRuntimeTest {
         val messageHandler = TestEventCallback<Int>()
         MessageFormula()
             .test(MessageFormula.Input(messageHandler = messageHandler))
-            .renderModel { triggerMessage() }
-            .renderModel { triggerMessage() }
-            .assertRenderModelCount(1)
+            .output { triggerMessage() }
+            .output { triggerMessage() }
+            .assertOutputCount(1)
             .apply {
                 assertThat(messageHandler.values()).hasSize(2)
             }
@@ -150,8 +150,8 @@ class FormulaRuntimeTest {
         ChildMessageNoParentStateChange
             .formula()
             .test()
-            .renderModel { child.triggerMessage() }
-            .assertRenderModelCount(1)  // no state change, so no re-evaluation
+            .output { child.triggerMessage() }
+            .assertOutputCount(1)  // no state change, so no re-evaluation
     }
 
     @Test
@@ -159,9 +159,9 @@ class FormulaRuntimeTest {
         ChildMessageWithParentStateChange
             .formula()
             .test()
-            .renderModel { child.triggerMessage() }
-            .assertRenderModelCount(2)
-            .renderModel { assertThat(state).isEqualTo(1) }
+            .output { child.triggerMessage() }
+            .assertOutputCount(2)
+            .output { assertThat(state).isEqualTo(1) }
     }
 
     @Test
@@ -169,8 +169,8 @@ class FormulaRuntimeTest {
         ChildMessageTriggersEventTransitionInParent
             .formula()
             .test()
-            .renderModel { child.triggerSideEffect() }
-            .renderModel {
+            .output { child.triggerSideEffect() }
+            .output {
                 assertThat(count).isEqualTo(1)
             }
     }
@@ -180,25 +180,25 @@ class FormulaRuntimeTest {
         ChildStateResetAfterToggle
             .formula()
             .test()
-            .renderModel { child!!.incrementAndMessage() }
-            .renderModel { child!!.incrementAndMessage() }
-            .renderModel { assertThat(child!!.state).isEqualTo(2) }
-            .renderModel { toggleChild() }
-            .renderModel { assertThat(child).isNull() }
-            .renderModel { toggleChild() }
-            .renderModel { assertThat(child!!.state).isEqualTo(0) }
+            .output { child!!.incrementAndMessage() }
+            .output { child!!.incrementAndMessage() }
+            .output { assertThat(child!!.state).isEqualTo(2) }
+            .output { toggleChild() }
+            .output { assertThat(child).isNull() }
+            .output { toggleChild() }
+            .output { assertThat(child!!.state).isEqualTo(0) }
     }
 
     @Test
     fun `multiple callbacks using the same render model`() {
         MessageFormula()
             .test(MessageFormula.Input(messageHandler = {}))
-            .renderModel {
+            .output {
                 incrementAndMessage()
                 incrementAndMessage()
                 incrementAndMessage()
             }
-            .renderModel {
+            .output {
                 assertThat(state).isEqualTo(3)
             }
     }
@@ -206,12 +206,12 @@ class FormulaRuntimeTest {
     @Test
     fun `multiple event callbacks using the same render model`() {
         EventCallbackFormula().test()
-            .renderModel {
+            .output {
                 changeState("one")
                 changeState("two")
                 changeState("three")
             }
-            .renderModel { assertThat(state).isEqualTo("three") }
+            .output { assertThat(state).isEqualTo("three") }
     }
 
     @Test
@@ -220,7 +220,7 @@ class FormulaRuntimeTest {
             MessageFormula.Input(messageHandler = eventCallback { none() })
         }
             .test()
-            .renderModel {
+            .output {
                 val cachedChild = child!!
                 toggleChild()
 
@@ -228,16 +228,16 @@ class FormulaRuntimeTest {
                 cachedChild.incrementAndMessage()
                 cachedChild.incrementAndMessage()
             }
-            .renderModel { assertThat(child).isNull() }
+            .output { assertThat(child).isNull() }
     }
 
     @Test
     fun `callbacks are equal across render model changes`() {
         MessageFormula()
             .test(MessageFormula.Input(messageHandler = {}))
-            .renderModel { incrementAndMessage() }
-            .renderModel { incrementAndMessage() }
-            .assertRenderModelCount(3)
+            .output { incrementAndMessage() }
+            .output { incrementAndMessage() }
+            .assertOutputCount(3)
             .apply {
                 assertThat(values().map { it.incrementAndMessage }.toSet()).hasSize(1)
             }
@@ -246,11 +246,11 @@ class FormulaRuntimeTest {
     @Test
     fun `event callbacks are equal across render model changes`() {
         EventCallbackFormula().test()
-            .renderModel {
+            .output {
                 changeState("one")
                 changeState("two")
             }
-            .assertRenderModelCount(3)
+            .assertOutputCount(3)
             .apply {
                 assertThat(values().map { it.changeState }.toSet()).hasSize(1)
             }
@@ -260,7 +260,7 @@ class FormulaRuntimeTest {
     fun `removed callback is disabled`() {
         OptionalCallbackFormula()
             .test()
-            .renderModel {
+            .output {
 
                 callback?.invoke()
                 toggleCallback()
@@ -275,7 +275,7 @@ class FormulaRuntimeTest {
     fun `callbacks are not the same after removing then adding it again`() {
         OptionalCallbackFormula()
             .test()
-            .renderModel {
+            .output {
                 toggleCallback()
                 toggleCallback()
             }
@@ -288,7 +288,7 @@ class FormulaRuntimeTest {
     fun `removed event callback is disabled`() {
         OptionalEventCallbackFormula()
             .test()
-            .renderModel {
+            .output {
                 callback?.invoke(1)
                 toggleCallback()
                 callback?.invoke(5)
@@ -302,7 +302,7 @@ class FormulaRuntimeTest {
     fun `event callbacks are not the same after removing then adding it again`() {
         OptionalEventCallbackFormula()
             .test()
-            .renderModel {
+            .output {
                 toggleCallback()
                 toggleCallback()
             }
@@ -324,27 +324,27 @@ class FormulaRuntimeTest {
     fun `using key to scope callbacks within another function`() {
         UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
             .test()
-            .assertRenderModelCount(1)
+            .assertOutputCount(1)
     }
 
     @Test
     fun `remove item from a list using a key block for each item`() {
         KeyUsingListFormula
             .test(items = listOf("one", "two", "three"))
-            .renderModel {
+            .output {
                 items[1].onDeleteSelected()
             }
-            .renderModel { assertThat(items).hasSize(2) }
+            .output { assertThat(items).hasSize(2) }
     }
 
     @Test
     fun `subscribes to updates before delivering messages`() {
         SubscribesToAllUpdatesBeforeDeliveringMessages
             .test()
-            .renderModel {
+            .output {
                 assertThat(this).isEqualTo(4)
             }
-            .assertRenderModelCount(1)
+            .assertOutputCount(1)
     }
 
     @Test
@@ -400,7 +400,7 @@ class FormulaRuntimeTest {
 
         formula
             .test()
-            .assertRenderModelCount(1)
+            .assertOutputCount(1)
     }
 
     @Test
@@ -417,7 +417,7 @@ class FormulaRuntimeTest {
 
         formula
             .test()
-            .assertRenderModelCount(1)
+            .assertOutputCount(1)
     }
 
     @Test
@@ -447,7 +447,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.test().assertRenderModelCount(1)
+        formula.test().assertOutputCount(1)
     }
 
     @Test
@@ -527,7 +527,7 @@ class FormulaRuntimeTest {
             .apply {
                 assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
             }
-            .renderModel { toggleChild() }
+            .output { toggleChild() }
             .apply {
                 assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
             }
@@ -560,7 +560,7 @@ class FormulaRuntimeTest {
         val terminateFormula = TerminateFormula()
         val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
 
-        formula.test().renderModel { toggleChild() }.apply {
+        formula.test().output { toggleChild() }.apply {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
     }
@@ -622,14 +622,14 @@ class FormulaRuntimeTest {
 
     @Test
     fun `initialize 100 levels nested formula`() {
-        ExtremelyNestedFormula.nested(100).test().renderModel {
+        ExtremelyNestedFormula.nested(100).test().output {
             assertThat(this).isEqualTo(100)
         }
     }
 
     @Test
     fun `initialize 250 levels nested formula`() {
-        ExtremelyNestedFormula.nested(250).test().renderModel {
+        ExtremelyNestedFormula.nested(250).test().output {
             assertThat(this).isEqualTo(250)
         }
     }
@@ -637,7 +637,7 @@ class FormulaRuntimeTest {
     @Ignore("stack overflows when there are 500 nested child formulas")
     @Test
     fun `initialize 500 levels nested formula`() {
-        ExtremelyNestedFormula.nested(500).test().renderModel {
+        ExtremelyNestedFormula.nested(500).test().output {
             assertThat(this).isEqualTo(500)
         }
     }
@@ -646,7 +646,7 @@ class FormulaRuntimeTest {
     fun `mixing callback use with key use`() {
         MixingCallbackUseWithKeyUse.ParentFormula()
             .test()
-            .assertRenderModelCount(1)
+            .assertOutputCount(1)
     }
 
     // TODO: maybe worth adding support eventually.

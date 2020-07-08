@@ -7,10 +7,10 @@ import com.instacart.formula.Update
  * A frame is a representation of state after a process round. After each processing round
  * we need to look at what children and updates exist and do a diff.
  */
-internal class Frame<Input, State, RenderModel>(
+internal class Frame<Input, State, Output>(
     val input: Input,
     val state: State,
-    val evaluation: Evaluation<RenderModel>,
+    val evaluation: Evaluation<Output>,
     val transitionCallbackWrapper: TransitionCallbackWrapper<State>
 ) {
     private var stateValid: Boolean = true

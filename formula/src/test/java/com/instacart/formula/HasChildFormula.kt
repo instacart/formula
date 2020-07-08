@@ -1,21 +1,21 @@
 package com.instacart.formula
 
-class HasChildFormula<ChildInput, ChildRenderModel>(
-    private val child: IFormula<ChildInput, ChildRenderModel>,
+class HasChildFormula<ChildInput, ChildOutput>(
+    private val child: IFormula<ChildInput, ChildOutput>,
     private val createChildInput: FormulaContext<Int>.(Int) -> ChildInput
-) : Formula<Unit, Int, HasChildFormula.RenderModel<ChildRenderModel>> {
+) : Formula<Unit, Int, HasChildFormula.Output<ChildOutput>> {
     companion object {
-        operator fun <ChildRenderModel> invoke(
-            child: IFormula<Unit, ChildRenderModel>
-        ): HasChildFormula<Unit, ChildRenderModel> {
+        operator fun <ChildOutput> invoke(
+            child: IFormula<Unit, ChildOutput>
+        ): HasChildFormula<Unit, ChildOutput> {
             return HasChildFormula(child) { Unit }
         }
     }
 
 
-    class RenderModel<ChildRenderModel>(
+    data class Output<ChildOutput>(
         val state: Int,
-        val child: ChildRenderModel
+        val child: ChildOutput
     )
 
     override fun initialState(input: Unit): Int = 0
@@ -24,9 +24,9 @@ class HasChildFormula<ChildInput, ChildRenderModel>(
         input: Unit,
         state: Int,
         context: FormulaContext<Int>
-    ): Evaluation<RenderModel<ChildRenderModel>> {
+    ): Evaluation<Output<ChildOutput>> {
         return Evaluation(
-            renderModel = RenderModel(
+            output = Output(
                 state = state,
                 child = context.child(child, createChildInput(context, state))
             )

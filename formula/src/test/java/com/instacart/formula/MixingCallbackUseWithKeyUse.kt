@@ -2,24 +2,22 @@ package com.instacart.formula
 
 class MixingCallbackUseWithKeyUse {
 
-    class ParentRenderModel(
+    class ParentOutput(
         val firstCallback: () -> Unit,
         val secondCallback: () -> Unit,
         val thirdCallback: () -> Unit
     )
 
-    class ParentFormula : Formula<Unit, Unit, ParentRenderModel> {
+    class ParentFormula : Formula<Unit, Unit, ParentOutput> {
         override fun initialState(input: Unit) = Unit
 
         override fun evaluate(
             input: Unit,
             state: Unit,
             context: FormulaContext<Unit>
-        ): Evaluation<ParentRenderModel> {
-
-
+        ): Evaluation<ParentOutput> {
             return Evaluation(
-                renderModel = ParentRenderModel(
+                output = ParentOutput(
                     firstCallback = context.callback { none() },
                     secondCallback = context.key("scoped") {
                         context.callback { none() }

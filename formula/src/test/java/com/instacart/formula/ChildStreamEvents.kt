@@ -9,11 +9,11 @@ class ChildStreamEvents {
     private val subject = HasChildFormula(child).test()
 
     fun startListening() = apply {
-        subject.renderModel { child.startListening() }
+        subject.output { child.startListening() }
     }
 
     fun stopListening() = apply {
-        subject.renderModel { child.stopListening() }
+        subject.output { child.stopListening() }
     }
 
     fun incrementBy(step: Int) = apply {
@@ -24,6 +24,6 @@ class ChildStreamEvents {
     }
 
     fun assertCurrentValue(value: Int) = apply {
-        subject.renderModel { assertThat(child.state).isEqualTo(value) }
+        subject.output { assertThat(child.state).isEqualTo(value) }
     }
 }
