@@ -13,6 +13,7 @@
 - **Breaking**: Renaming `RenderView` property `renderer` to `render`.
 - **Breaking**: Replaced `TestFormulaObserver.childInput` functions with `TestFormula`.
 - **Breaking**: `StatelessFormula` no longer implements `Formula`, but rather implements `IFormula`.
+- **Breaking**: Removing `child` builder.
 
 ## [0.5.3] - December 10, 2019
 - Change child formula key from String to Any.
