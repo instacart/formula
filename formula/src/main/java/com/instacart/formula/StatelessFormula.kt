@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 /**
- * Version of [Formula] which requires no state
+ * Version of [Formula] which has no internal state.
  */
 abstract class StatelessFormula<Input, RenderModel> : Formula<Input, Unit, RenderModel> {
 

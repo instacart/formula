@@ -7,8 +7,8 @@ import com.instacart.formula.Stream
 import java.lang.IllegalStateException
 
 /**
- * Test formula is used to provide a fake formula implementation. It allows you to send [Output]
- * updates by calling [output] and allows you to inspect [Input] by calling [input].
+ * Test formula is used to provide a fake formula implementation. It allows you to [send][output]
+ * output updates and [inspect/interact][input] with input.
  */
 abstract class TestFormula<Input, Output> :
     Formula<Input, TestFormula.State<Input, Output>, Output> {
