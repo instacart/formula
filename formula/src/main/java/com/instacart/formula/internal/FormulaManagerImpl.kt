@@ -14,7 +14,7 @@ import com.instacart.formula.Transition
  * 3. Terminate removed children
  * 4. Prepare parent and alive children for updates.
  */
-internal class FormulaManagerImpl<Input, State, Output>(
+internal class FormulaManagerImpl<Input, State : Any, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val callbacks: ScopedCallbacks,
@@ -171,11 +171,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun <ChildInput, ChildOutput> child(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        key: Any,
         processingPass: Long
     ): ChildOutput {
         @Suppress("UNCHECKED_CAST")
-        val compositeKey = JoinedKey(key, formula::class)
+        val compositeKey = constructKey(formula, input)
         val manager = children
             .findOrInit(compositeKey) {
                 val childTransitionListener = TransitionListener { effects, isValid ->
@@ -206,5 +205,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun terminate() {
         markAsTerminated()
         performTerminationSideEffects()
+    }
+
+    private fun <ChildInput, ChildOutput> constructKey(
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput
+    ): Any {
+        return FormulaKey(
+            type = formula.type(),
+            key = formula.implementation().key(input)
+        )
     }
 }

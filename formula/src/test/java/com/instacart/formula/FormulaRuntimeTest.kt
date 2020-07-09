@@ -571,7 +571,7 @@ class FormulaRuntimeTest {
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
                 (0 until 10).forEach {
-                    context.child(it, terminateFormula, Unit)
+                    context.child(terminateFormula.id(it))
                 }
                 return Evaluation(Unit)
             }

@@ -13,10 +13,11 @@ package com.instacart.formula
  * @param Output A data class returned by this formula that contains data and callbacks. When it is
  * used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
-interface Formula<Input, State, Output> : IFormula<Input, Output> {
+interface Formula<Input, State : Any, Output> : IFormula<Input, Output> {
 
     /**
-     * Instantiate initial [State].
+     * Creates the initial [state][State] to be used in [evaluation][Formula.evaluate]. This
+     * method is called when formula first starts running or when the [key] changes.
      */
     fun initialState(input: Input): State
 
@@ -48,6 +49,15 @@ interface Formula<Input, State, Output> : IFormula<Input, Output> {
         state: State,
         context: FormulaContext<State>
     ): Evaluation<Output>
+
+    /**
+     * A unique identifier used to distinguish formulas of the same type. This can also
+     * be used to [restart][Formula.initialState] formula when some input property changes.
+     * ```
+     * override fun key(input: ItemInput) = input.itemId
+     * ```
+     */
+    fun key(input: Input): Any? = null
 
     override fun implementation(): Formula<Input, *, Output> {
         return this

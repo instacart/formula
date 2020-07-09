@@ -17,9 +17,14 @@ abstract class TestFormula<Input, Output> :
         /**
          * Initializes [TestFormula] instance with [initialOutput].
          */
-        operator fun <Input, Output> invoke(initialOutput: Output): TestFormula<Input, Output> {
+        operator fun <Input, Output> invoke(
+            initialOutput: Output,
+            key: (Input) -> Any? = { null }
+        ): TestFormula<Input, Output> {
             return object : TestFormula<Input, Output>() {
                 override fun initialOutput(): Output = initialOutput
+
+                override fun key(input: Input): Any? = key(input)
             }
         }
     }
