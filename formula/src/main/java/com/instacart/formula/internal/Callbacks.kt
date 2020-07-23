@@ -1,8 +1,8 @@
 package com.instacart.formula.internal
 
 internal class Callbacks {
-    private val callbacks: SingleRequestMap<Any, Callback> = mutableMapOf()
-    private val eventCallbacks: SingleRequestMap<Any, EventCallback<*>> = mutableMapOf()
+    private var callbacks: SingleRequestMap<Any, Callback>? = null
+    private var eventCallbacks: SingleRequestMap<Any, EventCallback<*>>? = null
 
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
@@ -14,6 +14,12 @@ internal class Callbacks {
     }
 
     fun initOrFindCallback(key: Any): Callback {
+        val callbacks = callbacks ?: run {
+            val initialized: SingleRequestMap<Any, Callback> = mutableMapOf()
+            this.callbacks = initialized
+            initialized
+        }
+
         return callbacks
             .findOrInit(key) { Callback(key) }
             .requestAccess {
@@ -23,6 +29,12 @@ internal class Callbacks {
 
     @Suppress("UNCHECKED_CAST")
     fun <UIEvent> initOrFindEventCallback(key: Any): EventCallback<UIEvent> {
+        val eventCallbacks = eventCallbacks ?: run {
+            val initialized: SingleRequestMap<Any, EventCallback<*>> = mutableMapOf()
+            this.eventCallbacks = initialized
+            initialized
+        }
+
         return eventCallbacks
             .findOrInit(key) { EventCallback<UIEvent>(key) }
             .requestAccess {
@@ -31,13 +43,13 @@ internal class Callbacks {
     }
 
     fun evaluationFinished() {
-        callbacks.clearUnrequested {
+        callbacks?.clearUnrequested {
             it.callback = {
                 // TODO log that disabled callback was invoked.
             }
         }
 
-        eventCallbacks.clearUnrequested {
+        eventCallbacks?.clearUnrequested {
             it.callback = {
                 // TODO log that disabled callback was invoked.
             }
@@ -45,18 +57,18 @@ internal class Callbacks {
     }
 
     fun disableAll() {
-        callbacks.forEachValue {
+        callbacks?.forEachValue {
             it.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }
-        callbacks.clear()
+        callbacks?.clear()
 
-        eventCallbacks.forEachValue { entry ->
+        eventCallbacks?.forEachValue { entry ->
             entry.callback = {
                 // TODO log that event is invalid because child was removed
             }
         }
-        eventCallbacks.clear()
+        eventCallbacks?.clear()
     }
 }

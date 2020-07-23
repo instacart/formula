@@ -8,7 +8,7 @@ internal class ScopedCallbacks private constructor(
 ) {
     constructor(formula: IFormula<*, *>) : this(formula::class)
 
-    private val callbacks: SingleRequestMap<Any, Callbacks> = mutableMapOf()
+    private var callbacks: SingleRequestMap<Any, Callbacks>? = null
 
     private var lastCallbacks: Callbacks? = null
     private var lastKey: Any? = null
@@ -60,16 +60,19 @@ internal class ScopedCallbacks private constructor(
     fun evaluationFinished() {
         enabled = false
 
-        val iterator = callbacks.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (!entry.value.requested) {
-                entry.value.value.disableAll()
-                iterator.remove()
-            } else {
-                val callbacks = entry.value.value
-                callbacks.evaluationFinished()
-                entry.value.requested = false
+        val callbacks = callbacks
+        if (callbacks != null) {
+            val iterator = callbacks.iterator()
+            while (iterator.hasNext()) {
+                val entry = iterator.next()
+                if (!entry.value.requested) {
+                    entry.value.value.disableAll()
+                    iterator.remove()
+                } else {
+                    val callbacks = entry.value.value
+                    callbacks.evaluationFinished()
+                    entry.value.requested = false
+                }
             }
         }
 
@@ -77,13 +80,18 @@ internal class ScopedCallbacks private constructor(
     }
 
     fun disableAll() {
-        callbacks.forEachValue {
+        callbacks?.forEachValue {
             it.disableAll()
         }
-        callbacks.clear()
+        callbacks?.clear()
     }
 
     private fun currentCallbacks(): Callbacks {
+        val callbacks = callbacks ?: run {
+            val initialized: SingleRequestMap<Any, Callbacks> = mutableMapOf()
+            this.callbacks = initialized
+            initialized
+        }
         return current ?: callbacks
             .findOrInit(currentKey) { Callbacks() }
             .requestAccess { "Duplicate key: $currentKey" }
