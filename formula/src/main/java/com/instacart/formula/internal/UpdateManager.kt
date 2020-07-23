@@ -12,7 +12,7 @@ internal class UpdateManager(
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private val updates: LinkedHashSet<Update<*>> = LinkedHashSet()
+    private var updates: LinkedHashSet<Update<*>>? = null
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
@@ -20,7 +20,7 @@ internal class UpdateManager(
      */
     @Suppress("UNCHECKED_CAST")
     fun updateEventListeners(new: List<Update<*>>) {
-        updates.forEach { existing ->
+        updates?.forEach { existing ->
             val update = new.firstOrNull { it == existing }
             if (update != null) {
                 existing.handler = update.handler as (Any?) -> Unit
@@ -34,18 +34,20 @@ internal class UpdateManager(
      * Returns true if there was a transition while updating streams.
      */
     fun terminateOld(new: List<Update<*>>, transitionNumber: Long): Boolean {
-        val iterator = updates.iterator()
-        while (iterator.hasNext()) {
-            val existing = iterator.next()
+        val iterator = updates?.iterator()
+        if (iterator != null) {
+            while (iterator.hasNext()) {
+                val existing = iterator.next()
 
-            val update = new.firstOrNull { it == existing }
-            if (update == null) {
-                iterator.remove()
-                tearDownStream(existing)
-            }
+                val update = new.firstOrNull { it == existing }
+                if (update == null) {
+                    iterator.remove()
+                    tearDownStream(existing)
+                }
 
-            if (transitionLock.hasTransitioned(transitionNumber)) {
-                return true
+                if (transitionLock.hasTransitioned(transitionNumber)) {
+                    return true
+                }
             }
         }
         return false
@@ -53,6 +55,12 @@ internal class UpdateManager(
 
     fun startNew(new: List<Update<*>>, transitionNumber: Long): Boolean {
         new.forEach { update ->
+            val updates = updates ?: run {
+                val initialized: LinkedHashSet<Update<*>> = LinkedHashSet()
+                updates = initialized
+                initialized
+            }
+
             if (!updates.contains(update)) {
                 updates.add(update)
                 update.start()
@@ -67,11 +75,13 @@ internal class UpdateManager(
     }
 
     fun terminate() {
-        val iterator = updates.iterator()
-        while(iterator.hasNext()) {
-            val stream = iterator.next()
-            iterator.remove()
-            tearDownStream(stream)
+        val iterator = updates?.iterator()
+        if (iterator != null) {
+            while (iterator.hasNext()) {
+                val stream = iterator.next()
+                iterator.remove()
+                tearDownStream(stream)
+            }
         }
     }
 
