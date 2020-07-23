@@ -60,9 +60,8 @@ internal class ScopedCallbacks private constructor(
     fun evaluationFinished() {
         enabled = false
 
-        val callbacks = callbacks
-        if (callbacks != null) {
-            val iterator = callbacks.iterator()
+        val iterator = callbacks?.iterator()
+        if (iterator != null) {
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 if (!entry.value.requested) {

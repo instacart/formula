@@ -25,13 +25,13 @@ class FormulaManagerChildrenTest {
 
         val result = manager.evaluate(Unit, transitionLock.processingPass)
         val formulaKey = FormulaKey(StreamFormula::class, null)
-        assertThat(manager.children[formulaKey]).isNotNull()
+        assertThat(manager.children!![formulaKey]).isNotNull()
 
         result.output.toggleChild()
 
         val next = manager.evaluate(Unit, transitionLock.processingPass)
         assertThat(next.output.child).isNull()
 
-        assertThat(manager.children[formulaKey]).isNull()
+        assertThat(manager.children!![formulaKey]).isNull()
     }
 }
