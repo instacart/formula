@@ -31,7 +31,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
 
     private val updateManager = UpdateManager(transitionLock)
 
-    internal val children: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
+    internal var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
     private var terminated = false
 
@@ -60,7 +60,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
         lastFrame.transitionCallbackWrapper.transitionId = number
 
-        children.forEachValue { it.updateTransitionNumber(number) }
+        children?.forEachValue { it.updateTransitionNumber(number) }
     }
 
     /**
@@ -92,7 +92,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
 
         callbacks.evaluationFinished()
 
-        children.clearUnrequested {
+        children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
             it.markAsTerminated()
             pendingRemoval?.add(it)
@@ -110,7 +110,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
             return true
         }
 
-        return children.any { it.value.value.terminateDetachedChildren(currentTransition) }
+        return children?.any { it.value.value.terminateDetachedChildren(currentTransition) } ?: false
     }
 
     // TODO: should probably terminate children streams, then self.
@@ -122,7 +122,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         }
 
         // Step through children frames
-        children.forEachValue {
+        children?.forEachValue {
             if (it.terminateOldUpdates(currentTransition)) {
                 return true
             }
@@ -140,7 +140,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         }
 
         // Step through children frames
-        children.forEachValue {
+        children?.forEachValue {
             if (it.startNewUpdates(currentTransition)) {
                 return true
             }
@@ -174,6 +174,12 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         processingPass: Long
     ): ChildOutput {
         @Suppress("UNCHECKED_CAST")
+        val children = children ?: run {
+            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
+            this.children = initialized
+            initialized
+        }
+
         val compositeKey = constructKey(formula, input)
         val manager = children
             .findOrInit(compositeKey) {
@@ -194,11 +200,11 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         terminated = true
         frame?.transitionCallbackWrapper?.terminated = true
         callbacks.disableAll()
-        children.forEachValue { it.markAsTerminated() }
+        children?.forEachValue { it.markAsTerminated() }
     }
 
     override fun performTerminationSideEffects() {
-        children.forEachValue { it.performTerminationSideEffects() }
+        children?.forEachValue { it.performTerminationSideEffects() }
         updateManager.terminate()
     }
 
