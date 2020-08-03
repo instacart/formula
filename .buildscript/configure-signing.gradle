@@ -1,7 +1,7 @@
 apply plugin: "signing"
 
 
-if (project.gradle.startParameter.taskNames.contains("uploadArchives")) {
+if (project.hasProperty('releaseBuild')) {
     println "configuring signing key"
 
     Properties properties = new Properties()
