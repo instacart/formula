@@ -15,7 +15,7 @@ import java.util.LinkedList
  */
 class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
-    private val formula: IFormula<Input, Output>,
+    formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit
 ) {
 
@@ -31,11 +31,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
             return Observable.create<Output> { emitter ->
                 threadChecker.check("Need to subscribe on main thread.")
 
-                val runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
+                var runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
 
                 val disposables = CompositeDisposable()
                 disposables.add(input.subscribe({ input ->
                     threadChecker.check("Input arrived on a wrong thread.")
+                    if (!runtime.isKeyValid(input)) {
+                        runtime.manager?.terminate()
+                        runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
+                    }
                     runtime.onInput(input)
                 }, emitter::onError))
 
@@ -50,6 +54,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
+    private val implementation = formula.implementation()
     private var manager: FormulaManager<Input, Output>? = null
     private val lock = TransitionLockImpl()
     private var hasInitialFinished = false
@@ -60,11 +65,17 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val effectQueue = LinkedList<Effects>()
 
     private var input: Input? = null
+    private var key: Any? = null
     private var isProcessing: Boolean = false
+
+    fun isKeyValid(input: Input): Boolean {
+        return this.input == null || key == implementation.key(input)
+    }
 
     fun onInput(input: Input) {
         val initialization = this.input == null
         this.input = input
+        this.key = implementation.key(input)
 
         if (initialization) {
             val transitionListener = TransitionListener { effects, isValid ->
@@ -77,7 +88,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 process(isValid)
             }
 
-            val implementation = formula.implementation()
             val processorManager: FormulaManager<Input, Output> =
                 FormulaManagerImpl(implementation, input, lock, transitionListener)
 
