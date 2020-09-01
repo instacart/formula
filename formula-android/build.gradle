@@ -8,6 +8,7 @@ apply plugin: "com.vanniktech.maven.publish"
 
 apply from: rootProject.file('.buildscript/configure-dokka.gradle')
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
+apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
 
 androidExtensions {
     experimental = true
