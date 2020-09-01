@@ -119,7 +119,7 @@ executors:
     working_directory: ~/code
     environment:
       # Java is really greedy, let's minimize how much memory it takes
-      JAVA_TOOL_OPTIONS: '-Xmx512m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1'
+      JAVA_TOOL_OPTIONS: '-Xmx512m'
       GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx6g -XX:+HeapDumpOnOutOfMemoryError"'
       JVM_OPTS: '-Xmx3200m'
 
