@@ -1,0 +1,6 @@
+apply plugin: "jacoco"
+
+// Fixing issue: https://github.com/gradle/gradle/issues/5184
+tasks.withType(Test) {
+    jacoco.excludes = ['jdk.internal.*']
+}

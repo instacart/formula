@@ -1,4 +1,7 @@
 # Changelog
+## [0.6.1] - TBD
+- Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
+
 ## [0.6.0] - July 27, 2020
 - **Breaking**: Changing from RxJava 2.x to RxJava 3.x
 - Change callback key type from String to Any.

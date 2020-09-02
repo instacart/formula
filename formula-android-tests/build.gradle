@@ -2,6 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
+apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
+
 androidExtensions {
     experimental = true
     features = ['parcelize']

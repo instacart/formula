@@ -657,4 +657,15 @@ class FormulaRuntimeTest {
             .test()
             .assertError { it is java.lang.IllegalStateException && it.message.orEmpty().startsWith("Nested scopes are not supported currently.") }
     }
+
+    @Test
+    fun `formula key is used to reset root formula state`() {
+        RootFormulaKeyTestSubject()
+            .assertValue(0)
+            .increment()
+            .increment()
+            .assertValue(2)
+            .resetKey()
+            .assertValue(0)
+    }
 }
