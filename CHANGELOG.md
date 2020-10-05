@@ -1,6 +1,7 @@
 # Changelog
 ## [0.6.1] - TBD
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
+- [formula-android] Adding main thread check before notifying fragments. 
 
 ## [0.6.0] - July 27, 2020
 - **Breaking**: Changing from RxJava 2.x to RxJava 3.x
