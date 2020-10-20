@@ -130,11 +130,30 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Message> events(
+        inline fun <Message> UpdateBuilder<State>.events(
             stream: Stream<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
             add(createConnection(stream, transition))
+        }
+
+        /**
+         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
+         * and unsubscribed when it is not returned as part of [Evaluation].
+         *
+         * @param transition Callback invoked when [Stream] sends us a [Message].
+         *
+         * Example:
+         * ```
+         * Stream.onInit().onEvent {
+         *   transition { /* */ }
+         * }
+         * ```
+         */
+        inline fun <Message> Stream<Message>.events(
+            crossinline transition: Transition.Factory.(Message) -> Transition<State>
+        ) {
+            events(this, transition)
         }
 
         /**
@@ -145,7 +164,7 @@ abstract class FormulaContext<State> internal constructor(
             observable: Observable<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events(RxStream.fromObservable { observable }, transition)
+            RxStream.fromObservable { observable }.events(transition)
         }
 
         @PublishedApi internal fun add(connection: Update<*>) {

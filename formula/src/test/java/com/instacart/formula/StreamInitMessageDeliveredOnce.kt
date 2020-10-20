@@ -13,7 +13,7 @@ object StreamInitMessageDeliveredOnce {
             return Evaluation(
                 output = Unit,
                 updates = context.updates {
-                    events(Stream.onInit()) {
+                    Stream.onInit().events {
                         transition { timesInitializedCalled += 1 }
                     }
                 }

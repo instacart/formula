@@ -30,7 +30,7 @@ class SimpleSideEffectTest {
             return Evaluation(
                 output = state.count,
                 updates = context.updates {
-                    events(increment) {
+                    RxStream.fromObservable { increment }.events {
                         val updated = state.copy(count = state.count + 1)
 
                         transition(updated) {

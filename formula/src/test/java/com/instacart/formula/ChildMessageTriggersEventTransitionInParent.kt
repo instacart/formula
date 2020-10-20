@@ -40,9 +40,11 @@ object ChildMessageTriggersEventTransitionInParent {
                     child = context.child(childFormula)
                 ),
                 updates = context.updates {
-                    events(service.serviceEvents()) {
-                        transition(state + 1)
-                    }
+                    RxStream
+                        .fromObservable { service.serviceEvents() }
+                        .events {
+                            transition(state + 1)
+                        }
                 }
             )
         }
