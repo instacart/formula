@@ -26,7 +26,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
         state: State,
         context: FormulaContext<State>
     ): Evaluation<Output<ChildOutput>> {
-        val childRM = if (state.showChild) {
+        val childOutput = if (state.showChild) {
             context.child(child, childInput(context, state))
         } else {
             null
@@ -34,7 +34,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
 
         return Evaluation(
             output = Output(
-                child = childRM,
+                child = childOutput,
                 toggleChild = context.callback {
                     state.copy(showChild = !state.showChild).noEffects()
                 }
