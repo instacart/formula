@@ -12,6 +12,11 @@ interface FormulaManager<Input, Output> {
         transitionId: TransitionId
     ): Evaluation<Output>
 
+    /**
+     * Method updates the transition id of the existing evaluation. This
+     * method is called when there were no changes and evaluation does
+     * not need to run in this part of the formula tree.
+     */
     fun updateTransitionId(transitionId: TransitionId)
 
     /**

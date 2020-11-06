@@ -86,7 +86,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                     effectQueue.addLast(effects)
                 }
 
-                run(isValid)
+                run(shouldEvaluate = !isValid)
             }
 
             manager = FormulaManagerImpl(implementation, input, transitionListener)
@@ -108,18 +108,18 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    private fun forceRun() = run(isValid = false)
+    private fun forceRun() = run(shouldEvaluate = true)
 
     /**
      * Performs the evaluation and execution phases.
      *
-     * @param isValid Determines if evaluation needs to be run.
+     * @param shouldEvaluate Determines if evaluation needs to be run.
      */
-    private fun run(isValid: Boolean) {
+    private fun run(shouldEvaluate: Boolean) {
         val manager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        if (!isValid) {
+        if (shouldEvaluate) {
             evaluationPhase(manager, currentInput)
         }
 
