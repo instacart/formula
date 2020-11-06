@@ -18,18 +18,16 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val callbacks: ScopedCallbacks,
-    private val transitionLock: TransitionLock,
     private val transitionListener: TransitionListener
 ) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
 
     constructor(
         formula: Formula<Input, State, Output>,
         input: Input,
-        transitionLock: TransitionLock,
         transitionListener: TransitionListener
-    ): this(formula, input, ScopedCallbacks(formula), transitionLock, transitionListener)
+    ): this(formula, input, ScopedCallbacks(formula), transitionListener)
 
-    private val updateManager = UpdateManager(transitionLock)
+    private val updateManager = UpdateManager()
 
     internal var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
@@ -56,11 +54,11 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         transitionListener.onTransition(transition.effects, isValid)
     }
 
-    override fun updateTransitionNumber(number: Long) {
+    override fun updateTransitionId(transitionId: TransitionId) {
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.transitionCallbackWrapper.transitionId = number
+        lastFrame.transitionCallbackWrapper.transitionId = transitionId
 
-        children?.forEachValue { it.updateTransitionNumber(number) }
+        children?.forEachValue { it.updateTransitionId(transitionId) }
     }
 
     /**
@@ -68,12 +66,12 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
      */
     override fun evaluate(
         input: Input,
-        transitionId: Long
+        transitionId: TransitionId
     ): Evaluation<Output> {
         // TODO: assert main thread.
         val lastFrame = frame
         if (lastFrame != null && lastFrame.isValid(input)) {
-            updateTransitionNumber(transitionId)
+            updateTransitionId(transitionId)
             return lastFrame.evaluation
         }
 
@@ -83,7 +81,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         }
 
         callbacks.evaluationStarted()
-        val transitionCallback = TransitionCallbackWrapper(transitionLock, this::handleTransition, transitionId)
+        val transitionCallback = TransitionCallbackWrapper(this::handleTransition, transitionId)
         val context = FormulaContextImpl(transitionId, callbacks, this, transitionCallback)
         val result = formula.evaluate(input, state, context)
         val frame = Frame(input, state, result, transitionCallback)
@@ -102,28 +100,28 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         return result
     }
 
-    override fun terminateDetachedChildren(currentTransition: Long): Boolean {
+    override fun terminateDetachedChildren(transitionId: TransitionId): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
-        if (transitionLock.hasTransitioned(currentTransition)) {
+        if (transitionId.hasTransitioned()) {
             return true
         }
 
-        return children?.any { it.value.value.terminateDetachedChildren(currentTransition) } ?: false
+        return children?.any { it.value.value.terminateDetachedChildren(transitionId) } ?: false
     }
 
     // TODO: should probably terminate children streams, then self.
-    override fun terminateOldUpdates(currentTransition: Long): Boolean {
+    override fun terminateOldUpdates(transitionId: TransitionId): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
-        if (updateManager.terminateOld(newFrame.evaluation.updates, currentTransition)) {
+        if (updateManager.terminateOld(newFrame.evaluation.updates, transitionId)) {
             return true
         }
 
         // Step through children frames
         children?.forEachValue {
-            if (it.terminateOldUpdates(currentTransition)) {
+            if (it.terminateOldUpdates(transitionId)) {
                 return true
             }
         }
@@ -131,17 +129,17 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         return false
     }
 
-    override fun startNewUpdates(currentTransition: Long): Boolean {
+    override fun startNewUpdates(transitionId: TransitionId): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         // Update parent workers so they are ready to handle events
-        if (updateManager.startNew(newFrame.evaluation.updates, currentTransition)) {
+        if (updateManager.startNew(newFrame.evaluation.updates, transitionId)) {
             return true
         }
 
         // Step through children frames
         children?.forEachValue {
-            if (it.startNewUpdates(currentTransition)) {
+            if (it.startNewUpdates(transitionId)) {
                 return true
             }
         }
@@ -152,26 +150,26 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
     /**
      * Returns true if has transition while moving to next frame.
      */
-    override fun nextFrame(currentTransition: Long): Boolean {
-        if (terminateDetachedChildren(currentTransition)) {
+    override fun nextFrame(transitionId: TransitionId): Boolean {
+        if (terminateDetachedChildren(transitionId)) {
             return true
         }
 
-        if (terminateOldUpdates(currentTransition)) {
+        if (terminateOldUpdates(transitionId)) {
             return true
         }
 
-        if (startNewUpdates(currentTransition)) {
+        if (startNewUpdates(transitionId)) {
             return true
         }
 
-        return transitionLock.hasTransitioned(currentTransition)
+        return transitionId.hasTransitioned()
     }
 
     override fun <ChildInput, ChildOutput> child(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        processingPass: Long
+        transitionId: TransitionId
     ): ChildOutput {
         @Suppress("UNCHECKED_CAST")
         val children = children ?: run {
@@ -187,13 +185,13 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
                     handleTransition(Transition(effects = effects), !isValid)
                 }
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, transitionLock, childTransitionListener)
+                FormulaManagerImpl(implementation, input, childTransitionListener)
             }
             .requestAccess {
                 throw IllegalStateException("There already is a child with same key: $compositeKey. Use [key: Any] parameter.")
             } as FormulaManager<ChildInput, ChildOutput>
 
-        return manager.evaluate(input, processingPass).output
+        return manager.evaluate(input, transitionId).output
     }
 
     override fun markAsTerminated() {

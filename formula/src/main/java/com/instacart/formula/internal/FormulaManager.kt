@@ -4,16 +4,16 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 
 interface FormulaManager<Input, Output> {
-    fun nextFrame(currentTransition: Long): Boolean
+    fun nextFrame(transitionId: TransitionId): Boolean
 
-    fun updateTransitionNumber(number: Long)
+    fun updateTransitionId(transitionId: TransitionId)
 
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
     fun evaluate(
         input: Input,
-        transitionId: Long
+        transitionId: TransitionId
     ): Evaluation<Output>
 
     /**
@@ -21,17 +21,17 @@ interface FormulaManager<Input, Output> {
      *
      * @return True if transition happened while performing this.
      */
-    fun terminateDetachedChildren(currentTransition: Long): Boolean
+    fun terminateDetachedChildren(transitionId: TransitionId): Boolean
 
     /**
      * Called after [evaluate] to terminate old streams.
      */
-    fun terminateOldUpdates(currentTransition: Long): Boolean
+    fun terminateOldUpdates(transitionId: TransitionId): Boolean
 
     /**
      * Called after [evaluate] to start new streams.
      */
-    fun startNewUpdates(currentTransition: Long): Boolean
+    fun startNewUpdates(transitionId: TransitionId): Boolean
 
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,

@@ -5,9 +5,7 @@ import com.instacart.formula.Update
 /**
  * Handles [Update] changes.
  */
-internal class UpdateManager(
-    private val transitionLock: TransitionLock
-) {
+internal class UpdateManager {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
@@ -33,27 +31,26 @@ internal class UpdateManager(
     /**
      * Returns true if there was a transition while updating streams.
      */
-    fun terminateOld(new: List<Update<*>>, transitionNumber: Long): Boolean {
+    fun terminateOld(new: List<Update<*>>, transitionId: TransitionId): Boolean {
         val iterator = updates?.iterator()
         if (iterator != null) {
             while (iterator.hasNext()) {
                 val existing = iterator.next()
 
-                val update = new.firstOrNull { it == existing }
-                if (update == null) {
+                if (!shouldKeepRunning(new, existing)) {
                     iterator.remove()
                     tearDownStream(existing)
-                }
 
-                if (transitionLock.hasTransitioned(transitionNumber)) {
-                    return true
+                    if (transitionId.hasTransitioned()) {
+                        return true
+                    }
                 }
             }
         }
         return false
     }
 
-    fun startNew(new: List<Update<*>>, transitionNumber: Long): Boolean {
+    fun startNew(new: List<Update<*>>, transitionId: TransitionId): Boolean {
         new.forEach { update ->
             val updates = updates ?: run {
                 val initialized: LinkedHashSet<Update<*>> = LinkedHashSet()
@@ -61,11 +58,11 @@ internal class UpdateManager(
                 initialized
             }
 
-            if (!updates.contains(update)) {
+            if (!isRunning(update)) {
                 updates.add(update)
                 update.start()
 
-                if (transitionLock.hasTransitioned(transitionNumber)) {
+                if (transitionId.hasTransitioned()) {
                     return true
                 }
             }
@@ -83,6 +80,14 @@ internal class UpdateManager(
                 tearDownStream(stream)
             }
         }
+    }
+
+    private fun shouldKeepRunning(updates: List<Update<*>>, update: Update<*>): Boolean {
+        return updates.contains(update)
+    }
+
+    private fun isRunning(update: Update<*>): Boolean {
+        return updates?.contains(update) ?: false
     }
 
     private fun tearDownStream(stream: Update<*>) {

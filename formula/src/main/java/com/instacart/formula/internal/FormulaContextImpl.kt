@@ -7,7 +7,7 @@ import com.instacart.formula.Update
 import java.lang.IllegalStateException
 
 class FormulaContextImpl<State> internal constructor(
-    private val processingPass: Long,
+    private val transitionId: TransitionId,
     callbacks: ScopedCallbacks,
     private val delegate: Delegate,
     private val transitionCallback: TransitionCallbackWrapper<State>
@@ -17,7 +17,7 @@ class FormulaContextImpl<State> internal constructor(
         fun <ChildInput, ChildOutput> child(
             formula: IFormula<ChildInput, ChildOutput>,
             input: ChildInput,
-            processingPass: Long
+            transitionId: TransitionId
         ): ChildOutput
     }
 
@@ -37,7 +37,7 @@ class FormulaContextImpl<State> internal constructor(
         input: ChildInput
     ): ChildOutput {
         ensureNotRunning()
-        return delegate.child(formula, input, processingPass)
+        return delegate.child(formula, input, transitionId)
     }
 
     private fun ensureNotRunning() {

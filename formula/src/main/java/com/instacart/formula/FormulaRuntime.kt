@@ -3,8 +3,9 @@ package com.instacart.formula
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ThreadChecker
+import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionListener
-import com.instacart.formula.internal.TransitionLockImpl
+import com.instacart.formula.internal.TransitionIdManager
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
@@ -56,7 +57,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private val implementation = formula.implementation()
     private var manager: FormulaManager<Input, Output>? = null
-    private val lock = TransitionLockImpl()
+    private val transitionIdManager = TransitionIdManager()
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
@@ -89,7 +90,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             }
 
             val processorManager: FormulaManager<Input, Output> =
-                FormulaManagerImpl(implementation, input, lock, transitionListener)
+                FormulaManagerImpl(implementation, input, transitionListener)
 
             manager = processorManager
 
@@ -111,16 +112,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
         val localManager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        val processingPass = if (isValid) {
-            lock.processingPass
-        } else {
-            lock.next()
-        }
+        if (!isValid) { transitionIdManager.next() }
+
         processingRequested = true
 
         if (!isValid) {
             val result: Evaluation<Output> =
-                localManager.evaluate(currentInput, processingPass)
+                localManager.evaluate(currentInput, transitionIdManager.transitionId)
             lastOutput = result.output
             emitOutput = true
         }
@@ -130,7 +128,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         isProcessing = true
         while (processingRequested) {
             processingRequested = false
-            processPass(localManager, lock.processingPass)
+            processPass(localManager, transitionIdManager.transitionId)
         }
         isProcessing = false
 
@@ -142,14 +140,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private fun processPass(
         localManager: FormulaManager<Input, Output>,
-        processingPass: Long
+        transitionId: TransitionId
     ) {
 
-        if (localManager.nextFrame(processingPass)) {
+        if (localManager.nextFrame(transitionId)) {
             return
         }
 
-        while (effectQueue.isNotEmpty() && !lock.hasTransitioned(processingPass)) {
+        while (effectQueue.isNotEmpty() && !transitionId.hasTransitioned()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
                 effects()
