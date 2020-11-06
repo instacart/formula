@@ -169,7 +169,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
                 FormulaManagerImpl(implementation, input, childTransitionListener)
             }
             .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $compositeKey. Use [key: Any] parameter.")
+                throw IllegalStateException("There already is a child with same key: $compositeKey. Override [Formula.key] function.")
             } as FormulaManager<ChildInput, ChildOutput>
 
         return manager.evaluate(input, transitionId).output
