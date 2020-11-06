@@ -29,7 +29,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
 
     private val updateManager = UpdateManager()
 
-    internal var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
+    private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
     private var terminated = false
 
