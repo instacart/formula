@@ -115,17 +115,16 @@ class FormulaRuntime<Input : Any, Output : Any>(
         val localManager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        if (!isValid) { transitionIdManager.next() }
-
-        processingRequested = true
-
         if (!isValid) {
+            transitionIdManager.next()
+
             val result: Evaluation<Output> =
                 localManager.evaluate(currentInput, transitionIdManager.transitionId)
             lastOutput = result.output
             emitOutput = true
         }
 
+        processingRequested = true
         if (isProcessing) return
 
         isProcessing = true
