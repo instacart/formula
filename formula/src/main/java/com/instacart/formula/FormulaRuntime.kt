@@ -138,7 +138,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Runs formula evaluation.
      */
     private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        transitionIdManager.next()
+        transitionIdManager.invalidated()
 
         val result = manager.evaluate(currentInput, transitionIdManager.transitionId)
         lastOutput = result.output

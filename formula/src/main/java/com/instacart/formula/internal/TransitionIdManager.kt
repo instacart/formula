@@ -16,9 +16,8 @@ class TransitionIdManager {
 
     var transitionId = TransitionIdImpl(0, this)
 
-    fun next(): TransitionId {
+    fun invalidated() {
         transitionId = transitionId.next()
-        return transitionId
     }
 
     fun hasTransitioned(transitionID: Long): Boolean {
