@@ -12,8 +12,6 @@ interface FormulaManager<Input, Output> {
         transitionId: TransitionId
     ): Evaluation<Output>
 
-    fun nextFrame(transitionId: TransitionId): Boolean
-
     fun updateTransitionId(transitionId: TransitionId)
 
     /**
@@ -43,6 +41,4 @@ interface FormulaManager<Input, Output> {
      * Called when we are ready to perform termination side-effects.
      */
     fun performTerminationSideEffects()
-
-    fun terminate()
 }

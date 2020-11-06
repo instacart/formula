@@ -38,7 +38,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 disposables.add(input.subscribe({ input ->
                     threadChecker.check("Input arrived on a wrong thread.")
                     if (!runtime.isKeyValid(input)) {
-                        runtime.manager?.terminate()
+                        runtime.terminate()
                         runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
                     }
                     runtime.onInput(input)
@@ -46,7 +46,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
                 val runnable = Runnable {
                     threadChecker.check("Need to unsubscribe on the main thread.")
-                    runtime.manager?.terminate()
+                    runtime.terminate()
                 }
                 disposables.add(FormulaDisposableHelper.fromRunnable(runnable))
 
@@ -101,6 +101,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
+    fun terminate() {
+        manager?.apply {
+            markAsTerminated()
+            performTerminationSideEffects()
+        }
+    }
+
     /**
      * Processes the next frame.
      */
@@ -135,11 +142,19 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     private fun processPass(
-        localManager: FormulaManager<Input, Output>,
+        manager: FormulaManager<Input, Output>,
         transitionId: TransitionId
     ) {
 
-        if (localManager.nextFrame(transitionId)) {
+        if (manager.terminateDetachedChildren(transitionId)) {
+            return
+        }
+
+        if (manager.terminateOldUpdates(transitionId)) {
+            return
+        }
+
+        if (manager.startNewUpdates(transitionId)) {
             return
         }
 

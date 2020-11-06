@@ -147,25 +147,6 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         return false
     }
 
-    /**
-     * Returns true if has transition while moving to next frame.
-     */
-    override fun nextFrame(transitionId: TransitionId): Boolean {
-        if (terminateDetachedChildren(transitionId)) {
-            return true
-        }
-
-        if (terminateOldUpdates(transitionId)) {
-            return true
-        }
-
-        if (startNewUpdates(transitionId)) {
-            return true
-        }
-
-        return transitionId.hasTransitioned()
-    }
-
     override fun <ChildInput, ChildOutput> child(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
@@ -204,11 +185,6 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
     override fun performTerminationSideEffects() {
         children?.forEachValue { it.performTerminationSideEffects() }
         updateManager.terminate()
-    }
-
-    override fun terminate() {
-        markAsTerminated()
-        performTerminationSideEffects()
     }
 
     private fun <ChildInput, ChildOutput> constructKey(
