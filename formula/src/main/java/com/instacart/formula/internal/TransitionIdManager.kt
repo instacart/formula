@@ -25,6 +25,3 @@ class TransitionIdManager {
         return transitionId.transitionID != transitionID
     }
 }
-
-
-

@@ -4,10 +4,6 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 
 interface FormulaManager<Input, Output> {
-    fun nextFrame(transitionId: TransitionId): Boolean
-
-    fun updateTransitionId(transitionId: TransitionId)
-
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
@@ -15,6 +11,10 @@ interface FormulaManager<Input, Output> {
         input: Input,
         transitionId: TransitionId
     ): Evaluation<Output>
+
+    fun nextFrame(transitionId: TransitionId): Boolean
+
+    fun updateTransitionId(transitionId: TransitionId)
 
     /**
      * Called after [evaluate] to terminate children that were removed.

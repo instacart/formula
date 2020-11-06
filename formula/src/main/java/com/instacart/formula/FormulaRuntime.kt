@@ -89,11 +89,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 process(isValid)
             }
 
-            val processorManager: FormulaManager<Input, Output> =
-                FormulaManagerImpl(implementation, input, transitionListener)
-
-            manager = processorManager
-
+            manager = FormulaManagerImpl(implementation, input, transitionListener)
             process(false)
             hasInitialFinished = true
 

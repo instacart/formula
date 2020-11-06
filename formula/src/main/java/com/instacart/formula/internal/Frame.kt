@@ -1,7 +1,6 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Evaluation
-import com.instacart.formula.Update
 
 /**
  * A frame is a representation of state after a process round. After each processing round
