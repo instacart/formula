@@ -5,14 +5,12 @@ import com.instacart.formula.Update
 /**
  * Handles [Update] changes.
  */
-internal class UpdateManager(
-    private val transitionLock: TransitionLock
-) {
+internal class UpdateManager {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private var updates: LinkedHashSet<Update<*>>? = null
+    private var running: LinkedHashSet<Update<*>>? = null
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
@@ -20,7 +18,7 @@ internal class UpdateManager(
      */
     @Suppress("UNCHECKED_CAST")
     fun updateEventListeners(new: List<Update<*>>) {
-        updates?.forEach { existing ->
+        running?.forEach { existing ->
             val update = new.firstOrNull { it == existing }
             if (update != null) {
                 existing.handler = update.handler as (Any?) -> Unit
@@ -31,21 +29,18 @@ internal class UpdateManager(
     }
 
     /**
-     * Returns true if there was a transition while updating streams.
+     * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(new: List<Update<*>>, transitionNumber: Long): Boolean {
-        val iterator = updates?.iterator()
-        if (iterator != null) {
-            while (iterator.hasNext()) {
-                val existing = iterator.next()
+    fun terminateOld(requested: List<Update<*>>, transitionId: TransitionId): Boolean {
+        val iterator = running?.iterator() ?: return false
+        while (iterator.hasNext()) {
+            val running = iterator.next()
 
-                val update = new.firstOrNull { it == existing }
-                if (update == null) {
-                    iterator.remove()
-                    tearDownStream(existing)
-                }
+            if (!shouldKeepRunning(requested, running)) {
+                iterator.remove()
+                tearDownStream(running)
 
-                if (transitionLock.hasTransitioned(transitionNumber)) {
+                if (transitionId.hasTransitioned()) {
                     return true
                 }
             }
@@ -53,19 +48,14 @@ internal class UpdateManager(
         return false
     }
 
-    fun startNew(new: List<Update<*>>, transitionNumber: Long): Boolean {
-        new.forEach { update ->
-            val updates = updates ?: run {
-                val initialized: LinkedHashSet<Update<*>> = LinkedHashSet()
-                updates = initialized
-                initialized
-            }
-
-            if (!updates.contains(update)) {
-                updates.add(update)
+    fun startNew(requested: List<Update<*>>, transitionId: TransitionId): Boolean {
+        for (update in requested) {
+            val running = getOrInitRunningStreamList()
+            if (!isRunning(update)) {
+                running.add(update)
                 update.start()
 
-                if (transitionLock.hasTransitioned(transitionNumber)) {
+                if (transitionId.hasTransitioned()) {
                     return true
                 }
             }
@@ -75,18 +65,31 @@ internal class UpdateManager(
     }
 
     fun terminate() {
-        val iterator = updates?.iterator()
-        if (iterator != null) {
-            while (iterator.hasNext()) {
-                val stream = iterator.next()
-                iterator.remove()
-                tearDownStream(stream)
-            }
+        val running = running ?: return
+        this.running = null
+        for (update in running) {
+            tearDownStream(update)
         }
+    }
+
+    private fun shouldKeepRunning(updates: List<Update<*>>, update: Update<*>): Boolean {
+        return updates.contains(update)
+    }
+
+    private fun isRunning(update: Update<*>): Boolean {
+        return running?.contains(update) ?: false
     }
 
     private fun tearDownStream(stream: Update<*>) {
         stream.tearDown()
         stream.handler = NO_OP
+    }
+
+    private fun getOrInitRunningStreamList(): LinkedHashSet<Update<*>> {
+        return running ?: run {
+            val initialized: LinkedHashSet<Update<*>> = LinkedHashSet()
+            this.running = initialized
+            initialized
+        }
     }
 }

@@ -3,9 +3,8 @@ package com.instacart.formula.internal
 import com.instacart.formula.Transition
 
 internal class TransitionCallbackWrapper<State>(
-    private val transitionLock: TransitionLock,
     private val handleTransition: (Transition<State>, Boolean) -> Unit,
-    var transitionId: Long
+    var transitionId: TransitionId
 ) : (Transition<State>) -> Unit {
     var running = false
     var terminated = false
@@ -19,7 +18,7 @@ internal class TransitionCallbackWrapper<State>(
             return
         }
 
-        if (!terminated && transitionLock.hasTransitioned(transitionId)) {
+        if (!terminated && transitionId.hasTransitioned()) {
             // We have already transitioned, this should not happen.
             throw IllegalStateException("Transition already happened. This is using old transition callback: $transition.")
         }

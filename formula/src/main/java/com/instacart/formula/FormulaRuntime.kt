@@ -3,8 +3,9 @@ package com.instacart.formula
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ThreadChecker
+import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionListener
-import com.instacart.formula.internal.TransitionLockImpl
+import com.instacart.formula.internal.TransitionIdManager
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
@@ -37,7 +38,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 disposables.add(input.subscribe({ input ->
                     threadChecker.check("Input arrived on a wrong thread.")
                     if (!runtime.isKeyValid(input)) {
-                        runtime.manager?.terminate()
+                        runtime.terminate()
                         runtime = FormulaRuntime(threadChecker, formula, emitter::onNext)
                     }
                     runtime.onInput(input)
@@ -45,7 +46,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
                 val runnable = Runnable {
                     threadChecker.check("Need to unsubscribe on the main thread.")
-                    runtime.manager?.terminate()
+                    runtime.terminate()
                 }
                 disposables.add(FormulaDisposableHelper.fromRunnable(runnable))
 
@@ -56,17 +57,17 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private val implementation = formula.implementation()
     private var manager: FormulaManager<Input, Output>? = null
-    private val lock = TransitionLockImpl()
+    private val transitionIdManager = TransitionIdManager()
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
-    private var processingRequested: Boolean = false
+    private var executionRequested: Boolean = false
 
     private val effectQueue = LinkedList<Effects>()
 
     private var input: Input? = null
     private var key: Any? = null
-    private var isProcessing: Boolean = false
+    private var isExecuting: Boolean = false
 
     fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == implementation.key(input)
@@ -85,54 +86,47 @@ class FormulaRuntime<Input : Any, Output : Any>(
                     effectQueue.addLast(effects)
                 }
 
-                process(isValid)
+                run(shouldEvaluate = !isValid)
             }
 
-            val processorManager: FormulaManager<Input, Output> =
-                FormulaManagerImpl(implementation, input, lock, transitionListener)
-
-            manager = processorManager
-
-            process(false)
+            manager = FormulaManagerImpl(implementation, input, transitionListener)
+            forceRun()
             hasInitialFinished = true
 
             lastOutput?.let {
                 onOutput(it)
             }
         } else {
-            process(false)
+            forceRun()
         }
     }
 
+    fun terminate() {
+        manager?.apply {
+            markAsTerminated()
+            performTerminationSideEffects()
+        }
+    }
+
+    private fun forceRun() = run(shouldEvaluate = true)
+
     /**
-     * Processes the next frame.
+     * Performs the evaluation and execution phases.
+     *
+     * @param shouldEvaluate Determines if evaluation needs to be run.
      */
-    private fun process(isValid: Boolean) {
-        val localManager = checkNotNull(manager)
+    private fun run(shouldEvaluate: Boolean) {
+        val manager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        val processingPass = if (isValid) {
-            lock.processingPass
-        } else {
-            lock.next()
-        }
-        processingRequested = true
-
-        if (!isValid) {
-            val result: Evaluation<Output> =
-                localManager.evaluate(currentInput, processingPass)
-            lastOutput = result.output
-            emitOutput = true
+        if (shouldEvaluate) {
+            evaluationPhase(manager, currentInput)
         }
 
-        if (isProcessing) return
+        executionRequested = true
+        if (isExecuting) return
 
-        isProcessing = true
-        while (processingRequested) {
-            processingRequested = false
-            processPass(localManager, lock.processingPass)
-        }
-        isProcessing = false
+        executionPhase(manager)
 
         if (hasInitialFinished && emitOutput) {
             emitOutput = false
@@ -140,20 +134,59 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    private fun processPass(
-        localManager: FormulaManager<Input, Output>,
-        processingPass: Long
-    ) {
+    /**
+     * Runs formula evaluation.
+     */
+    private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
+        transitionIdManager.invalidated()
 
-        if (localManager.nextFrame(processingPass)) {
-            return
+        val result = manager.evaluate(currentInput, transitionIdManager.transitionId)
+        lastOutput = result.output
+        emitOutput = true
+    }
+
+    /**
+     * Executes operations containing side-effects such as starting/terminating streams.
+     */
+    private fun executionPhase(manager: FormulaManager<Input, Output>) {
+        isExecuting = true
+        while (executionRequested) {
+            executionRequested = false
+
+            val transitionId = transitionIdManager.transitionId
+            if (manager.terminateDetachedChildren(transitionId)) {
+                continue
+            }
+
+            if (manager.terminateOldUpdates(transitionId)) {
+                continue
+            }
+
+            if (manager.startNewUpdates(transitionId)) {
+                continue
+            }
+
+            if (executeEffects(transitionId)) {
+                continue
+            }
         }
+        isExecuting = false
+    }
 
-        while (effectQueue.isNotEmpty() && !lock.hasTransitioned(processingPass)) {
+    /**
+     * Executes effects from the [effectQueue].
+     */
+    private fun executeEffects(transitionId: TransitionId): Boolean {
+        while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
                 effects()
+
+                if (transitionId.hasTransitioned()) {
+                    return true
+                }
             }
         }
+        return false
     }
 }
