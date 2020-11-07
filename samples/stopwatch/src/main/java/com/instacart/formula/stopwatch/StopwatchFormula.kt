@@ -15,6 +15,8 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         val isRunning: Boolean
     )
 
+    private val analytics = StopwatchAnalytics()
+
     override fun initialState(input: Unit): State = State(
         timePassedInMillis = 0,
         isRunning = false
@@ -72,7 +74,9 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return ButtonRenderModel(
             text = if (state.isRunning) "Stop" else "Start",
             onSelected = context.callback {
-                transition(state.copy(isRunning = !state.isRunning))
+                transition(state.copy(isRunning = !state.isRunning)) {
+                    analytics.trackClick()
+                }
             }
         )
     }
@@ -81,7 +85,9 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return ButtonRenderModel(
             text = "Reset",
             onSelected = context.callback {
-                transition(state.copy(timePassedInMillis = 0, isRunning = false))
+                transition(state.copy(timePassedInMillis = 0, isRunning = false)) {
+                    analytics.trackClick()
+                }
             }
         )
     }
