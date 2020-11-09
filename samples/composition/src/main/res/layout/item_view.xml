@@ -11,9 +11,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="16dp"
+        android:gravity="start"
         android:textColor="@android:color/black"
         android:textSize="15sp"
-        android:gravity="start"
         tools:text="Banana" />
 
     <LinearLayout
@@ -22,6 +22,7 @@
         android:layout_gravity="end"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal">
 
         <Button
@@ -37,8 +38,8 @@
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:textSize="15sp"
             android:textColor="@android:color/black"
+            android:textSize="15sp"
             tools:text="5" />
 
         <Button

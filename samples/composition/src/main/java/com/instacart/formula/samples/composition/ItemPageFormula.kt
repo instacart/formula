@@ -27,6 +27,7 @@ class ItemPageFormula : StatelessFormula<Unit, ItemPageRenderModel>() {
         }
         return Evaluation(
             output = ItemPageRenderModel(
+                title = "Items",
                 items = items
             )
         )

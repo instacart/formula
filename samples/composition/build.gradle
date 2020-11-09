@@ -10,7 +10,7 @@ androidExtensions {
 android {
     compileSdkVersion compileSdk
     defaultConfig {
-        applicationId "com.instacart.formula.counter"
+        applicationId "com.instacart.formula.samples.composition"
         minSdkVersion minSdk
         targetSdkVersion targetSdk
         versionCode 1
@@ -49,6 +49,7 @@ dependencies {
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat
     implementation libraries.androidx.recyclerview
+    implementation libraries.androidx.constraintlayout
     implementation libraries.rxrelays
     implementation libraries.rxandroid
 

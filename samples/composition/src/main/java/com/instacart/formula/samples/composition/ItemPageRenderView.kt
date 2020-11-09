@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
@@ -15,6 +16,7 @@ import com.instacart.formula.RenderView
 import com.instacart.formula.samples.composition.item.ItemRenderModel
 
 class ItemPageRenderView(private val root: ViewGroup): RenderView<ItemPageRenderModel> {
+    private val toolbar: Toolbar = root.findViewById(R.id.toolbar)
     private val itemList: RecyclerView = root.findViewById(R.id.item_list)
     private val itemAdapter = ItemAdapter()
 
@@ -24,6 +26,7 @@ class ItemPageRenderView(private val root: ViewGroup): RenderView<ItemPageRender
     }
 
     override val render: Renderer<ItemPageRenderModel> = Renderer { model ->
+        toolbar.title = model.title
         itemAdapter.submitList(model.items)
     }
 
