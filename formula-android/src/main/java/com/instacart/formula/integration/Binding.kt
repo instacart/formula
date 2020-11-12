@@ -25,11 +25,13 @@ abstract class Binding<in ParentComponent, Key> {
 
         fun <ParentComponent, Component, Key : Any> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
-            bindings: List<Binding<Component, Key>>
+            bindings: Bindings<Component, Key>
         ): Binding<ParentComponent, Key> {
-            return CompositeBinding(scopeFactory, bindings)
+            return CompositeBinding(scopeFactory, bindings.types, bindings.bindings)
         }
     }
+
+    internal abstract fun types(): Set<Class<*>>
 
     /**
      * Returns true if this binding handles this [key]

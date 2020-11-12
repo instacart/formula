@@ -32,7 +32,7 @@ class BindingBuilder<Component, Key : Any> : BaseBindingBuilder<Component, Key>(
         init: BindingBuilder<NewComponent, Key>.() -> Unit
     ) = apply {
         val scoped = BindingBuilder<NewComponent, Key>().apply(init).build()
-        bind(CompositeBinding(componentFactory, scoped))
+        bind(CompositeBinding(componentFactory, scoped.types, scoped.bindings))
     }
 
     inline fun <reified T : Key> bind(integration: Integration<T, Key, *>) = apply {
