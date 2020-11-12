@@ -2,6 +2,7 @@ package com.instacart.formula.integration.internal
 
 import com.instacart.formula.integration.BackStack
 import com.instacart.formula.integration.Binding
+import com.instacart.formula.integration.Bindings
 import com.instacart.formula.integration.ComponentFactory
 import com.instacart.formula.integration.FlowEnvironment
 import com.instacart.formula.integration.KeyState
@@ -17,8 +18,11 @@ import io.reactivex.rxjava3.core.Observable
  */
 internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
-    private val bindings: List<Binding<ScopedComponent, Key>>
+    private val types: Set<Class<*>>,
+    val bindings: List<Binding<ScopedComponent, Key>>
 ) : Binding<ParentComponent, Key>() {
+
+    override fun types(): Set<Class<*>> = types
 
     override fun binds(key: Any): Boolean {
         return bindings.any { it.binds(key) }

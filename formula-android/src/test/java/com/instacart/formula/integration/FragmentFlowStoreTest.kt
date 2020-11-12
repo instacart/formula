@@ -106,6 +106,21 @@ class FragmentFlowStoreTest {
             }
     }
 
+    @Test fun `duplicate contract registration throws an exception`() {
+        var exception: Throwable? = null
+        try {
+            FragmentFlowStore.init(AppComponent()) {
+                bind(AuthFlowIntegration())
+                bind(AuthFlowIntegration())
+            }
+        } catch (t: Throwable){
+            exception = t
+        }
+        assertThat(exception?.message).isEqualTo(
+            "Binding for class com.instacart.formula.integration.test.TestLoginFragmentContract already exists"
+        )
+    }
+
     fun createStore(component: AppComponent): FragmentFlowStore {
         return FragmentFlowStore.init(component) {
             bind(AuthFlowIntegration())

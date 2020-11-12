@@ -15,7 +15,7 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
         @PublishedApi
         internal inline fun <Component> build(
             init: FragmentBindingBuilder<Component>.() -> Unit
-        ): List<Binding<Component, FragmentContract<*>>> {
+        ): Bindings<Component, FragmentContract<*>> {
             return FragmentBindingBuilder<Component>().apply(init).build()
         }
     }

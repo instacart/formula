@@ -31,6 +31,10 @@ internal class SingleBinding<Component, Key, State : Any>(
         }
     }
 
+    override fun types(): Set<Class<*>> {
+        return setOf(type)
+    }
+
     override fun binds(key: Any): Boolean {
         return type.isInstance(key)
     }

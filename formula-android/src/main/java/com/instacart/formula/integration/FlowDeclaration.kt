@@ -14,7 +14,7 @@ import com.instacart.formula.fragment.FragmentContract
 abstract class FlowDeclaration<FlowComponent> {
 
     data class Flow<FlowComponent>(
-        val bindings: List<Binding<FlowComponent, FragmentContract<*>>>
+        val bindings: Bindings<FlowComponent, FragmentContract<*>>
     )
 
     /**
