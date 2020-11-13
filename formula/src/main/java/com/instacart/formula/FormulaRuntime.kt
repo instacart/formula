@@ -4,8 +4,8 @@ import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionId
-import com.instacart.formula.internal.TransitionListener
 import com.instacart.formula.internal.TransitionIdManager
+import com.instacart.formula.internal.TransitionListener
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
@@ -57,7 +57,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     private val implementation = formula.implementation()
-    private var manager: FormulaManager<Input, Output>? = null
+    private var manager: FormulaManagerImpl<Input, *, Output>? = null
     private val transitionIdManager = TransitionIdManager()
     private var hasInitialFinished = false
     private var emitOutput = false
@@ -121,7 +121,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             val manager = checkNotNull(manager)
             val currentInput = checkNotNull(input)
 
-            if (shouldEvaluate) {
+            if (shouldEvaluate && !manager.terminated) {
                 evaluationPhase(manager, currentInput)
             }
 
@@ -135,7 +135,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 onOutput(checkNotNull(lastOutput))
             }
         } catch (e: Throwable) {
-           onError(e)
+            manager?.markAsTerminated()
+            onError(e)
+            manager?.performTerminationSideEffects()
         }
     }
 
@@ -153,24 +155,27 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Executes operations containing side-effects such as starting/terminating streams.
      */
-    private fun executionPhase(manager: FormulaManager<Input, Output>) {
+    private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
         isExecuting = true
         while (executionRequested) {
             executionRequested = false
 
             val transitionId = transitionIdManager.transitionId
-            if (manager.terminateDetachedChildren(transitionId)) {
-                continue
+            if (!manager.terminated) {
+                if (manager.terminateDetachedChildren(transitionId)) {
+                    continue
+                }
+
+                if (manager.terminateOldUpdates(transitionId)) {
+                    continue
+                }
+
+                if (manager.startNewUpdates(transitionId)) {
+                    continue
+                }
             }
 
-            if (manager.terminateOldUpdates(transitionId)) {
-                continue
-            }
-
-            if (manager.startNewUpdates(transitionId)) {
-                continue
-            }
-
+            // We execute pending side-effects even after termination
             if (executeEffects(transitionId)) {
                 continue
             }

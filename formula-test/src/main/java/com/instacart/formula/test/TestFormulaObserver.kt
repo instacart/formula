@@ -1,7 +1,7 @@
 package com.instacart.formula.test
 
-import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
+import com.instacart.formula.start
 import io.reactivex.rxjava3.core.Observable
 
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
@@ -9,11 +9,8 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     val formula: FormulaT
 ) {
 
-    private val observer = FormulaRuntime
-        .start(
-            input = input,
-            formula = formula
-        )
+    private val observer = formula
+        .start(input)
         .test()
         .assertNoErrors()
 
