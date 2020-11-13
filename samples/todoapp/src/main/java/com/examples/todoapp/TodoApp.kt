@@ -5,7 +5,7 @@ import android.util.Log
 import com.examples.todoapp.tasks.TaskListContract
 import com.examples.todoapp.tasks.TaskListFormula
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.start
+import com.instacart.formula.rxjava3.toObservable
 
 class TodoApp : Application() {
 
@@ -30,7 +30,7 @@ class TodoApp : Application() {
                                     }
                                 })
 
-                                component.createTaskListFormula().start(input)
+                                component.createTaskListFormula().toObservable(input)
                             }
                         }
                     )

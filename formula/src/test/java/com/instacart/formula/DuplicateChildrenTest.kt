@@ -1,14 +1,16 @@
 package com.instacart.formula
 
+import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.internal.Try
+import com.instacart.formula.test.test
 import org.junit.Test
-import java.lang.IllegalStateException
+import kotlin.IllegalStateException
 
 class DuplicateChildrenTest {
 
     @Test fun `adding duplicate child throws an exception`() {
-        ParentFormula().start().test().assertError {
-            it is IllegalStateException
-        }
+        val error = Try { ParentFormula().test() }.errorOrNull()?.cause
+        assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     class ParentFormula : StatelessFormula<Unit, List<Unit>>() {

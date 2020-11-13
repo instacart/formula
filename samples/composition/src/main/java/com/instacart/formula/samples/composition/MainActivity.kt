@@ -2,7 +2,7 @@ package com.instacart.formula.samples.composition
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.start
+import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class MainActivity : FragmentActivity() {
@@ -16,7 +16,7 @@ class MainActivity : FragmentActivity() {
         val renderView = ItemPageRenderView(findViewById(R.id.activity_content))
 
         val formula = ItemPageFormula()
-        disposables.add(formula.start().subscribe(renderView.render))
+        disposables.add(formula.toObservable().subscribe(renderView.render))
     }
 
     override fun onDestroy() {

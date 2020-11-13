@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.streams.EmptyStream
 import com.instacart.formula.test.TestCallback
@@ -316,11 +317,8 @@ class FormulaRuntimeTest {
 
     @Test
     fun `using callbacks within another function crashes`() {
-        UsingCallbacksWithinAnotherFunction
-            .test()
-            .assertError {
-                it is IllegalStateException
-            }
+        val result = Try { UsingCallbacksWithinAnotherFunction.test() }
+        assertThat(result.errorOrNull()?.cause).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
@@ -434,9 +432,8 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.start().test().assertError {
-            it is IllegalStateException
-        }
+        val error = Try { formula.test() }.errorOrNull()?.cause
+        assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
@@ -504,9 +501,8 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.start().test().assertError {
-            it is IllegalStateException
-        }
+        val error = Try { formula.test() }.errorOrNull()?.cause
+        assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
@@ -625,13 +621,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `emit error`() {
-        val error = try {
-            EmitErrorTest.test()
-            null
-        } catch (e: AssertionError) {
-            e.cause
-        }
-
+        val error = Try { EmitErrorTest.test() }.errorOrNull()?.cause
         assertThat(error?.message).isEqualTo("crashed")
     }
 
@@ -667,10 +657,10 @@ class FormulaRuntimeTest {
     // TODO: maybe worth adding support eventually.
     @Test
     fun `nested keys are not allowed`() {
-        NestedKeyFormula()
-            .start()
-            .test()
-            .assertError { it is java.lang.IllegalStateException && it.message.orEmpty().startsWith("Nested scopes are not supported currently.") }
+        val error = Try { NestedKeyFormula().test() }.errorOrNull()?.cause
+        assertThat(error)
+            .apply { isInstanceOf(IllegalStateException::class.java)  }
+            .hasMessageThat().startsWith("Nested scopes are not supported currently.")
     }
 
     @Test

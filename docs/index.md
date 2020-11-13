@@ -132,7 +132,7 @@ Formula is agnostic to other layers of abstraction. It can be used within activi
 convert `Formula` to an RxJava2 `Observable` by using `start` extension function.
 ```kotlin
 val formula = CounterFormula()
-val state: Observable<CounterRenderModel> = formula.start(input = Unit)
+val state: Observable<CounterRenderModel> = formula.toObservable(input = Unit)
 ```
 
 Ideally, it would be placed within a surface that survives configuration changes such as Android Components ViewModel. 
@@ -169,7 +169,7 @@ class MyApp : Application() {
         store(
           streams = {
             val formula = CounterFormula()
-            update(formula.start(), MyActivity::render)
+            update(formula.toObservable(), MyActivity::render)
           }
         )
       }
@@ -187,7 +187,7 @@ Add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.github.instacart:formula:0.6.0'
+    implementation 'com.github.instacart:formula-rxjava3:0.6.0'
     implementation 'com.github.instacart:formula-android:0.6.0'
 }
 ```

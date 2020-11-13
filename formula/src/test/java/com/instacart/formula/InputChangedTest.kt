@@ -1,18 +1,19 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.test.test
 import org.junit.Test
 
 class InputChangedTest {
 
     @Test fun `input changes`() {
-        ParentFormula().start().test().apply {
-            values().last().onChildNameChanged("first")
-            values().last().onChildNameChanged("second")
-        }.apply {
-            val expected = listOf("default", "first", "second")
-            assertThat(values().map { it.childName }).isEqualTo(expected)
-        }
+        ParentFormula().test()
+            .output { onChildNameChanged("first") }
+            .output { onChildNameChanged("second") }
+            .apply {
+                val expected = listOf("default", "first", "second")
+                assertThat(values().map { it.childName }).isEqualTo(expected)
+            }
     }
 
     class ParentFormula : Formula<Unit, String, ParentFormula.Output> {
