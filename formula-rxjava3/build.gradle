@@ -5,11 +5,13 @@ apply plugin: 'org.jetbrains.dokka'
 apply from: rootProject.file('.buildscript/configure-dokka.gradle')
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
 
-sourceCompatibility = 1.8 // java 8
-targetCompatibility = 1.8
-
 repositories {
     mavenCentral()
+}
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -20,8 +22,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
     implementation libraries.kotlin
-    api project(":formula-rxjava3")
 
+    api project(":formula")
+    api libraries.rxjava
+
+    testImplementation project(":formula-test")
     testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.rxrelays

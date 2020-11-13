@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.streams.EmptyStream
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback

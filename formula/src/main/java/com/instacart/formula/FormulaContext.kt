@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.JoinedKey
+import com.instacart.formula.internal.RxStream
 import com.instacart.formula.internal.ScopedCallbacks
 import io.reactivex.rxjava3.core.Observable
 

@@ -6,9 +6,6 @@ import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionIdManager
 import com.instacart.formula.internal.TransitionListener
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
 import java.util.LinkedList
 
 /**
@@ -20,42 +17,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit
 ) {
-
-    companion object {
-        /**
-         * RuntimeExtensions.kt [start] calls this method.
-         */
-        fun <Input : Any, Output : Any> start(
-            input: Observable<Input>,
-            formula: IFormula<Input, Output>
-        ): Observable<Output> {
-            val threadChecker = ThreadChecker()
-            return Observable.create<Output> { emitter ->
-                threadChecker.check("Need to subscribe on main thread.")
-
-                var runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
-
-                val disposables = CompositeDisposable()
-                disposables.add(input.subscribe({ input ->
-                    threadChecker.check("Input arrived on a wrong thread.")
-                    if (!runtime.isKeyValid(input)) {
-                        runtime.terminate()
-                        runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
-                    }
-                    runtime.onInput(input)
-                }, emitter::onError))
-
-                val runnable = Runnable {
-                    threadChecker.check("Need to unsubscribe on the main thread.")
-                    runtime.terminate()
-                }
-                disposables.add(FormulaDisposableHelper.fromRunnable(runnable))
-
-                emitter.setDisposable(disposables)
-            }.distinctUntilChanged()
-        }
-    }
-
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
     private val transitionIdManager = TransitionIdManager()

@@ -58,7 +58,7 @@ artifacts {
 }
 
 dependencies {
-    implementation project(':formula')
+    implementation project(':formula-rxjava3')
 
     implementation libraries.androidx.annotation
     implementation libraries.androidx.appcompat
