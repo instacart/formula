@@ -113,12 +113,30 @@ class FragmentFlowStoreTest {
                 bind(AuthFlowIntegration())
                 bind(AuthFlowIntegration())
             }
-        } catch (t: Throwable){
+        } catch (t: Throwable) {
             exception = t
         }
         assertThat(exception?.message).isEqualTo(
             "Binding for class com.instacart.formula.integration.test.TestLoginFragmentContract already exists"
         )
+    }
+
+    @Test fun `unsubscribe disposes of component`() {
+        val appComponent = AppComponent()
+        val store = createStore(appComponent)
+        store
+            .state(FragmentEnvironment())
+            .test()
+            .apply {
+                store.onLifecycleEffect(LifecycleEvent.Added(TestLoginFragmentContract()))
+            }
+            .apply {
+                assertThat(appComponent.initialized).hasSize(1)
+            }
+            .dispose()
+            .apply {
+                assertThat(appComponent.initialized).hasSize(0)
+            }
     }
 
     fun createStore(component: AppComponent): FragmentFlowStore {

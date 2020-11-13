@@ -26,7 +26,7 @@ import com.instacart.formula.fragment.FragmentContract
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  * @see FlowDeclaration
  */
-abstract class FlowIntegration<in ParentComponent, FlowComponent> {
+abstract class FlowIntegration<ParentComponent, FlowComponent> {
 
     protected abstract val flowDeclaration: FlowDeclaration<FlowComponent>
 

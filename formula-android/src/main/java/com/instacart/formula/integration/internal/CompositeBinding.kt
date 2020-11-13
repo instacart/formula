@@ -1,12 +1,13 @@
 package com.instacart.formula.integration.internal
 
-import com.instacart.formula.integration.BackStack
+import com.instacart.formula.Evaluation
+import com.instacart.formula.Formula
+import com.instacart.formula.FormulaContext
+import com.instacart.formula.Stream
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.Bindings
 import com.instacart.formula.integration.ComponentFactory
-import com.instacart.formula.integration.FlowEnvironment
-import com.instacart.formula.integration.KeyState
-import io.reactivex.rxjava3.core.Observable
+import com.instacart.formula.integration.DisposableScope
 
 /**
  * Defines how a group of keys should be bound to their integrations.
@@ -19,44 +20,70 @@ import io.reactivex.rxjava3.core.Observable
 internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
     private val types: Set<Class<*>>,
-    val bindings: List<Binding<ScopedComponent, Key>>
-) : Binding<ParentComponent, Key>() {
+    private val bindings: List<Binding<ScopedComponent, Key>>
+) : Binding<ParentComponent, Key>(),
+    Formula<Binding.Input<ParentComponent, Key>, CompositeBinding.State<ScopedComponent>, Unit> {
+
+    data class State<ScopedComponent>(
+        val component: DisposableScope<ScopedComponent>? = null
+    )
 
     override fun types(): Set<Class<*>> = types
 
     override fun binds(key: Any): Boolean {
-        return bindings.any { it.binds(key) }
+        bindings.forEachIndices {
+            if (it.binds(key)) return true
+        }
+        return false
     }
 
-    override fun state(
-        environment: FlowEnvironment<Key>,
-        component: ParentComponent,
-        backstack: Observable<BackStack<Key>>
-    ): Observable<KeyState<Key>> {
-        return backstack
-            .isInScope()
-            .switchMap { enterScope ->
-                if (enterScope) {
-                    val disposableScope = scopeFactory.invoke(component)
-                    val updates = bindings.map {
-                        it.state(environment, disposableScope.component, backstack)
-                    }
+    override fun bind(context: FormulaContext<*>, input: Input<ParentComponent, Key>) {
+        context.child(this, input)
+    }
 
-                    Observable.merge(updates).doOnDispose { disposableScope.dispose() }
-                } else {
-                    Observable.empty<KeyState<Key>>()
+    override fun key(input: Input<ParentComponent, Key>): Any? = this
+
+    override fun initialState(input: Input<ParentComponent, Key>): State<ScopedComponent> {
+        return State()
+    }
+
+    override fun evaluate(
+        input: Input<ParentComponent, Key>,
+        state: State<ScopedComponent>,
+        context: FormulaContext<State<ScopedComponent>>
+    ): Evaluation<Unit> {
+        val component = state.component
+        if (component != null) {
+            val childInput = Input(
+                input.environment,
+                component.component,
+                input.activeKeys,
+                input.onStateChanged
+            )
+            bindings.forEachIndices {
+                it.bind(context, childInput)
+            }
+        }
+        return Evaluation(
+            output = Unit,
+            updates = context.updates {
+                val isInScope = input.activeKeys.any { binds(it) }
+                events(Stream.onData(isInScope)) {
+                    if (isInScope && component == null) {
+                        transition(State(component = scopeFactory.invoke(input.component)))
+                    } else if (!isInScope && component != null) {
+                        transition(State<ScopedComponent>()) {
+                            component.dispose()
+                        }
+                    } else {
+                        none()
+                    }
+                }
+
+                events(Stream.onTerminate()) {
+                    transition { component?.dispose() }
                 }
             }
-    }
-
-    /**
-     * Defines if any of the binding are in the backstack. We use this to initialize the
-     */
-    private fun Observable<BackStack<Key>>.isInScope(): Observable<Boolean> {
-        return map {
-            it.keys.any { key ->
-                binds(key)
-            }
-        }.distinctUntilChanged()
+        )
     }
 }
