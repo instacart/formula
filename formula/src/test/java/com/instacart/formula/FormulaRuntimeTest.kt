@@ -5,9 +5,11 @@ import com.instacart.formula.streams.EmptyStream
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
+import com.instacart.formula.tests.EmitErrorTest
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Test
+import java.lang.AssertionError
 
 class FormulaRuntimeTest {
 
@@ -618,6 +620,18 @@ class FormulaRuntimeTest {
                     FromObservableWithInputFormula.Item("2")
                 ).inOrder()
             }
+    }
+
+    @Test
+    fun `emit error`() {
+        val error = try {
+            EmitErrorTest.test()
+            null
+        } catch (e: AssertionError) {
+            e.cause
+        }
+
+        assertThat(error?.message).isEqualTo("crashed")
     }
 
     @Test

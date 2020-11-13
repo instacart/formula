@@ -31,7 +31,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
 
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
-    private var terminated = false
+    var terminated = false
 
     private var state: State = formula.initialState(initialInput)
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
