@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import com.instacart.formula.test.test
-import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
@@ -9,8 +8,8 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
     fun test() = TestFormula().test()
 
     class TestFormula : Formula<Unit, Int, Int> {
-        private val initial = Observable.just(Unit, Unit, Unit, Unit)
-        private val incrementRelay: PublishRelay<Unit> = PublishRelay.create()
+        private val initial = RxStream.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }
+        private val incrementRelay = IncrementRelay()
 
         override fun initialState(input: Unit): Int = 0
 
@@ -19,10 +18,10 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
                 output = state,
                 updates = context.updates {
                     events(initial) {
-                        transition { incrementRelay.accept(Unit) }
+                        transition { incrementRelay.triggerIncrement() }
                     }
 
-                    events(incrementRelay) {
+                    incrementRelay.stream().onEvent {
                         transition(state + 1)
                     }
                 }
