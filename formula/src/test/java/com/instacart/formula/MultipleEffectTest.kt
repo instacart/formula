@@ -96,7 +96,7 @@ class MultipleEffectTest {
             return Evaluation(
                 output = Unit,
                 updates = context.updates {
-                    RxStream.fromObservable { Observable.range(0, 4) }.events {
+                    RxStream.fromObservable { Observable.range(0, 4) }.onEvent {
                         val updated = state + 1
                         transition(updated) {
                             input.trigger(state)

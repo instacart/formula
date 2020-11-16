@@ -56,7 +56,7 @@ class EffectsTimingTest {
                     }
                 ),
                 updates = context.updates {
-                    RxStream.fromObservable { input.external }.events {
+                    RxStream.fromObservable { input.external }.onEvent {
                         transition(state.plus(State.EXTERNAL))
                     }
                 }

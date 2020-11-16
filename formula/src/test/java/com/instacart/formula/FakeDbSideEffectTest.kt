@@ -34,7 +34,7 @@ class FakeDbSideEffectTest {
             return Evaluation(
                 output = state.name,
                 updates = context.updates {
-                    RxStream.fromObservable { nameChanges }.events { newName ->
+                    RxStream.fromObservable { nameChanges }.onEvent { newName ->
                         transition(state.copy(name = newName)) {
                             saveToDb(newName)
                         }

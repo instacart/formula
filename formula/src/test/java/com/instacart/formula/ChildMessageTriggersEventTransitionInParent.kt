@@ -42,7 +42,7 @@ object ChildMessageTriggersEventTransitionInParent {
                 updates = context.updates {
                     RxStream
                         .fromObservable { service.serviceEvents() }
-                        .events {
+                        .onEvent {
                             transition(state + 1)
                         }
                 }

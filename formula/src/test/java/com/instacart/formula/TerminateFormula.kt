@@ -9,7 +9,7 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
         return Evaluation(
             output = Unit,
             updates = context.updates {
-                Stream.onTerminate().events {
+                Stream.onTerminate().onEvent {
                     transition { timesTerminateCalled += 1 }
                 }
             }

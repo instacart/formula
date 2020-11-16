@@ -48,7 +48,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
 
         return Evaluation(
             updates = context.updates {
-                RxStream.fromObservable(repo::tasks).events {
+                RxStream.fromObservable(repo::tasks).onEvent {
                     state.copy(taskState = it).noEffects()
                 }
             },

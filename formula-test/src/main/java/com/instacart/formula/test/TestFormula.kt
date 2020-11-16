@@ -74,7 +74,7 @@ abstract class TestFormula<Input, Output> :
         return Evaluation(
             output = state.output,
             updates = context.updates {
-                Stream.onTerminate().events {
+                Stream.onTerminate().onEvent {
                     transition {
                         stateMap.remove(state.initialInput)
                     }
