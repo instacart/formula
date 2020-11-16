@@ -130,8 +130,9 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Message> UpdateBuilder<State>.events(
+        inline fun <Message> events(
             stream: Stream<Message>,
+            avoidParameterClash: Any = this,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
             add(createConnection(stream, transition))
@@ -153,7 +154,8 @@ abstract class FormulaContext<State> internal constructor(
         inline fun <Message> Stream<Message>.events(
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
         ) {
-            events(this, transition)
+            val stream = this
+            this@UpdateBuilder.events(stream, this@UpdateBuilder, transition)
         }
 
         /**
