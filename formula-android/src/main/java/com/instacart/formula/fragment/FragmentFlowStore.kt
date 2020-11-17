@@ -92,16 +92,21 @@ class FragmentFlowStore(
                             transition(updated)
                         }
                         is LifecycleEvent.Added -> {
-                            // We want to emit an empty state update if key is not handled.
-                            val notHandled = if (!root.binds(key)) {
-                                listOf(Pair(key, KeyState(key, "missing-registration")))
+                            if (!state.activeKeys.contains(key)) {
+                                // We want to emit an empty state update if key is not handled.
+                                val notHandled = if (!root.binds(key)) {
+                                    listOf(Pair(key, KeyState(key, "missing-registration")))
+                                } else {
+                                    emptyList()
+                                }
+
+                                transition(state.copy(
+                                    activeKeys = state.activeKeys.plus(key),
+                                    states = state.states.plus(notHandled)
+                                ))
                             } else {
-                                emptyList()
+                                none()
                             }
-                            transition(state.copy(
-                                activeKeys = state.activeKeys.plus(key),
-                                states = state.states.plus(notHandled)
-                            ))
                         }
                     }
                 }
