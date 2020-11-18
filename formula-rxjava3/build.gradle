@@ -1,5 +1,4 @@
 apply plugin: 'kotlin'
-apply plugin: "com.vanniktech.maven.publish"
 apply plugin: 'org.jetbrains.dokka'
 
 apply from: rootProject.file('.buildscript/configure-dokka.gradle')

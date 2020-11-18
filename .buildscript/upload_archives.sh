@@ -1,5 +1,5 @@
 ./gradlew clean
-./gradlew :formula:build -PsreleaseBuild
+./gradlew :formula:build -PreleaseBuild
 ./gradlew :formula-android:build -PreleaseBuild
 ./gradlew :formula-test:build -PreleaseBuild
 
