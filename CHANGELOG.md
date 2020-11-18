@@ -1,10 +1,14 @@
 # Changelog
-## [0.6.1] - TBD
+## [0.6.2] - TBD
+- TODO
+
+## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
 - [formula-android] Adding main thread check before notifying fragments. 
 - **Breaking**: Crash when duplicate fragment contract is registered.
 - Migrated `formula-android` to use core `Formula` interface.
 - **Breaking**: Delete `FlowStore` and `FlowState`.
+- Adding `formula-rxjava3` module.
 
 ## [0.6.0] - July 27, 2020
 - **Breaking**: Changing from RxJava 2.x to RxJava 3.x
