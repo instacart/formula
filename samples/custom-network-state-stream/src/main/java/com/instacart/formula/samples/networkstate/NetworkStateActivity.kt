@@ -3,7 +3,7 @@ package com.instacart.formula.samples.networkstate
 import android.os.Bundle
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.start
+import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class NetworkStateActivity : FragmentActivity() {
@@ -15,7 +15,7 @@ class NetworkStateActivity : FragmentActivity() {
         setContentView(R.layout.main_activity)
 
         val networkStatusTextView = findViewById<TextView>(R.id.network_status_text)
-        val renderModels = NetworkStateFormula(NetworkStateStreamImpl(application)).start()
+        val renderModels = NetworkStateFormula(NetworkStateStreamImpl(application)).toObservable()
         disposables.add(renderModels.subscribe {
             networkStatusTextView.text = it.status
         })

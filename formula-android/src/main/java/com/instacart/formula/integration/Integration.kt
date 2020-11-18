@@ -12,7 +12,7 @@ import io.reactivex.rxjava3.core.Observable
  * ```
  * class TaskListIntegration<AppComponent, TaskListKey, TaskListRenderModel>() {
  *   override fun create(component: AppComponent, key: TaskListKey): Observable<TaskListRenderModel> {
- *     return component.createTaskListFormula().start(Input())
+ *     return component.createTaskListFormula().toObservable(Input())
  *   }
  * }
  * ```

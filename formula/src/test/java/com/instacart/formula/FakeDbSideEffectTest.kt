@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth
+import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 
@@ -14,7 +15,7 @@ class FakeDbSideEffectTest {
                 saveCalls.add(it)
             }
         )
-            .start()
+            .toObservable()
             .test()
             .assertNoErrors()
 

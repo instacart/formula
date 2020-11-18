@@ -2,7 +2,7 @@ package com.instacart.formula.counter
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.start
+import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class CounterActivity : FragmentActivity() {
@@ -16,7 +16,7 @@ class CounterActivity : FragmentActivity() {
         val renderView = CounterRenderView(findViewById(R.id.activity_content))
 
         val formula = CounterFormula()
-        disposables.add(formula.start().subscribe(renderView.render))
+        disposables.add(formula.toObservable().subscribe(renderView.render))
     }
 
     override fun onDestroy() {

@@ -202,7 +202,7 @@ activity(MyActivity::class) {
             )
         
             val formula: ItemDetailFormula = component.createItemDetailFormula()
-            formula.start(input)
+            formula.toObservable(input)
         }
     }
 }
@@ -234,7 +234,7 @@ activity(MyActivity::class) {
         
             // Hook up the formula state management
             val formula: ItemListFormula = ...
-            formula.start(input)
+            formula.toObservable(input)
         }
     }
 }

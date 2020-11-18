@@ -1,13 +1,15 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.rxjava3.toObservable
 import org.junit.Test
 
 class ChildrenRemovalTest {
 
     @Test fun `remove all children`() {
         ParentFormula()
-            .start()
+            // TODO: remove toObservable and use `Try`
+            .toObservable()
             .test()
             .apply {
                 values().last().onClearAll()
@@ -18,7 +20,8 @@ class ChildrenRemovalTest {
     @Test fun `child side effects are performed after removal`() {
         var timesLoggedCalled = 0
         ParentFormula(logExit = { timesLoggedCalled += 1 })
-            .start()
+            // TODO: remove toObservable and use `Try`
+            .toObservable()
             .test()
             .apply {
                 values().last().children.first().onExit()

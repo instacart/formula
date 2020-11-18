@@ -1,11 +1,14 @@
-package com.instacart.formula
+package com.instacart.formula.internal
 
+import com.instacart.formula.Cancelable
+import com.instacart.formula.Stream
 import io.reactivex.rxjava3.core.Observable
 
 /**
  * Formula [Stream] adapter to enable RxJava use.
  */
-interface RxStream<Message> : Stream<Message> {
+@PublishedApi
+internal interface RxStream<Message> : Stream<Message> {
     companion object {
         /**
          * Creates a [Stream] from an [Observable] factory [create].

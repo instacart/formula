@@ -44,7 +44,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
-    implementation project(":formula")
+    implementation project(":formula-rxjava3")
 
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat

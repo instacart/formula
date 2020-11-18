@@ -32,7 +32,7 @@ To pass the input to `ItemDetailFormula`
 ```kotlin
 val itemDetailFormula: ItemDetailFormula = ...
 itemDetailFormula
-  .start(ItemDetailFormula.Input(itemId = "1"))
+  .toObservable(ItemDetailFormula.Input(itemId = "1"))
   .subscribe { renderModel ->
     
   }
@@ -42,7 +42,7 @@ You could also pass an `Observable<ItemDetailFormula.Input>`
 ```kotlin
 val itemDetailInput: Observable<ItemDetailFormula.Input> = ...
 itemDetailFormula
-  .start(itemDetailInput)
+  .toObservable(itemDetailInput)
   .subscribe { renderModel ->
     
   }

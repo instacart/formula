@@ -5,7 +5,7 @@ import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.RxStream
+import com.instacart.formula.rxjava3.RxStream
 
 class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
 

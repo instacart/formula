@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test

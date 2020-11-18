@@ -1,8 +1,10 @@
 package com.instacart.formula
 
+import com.instacart.formula.test.test
+
 object UsingCallbacksWithinAnotherFunction {
 
-    fun test() = TestFormula().start().test()
+    fun test() = TestFormula().test()
 
     class TestOutput(
         val first: () -> Unit,
