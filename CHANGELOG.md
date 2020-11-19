@@ -1,6 +1,7 @@
 # Changelog
 ## [0.6.2] - TBD
-- TODO
+- **Breaking**: Remove `events(observable) { }` utility function.
+- Removing `rxjava3` from core module.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

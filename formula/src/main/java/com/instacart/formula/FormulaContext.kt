@@ -1,9 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.JoinedKey
-import com.instacart.formula.internal.RxStream
 import com.instacart.formula.internal.ScopedCallbacks
-import io.reactivex.rxjava3.core.Observable
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -170,17 +168,6 @@ abstract class FormulaContext<State> internal constructor(
         ) {
             val stream = this
             this@UpdateBuilder.events(stream, transition)
-        }
-
-        /**
-         * Adds an [Observable] as part of this [Evaluation]. Observable will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         */
-        inline fun <Message> events(
-            observable: Observable<Message>,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ) {
-            RxStream.fromObservable { observable }.onEvent(transition)
         }
 
         @PublishedApi internal fun add(connection: Update<*>) {

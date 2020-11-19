@@ -22,8 +22,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
     implementation libraries.kotlin
 
-    api libraries.rxjava
-
     testImplementation project(":formula-test")
     testImplementation libraries.truth
     testImplementation libraries.junit
