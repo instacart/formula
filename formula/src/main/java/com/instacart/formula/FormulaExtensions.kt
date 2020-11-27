@@ -19,7 +19,23 @@ inline fun <Output> Formula.Companion.stateless(
     }
 )
 
+fun <Input, State: Any, Output> Formula.Companion.create(
+    initialState: State,
+    evaluate: (Input, State, FormulaContext<State>) -> Evaluation<Output>
+): IFormula<Input, Output> = DelegateFormula(
+    initialState = { initialState },
+    evaluate = evaluate
+)
 
+inline fun <State: Any, Output> Formula.Companion.create(
+    initialState: State,
+    crossinline evaluate: (State, FormulaContext<State>) -> Evaluation<Output>
+): IFormula<Unit, Output> = DelegateFormula<Unit, State, Output>(
+    initialState = { initialState },
+    evaluate = { _, state, context ->
+        evaluate(state, context)
+    }
+)
 
 @PublishedApi
 internal class DelegateFormula<Input, State: Any, Output>(
