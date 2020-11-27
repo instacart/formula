@@ -23,8 +23,6 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
         ): Evaluation<Output> {
             return evaluate(input, context)
         }
-
-        override fun key(input: Input): Any? = this@StatelessFormula.key(input)
     }
 
     /**
@@ -51,7 +49,7 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
      * override fun key(input: ItemInput) = input.itemId
      * ```
      */
-    open fun key(input: Input): Any? = null
+    override fun key(input: Input): Any? = null
 
     override fun implementation(): Formula<Input, *, Output> = implementation
 }

@@ -57,7 +57,7 @@ interface Formula<Input, State : Any, Output> : IFormula<Input, Output> {
      * override fun key(input: ItemInput) = input.itemId
      * ```
      */
-    fun key(input: Input): Any? = null
+    override fun key(input: Input): Any? = null
 
     override fun implementation(): Formula<Input, *, Output> {
         return this

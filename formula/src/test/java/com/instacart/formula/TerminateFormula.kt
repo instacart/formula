@@ -19,17 +19,18 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
     // TODO: maybe at some point I will make this a generic function.
     fun id(key: Any): IFormula<Unit, Unit> {
         val original = this
-        val implementation = original.implementation() as Formula<Unit, Any, Unit>
-        return object : IFormula<Unit, Unit> {
-            override fun type(): KClass<*> {
-                return original.type()
-            }
+        return WithId(implementation(), original.type(), key)
+    }
 
-            override fun implementation(): Formula<Unit, *, Unit> {
-                return object : Formula<Unit, Any, Unit> by implementation {
-                    override fun key(input: Unit): Any? = key
-                }
-            }
-        }
+    internal class WithId<Input, State : Any, Output>(
+        val implementation: Formula<Input, State, Output>,
+        val type: KClass<*>,
+        val key: Any
+    ) : IFormula<Input, Output> {
+        override fun type(): KClass<*> = type
+
+        override fun implementation(): Formula<Input, *, Output> = implementation
+
+        override fun key(input: Input): Any = key
     }
 }

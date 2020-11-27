@@ -13,7 +13,7 @@ import java.util.LinkedList
  */
 class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
-    formula: IFormula<Input, Output>,
+    private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit
 ) {
@@ -38,7 +38,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     fun onInput(input: Input) {
         val initialization = this.input == null
         this.input = input
-        this.key = implementation.key(input)
+        this.key = formula.key(input)
 
         if (initialization) {
             val transitionListener = TransitionListener { effects, isValid ->

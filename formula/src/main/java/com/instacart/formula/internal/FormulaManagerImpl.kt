@@ -193,7 +193,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
     ): Any {
         return FormulaKey(
             type = formula.type(),
-            key = formula.implementation().key(input)
+            key = formula.key(input)
         )
     }
 }
