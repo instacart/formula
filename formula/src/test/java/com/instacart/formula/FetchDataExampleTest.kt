@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.Transition.Factory.noEffects
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
@@ -47,13 +46,13 @@ class FetchDataExampleTest {
                 output = Output(
                     title = state.response?.name ?: "",
                     onChangeId = context.eventCallback { id ->
-                        state.copy(selectedId = id).noEffects()
+                        transition(state.copy(selectedId = id))
                     }
                 ),
                 updates = context.updates {
                     if (state.selectedId != null) {
                         dataRepo.fetch(state.selectedId).onEvent { response ->
-                            state.copy(response = response).noEffects()
+                            transition(state.copy(response = response))
                         }
                     }
                 }
