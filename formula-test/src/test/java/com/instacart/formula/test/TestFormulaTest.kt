@@ -59,7 +59,7 @@ class TestFormulaTest {
                     button = context.child(childFormula, ChildFormula.Input(
                         name = state.name,
                         onChangeName = context.eventCallback {
-                            state.copy(name = it).noEffects()
+                            transition(state.copy(name = it))
                         }
                     ))
                 )

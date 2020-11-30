@@ -29,7 +29,7 @@ class KeyUsingListFormula : Formula<KeyUsingListFormula.Input, KeyUsingListFormu
         val items = state.items.map { itemName ->
             context.key(itemName) {
                 ItemRenderModel(itemName, onDeleteSelected = context.callback {
-                    state.copy(items = state.items.minus(itemName)).noEffects()
+                    transition(state.copy(items = state.items.minus(itemName)))
                 })
             }
         }

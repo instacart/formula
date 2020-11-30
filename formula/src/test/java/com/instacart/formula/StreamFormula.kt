@@ -26,17 +26,17 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.Output> {
             updates = context.updates {
                 if (state.listenForEvents) {
                     events(incrementEvents.stream()) {
-                        state.copy(count = state.count + 1).noEffects()
+                        transition(state.copy(count = state.count + 1))
                     }
                 }
             },
             output = Output(
                 state = state.count,
                 startListening = context.callback {
-                    state.copy(listenForEvents = true).noEffects()
+                    transition(state.copy(listenForEvents = true))
                 },
                 stopListening = context.callback {
-                    state.copy(listenForEvents = false).noEffects()
+                    transition(state.copy(listenForEvents = false))
                 }
             )
         )

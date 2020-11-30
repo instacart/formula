@@ -36,7 +36,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
             output = Output(
                 child = childOutput,
                 toggleChild = context.callback {
-                    state.copy(showChild = !state.showChild).noEffects()
+                    transition(state.copy(showChild = !state.showChild))
                 }
             )
         )

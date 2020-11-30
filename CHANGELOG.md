@@ -3,6 +3,7 @@
 - **Breaking**: Remove `events(observable) { }` utility function.
 - Removing `rxjava3` from core module.
 - Moving `key` function into `IFormula`
+- **Breaking**: Remove `state.noEffects()` extension function. Use `transition(state)` instead.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
