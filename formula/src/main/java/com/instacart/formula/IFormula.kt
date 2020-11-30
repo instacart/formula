@@ -23,9 +23,18 @@ interface IFormula<Input, Output> {
     fun implementation(): Formula<Input, *, Output>
 
     /**
-     * Type is used in conjunction with [Formula.key] to uniquely identify a formula
+     * Type is used in conjunction with [key] to uniquely identify a formula
      * instance. This method allows us to preserve the original identity of formula
      * when using delegation and composition.
      */
     fun type(): KClass<*> = this::class
+
+    /**
+     * A unique identifier used to distinguish formulas of the same type. This can also
+     * be used to [restart][Formula.initialState] formula when some input property changes.
+     * ```
+     * override fun key(input: ItemInput) = input.itemId
+     * ```
+     */
+    fun key(input: Input): Any? = implementation().key(input)
 }
