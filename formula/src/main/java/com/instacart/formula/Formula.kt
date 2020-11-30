@@ -62,4 +62,8 @@ interface Formula<Input, State : Any, Output> : IFormula<Input, Output> {
     override fun implementation(): Formula<Input, *, Output> {
         return this
     }
+
+    companion object {
+        // Used to attach extension functions.
+    }
 }

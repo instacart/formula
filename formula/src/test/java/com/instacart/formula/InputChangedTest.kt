@@ -6,8 +6,9 @@ import org.junit.Test
 
 class InputChangedTest {
 
-    @Test fun `input changes`() {
-        ParentFormula().test()
+    @Test
+    fun `input changes`() {
+        parentFormula().test()
             .output { onChildNameChanged("first") }
             .output { onChildNameChanged("second") }
             .apply {
@@ -16,20 +17,16 @@ class InputChangedTest {
             }
     }
 
-    class ParentFormula : Formula<Unit, String, ParentFormula.Output> {
-        private val childFormula = ChildFormula()
+    data class ParentOutput(
+        val childName: String,
+        val onChildNameChanged: (String) -> Unit
+    )
 
-        data class Output(val childName: String, val onChildNameChanged: (String) -> Unit)
-
-        override fun initialState(input: Unit): String = "default"
-
-        override fun evaluate(
-            input: Unit,
-            state: String,
-            context: FormulaContext<String>
-        ): Evaluation<Output> {
-            return Evaluation(
-                output = Output(
+    private fun parentFormula(): IFormula<Unit, ParentOutput> {
+        val childFormula = childFormula()
+        return Formula.create("default") { state, context ->
+            Evaluation(
+                output = ParentOutput(
                     childName = context.child(childFormula, state),
                     onChildNameChanged = context.eventCallback { name ->
                         name.noEffects()
@@ -39,20 +36,16 @@ class InputChangedTest {
         }
     }
 
-    class ChildFormula : Formula<String, String, String> {
-        override fun initialState(input: String): String = input
-
-        override fun onInputChanged(oldInput: String, input: String, state: String): String {
-            // We override our state with what parent provides.
-            return input
-        }
-
-        override fun evaluate(
-            input: String,
-            state: String,
-            context: FormulaContext<String>
-        ): Evaluation<String> {
-            return Evaluation(output = state)
-        }
+    private fun childFormula(): IFormula<String, String> {
+        return Formula.create(
+            initialState = { input: String -> input },
+            onInputChanged = { _, new, _ ->
+                // We override our state with what parent provides.
+                new
+            },
+            evaluate = { _, state, _ ->
+                Evaluation(output = state)
+            }
+        )
     }
 }

@@ -9,7 +9,7 @@ class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.Output> {
         val count: Int = 0
     )
 
-    class Output(
+    data class Output(
         val state: Int,
         val startListening: () -> Unit,
         val stopListening: () -> Unit

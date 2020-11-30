@@ -9,8 +9,7 @@ import org.junit.Test
 class FetchDataExampleTest {
 
     @Test fun `fake network example`() {
-
-        MyFormula()
+        formula()
             .test()
             .apply {
                 values().last().onChangeId("1")
@@ -30,42 +29,34 @@ class FetchDataExampleTest {
         }
     }
 
-    class MyFormula : Formula<Unit, MyFormula.State, MyFormula.Output> {
-        private val dataRepo = DataRepo()
+    data class State(
+        val selectedId: String? = null,
+        val response: DataRepo.Response? = null
+    )
 
-        data class State(
-            val selectedId: String? = null,
-            val response: DataRepo.Response? = null
-        )
+    class Output(
+        val title: String,
+        val onChangeId: (String) -> Unit
+    )
 
-        class Output(
-            val title: String,
-            val onChangeId: (String) -> Unit
-        )
-
-        override fun initialState(input: Unit): State = State()
-
-        override fun evaluate(
-            input: Unit,
-            state: State,
-            context: FormulaContext<State>
-        ): Evaluation<Output> {
-            return Evaluation(
+    private fun formula(): IFormula<Unit, Output> {
+        val dataRepo = DataRepo()
+        return Formula.create(State()) { state, context ->
+            Evaluation(
                 output = Output(
                     title = state.response?.name ?: "",
                     onChangeId = context.eventCallback { id ->
-                        state.copy(selectedId = id).noEffects()
+                        transition(state.copy(selectedId = id))
                     }
                 ),
                 updates = context.updates {
                     if (state.selectedId != null) {
-                        events(dataRepo.fetch(state.selectedId)) { response ->
-                            state.copy(response = response).noEffects()
+                        dataRepo.fetch(state.selectedId).onEvent { response ->
+                            transition(state.copy(response = response))
                         }
                     }
                 }
             )
         }
     }
-
 }
