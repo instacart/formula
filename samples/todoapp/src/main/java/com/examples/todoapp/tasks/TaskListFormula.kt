@@ -49,7 +49,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
         return Evaluation(
             updates = context.updates {
                 RxStream.fromObservable(repo::tasks).onEvent {
-                    state.copy(taskState = it).noEffects()
+                    transition(state.copy(taskState = it))
                 }
             },
             output = TaskListRenderModel(
@@ -78,7 +78,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
                 TaskFilterRenderModel(
                     title = type.name,
                     onSelected = context.callback {
-                        state.copy(filterType = type).noEffects()
+                        transition(state.copy(filterType = type))
                     }
                 )
             }

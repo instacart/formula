@@ -54,12 +54,5 @@ data class Transition<out State> @PublishedApi internal constructor(
         ): Transition<Nothing> {
             return transition(null, invokeEffects)
         }
-
-        /**
-         * Creates a transition to a new [State] with no additional side-effects.
-         */
-        fun <State> State.noEffects(): Transition<State> {
-            return transition(this)
-        }
     }
 }

@@ -32,7 +32,7 @@ class InputChangedTest {
                 output = Output(
                     childName = context.child(childFormula, state),
                     onChildNameChanged = context.eventCallback { name ->
-                        name.noEffects()
+                        transition(name)
                     }
                 )
             )
