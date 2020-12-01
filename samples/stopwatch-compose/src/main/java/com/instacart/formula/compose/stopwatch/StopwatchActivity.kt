@@ -1,10 +1,14 @@
 package com.instacart.formula.compose.stopwatch
 
 import android.os.Bundle
+import android.text.Layout
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonConstants
 import androidx.compose.material.MaterialTheme
@@ -16,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.setContent
+import androidx.compose.ui.unit.Dp
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
@@ -33,12 +38,14 @@ fun render(state: Observable<StopwatchRenderModel>) {
     if (model != null) {
         MaterialTheme {
             Surface {
-                Column(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
                     Box(alignment = Alignment.Center) {
-                        Column {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(text = model.timePassed, color = Color.Black)
+                            Spacer(Modifier.size(Dp(8f)))
                             Row {
                                 render(model.startStopButton)
+                                Spacer(Modifier.size(Dp(8f)))
                                 render(model.resetButton)
                             }
                         }
