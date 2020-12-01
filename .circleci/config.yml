@@ -117,7 +117,7 @@ commands:
       - run:
           name: Assemble Stopwatch Compose Sample
           command: |
-            ./gradlew :samples:stopwatch-compose:assembleDebug --no-daemon
+            ./gradlew :samples:stopwatch-compose:assembleDebug
 
 executors:
   android:
