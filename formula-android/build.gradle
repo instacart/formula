@@ -15,11 +15,11 @@ androidExtensions {
 }
 
 android {
-    compileSdkVersion compileSdk
+    compileSdkVersion constants.compileSdk
 
     defaultConfig {
-        minSdkVersion minSdk
-        targetSdkVersion targetSdk
+        minSdkVersion constants.minSdk
+        targetSdkVersion constants.targetSdk
     }
 
     compileOptions {

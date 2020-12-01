@@ -60,19 +60,19 @@ commands:
       - run:
           name: Run Core Tests
           command: |
-            ./gradlew :formula:test
+            ./gradlew :formula:test --no-daemon
       - run:
           name: Run Formula Android Unit Tests
           command: |
-            ./gradlew :formula-android:testRelease
+            ./gradlew :formula-android:testRelease --no-daemon
       - run:
           name: Run Formula Android Instrumentation Tests
           command: |
-            ./gradlew :formula-android-tests:testRelease
+            ./gradlew :formula-android-tests:testRelease --no-daemon
       - run:
           name: Generate Jacoco Report
           command: |
-            ./gradlew jacocoTestReportMerged
+            ./gradlew jacocoTestReportMerged --no-daemon
       - run:
           name: Save Jacoco Report
           command: |
@@ -82,7 +82,7 @@ commands:
       - run:
           name: Save test results
           command: |
-            ./gradlew mergeReports --max-workers 4
+            ./gradlew mergeReports --no-daemon --max-workers 4
             mkdir -p ~/junit/
             find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
           when: always
@@ -114,6 +114,10 @@ commands:
           name: Assemble Composition Sample
           command: |
             ./gradlew :samples:composition:assembleDebug --no-daemon
+      - run:
+          name: Assemble Stopwatch Compose Sample
+          command: |
+            ./gradlew :samples:stopwatch-compose:assembleDebug --no-daemon
 
 executors:
   android:
@@ -124,7 +128,7 @@ executors:
     environment:
       # Java is really greedy, let's minimize how much memory it takes
       JAVA_TOOL_OPTIONS: '-Xmx512m'
-      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx6g -XX:+HeapDumpOnOutOfMemoryError"'
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx6g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
       JVM_OPTS: '-Xmx3200m'
 
 jobs:
