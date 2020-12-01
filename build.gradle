@@ -3,14 +3,15 @@ apply plugin: "com.github.ben-manes.versions"
 
 buildscript {
     ext {
-        minSdk = 21
-        targetSdk = 29
-        androidCompileSdkVersion = 29
-
         kotlinVersion = '1.4.0'
 
         versions = [:]
         libraries = [:]
+        constants = [
+                minSdk      : 21,
+                targetSdk   : 29,
+                compileSdk  : 29
+        ]
     }
 
     repositories {
