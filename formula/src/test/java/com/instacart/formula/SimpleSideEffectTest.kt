@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable

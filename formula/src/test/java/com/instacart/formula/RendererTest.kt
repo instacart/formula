@@ -66,7 +66,7 @@ class RendererTest {
 
     @Test fun `handling exceptions in rendering`() {
         var crash: Boolean = true
-        val subject = TestSubject<String?> { render, value ->
+        val subject = TestSubject<String?> { _, _ ->
             if (crash) {
                 crash = false
                 throw IllegalStateException("you can't do this")
