@@ -13,7 +13,7 @@ package com.instacart.formula
  * @param Output A data class returned by this formula that contains data and callbacks. When it is
  * used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
-interface Formula<Input, State : Any, Output> : IFormula<Input, Output> {
+interface Formula<in Input, State : Any, out Output> : IFormula<Input, Output> {
 
     /**
      * Creates the initial [state][State] to be used in [evaluation][Formula.evaluate]. This

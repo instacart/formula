@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  * @param Output A data class returned by this formula that contains data and callbacks. When it is
  * used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
-interface IFormula<Input, Output> {
+interface IFormula<in Input, out Output> {
     /**
      * [Formula] is the common API used internally by the runtime. This method allows us
      * to define the contract and hide the implementation details. We also override this

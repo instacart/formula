@@ -8,7 +8,7 @@ package com.instacart.formula
  *
  * @param updates A list of asynchronous events that formula wants to listen and respond to.
  */
-data class Evaluation<Output>(
+data class Evaluation<out Output>(
     val output: Output,
     val updates: List<Update<*>> = emptyList()
 )
