@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.MultipleEffectTest.TestFormula2.Event
+import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable

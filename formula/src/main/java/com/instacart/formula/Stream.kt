@@ -42,7 +42,7 @@ interface Stream<Message> {
          * }
          * ```
          */
-        fun <Data : Any> onData(data: Data): Stream<Data> {
+        fun <Data> onData(data: Data): Stream<Data> {
             return StartMessageStream(data)
         }
 
@@ -73,13 +73,13 @@ interface Stream<Message> {
     /**
      * Used to distinguish between different types of Streams.
      */
-    fun key(): Any
+    fun key(): Any?
 }
 
 /**
  * Emits a message as soon as [Stream] is initialized.
  */
-internal class StartMessageStream<Data : Any>(
+internal class StartMessageStream<Data>(
     private val data: Data
 ) : Stream<Data> {
 
@@ -88,14 +88,14 @@ internal class StartMessageStream<Data : Any>(
         return null
     }
 
-    override fun key(): Any = data
+    override fun key(): Any? = data
 }
 
 /**
  * Emits a message when [Formula] is terminated.
  */
 internal object TerminateMessageStream : Stream<Unit> {
-    override fun start(send: (Unit) -> Unit): Cancelable? {
+    override fun start(send: (Unit) -> Unit): Cancelable {
         return Cancelable {
             send(Unit)
         }
