@@ -9,7 +9,7 @@ import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
 import com.instacart.formula.integration.KeyState
 import com.instacart.formula.integration.LifecycleEvent
-import com.instacart.formula.start
+import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 
@@ -128,6 +128,6 @@ class FragmentFlowStore(
     }
 
     internal fun state(environment: FragmentEnvironment): Observable<FragmentFlowState> {
-        return start(environment)
+        return toObservable(environment)
     }
 }
