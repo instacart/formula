@@ -1,6 +1,9 @@
 package com.instacart.formula
 
-class StreamFormula : Formula<Unit, StreamFormula.State, StreamFormula.Output> {
+import com.instacart.formula.StartStopFormula.Output
+import com.instacart.formula.StartStopFormula.State
+
+class StartStopFormula : Formula<Unit, State, Output> {
 
     val incrementEvents = IncrementRelay()
 
