@@ -43,7 +43,7 @@ interface RxStream<Message> : Stream<Message> {
          * @param key Used to distinguish this [Stream] from other streams.
          */
         inline fun <Message> fromObservable(
-            key: Any,
+            key: Any?,
             crossinline create: () -> Observable<Message>
         ): Stream<Message> {
             return object : RxStream<Message> {
@@ -52,7 +52,7 @@ interface RxStream<Message> : Stream<Message> {
                     return create()
                 }
 
-                override fun key(): Any = key
+                override fun key(): Any? = key
             }
         }
     }
