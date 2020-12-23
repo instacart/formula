@@ -26,6 +26,8 @@ class TransitionUtilsTest {
             transition("new state")
         }
 
+        transition as Transition.Stateful<String>
+
         assertThat(transition.state).isEqualTo("new state")
     }
 }

@@ -14,7 +14,7 @@ sealed class Transition<out State> {
          * }
          * ```
          */
-        inline fun <State, T: Transition<State>> create(init: Factory.() -> T): T {
+        inline fun <State> create(init: Factory.() -> Transition<State>): Transition<State> {
             return init(Factory)
         }
     }
