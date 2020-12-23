@@ -22,7 +22,7 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
         return WithId(implementation(), original.type(), key)
     }
 
-    internal class WithId<Input, State : Any, Output>(
+    internal class WithId<Input, State, Output>(
         val implementation: Formula<Input, State, Output>,
         val type: KClass<*>,
         val key: Any

@@ -3,7 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.Transition
 
 internal class TransitionCallbackWrapper<State>(
-    private val handleTransition: (Transition<State>, Boolean) -> Unit,
+    private val handleTransition: (Transition<State>) -> Unit,
     var transitionId: TransitionId
 ) : (Transition<State>) -> Unit {
     var running = false
@@ -23,6 +23,6 @@ internal class TransitionCallbackWrapper<State>(
             throw IllegalStateException("Transition already happened. This is using old transition callback: $transition.")
         }
 
-        handleTransition(transition, false)
+        handleTransition(transition)
     }
 }

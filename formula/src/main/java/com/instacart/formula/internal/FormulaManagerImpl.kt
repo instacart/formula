@@ -14,7 +14,7 @@ import com.instacart.formula.Transition
  * 3. Terminate removed children
  * 4. Prepare parent and alive children for updates.
  */
-internal class FormulaManagerImpl<Input, State : Any, Output>(
+internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val callbacks: ScopedCallbacks,
@@ -36,22 +36,23 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
     private var state: State = formula.initialState(initialInput)
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    private fun handleTransition(transition: Transition<State>, wasChildInvalidated: Boolean) {
+    private var childTransitionListener: TransitionListener? = null
+
+    private fun handleTransition(transition: Transition<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            transitionListener.onTransition(transition.effects, true)
+            transitionListener.onTransition(transition, true)
             return
         }
 
-        this.state = transition.state ?: this.state
+        this.state = when (transition) {
+            is Transition.Stateful -> transition.state
+            else -> this.state
+        }
         val frame = this.frame
         frame?.updateStateValidity(state)
-        if (wasChildInvalidated) {
-            frame?.childInvalidated()
-        }
-
         val isValid = frame != null && frame.isValid()
-        transitionListener.onTransition(transition.effects, isValid)
+        transitionListener.onTransition(transition, isValid)
     }
 
     override fun updateTransitionId(transitionId: TransitionId) {
@@ -162,9 +163,7 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
         val compositeKey = constructKey(formula, input)
         val manager = children
             .findOrInit(compositeKey) {
-                val childTransitionListener = TransitionListener { effects, isValid ->
-                    handleTransition(Transition(effects = effects), !isValid)
-                }
+                val childTransitionListener = getOrInitChildTransitionListener()
                 val implementation = formula.implementation()
                 FormulaManagerImpl(implementation, input, childTransitionListener)
             }
@@ -195,5 +194,20 @@ internal class FormulaManagerImpl<Input, State : Any, Output>(
             type = formula.type(),
             key = formula.key(input)
         )
+    }
+
+    private fun getOrInitChildTransitionListener(): TransitionListener {
+        return childTransitionListener ?: run {
+            val listener = TransitionListener { transition, isValid ->
+                val frame = this.frame
+                if (!isValid) {
+                    frame?.childInvalidated()
+                }
+                val isValid = frame != null && frame.isValid()
+                transitionListener.onTransition(transition, isValid)
+            }
+            childTransitionListener = listener
+            listener
+        }
     }
 }

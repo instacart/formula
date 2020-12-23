@@ -1,17 +1,17 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Effects
+import com.instacart.formula.Transition
 
 interface TransitionListener {
     companion object {
-        inline operator fun invoke(crossinline listener: (Effects?, isValid: Boolean) -> Unit): TransitionListener {
+        inline operator fun invoke(crossinline listener: (Transition<*>, isValid: Boolean) -> Unit): TransitionListener {
             return object : TransitionListener {
-                override fun onTransition(effects: Effects?, isValid: Boolean) {
-                    listener(effects, isValid)
+                override fun onTransition(transition: Transition<*>, isValid: Boolean) {
+                    listener(transition, isValid)
                 }
             }
         }
     }
 
-    fun onTransition(effects: Effects?, isValid: Boolean)
+    fun onTransition(transition: Transition<*>, isValid: Boolean)
 }
