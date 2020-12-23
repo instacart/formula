@@ -45,9 +45,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return
         }
 
-        this.state = when (transition) {
-            is Transition.Stateful -> transition.state
-            else -> this.state
+        if (transition is Transition.Stateful) {
+            state = transition.state
         }
         val frame = this.frame
         frame?.updateStateValidity(state)
@@ -198,16 +197,16 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private fun getOrInitChildTransitionListener(): TransitionListener {
         return childTransitionListener ?: run {
-            val listener = TransitionListener { transition, isValid ->
+            TransitionListener { transition, isChildValid ->
                 val frame = this.frame
-                if (!isValid) {
+                if (!isChildValid) {
                     frame?.childInvalidated()
                 }
                 val isValid = frame != null && frame.isValid()
                 transitionListener.onTransition(transition, isValid)
+            }.apply {
+                childTransitionListener = this
             }
-            childTransitionListener = listener
-            listener
         }
     }
 }
