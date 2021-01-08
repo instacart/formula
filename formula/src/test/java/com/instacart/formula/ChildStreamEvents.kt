@@ -5,7 +5,7 @@ import com.instacart.formula.test.test
 
 class ChildStreamEvents {
 
-    private val child = StreamFormula()
+    private val child = StartStopFormula()
     private val subject = HasChildFormula(child).test()
 
     fun startListening() = apply {

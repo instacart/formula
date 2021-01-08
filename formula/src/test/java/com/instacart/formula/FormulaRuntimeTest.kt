@@ -11,13 +11,12 @@ import com.instacart.formula.tests.EmitErrorTest
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Test
-import java.lang.AssertionError
 
 class FormulaRuntimeTest {
 
     @Test
     fun `multiple event updates`() {
-        StreamFormula()
+        StartStopFormula()
             .test()
             .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
@@ -31,7 +30,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `no state changes after event stream is removed`() {
-        StreamFormula()
+        StartStopFormula()
             .test()
             .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
