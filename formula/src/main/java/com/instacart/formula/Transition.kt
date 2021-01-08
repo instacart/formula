@@ -2,14 +2,8 @@ package com.instacart.formula
 
 /**
  * Defines an intent to transition by emitting a new [State] and optional [Effects].
- *
- * @param state Updated state
- * @param effects Optional effects such as parent callbacks / logging / db writes/ network requests / etc.
  */
-data class Transition<out State> @PublishedApi internal constructor(
-    val state: State? = null,
-    val effects: Effects? = null
-) {
+sealed class Transition<out State> {
     companion object {
         /**
          * A convenience method to define transitions.
@@ -25,14 +19,40 @@ data class Transition<out State> @PublishedApi internal constructor(
         }
     }
 
+    /**
+     * Stateful transition.
+     *
+     * @param state New state
+     * @param effects Optional effects such as parent callbacks, logging, db writes,
+     * network requests, etc.
+     */
+    data class Stateful<State>(val state: State, override val effects: Effects? = null) : Transition<State>()
+
+    /**
+     * Only effects are emitted as part of this transition
+     *
+     * @param effects Effects such as parent callbacks, logging, db writes, network requests, etc.
+     */
+    data class OnlyEffects(override val effects: Effects) : Transition<Nothing>()
+
+    /**
+     * Nothing happens in this transition.
+     */
+    object None : Transition<Nothing>() {
+        override val effects: Effects? = null
+    }
+
+
+    /**
+     * Factory uses as a receiver parameter to provide transition constructor dsl.
+     */
     object Factory {
-        private val NONE = Transition<Nothing>()
 
         /**
          * A transition that does nothing.
          */
         fun none(): Transition<Nothing> {
-            return NONE
+            return None
         }
 
         /**
@@ -40,10 +60,10 @@ data class Transition<out State> @PublishedApi internal constructor(
          * after the state change.
          */
         fun <State> transition(
-            state: State? = null,
+            state: State,
             invokeEffects: (() -> Unit)? = null
-        ): Transition<State> {
-            return Transition(state, invokeEffects)
+        ): Stateful<State> {
+            return Stateful(state, invokeEffects)
         }
 
         /**
@@ -51,8 +71,10 @@ data class Transition<out State> @PublishedApi internal constructor(
          */
         fun transition(
             invokeEffects: () -> Unit
-        ): Transition<Nothing> {
-            return transition(null, invokeEffects)
+        ): OnlyEffects {
+            return OnlyEffects(invokeEffects)
         }
     }
+
+    abstract val effects: Effects?
 }

@@ -12,12 +12,12 @@ class TransitionUtilsTest {
     }
 
     @Test fun `state change is not empty`() {
-        val transition = Transition(state = "")
+        val transition = Transition.Stateful(state = "")
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 
     @Test fun `transition with messages is not empty`() {
-        val transition = Transition<String>(effects = {})
+        val transition = Transition.OnlyEffects(effects = {})
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 
@@ -25,6 +25,8 @@ class TransitionUtilsTest {
         val transition = Transition.create {
             transition("new state")
         }
+
+        transition as Transition.Stateful<String>
 
         assertThat(transition.state).isEqualTo("new state")
     }
