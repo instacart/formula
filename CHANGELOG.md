@@ -9,6 +9,8 @@
 - **Breaking**: Removing `FormulaFragment.renderView()` function
 - **Breaking**: Replace `FormulaFragment.getFragmentContract()` with `getFragmentKey()`. 
 - **Breaking:** Removing generic key parameter from `KeyState`.
+- **Breaking**: Removing generic parameter from `FormulaFragment`
+- Added new Feature API with `FeatureFactory` and other related classes.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

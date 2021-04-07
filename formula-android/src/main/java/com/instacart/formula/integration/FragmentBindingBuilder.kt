@@ -1,8 +1,12 @@
 package com.instacart.formula.integration
 
+import com.instacart.formula.android.Feature
+import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.internal.BaseBindingBuilder
-import com.instacart.formula.integration.internal.SingleBinding
+import com.instacart.formula.integration.internal.FeatureBinding
 import io.reactivex.rxjava3.core.Observable
 import kotlin.reflect.KClass
 
@@ -21,6 +25,31 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
     }
 
     /**
+     * Binds a [feature factory][FeatureFactory] for a specific [key][type].
+     *
+     * @param type The class which describes the [key][T].
+     * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     */
+    fun <T : FragmentKey> bind(
+        type : KClass<T>,
+        featureFactory: FeatureFactory<Component, T>
+    ) = apply {
+        val binding = FeatureBinding(type.java, featureFactory as FeatureFactory<Component, FragmentKey>)
+        bind(binding as Binding<Component>)
+    }
+
+    /**
+     * A convenience inline function that binds a feature factory for a specific [key][T].
+     *
+     * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     */
+    inline fun <reified T: FragmentKey> bind(
+        featureFactory: FeatureFactory<Component, T>
+    ) = apply {
+        bind(T::class, featureFactory)
+    }
+
+    /**
      * Binds a contract to specified state management provided by the [Integration].
      *
      * @param type A type of contract to bind
@@ -30,8 +59,15 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
         type : KClass<T>,
         integration: Integration<Component, T, RenderModel>
     ) = apply {
-        val binding = SingleBinding(type.java, integration)
-        bind(binding as Binding<Component>)
+        val featureFactory = object : FeatureFactory<Component, T> {
+            override fun initialize(dependencies: Component, key: T): Feature<*> {
+                return Feature(
+                    state = integration.create(dependencies, key),
+                    viewFactory = FragmentContractViewFactory(key)
+                )
+            }
+        }
+        bind(type, featureFactory)
     }
 
     /**

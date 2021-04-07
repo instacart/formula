@@ -55,6 +55,7 @@ class FragmentFlowStoreTest {
         val detail = Detail(1)
         store
             .state(FragmentEnvironment())
+            .map { it.states }
             .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(master))
@@ -77,7 +78,9 @@ class FragmentFlowStoreTest {
     }
 
     @Test fun `various fragments added`() {
-        store.state(FragmentEnvironment()).test()
+        store.state(FragmentEnvironment())
+            .map { it.states }
+            .test()
             .apply {
                 store.onLifecycleEffect(LifecycleEvent.Added(Master(1)))
                 store.onLifecycleEffect(LifecycleEvent.Added(Detail(1)))
@@ -95,24 +98,19 @@ class FragmentFlowStoreTest {
             )
     }
 
-    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): FragmentFlowState {
+    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, KeyState> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): FragmentFlowState {
+    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): Map<FragmentKey, KeyState> {
         val initial = mutableMapOf<FragmentKey, KeyState>()
-        val keyStates = states.foldRight(initial) { value, acc ->
+        return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
                 acc.put(value.first, KeyState(value.first, value.second!!))
             }
 
             acc
         }
-
-        return FragmentFlowState(
-            activeKeys = states.map { it.first },
-            states = keyStates
-        )
     }
 
     private fun state(key: FragmentContract<*>): Observable<String> {

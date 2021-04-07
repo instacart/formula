@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.android.Feature
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.internal.CompositeBinding
@@ -22,7 +23,12 @@ abstract class Binding<ParentComponent> {
         val environment: FragmentEnvironment,
         val component: Component,
         val activeKeys: List<FragmentKey>,
-        val onStateChanged: (KeyState) -> Unit,
+        val onInitializeFeature: (FeatureCreated) -> Unit,
+    )
+
+    data class FeatureCreated(
+        val key: FragmentKey,
+        val feature: Feature<*>,
     )
 
     internal abstract fun types(): Set<Class<*>>

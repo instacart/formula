@@ -5,57 +5,53 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.instacart.formula.RenderView
+import com.instacart.formula.Cancelable
+import com.instacart.formula.android.FeatureView
+import com.instacart.formula.android.ViewFactory
 import com.jakewharton.rxrelay3.BehaviorRelay
-import io.reactivex.rxjava3.disposables.Disposable
 
-class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel> {
+class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     companion object {
         private const val ARG_CONTRACT = "formula fragment contract"
 
         @JvmStatic
-        fun <State> newInstance(contract: FragmentContract<State>): FormulaFragment<State> {
-            return FormulaFragment<State>().apply {
+        fun newInstance(key: FragmentKey): FormulaFragment {
+            return FormulaFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable(ARG_CONTRACT, contract)
+                    putParcelable(ARG_CONTRACT, key)
                 }
             }
         }
     }
 
-    private val contract: FragmentContract<RenderModel> by lazy(LazyThreadSafetyMode.NONE) {
-        arguments!!.getParcelable<FragmentContract<RenderModel>>(ARG_CONTRACT)!!
+    private val key: FragmentKey by lazy(LazyThreadSafetyMode.NONE) {
+        arguments!!.getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    // State relay + disposable
     private lateinit var fragmentEnvironment: FragmentEnvironment
-    private val stateRelay: BehaviorRelay<RenderModel> = BehaviorRelay.create()
-    private var disposable: Disposable? = null
+    internal var viewFactory: ViewFactory<Any>? = null
+    private var featureView: FeatureView<Any>? = null
+    private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
+    private var cancelable: Cancelable? = null
 
     private var lifecycleCallback: FragmentLifecycleCallback? = null
-    private var renderView: RenderView<RenderModel>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(contract.layoutId, container, false)
+        val uiFactory = viewFactory ?: throw IllegalStateException("Missing view factory: $key")
+        return uiFactory
+            .create(inflater, container)
+            .apply { featureView = this }
+            .view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val component = contract.createComponent(view)
-        this.renderView = component.renderView
-        disposable = stateRelay
-            .doOnNext {
-                // Timber.d("render / ${this@FormulaFragment}")
-            }
-            .subscribe {
-                try {
-                    component.renderView.render(it)
-                } catch (exception: Exception) {
-                    fragmentEnvironment.onScreenError(contract, exception)
-                }
-            }
-
-        this.lifecycleCallback = component.lifecycleCallbacks
+        val featureView = featureView!!
+        val state = FeatureView.State(stateRelay, onError = {
+            fragmentEnvironment.onScreenError(key, it)
+        })
+        cancelable = featureView.bind(state)
+        this.lifecycleCallback = featureView.lifecycleCallbacks
         lifecycleCallback?.onViewCreated(view, savedInstanceState)
     }
 
@@ -95,33 +91,32 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
     }
 
     override fun onDestroyView() {
-        disposable?.dispose()
-        disposable = null
+        cancelable?.cancel()
+        cancelable = null
 
         lifecycleCallback?.onDestroyView()
         lifecycleCallback = null
         super.onDestroyView()
-        renderView = null
+        featureView = null
     }
 
-    override fun setState(state: RenderModel) {
-        // Timber.d("setState / $this")
+    override fun setState(state: Any) {
         stateRelay.accept(state)
     }
 
-    override fun currentState(): RenderModel? {
+    override fun currentState(): Any? {
         return stateRelay.value
     }
 
     override fun getFragmentKey(): FragmentKey {
-        return contract
+        return key
     }
 
-    fun setEnvironment(environment: FragmentEnvironment) {
+    internal fun setEnvironment(environment: FragmentEnvironment) {
         this.fragmentEnvironment = environment
     }
 
     override fun toString(): String {
-        return "${contract.tag} -> $contract"
+        return "${key.tag} -> $key"
     }
 }

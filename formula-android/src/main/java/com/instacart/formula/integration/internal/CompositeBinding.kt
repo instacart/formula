@@ -57,7 +57,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
                 input.environment,
                 component.component,
                 input.activeKeys,
-                input.onStateChanged,
+                input.onInitializeFeature,
             )
             bindings.forEachIndices {
                 it.bind(context, childInput)

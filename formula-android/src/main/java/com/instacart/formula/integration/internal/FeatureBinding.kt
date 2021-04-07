@@ -3,19 +3,17 @@ package com.instacart.formula.integration.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Stream
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.Integration
-import com.instacart.formula.integration.KeyState
-import com.instacart.formula.rxjava3.RxStream
-import io.reactivex.rxjava3.core.Observable
+import com.instacart.formula.android.FeatureFactory
 
 /**
- * Defines how a specific key should be bound to its [Integration],
+ * Defines how a specific key should be bound to its [FeatureFactory],
  */
-internal class SingleBinding<Component, Key : FragmentKey, State : Any>(
-    private val type: Class<Key>,
-    private val integration: Integration<Component, Key, State>
+internal class FeatureBinding<Component>(
+    private val type: Class<*>,
+    private val feature: FeatureFactory<Component, FragmentKey>
 ) : Binding<Component>(), Formula<Binding.Input<Component>, Unit, Unit> {
 
     override fun types(): Set<Class<*>> {
@@ -44,15 +42,10 @@ internal class SingleBinding<Component, Key : FragmentKey, State : Any>(
             updates = context.updates {
                 input.activeKeys.forEachIndices { key ->
                     if (binds(key)) {
-                        val stream = RxStream.fromObservable(key) {
-                            integration.create(input.component, key as Key).onErrorResumeNext {
-                                input.environment.onScreenError(key, it)
-                                Observable.empty()
-                            }
-                        }
-                        events(stream) { update ->
+                        Stream.onData(key).onEvent {
                             transition {
-                                input.onStateChanged(KeyState(key, update))
+                                val feature = feature.initialize(input.component, key)
+                                input.onInitializeFeature(FeatureCreated(key, feature))
                             }
                         }
                     }
