@@ -27,4 +27,8 @@ if (project.hasProperty('releaseBuild')) {
             }
         }
     }
+} else {
+    mavenPublish {
+        releaseSigningEnabled = false
+    }
 }
