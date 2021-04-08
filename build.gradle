@@ -29,7 +29,7 @@ buildscript {
         classpath "com.github.ben-manes:gradle-versions-plugin:0.28.0"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.18"
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
-        classpath "com.vanniktech:gradle-maven-publish-plugin:0.10.0"
+        classpath "com.vanniktech:gradle-maven-publish-plugin:0.14.2"
     }
 }
 
@@ -66,3 +66,16 @@ junitJacoco {
     includeInstrumentationCoverageInMergedReport = true
 }
 apply from: 'gradle/merge-reports.gradle'
+
+
+tasks.register("install") {
+    def publishTasks = []
+    project.subprojects.forEach { project ->
+        def installTask = project.tasks.findByName("install") ?: project.tasks.findByName("publishToMavenLocal")
+        if (installTask != null) {
+            publishTasks.add(installTask)
+        }
+    }
+    dependsOn publishTasks
+}
+
