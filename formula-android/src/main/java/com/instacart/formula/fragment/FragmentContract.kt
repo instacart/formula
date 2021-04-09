@@ -1,6 +1,5 @@
 package com.instacart.formula.fragment
 
-import android.os.Parcelable
 import android.view.View
 
 /**
@@ -21,14 +20,7 @@ import android.view.View
  * }
  * ```
  */
-abstract class FragmentContract<in RenderModel> : Parcelable {
-
-    /**
-     * Tag that will be used to determine fragment visibility. This tag should be unique for each contract, though this
-     * is not enforced.
-     */
-    abstract val tag: String
-
+abstract class FragmentContract<in RenderModel> : FragmentKey {
     /**
      * Layout id that defines the view
      */

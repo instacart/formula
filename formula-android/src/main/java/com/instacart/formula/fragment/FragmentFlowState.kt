@@ -10,9 +10,9 @@ import com.instacart.formula.integration.KeyState
  * @param states Last emitted state of each active [FragmentContract].
  */
 data class FragmentFlowState(
-    val activeKeys: List<FragmentContract<*>> = emptyList(),
-    val visibleKeys: List<FragmentContract<*>> = emptyList(),
-    val states: Map<FragmentContract<*>, KeyState<FragmentContract<*>>> = emptyMap()
+    val activeKeys: List<FragmentKey> = emptyList(),
+    val visibleKeys: List<FragmentKey> = emptyList(),
+    val states: Map<FragmentKey, KeyState> = emptyMap()
 ) {
     fun visibleState() = visibleKeys.lastOrNull()?.let { states[it] }
 }

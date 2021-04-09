@@ -9,13 +9,13 @@ import kotlin.reflect.KClass
 /**
  * Used to create a [Binding] for [FragmentContract] keys.
  */
-class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, FragmentContract<*>>() {
+class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
     companion object {
 
         @PublishedApi
         internal inline fun <Component> build(
             init: FragmentBindingBuilder<Component>.() -> Unit
-        ): Bindings<Component, FragmentContract<*>> {
+        ): Bindings<Component> {
             return FragmentBindingBuilder<Component>().apply(init).build()
         }
     }
@@ -31,7 +31,7 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component, Fragment
         integration: Integration<Component, T, RenderModel>
     ) = apply {
         val binding = SingleBinding(type.java, integration)
-        bind(binding as Binding<Component, FragmentContract<*>>)
+        bind(binding as Binding<Component>)
     }
 
     /**

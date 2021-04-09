@@ -7,10 +7,10 @@ import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.activity.ActivityResult
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.AppManager
+import com.instacart.formula.fragment.FragmentKey
 import java.lang.IllegalStateException
 
 object FormulaAndroid {
@@ -25,7 +25,7 @@ object FormulaAndroid {
      */
     fun init(
         application: Application,
-        onFragmentError: (FragmentContract<*>, Throwable) -> Unit = { _, it -> throw it },
+        onFragmentError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
         activities: ActivityConfigurator.() -> Unit
     ) {
         // Should we allow re-initialization?

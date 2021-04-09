@@ -1,7 +1,5 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.fragment.FragmentContract
-
 /**
  * The FlowDeclaration class defines a [Flow], which is a sequence of related screens a user may navigate
  * between to perform a task. A shared [FlowComponent] is passed to individual screen integrations to help
@@ -14,7 +12,7 @@ import com.instacart.formula.fragment.FragmentContract
 abstract class FlowDeclaration<FlowComponent> {
 
     data class Flow<FlowComponent>(
-        val bindings: Bindings<FlowComponent, FragmentContract<*>>
+        val bindings: Bindings<FlowComponent>
     )
 
     /**

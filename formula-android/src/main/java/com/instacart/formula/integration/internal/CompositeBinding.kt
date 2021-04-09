@@ -5,7 +5,6 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.Bindings
 import com.instacart.formula.integration.ComponentFactory
 import com.instacart.formula.integration.DisposableScope
 
@@ -17,12 +16,12 @@ import com.instacart.formula.integration.DisposableScope
  * @param ScopedComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
  */
-internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
+internal class CompositeBinding<ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
     private val types: Set<Class<*>>,
-    private val bindings: List<Binding<ScopedComponent, Key>>
-) : Binding<ParentComponent, Key>(),
-    Formula<Binding.Input<ParentComponent, Key>, CompositeBinding.State<ScopedComponent>, Unit> {
+    private val bindings: List<Binding<ScopedComponent>>
+) : Binding<ParentComponent>(),
+    Formula<Binding.Input<ParentComponent>, CompositeBinding.State<ScopedComponent>, Unit> {
 
     data class State<ScopedComponent>(
         val component: DisposableScope<ScopedComponent>? = null
@@ -37,18 +36,18 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
         return false
     }
 
-    override fun bind(context: FormulaContext<*>, input: Input<ParentComponent, Key>) {
+    override fun bind(context: FormulaContext<*>, input: Input<ParentComponent>) {
         context.child(this, input)
     }
 
-    override fun key(input: Input<ParentComponent, Key>): Any? = this
+    override fun key(input: Input<ParentComponent>): Any? = this
 
-    override fun initialState(input: Input<ParentComponent, Key>): State<ScopedComponent> {
+    override fun initialState(input: Input<ParentComponent>): State<ScopedComponent> {
         return State()
     }
 
     override fun evaluate(
-        input: Input<ParentComponent, Key>,
+        input: Input<ParentComponent>,
         state: State<ScopedComponent>,
         context: FormulaContext<State<ScopedComponent>>
     ): Evaluation<Unit> {
@@ -58,7 +57,7 @@ internal class CompositeBinding<Key: Any, ParentComponent, ScopedComponent>(
                 input.environment,
                 component.component,
                 input.activeKeys,
-                input.onStateChanged
+                input.onStateChanged,
             )
             bindings.forEachIndices {
                 it.bind(context, childInput)

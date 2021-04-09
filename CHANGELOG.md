@@ -7,6 +7,8 @@
 - Added `StreamFormula` and `ObservableFormula`.
 - Allow nullable formula state.
 - **Breaking**: Removing `FormulaFragment.renderView()` function
+- **Breaking**: Replace `FormulaFragment.getFragmentContract()` with `getFragmentKey()`. 
+- **Breaking:** Removing generic key parameter from `KeyState`.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
