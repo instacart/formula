@@ -117,8 +117,6 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         return contract
     }
 
-    fun renderView(): RenderView<RenderModel>? = renderView
-
     fun setEnvironment(environment: FragmentEnvironment) {
         this.fragmentEnvironment = environment
     }
