@@ -11,12 +11,12 @@ import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowState
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import com.instacart.formula.fragment.getFragmentContract
+import com.instacart.formula.fragment.getFragmentKey
 import com.instacart.formula.integration.internal.forEachIndices
 import java.util.LinkedList
 
@@ -32,14 +32,14 @@ internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
     private val fragmentEnvironment: FragmentEnvironment,
     private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
-    private val onLifecycleState: (FragmentContract<*>, Lifecycle.State) -> Unit,
-    private val onFragmentViewStateChanged: (FragmentContract<*>, isVisible: Boolean) -> Unit
+    private val onLifecycleState: (FragmentKey, Lifecycle.State) -> Unit,
+    private val onFragmentViewStateChanged: (FragmentKey, isVisible: Boolean) -> Unit
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
-    private var removedEarly = mutableListOf<FragmentContract<*>>()
+    private var removedEarly = mutableListOf<FragmentKey>()
     private var backStackEntries = mutableListOf<FragmentManager.BackStackEntry>()
     private var stateRestored: Boolean = false
 
@@ -59,15 +59,11 @@ internal class FragmentFlowRenderView(
 
             visibleFragments.add(f)
 
-            if (f is FormulaFragment<*>) {
-                f.setEnvironment(fragmentEnvironment)
-            }
-
             fragmentState?.let {
                 updateVisibleFragments(it)
             }
 
-            onFragmentViewStateChanged(f.getFragmentContract(), true)
+            onFragmentViewStateChanged(f.getFragmentKey(), true)
             notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
         }
 
@@ -96,13 +92,17 @@ internal class FragmentFlowRenderView(
             visibleFragments.remove(f)
 
             notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
-            if (!removedEarly.contains(f.getFragmentContract())) {
-                onFragmentViewStateChanged(f.getFragmentContract(), false)
+            if (!removedEarly.contains(f.getFragmentKey())) {
+                onFragmentViewStateChanged(f.getFragmentKey(), false)
             }
         }
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
+            if (f is FormulaFragment<*>) {
+                f.setEnvironment(fragmentEnvironment)
+            }
+
             if (FragmentLifecycle.shouldTrack(f)) {
                 onLifecycleEvent(FragmentLifecycle.createAddedEvent(f))
             }
@@ -110,10 +110,11 @@ internal class FragmentFlowRenderView(
 
         override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
             super.onFragmentDetached(fm, f)
+
             // Only trigger detach, when fragment is actually being removed from the backstack
             if (FragmentLifecycle.shouldTrack(f) && !FragmentLifecycle.isKept(fm, f)) {
                 val event = FragmentLifecycle.createRemovedEvent(f)
-                val wasRemovedEarly = removedEarly.remove(f.getFragmentContract())
+                val wasRemovedEarly = removedEarly.remove(f.getFragmentKey())
                 if (!wasRemovedEarly) {
                     onLifecycleEvent(event)
                 }
@@ -138,7 +139,7 @@ internal class FragmentFlowRenderView(
     fun onBackPressed(): Boolean {
         val lastFragment = visibleFragments.lastOrNull()
         if (lastFragment is BaseFormulaFragment<*>) {
-            val state = fragmentState?.states?.get(lastFragment.getFragmentContract())?.renderModel
+            val state = fragmentState?.states?.get(lastFragment.getFragmentKey())?.renderModel
             return state is BackCallback && state.onBackPressed()
         }
         return false
@@ -152,13 +153,13 @@ internal class FragmentFlowRenderView(
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
-        onLifecycleState.invoke(fragment.getFragmentContract(), newState)
+        onLifecycleState.invoke(fragment.getFragmentKey(), newState)
     }
 
     private fun updateVisibleFragments(state: FragmentFlowState) {
         visibleFragments.forEachIndices { fragment ->
             if (fragment is BaseFormulaFragment<*>) {
-                state.states[fragment.getFragmentContract()]?.let {
+                state.states[fragment.getFragmentKey()]?.let {
                     (fragment as BaseFormulaFragment<Any>).setState(it.renderModel)
                 }
             }
@@ -189,9 +190,9 @@ internal class FragmentFlowRenderView(
     }
 
     private fun removeFragment(fragment: Fragment) {
-        onFragmentViewStateChanged(fragment.getFragmentContract(), false)
+        onFragmentViewStateChanged(fragment.getFragmentKey(), false)
         val event = FragmentLifecycle.createRemovedEvent(fragment)
         onLifecycleEvent(event)
-        removedEarly.add(fragment.getFragmentContract())
+        removedEarly.add(fragment.getFragmentKey())
     }
 }

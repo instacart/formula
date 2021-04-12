@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.BackCallback
 import com.instacart.formula.test.TestContract
 import com.instacart.formula.test.TestContractWithId
@@ -202,7 +203,7 @@ class FragmentFlowRenderViewTest {
         return scenario.activity()
     }
 
-    private fun activeContracts(): List<FragmentContract<*>> {
+    private fun activeContracts(): List<FragmentKey> {
         return scenario.get {
             lastState!!.activeKeys
         }

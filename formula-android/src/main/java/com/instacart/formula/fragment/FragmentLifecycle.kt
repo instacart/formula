@@ -18,17 +18,17 @@ internal object FragmentLifecycle {
         return !fragment.isRemoving
     }
 
-    internal fun createAddedEvent(f: Fragment): LifecycleEvent.Added<FragmentContract<Nothing>> {
-        return LifecycleEvent.Added(f.getFragmentContract())
+    internal fun createAddedEvent(f: Fragment): LifecycleEvent.Added<FragmentKey> {
+        return LifecycleEvent.Added(f.getFragmentKey())
     }
 
-    internal fun createRemovedEvent(f: Fragment): LifecycleEvent.Removed<FragmentContract<Nothing>> {
+    internal fun createRemovedEvent(f: Fragment): LifecycleEvent.Removed<FragmentKey> {
         val fragment = f as? BaseFormulaFragment<*>
-        return LifecycleEvent.Removed(f.getFragmentContract(), fragment?.currentState())
+        return LifecycleEvent.Removed(f.getFragmentKey(), fragment?.currentState())
     }
 }
 
-internal fun Fragment.getFragmentContract(): FragmentContract<*> {
+internal fun Fragment.getFragmentKey(): FragmentKey {
     val fragment = this as? BaseFormulaFragment<*>
-    return fragment?.getFragmentContract() ?: EmptyFragmentContract(tag.orEmpty())
+    return fragment?.getFragmentKey() ?: EmptyFragmentContract(tag.orEmpty())
 }

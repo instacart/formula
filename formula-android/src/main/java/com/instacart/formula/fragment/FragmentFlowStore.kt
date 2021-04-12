@@ -17,7 +17,7 @@ import io.reactivex.rxjava3.core.Observable
  * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.
  */
 class FragmentFlowStore(
-    private val root: Binding<Unit, FragmentContract<*>>
+    private val root: Binding<Unit>
 ) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState> {
     companion object {
         inline fun init(
@@ -42,8 +42,8 @@ class FragmentFlowStore(
 
 
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
-    private val visibleContractEvents = PublishRelay.create<FragmentContract<*>>()
-    private val hiddenContractEvents = PublishRelay.create<FragmentContract<*>>()
+    private val visibleContractEvents = PublishRelay.create<FragmentKey>()
+    private val hiddenContractEvents = PublishRelay.create<FragmentKey>()
 
     private val lifecycleEventStream = RxStream.fromObservable { lifecycleEvents }
     private val visibleContractEventStream = RxStream.fromObservable { visibleContractEvents }
@@ -53,7 +53,7 @@ class FragmentFlowStore(
         lifecycleEvents.accept(event)
     }
 
-    internal fun onVisibilityChanged(contract: FragmentContract<*>, visible: Boolean) {
+    internal fun onVisibilityChanged(contract: FragmentKey, visible: Boolean) {
         if (visible) {
             visibleContractEvents.accept(contract)
         } else {

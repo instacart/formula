@@ -1,7 +1,5 @@
 package com.instacart.formula.integration
 
-import com.instacart.formula.fragment.FragmentContract
-
 /**
  *
  * The flow integration class defines how a parent should integrate a particular flow. This class takes a
@@ -32,7 +30,7 @@ abstract class FlowIntegration<ParentComponent, FlowComponent> {
 
     protected abstract fun createComponent(parentComponent: ParentComponent): DisposableScope<FlowComponent>
 
-    fun binding(): Binding<ParentComponent, FragmentContract<*>> {
+    fun binding(): Binding<ParentComponent> {
         return Binding.composite(this::createComponent, flowDeclaration.createFlow().bindings)
     }
 }

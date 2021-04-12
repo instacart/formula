@@ -1,28 +1,29 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.fragment.FragmentEnvironment
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.internal.CompositeBinding
 
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<ParentComponent, Key : Any> {
+abstract class Binding<ParentComponent> {
     companion object {
-        fun <ParentComponent, Component, Key : Any> composite(
+        fun <ParentComponent, Component> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
-            bindings: Bindings<Component, Key>
-        ): Binding<ParentComponent, Key> {
+            bindings: Bindings<Component>
+        ): Binding<ParentComponent> {
             return CompositeBinding(scopeFactory, bindings.types, bindings.bindings)
         }
     }
 
-    data class Input<Component, Key : Any>(
-        val environment: FlowEnvironment<Key>,
+    data class Input<Component>(
+        val environment: FragmentEnvironment,
         val component: Component,
-        val activeKeys: List<Key>,
-        val onStateChanged: (KeyState<Key>) -> Unit
+        val activeKeys: List<FragmentKey>,
+        val onStateChanged: (KeyState) -> Unit,
     )
-
 
     internal abstract fun types(): Set<Class<*>>
 
@@ -34,5 +35,5 @@ abstract class Binding<ParentComponent, Key : Any> {
     /**
      * Listens for active key changes and triggers [Input.onStateChanged] events.
      */
-    internal abstract fun bind(context: FormulaContext<*>, input: Input<ParentComponent, Key>)
+    internal abstract fun bind(context: FormulaContext<*>, input: Input<ParentComponent>)
 }

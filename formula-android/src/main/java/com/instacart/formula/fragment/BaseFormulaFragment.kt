@@ -2,7 +2,7 @@ package com.instacart.formula.fragment
 
 interface BaseFormulaFragment<State> {
 
-    fun getFragmentContract(): FragmentContract<State>
+    fun getFragmentKey(): FragmentKey
 
     fun currentState(): State?
 

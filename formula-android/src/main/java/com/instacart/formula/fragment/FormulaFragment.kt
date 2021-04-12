@@ -113,7 +113,7 @@ class FormulaFragment<RenderModel> : Fragment(), BaseFormulaFragment<RenderModel
         return stateRelay.value
     }
 
-    override fun getFragmentContract(): FragmentContract<RenderModel> {
+    override fun getFragmentKey(): FragmentKey {
         return contract
     }
 
