@@ -6,6 +6,7 @@
 - **Breaking**: Remove `state.noEffects()` extension function. Use `transition(state)` instead.
 - Added `StreamFormula` and `ObservableFormula`.
 - Allow nullable formula state.
+- **Breaking**: Removing `FormulaFragment.renderView()` function
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
