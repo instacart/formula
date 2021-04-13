@@ -19,6 +19,18 @@ abstract class ViewInstance {
     abstract val view: View
 
     /**
+     * Creates a [FeatureView] from a [render] function
+     */
+    fun <RenderModel> featureView(
+        lifecycleCallbacks: FragmentLifecycleCallback? = null,
+        render: (RenderModel) -> Unit
+    ): FeatureView<RenderModel> {
+        return featureView(
+            renderer = Renderer.create(render),
+            lifecycleCallbacks = lifecycleCallbacks
+        )
+    }
+    /**
      * Creates a [FeatureView] from a [Renderer].
      */
     fun <RenderModel> featureView(
