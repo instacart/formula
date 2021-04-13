@@ -13,8 +13,8 @@ extra_css:
 
 
 markdown_extensions:
-  - codehilite:
-      guess_lang: false
+  - pymdownx.highlight
+  - pymdownx.superfences
 
 nav:
   - 'Overview': index.md
@@ -23,7 +23,7 @@ nav:
   - 'Using Input': input.md
   - 'Composition': composition.md
   - 'Testing': testing.md
-  - 'Formula Android': Integration.md
+  - 'Formula Android': Formula-Android.md
   - 'Using Android View Model': using_android_view_model.md
   - 'FAQ': faq.md
   - 'Contributing': ../CONTRIBUTING.md
