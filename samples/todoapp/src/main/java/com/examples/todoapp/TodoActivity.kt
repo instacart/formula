@@ -2,7 +2,7 @@ package com.examples.todoapp
 
 import android.os.Bundle
 import android.widget.Toast
-import com.examples.todoapp.tasks.TaskListContract
+import com.examples.todoapp.tasks.TaskListKey
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.integration.FormulaAppCompatActivity
 
@@ -13,9 +13,9 @@ class TodoActivity : FormulaAppCompatActivity() {
         setContentView(R.layout.todo_activity)
 
         if (savedInstanceState == null) {
-            val contract = TaskListContract()
+            val key = TaskListKey()
             supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, FormulaFragment.newInstance(contract), contract.tag)
+                .add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
                 .commit()
         }
     }

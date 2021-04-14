@@ -72,8 +72,8 @@ class FragmentFlowStore(
             environment = input,
             component = Unit,
             activeKeys = state.activeKeys,
-            onStateChanged = context.eventCallback {
-                transition(state.copy(states = state.states.plus(it.key to it)))
+            onInitializeFeature = context.eventCallback {
+                transition(state.copy(features = state.features.plus(it.key to it.feature)))
             }
         )
         root.bind(context, rootInput)
@@ -87,12 +87,14 @@ class FragmentFlowStore(
                         is LifecycleEvent.Removed -> {
                             val updated = state.copy(
                                 activeKeys = state.activeKeys.minus(key),
-                                states = state.states.minus(key)
+                                states = state.states.minus(key),
+                                features = state.features.minus(key)
                             )
                             transition(updated)
                         }
                         is LifecycleEvent.Added -> {
                             if (!state.activeKeys.contains(key)) {
+                                // TODO: should use input.onScreenError() instead of adding fake render model!
                                 // We want to emit an empty state update if key is not handled.
                                 val notHandled = if (!root.binds(key)) {
                                     listOf(Pair(key, KeyState(key, "missing-registration")))
@@ -122,6 +124,19 @@ class FragmentFlowStore(
 
                 events(hiddenContractEventStream) {
                     transition(state.copy(visibleKeys = state.visibleKeys.minus(it)))
+                }
+
+                state.features.entries.forEach { entry ->
+                    val key = entry.key
+                    RxStream.fromObservable(entry.value) {
+                        entry.value.state.onErrorResumeNext {
+                            input.onScreenError(key, it)
+                            Observable.empty()
+                        }
+                    }.onEvent {
+                        val keyState = KeyState(key, it)
+                        transition(state.copy(states = state.states.plus(key to keyState)))
+                    }
                 }
             }
         )

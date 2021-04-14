@@ -4,7 +4,7 @@ import android.os.Parcelable
 import androidx.fragment.app.FragmentManager
 
 /**
- * A key is used to identify a specific [FormulaFragment].
+ * A key is used to identify a specific [FormulaFragment] and to connect the correct [FeatureFactory].
  *
  * ```
  * data class TaskDetailKey(

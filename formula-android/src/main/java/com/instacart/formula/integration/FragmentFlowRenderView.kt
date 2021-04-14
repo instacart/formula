@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
+import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentEnvironment
@@ -37,6 +38,7 @@ internal class FragmentFlowRenderView(
 ) : RenderView<FragmentFlowState> {
 
     private var fragmentState: FragmentFlowState? = null
+    private val awaitingInitialization: MutableMap<FragmentKey, FormulaFragment> = mutableMapOf()
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
     private var removedEarly = mutableListOf<FragmentKey>()
@@ -99,7 +101,9 @@ internal class FragmentFlowRenderView(
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
-            if (f is FormulaFragment<*>) {
+            if (f is FormulaFragment) {
+                awaitingInitialization[f.getFragmentKey()] = f
+                fragmentState?.let { initializeViewFactories(it) }
                 f.setEnvironment(fragmentEnvironment)
             }
 
@@ -111,6 +115,9 @@ internal class FragmentFlowRenderView(
         override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
             super.onFragmentDetached(fm, f)
 
+            if (f is FormulaFragment) {
+                awaitingInitialization.remove(f.getFragmentKey())
+            }
             // Only trigger detach, when fragment is actually being removed from the backstack
             if (FragmentLifecycle.shouldTrack(f) && !FragmentLifecycle.isKept(fm, f)) {
                 val event = FragmentLifecycle.createRemovedEvent(f)
@@ -131,6 +138,7 @@ internal class FragmentFlowRenderView(
     }
 
     override val render: Renderer<FragmentFlowState> = Renderer {
+        initializeViewFactories(it)
         updateVisibleFragments(it)
 
         fragmentState = it
@@ -154,6 +162,12 @@ internal class FragmentFlowRenderView(
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
         onLifecycleState.invoke(fragment.getFragmentKey(), newState)
+    }
+
+    private fun initializeViewFactories(it: FragmentFlowState) {
+        it.features.forEach { entry ->
+            awaitingInitialization.remove(entry.key)?.viewFactory = entry.value.viewFactory as ViewFactory<Any>
+        }
     }
 
     private fun updateVisibleFragments(state: FragmentFlowState) {

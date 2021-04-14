@@ -2,10 +2,8 @@ package com.examples.todoapp
 
 import android.app.Application
 import android.util.Log
-import com.examples.todoapp.tasks.TaskListContract
-import com.examples.todoapp.tasks.TaskListFormula
+import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.rxjava3.toObservable
 
 class TodoApp : Application() {
 
@@ -19,19 +17,11 @@ class TodoApp : Application() {
             },
             activities = {
                 activity<TodoActivity> {
-                    val component = TodoAppComponent()
+                    val component = TodoAppComponent(this)
 
                     store(
                         contracts =  contracts(component) {
-                            bind(TaskListContract::class) { component, key ->
-                                val input = TaskListFormula.Input(showToast = { message ->
-                                    send {
-                                        onEffect(TodoActivityEffect.ShowToast(message))
-                                    }
-                                })
-
-                                component.createTaskListFormula().toObservable(input)
-                            }
+                            bind(TaskListFeatureFactory())
                         }
                     )
                 }
