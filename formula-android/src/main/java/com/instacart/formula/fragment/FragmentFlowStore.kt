@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.integration.Binding
+import com.instacart.formula.integration.FeatureEvent
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
 import com.instacart.formula.integration.KeyState
@@ -72,8 +73,9 @@ class FragmentFlowStore(
             environment = input,
             component = Unit,
             activeKeys = state.activeKeys,
-            onInitializeFeature = context.eventCallback {
-                transition(state.copy(features = state.features.plus(it.key to it.feature)))
+            onInitializeFeature = context.eventCallback { event ->
+                val features = state.features.plus(event.key to event)
+                transition(state.copy(features = features))
             }
         )
         root.bind(context, rootInput)
@@ -94,18 +96,16 @@ class FragmentFlowStore(
                         }
                         is LifecycleEvent.Added -> {
                             if (!state.activeKeys.contains(key)) {
-                                // TODO: should use input.onScreenError() instead of adding fake render model!
-                                // We want to emit an empty state update if key is not handled.
-                                val notHandled = if (!root.binds(key)) {
-                                    listOf(Pair(key, KeyState(key, "missing-registration")))
+                                if (root.binds(key)) {
+                                    val updated = state.copy(activeKeys = state.activeKeys.plus(key))
+                                    transition(updated)
                                 } else {
-                                    emptyList()
+                                    val updated = state.copy(
+                                        activeKeys = state.activeKeys.plus(key),
+                                        features = state.features.plus(key to FeatureEvent.MissingBinding(key))
+                                    )
+                                    transition(updated)
                                 }
-
-                                transition(state.copy(
-                                    activeKeys = state.activeKeys.plus(key),
-                                    states = state.states.plus(notHandled)
-                                ))
                             } else {
                                 none()
                             }
@@ -128,14 +128,17 @@ class FragmentFlowStore(
 
                 state.features.entries.forEach { entry ->
                     val key = entry.key
-                    RxStream.fromObservable(entry.value) {
-                        entry.value.state.onErrorResumeNext {
-                            input.onScreenError(key, it)
-                            Observable.empty()
+                    val feature = (entry.value as? FeatureEvent.Init)?.feature
+                    if (feature != null) {
+                        RxStream.fromObservable(feature) {
+                            feature.state.onErrorResumeNext {
+                                input.onScreenError(key, it)
+                                Observable.empty()
+                            }
+                        }.onEvent {
+                            val keyState = KeyState(key, it)
+                            transition(state.copy(states = state.states.plus(key to keyState)))
                         }
-                    }.onEvent {
-                        val keyState = KeyState(key, it)
-                        transition(state.copy(states = state.states.plus(key to keyState)))
                     }
                 }
             }

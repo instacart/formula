@@ -1,6 +1,6 @@
 package com.instacart.formula.fragment
 
-import com.instacart.formula.android.Feature
+import com.instacart.formula.integration.FeatureEvent
 import com.instacart.formula.integration.KeyState
 
 /**
@@ -13,7 +13,7 @@ import com.instacart.formula.integration.KeyState
 data class FragmentFlowState(
     val activeKeys: List<FragmentKey> = emptyList(),
     val visibleKeys: List<FragmentKey> = emptyList(),
-    val features: Map<FragmentKey, Feature<*>> = emptyMap(),
+    val features: Map<FragmentKey, FeatureEvent> = emptyMap(),
     val states: Map<FragmentKey, KeyState> = emptyMap()
 ) {
     fun visibleState() = visibleKeys.lastOrNull()?.let { states[it] }

@@ -7,6 +7,7 @@ import com.instacart.formula.Stream
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.integration.FeatureEvent
 
 /**
  * Defines how a specific key should be bound to its [FeatureFactory],
@@ -44,8 +45,12 @@ internal class FeatureBinding<Component>(
                     if (binds(key)) {
                         Stream.onData(key).onEvent {
                             transition {
-                                val feature = feature.initialize(input.component, key)
-                                input.onInitializeFeature(FeatureCreated(key, feature))
+                                try {
+                                    val feature = feature.initialize(input.component, key)
+                                    input.onInitializeFeature(FeatureEvent.Init(key, feature))
+                                } catch (e: Exception) {
+                                    input.onInitializeFeature(FeatureEvent.Failure(key, e))
+                                }
                             }
                         }
                     }
