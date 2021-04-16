@@ -9,6 +9,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
  * This class is used internally to mimic fragment backstack. The activity listens for fragment
  * lifecycle events and update this store.
  */
+@Deprecated("This is legacy formula.")
 class BackStackStore<Key>(initial: List<Key>) {
 
     constructor(): this(emptyList())
