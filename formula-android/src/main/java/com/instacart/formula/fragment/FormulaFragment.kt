@@ -28,8 +28,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         arguments!!.getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    private lateinit var fragmentEnvironment: FragmentEnvironment
-    internal var viewFactory: ViewFactory<Any>? = null
+    internal lateinit var fragmentEnvironment: FragmentEnvironment
+    internal lateinit var viewFactory: ViewFactory<Any>
     private var featureView: FeatureView<Any>? = null
     private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
     private var cancelable: Cancelable? = null
@@ -37,19 +37,21 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     private var lifecycleCallback: FragmentLifecycleCallback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val uiFactory = viewFactory ?: throw IllegalStateException("Missing view factory: $key")
-        return uiFactory
-            .create(inflater, container)
-            .apply { featureView = this }
-            .view
+        val featureView = this.viewFactory.create(inflater, container).apply {
+            featureView = this
+        }
+        return featureView.view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val featureView = featureView!!
-        val state = FeatureView.State(stateRelay, onError = {
-            fragmentEnvironment.onScreenError(key, it)
-        })
+        val state = FeatureView.State(
+            observable = stateRelay,
+            onError = {
+                fragmentEnvironment.onScreenError(key, it)
+            }
+        )
         cancelable = featureView.bind(state)
         this.lifecycleCallback = featureView.lifecycleCallbacks
         lifecycleCallback?.onViewCreated(view, savedInstanceState)
@@ -110,10 +112,6 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
     override fun getFragmentKey(): FragmentKey {
         return key
-    }
-
-    internal fun setEnvironment(environment: FragmentEnvironment) {
-        this.fragmentEnvironment = environment
     }
 
     override fun toString(): String {
