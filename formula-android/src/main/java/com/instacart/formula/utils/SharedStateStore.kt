@@ -4,6 +4,7 @@ import com.instacart.formula.internal.mapNotNull
 import com.jakewharton.rxrelay3.BehaviorRelay
 import io.reactivex.rxjava3.core.Observable
 
+@Deprecated("This belongs in Formula legacy.")
 class SharedStateStore<T> {
 
     private val stateRelay = BehaviorRelay.create<T>()
