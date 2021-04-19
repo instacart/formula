@@ -7,6 +7,7 @@ import com.instacart.formula.android.StreamConfigurator
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -36,16 +37,28 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun fragmentFlowState(): Observable<FragmentFlowState>
 
     /**
-     * Returns RxJava stream that emits true if fragment with [FragmentContract] has either [Lifecycle.State.STARTED]
-     * or [Lifecycle.State.RESUMED] lifecycle state.
+     * Returns RxJava stream that emits true if fragment with a specific [tag] has
+     * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentStarted(contract: FragmentContract<*>): Observable<Boolean>
+    abstract fun isFragmentStarted(tag: String): Observable<Boolean>
 
     /**
-     * Returns RxJava stream that emits true if fragment with [FragmentContract]
+     * Returns RxJava stream that emits true if fragment with [FragmentKey] has
+     * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
+     */
+    abstract fun isFragmentStarted(key: FragmentKey): Observable<Boolean>
+
+    /**
+     * Returns RxJava stream that emits true if fragment with a specific [tag]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentResumed(contract: FragmentContract<*>): Observable<Boolean>
+    abstract fun isFragmentResumed(tag: String): Observable<Boolean>
+
+    /**
+     * Returns RxJava stream that emits true if fragment with [FragmentKey]
+     * has [Lifecycle.State.RESUMED] lifecycle state.
+     */
+    abstract fun isFragmentResumed(key: FragmentKey): Observable<Boolean>
 
     /**
      * This enables you to select specific events from the activity.
