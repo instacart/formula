@@ -12,6 +12,8 @@
 - **Breaking**: Removing generic parameter from `FormulaFragment`
 - Added new Feature API with `FeatureFactory` and other related classes.
 - Update `ActivityStoreContext.isFragmentStarted` and `ActivityStoreContext.isFragmentResumed` functions.
+- **Breaking**: Removed `BackStackStore` and `BackStack`.
+- **Breaking**: Removed `SharedStateStore`.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
