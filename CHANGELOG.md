@@ -11,6 +11,7 @@
 - **Breaking:** Removing generic key parameter from `KeyState`.
 - **Breaking**: Removing generic parameter from `FormulaFragment`
 - Added new Feature API with `FeatureFactory` and other related classes.
+- Update `ActivityStoreContext.isFragmentStarted` and `ActivityStoreContext.isFragmentResumed` functions.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

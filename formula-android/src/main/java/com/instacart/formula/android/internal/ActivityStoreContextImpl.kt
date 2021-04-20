@@ -3,7 +3,6 @@ package com.instacart.formula.android.internal
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.ActivityStoreContext
@@ -35,16 +34,24 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     override fun fragmentFlowState(): Observable<FragmentFlowState> = fragmentFlowStateRelay
 
-    override fun isFragmentStarted(contract: FragmentContract<*>): Observable<Boolean> {
-        return fragmentLifecycleState(contract)
+    override fun isFragmentStarted(tag: String): Observable<Boolean> {
+        return fragmentLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.STARTED) }
             .distinctUntilChanged()
     }
 
-    override fun isFragmentResumed(contract: FragmentContract<*>): Observable<Boolean> {
-        return fragmentLifecycleState(contract)
+    override fun isFragmentStarted(key: FragmentKey): Observable<Boolean> {
+        return isFragmentStarted(key.tag)
+    }
+
+    override fun isFragmentResumed(tag: String): Observable<Boolean> {
+        return fragmentLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.RESUMED) }
             .distinctUntilChanged()
+    }
+
+    override fun isFragmentResumed(key: FragmentKey): Observable<Boolean> {
+        return isFragmentResumed(key.tag)
     }
 
     override fun <Event> selectActivityEvents(
@@ -109,13 +116,12 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     private fun activityAttachEvents(): Observable<Boolean> = attachEventRelay
 
-    private fun fragmentLifecycleState(contract: FragmentContract<*>): Observable<Lifecycle.State> {
-        val key = contract.tag
+    private fun fragmentLifecycleState(tag: String): Observable<Lifecycle.State> {
         return fragmentStateUpdated
-            .filter { it == key }
-            .startWithItem(key)
+            .filter { it == tag }
+            .startWithItem(tag)
             .map {
-                fragmentLifecycleStates[key] ?: Lifecycle.State.DESTROYED
+                fragmentLifecycleStates[tag] ?: Lifecycle.State.DESTROYED
             }
     }
 }
