@@ -19,6 +19,7 @@ import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.instacart.formula.fragment.getFragmentKey
 import com.instacart.formula.integration.internal.forEachIndices
+import java.lang.IllegalStateException
 import java.util.LinkedList
 
 /**
@@ -45,8 +46,11 @@ internal class FragmentFlowRenderView(
     private var stateRestored: Boolean = false
 
     private val featureProvider = object : FeatureProvider {
-        override fun getFeature(key: FragmentKey): FeatureEvent? {
-            return fragmentState?.features?.get(key)
+        override fun getFeature(key: FragmentKey): FeatureEvent {
+            return fragmentState?.features?.get(key) ?: run {
+                val activeKeys = fragmentState?.activeKeys
+                throw IllegalStateException("Could not find feature for $key. Active keys: ${activeKeys}")
+            }
         }
     }
 

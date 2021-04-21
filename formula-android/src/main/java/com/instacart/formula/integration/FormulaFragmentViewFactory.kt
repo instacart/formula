@@ -16,8 +16,14 @@ internal class FormulaFragmentViewFactory(
 
     @Suppress("UNCHECKED_CAST")
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<Any> {
-        val featureEvent = featureProvider.getFeature(key) ?: throw IllegalStateException("Could not find feature for $key.")
-        val viewFactory = factory ?: when (featureEvent) {
+        val viewFactory = factory ?: findViewFactory()
+        this.factory = viewFactory
+        return viewFactory.create(inflater, container)
+    }
+
+    private fun findViewFactory(): ViewFactory<Any> {
+        val featureEvent = featureProvider.getFeature(key)
+        return when (featureEvent) {
             is FeatureEvent.MissingBinding -> {
                 throw IllegalStateException("Missing feature factory or integration for $key. Please check your FragmentFlowStore configuration.")
             }
@@ -28,7 +34,5 @@ internal class FormulaFragmentViewFactory(
                 featureEvent.feature.viewFactory as ViewFactory<Any>
             }
         }
-        this.factory = viewFactory
-        return viewFactory.create(inflater, container)
     }
 }
