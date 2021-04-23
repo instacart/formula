@@ -3,6 +3,7 @@ package com.instacart.formula.fragment
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.integration.ActiveFragment
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FeatureEvent
@@ -42,8 +43,8 @@ class FragmentFlowStore(
 
 
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
-    private val visibleContractEvents = PublishRelay.create<FragmentKey>()
-    private val hiddenContractEvents = PublishRelay.create<FragmentKey>()
+    private val visibleContractEvents = PublishRelay.create<ActiveFragment>()
+    private val hiddenContractEvents = PublishRelay.create<ActiveFragment>()
 
     private val lifecycleEventStream = RxStream.fromObservable { lifecycleEvents }
     private val visibleContractEventStream = RxStream.fromObservable { visibleContractEvents }
@@ -53,7 +54,7 @@ class FragmentFlowStore(
         lifecycleEvents.accept(event)
     }
 
-    internal fun onVisibilityChanged(contract: FragmentKey, visible: Boolean) {
+    internal fun onVisibilityChanged(contract: ActiveFragment, visible: Boolean) {
         if (visible) {
             visibleContractEvents.accept(contract)
         } else {
@@ -83,7 +84,7 @@ class FragmentFlowStore(
             output = state,
             updates = context.updates {
                 events(lifecycleEventStream) { event ->
-                    val key = event.key
+                    val key = event.activeFragment()
                     when (event) {
                         is FragmentLifecycleEvent.Removed -> {
                             val updated = state.copy(
@@ -93,9 +94,9 @@ class FragmentFlowStore(
                             )
                             transition(updated)
                         }
-                        is FragmentLifecycleEvent.Added -> {
+                        is FragmentLifecycleEvent.Active -> {
                             if (!state.activeKeys.contains(key)) {
-                                if (root.binds(key)) {
+                                if (root.binds(key.key)) {
                                     val updated = state.copy(activeKeys = state.activeKeys.plus(key))
                                     transition(updated)
                                 } else {
@@ -131,11 +132,11 @@ class FragmentFlowStore(
                     if (feature != null) {
                         RxStream.fromObservable(feature) {
                             feature.state.onErrorResumeNext {
-                                input.onScreenError(key, it)
+                                input.onScreenError(key.key, it)
                                 Observable.empty()
                             }
                         }.onEvent {
-                            val keyState = KeyState(key, it)
+                            val keyState = KeyState(key.key, it)
                             transition(state.copy(states = state.states.plus(key to keyState)))
                         }
                     }

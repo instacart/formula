@@ -8,7 +8,7 @@ import com.instacart.formula.fragment.FragmentKey
 import java.lang.IllegalStateException
 
 internal class FormulaFragmentViewFactory(
-    private val key: FragmentKey,
+    private val key: ActiveFragment,
     private val featureProvider: FeatureProvider,
 ) : ViewFactory<Any> {
 

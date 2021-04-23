@@ -1,5 +1,6 @@
 package com.instacart.formula.fragment
 
+import com.instacart.formula.integration.ActiveFragment
 import com.instacart.formula.integration.FeatureEvent
 import com.instacart.formula.integration.KeyState
 
@@ -11,10 +12,10 @@ import com.instacart.formula.integration.KeyState
  * @param states Last emitted state of each active [FragmentContract].
  */
 data class FragmentFlowState(
-    val activeKeys: List<FragmentKey> = emptyList(),
-    val visibleKeys: List<FragmentKey> = emptyList(),
-    val features: Map<FragmentKey, FeatureEvent> = emptyMap(),
-    val states: Map<FragmentKey, KeyState> = emptyMap()
+    val activeKeys: List<ActiveFragment> = emptyList(),
+    val visibleKeys: List<ActiveFragment> = emptyList(),
+    val features: Map<ActiveFragment, FeatureEvent> = emptyMap(),
+    val states: Map<ActiveFragment, KeyState> = emptyMap()
 ) {
     fun visibleState() = visibleKeys.lastOrNull()?.let { states[it] }
 }

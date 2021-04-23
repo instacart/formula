@@ -193,7 +193,7 @@ class FragmentFlowRenderViewTest {
         navigateToTaskDetail(id = 1)
 
         assertFragmentViewIsCreated(TestContractWithId(1))
-        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1), TestContractWithId(2)).inOrder()
+        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1), TestContractWithId(2), TestContractWithId(1)).inOrder()
 
         navigateBack()
         navigateBack()
@@ -225,18 +225,18 @@ class FragmentFlowRenderViewTest {
 
     private fun activeContracts(): List<FragmentKey> {
         return scenario.get {
-            lastState!!.activeKeys
+            lastState!!.activeKeys.map { it.key }
         }
     }
 
     private fun assertVisibleContract(contract: FragmentContract<*>) {
         assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
-        assertThat(scenario.get { lastState?.visibleKeys?.lastOrNull() }).isEqualTo(contract)
+        assertThat(scenario.get { lastState?.visibleKeys?.lastOrNull()?.key }).isEqualTo(contract)
     }
 
     private fun assertNoDuplicates(contract: FragmentContract<*>) {
-        assertThat(lastState?.visibleKeys?.count { it == contract }).isEqualTo(1)
+        assertThat(lastState?.visibleKeys?.count { it.key == contract }).isEqualTo(1)
     }
 
     private fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {

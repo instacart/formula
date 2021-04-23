@@ -54,15 +54,15 @@ class FragmentFlowStoreTest {
         val detail = Detail(1)
         store
             .state(FragmentEnvironment())
-            .map { it.states }
+            .map { it.states.mapKeys { it.key.key } }
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Added(master))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Added(detail))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", master))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", detail))
 
                 updateRelay.accept(master to "master-update")
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed(detail))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed(master))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", detail))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", master))
 
                 updateRelay.accept(master to "master-update-2")
             }
@@ -78,12 +78,12 @@ class FragmentFlowStoreTest {
 
     @Test fun `various fragments added`() {
         store.state(FragmentEnvironment())
-            .map { it.states }
+            .map { it.states.mapKeys { it.key.key } }
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Master(1)))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Detail(1)))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Detail(2)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Master(1)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Detail(1)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Detail(2)))
             }
             .assertValues(
                 expectedState(),
