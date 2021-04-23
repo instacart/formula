@@ -2,7 +2,6 @@ package com.instacart.formula.fragment
 
 import android.view.View
 import com.instacart.formula.integration.KeyState
-import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.android.parcel.Parcelize
@@ -58,12 +57,12 @@ class FragmentFlowStoreTest {
             .map { it.states }
             .test()
             .apply {
-                store.onLifecycleEffect(LifecycleEvent.Added(master))
-                store.onLifecycleEffect(LifecycleEvent.Added(detail))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Added(master))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Added(detail))
 
                 updateRelay.accept(master to "master-update")
-                store.onLifecycleEffect(LifecycleEvent.Removed(detail))
-                store.onLifecycleEffect(LifecycleEvent.Removed(master))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Removed(detail))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Removed(master))
 
                 updateRelay.accept(master to "master-update-2")
             }
@@ -82,9 +81,9 @@ class FragmentFlowStoreTest {
             .map { it.states }
             .test()
             .apply {
-                store.onLifecycleEffect(LifecycleEvent.Added(Master(1)))
-                store.onLifecycleEffect(LifecycleEvent.Added(Detail(1)))
-                store.onLifecycleEffect(LifecycleEvent.Added(Detail(2)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Master(1)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Detail(1)))
+                store.onLifecycleEffect(FragmentLifecycleEvent.Added(Detail(2)))
             }
             .assertValues(
                 expectedState(),

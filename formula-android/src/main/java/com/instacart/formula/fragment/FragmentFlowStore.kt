@@ -9,7 +9,6 @@ import com.instacart.formula.integration.FeatureEvent
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentBindingBuilder
 import com.instacart.formula.integration.KeyState
-import com.instacart.formula.integration.LifecycleEvent
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -86,7 +85,7 @@ class FragmentFlowStore(
                 events(lifecycleEventStream) { event ->
                     val key = event.key
                     when (event) {
-                        is LifecycleEvent.Removed -> {
+                        is FragmentLifecycleEvent.Removed -> {
                             val updated = state.copy(
                                 activeKeys = state.activeKeys.minus(key),
                                 states = state.states.minus(key),
@@ -94,7 +93,7 @@ class FragmentFlowStore(
                             )
                             transition(updated)
                         }
-                        is LifecycleEvent.Added -> {
+                        is FragmentLifecycleEvent.Added -> {
                             if (!state.activeKeys.contains(key)) {
                                 if (root.binds(key)) {
                                     val updated = state.copy(activeKeys = state.activeKeys.plus(key))
