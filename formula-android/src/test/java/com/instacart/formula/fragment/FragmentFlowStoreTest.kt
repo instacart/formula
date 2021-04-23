@@ -1,6 +1,7 @@
 package com.instacart.formula.fragment
 
 import android.view.View
+import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.KeyState
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -57,12 +58,12 @@ class FragmentFlowStoreTest {
             .map { it.states.mapKeys { it.key.key } }
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", master))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", detail))
+                store.onLifecycleEffect(master.asAddedEvent())
+                store.onLifecycleEffect(detail.asAddedEvent())
 
                 updateRelay.accept(master to "master-update")
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", detail))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", master))
+                store.onLifecycleEffect(detail.asRemovedEvent())
+                store.onLifecycleEffect(master.asRemovedEvent())
 
                 updateRelay.accept(master to "master-update-2")
             }
@@ -81,9 +82,9 @@ class FragmentFlowStoreTest {
             .map { it.states.mapKeys { it.key.key } }
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Master(1)))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Detail(1)))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", Detail(2)))
+                store.onLifecycleEffect(Master(1).asAddedEvent())
+                store.onLifecycleEffect(Detail(1).asAddedEvent())
+                store.onLifecycleEffect(Detail(2).asAddedEvent())
             }
             .assertValues(
                 expectedState(),
@@ -116,4 +117,7 @@ class FragmentFlowStoreTest {
         val updates = updateRelay.filter { it.first == key }.map { it.second }
         return updates.startWithItem("${key.tag}-state")
     }
+
+    private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
+    private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 }

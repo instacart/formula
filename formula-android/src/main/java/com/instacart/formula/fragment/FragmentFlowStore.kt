@@ -3,7 +3,7 @@ package com.instacart.formula.fragment
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.integration.ActiveFragment
+import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FeatureEvent
@@ -43,8 +43,8 @@ class FragmentFlowStore(
 
 
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
-    private val visibleContractEvents = PublishRelay.create<ActiveFragment>()
-    private val hiddenContractEvents = PublishRelay.create<ActiveFragment>()
+    private val visibleContractEvents = PublishRelay.create<FragmentId>()
+    private val hiddenContractEvents = PublishRelay.create<FragmentId>()
 
     private val lifecycleEventStream = RxStream.fromObservable { lifecycleEvents }
     private val visibleContractEventStream = RxStream.fromObservable { visibleContractEvents }
@@ -54,7 +54,7 @@ class FragmentFlowStore(
         lifecycleEvents.accept(event)
     }
 
-    internal fun onVisibilityChanged(contract: ActiveFragment, visible: Boolean) {
+    internal fun onVisibilityChanged(contract: FragmentId, visible: Boolean) {
         if (visible) {
             visibleContractEvents.accept(contract)
         } else {
@@ -72,9 +72,9 @@ class FragmentFlowStore(
         val rootInput = Binding.Input(
             environment = input,
             component = Unit,
-            activeKeys = state.activeKeys,
+            activeKeys = state.activeIds,
             onInitializeFeature = context.eventCallback { event ->
-                val features = state.features.plus(event.key to event)
+                val features = state.features.plus(event.id to event)
                 transition(state.copy(features = features))
             }
         )
@@ -84,25 +84,25 @@ class FragmentFlowStore(
             output = state,
             updates = context.updates {
                 events(lifecycleEventStream) { event ->
-                    val key = event.activeFragment()
+                    val fragmentId = event.fragmentId
                     when (event) {
                         is FragmentLifecycleEvent.Removed -> {
                             val updated = state.copy(
-                                activeKeys = state.activeKeys.minus(key),
-                                states = state.states.minus(key),
-                                features = state.features.minus(key)
+                                activeIds = state.activeIds.minus(fragmentId),
+                                states = state.states.minus(fragmentId),
+                                features = state.features.minus(fragmentId)
                             )
                             transition(updated)
                         }
-                        is FragmentLifecycleEvent.Active -> {
-                            if (!state.activeKeys.contains(key)) {
-                                if (root.binds(key.key)) {
-                                    val updated = state.copy(activeKeys = state.activeKeys.plus(key))
+                        is FragmentLifecycleEvent.Added -> {
+                            if (!state.activeIds.contains(fragmentId)) {
+                                if (root.binds(fragmentId.key)) {
+                                    val updated = state.copy(activeIds = state.activeIds.plus(fragmentId))
                                     transition(updated)
                                 } else {
                                     val updated = state.copy(
-                                        activeKeys = state.activeKeys.plus(key),
-                                        features = state.features.plus(key to FeatureEvent.MissingBinding(key))
+                                        activeIds = state.activeIds.plus(fragmentId),
+                                        features = state.features.plus(fragmentId to FeatureEvent.MissingBinding(fragmentId))
                                     )
                                     transition(updated)
                                 }
@@ -114,16 +114,16 @@ class FragmentFlowStore(
                 }
 
                 events(visibleContractEventStream) {
-                    if (state.visibleKeys.contains(it)) {
+                    if (state.visibleIds.contains(it)) {
                         // TODO: should we log this duplicate visibility event?
                         none()
                     } else {
-                        transition(state.copy(visibleKeys = state.visibleKeys.plus(it)))
+                        transition(state.copy(visibleIds = state.visibleIds.plus(it)))
                     }
                 }
 
                 events(hiddenContractEventStream) {
-                    transition(state.copy(visibleKeys = state.visibleKeys.minus(it)))
+                    transition(state.copy(visibleIds = state.visibleIds.minus(it)))
                 }
 
                 state.features.entries.forEach { entry ->

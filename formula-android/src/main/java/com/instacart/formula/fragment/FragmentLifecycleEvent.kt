@@ -1,6 +1,6 @@
 package com.instacart.formula.fragment
 
-import com.instacart.formula.integration.ActiveFragment
+import com.instacart.formula.integration.FragmentId
 
 /**
  * Models when a fragment key is attached and detached. Provides a way to indicate
@@ -8,19 +8,14 @@ import com.instacart.formula.integration.ActiveFragment
  */
 sealed class FragmentLifecycleEvent() {
 
-    abstract val fragmentId: String
-    abstract val key: FragmentKey
+    abstract val fragmentId: FragmentId
 
-    fun activeFragment() = ActiveFragment(fragmentId, key)
-
-    data class Active(
-        override val fragmentId: String,
-        override val key: FragmentKey
+    data class Added(
+        override val fragmentId: FragmentId
     ) : FragmentLifecycleEvent()
 
     data class Removed(
-        override val fragmentId: String,
-        override val key: FragmentKey,
+        override val fragmentId: FragmentId,
         val lastState: Any? = null
     ) : FragmentLifecycleEvent()
 }

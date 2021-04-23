@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowStore
+import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.instacart.formula.integration.test.TestAccountFragmentContract
 import com.instacart.formula.integration.test.TestLoginFragmentContract
@@ -60,8 +61,8 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestLoginFragmentContract()))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestSignUpFragmentContract()))
+                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
             }
 
         val components = appComponent.initialized.map { it.first }
@@ -76,15 +77,15 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestLoginFragmentContract()))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestSignUpFragmentContract()))
+                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(2)
             }
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", TestSignUpFragmentContract()))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Removed("", TestLoginFragmentContract()))
+                store.onLifecycleEffect(TestSignUpFragmentContract().asRemovedEvent())
+                store.onLifecycleEffect(TestLoginFragmentContract().asRemovedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(0)
@@ -98,9 +99,9 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestLoginFragmentContract()))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestSignUpFragmentContract()))
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestAccountFragmentContract()))
+                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestAccountFragmentContract().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(2)
@@ -129,7 +130,7 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(FragmentLifecycleEvent.Active("", TestLoginFragmentContract()))
+                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(1)
@@ -145,4 +146,7 @@ class FragmentFlowStoreTest {
             bind(AuthFlowIntegration())
         }
     }
+
+    private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
+    private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 }

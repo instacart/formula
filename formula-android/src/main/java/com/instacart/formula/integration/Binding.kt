@@ -20,7 +20,7 @@ abstract class Binding<ParentComponent> {
     data class Input<Component>(
         val environment: FragmentEnvironment,
         val component: Component,
-        val activeKeys: List<ActiveFragment>,
+        val activeKeys: List<FragmentId>,
         val onInitializeFeature: (FeatureEvent) -> Unit,
     )
 
