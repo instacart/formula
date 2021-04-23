@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
-import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentEnvironment
@@ -162,7 +161,6 @@ internal class FragmentFlowRenderView(
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
         onLifecycleState.invoke(fragment.getFragmentKey(), newState)
     }
-
 
     private fun updateVisibleFragments(state: FragmentFlowState) {
         visibleFragments.forEachIndices { fragment ->
