@@ -1,11 +1,11 @@
 package com.instacart.formula
 
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentKey
@@ -184,18 +184,37 @@ class FragmentFlowRenderViewTest {
         assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
     }
 
+    @Test fun `add multiple fragments with same fragment key`() {
+        scenario.moveToState(Lifecycle.State.RESUMED)
+
+        navigateToTaskDetail(id = 1)
+        navigateToTaskDetail(id = 2)
+        navigateToTaskDetail(id = 1)
+
+        assertFragmentViewIsCreated(TestContractWithId(1))
+        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1), TestContractWithId(2), TestContractWithId(1)).inOrder()
+
+        navigateBack()
+        navigateBack()
+
+        assertFragmentViewIsCreated(TestContractWithId(1))
+        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1)).inOrder()
+    }
+
     private fun navigateBack() {
         scenario.onActivity { it.onBackPressed() }
     }
 
-    private fun navigateToTaskDetail() {
-        val detail = TestContractWithId(1)
+    private fun navigateToTaskDetail(id: Int = 1) {
         scenario.onActivity {
-            it.supportFragmentManager.beginTransaction()
-                .remove(it.supportFragmentManager.findFragmentByTag(TestContract().tag)!!)
-                .add(R.id.activity_content, FormulaFragment.newInstance(detail), detail.tag)
-                .addToBackStack(null)
-                .commit()
+            it.navigateTo(TestContractWithId(id))
+        }
+    }
+
+    private fun assertFragmentViewIsCreated(key: FragmentKey) {
+        scenario.onActivity {
+            val view = it.supportFragmentManager.findFragmentByTag(key.tag)?.view
+            assertThat(view).isNotNull()
         }
     }
 
@@ -205,18 +224,18 @@ class FragmentFlowRenderViewTest {
 
     private fun activeContracts(): List<FragmentKey> {
         return scenario.get {
-            lastState!!.activeKeys
+            lastState!!.activeIds.map { it.key }
         }
     }
 
     private fun assertVisibleContract(contract: FragmentContract<*>) {
         assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
-        assertThat(scenario.get { lastState?.visibleKeys?.lastOrNull() }).isEqualTo(contract)
+        assertThat(scenario.get { lastState?.visibleIds?.lastOrNull()?.key }).isEqualTo(contract)
     }
 
     private fun assertNoDuplicates(contract: FragmentContract<*>) {
-        assertThat(lastState?.visibleKeys?.count { it == contract }).isEqualTo(1)
+        assertThat(lastState?.visibleIds?.count { it.key == contract }).isEqualTo(1)
     }
 
     private fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {

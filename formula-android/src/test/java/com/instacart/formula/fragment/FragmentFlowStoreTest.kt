@@ -1,10 +1,11 @@
 package com.instacart.formula.fragment
 
 import android.view.View
+import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.KeyState
-import com.instacart.formula.integration.LifecycleEvent
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.observers.TestObserver
 import kotlinx.android.parcel.Parcelize
 import org.junit.Before
 import org.junit.Test
@@ -53,17 +54,15 @@ class FragmentFlowStoreTest {
     @Test fun `subscribed to state until removed from backstack`() {
         val master = Master(1)
         val detail = Detail(1)
-        store
-            .state(FragmentEnvironment())
-            .map { it.states }
-            .test()
+
+        fragmentStoreStates()
             .apply {
-                store.onLifecycleEffect(LifecycleEvent.Added(master))
-                store.onLifecycleEffect(LifecycleEvent.Added(detail))
+                store.onLifecycleEffect(master.asAddedEvent())
+                store.onLifecycleEffect(detail.asAddedEvent())
 
                 updateRelay.accept(master to "master-update")
-                store.onLifecycleEffect(LifecycleEvent.Removed(detail))
-                store.onLifecycleEffect(LifecycleEvent.Removed(master))
+                store.onLifecycleEffect(detail.asRemovedEvent())
+                store.onLifecycleEffect(master.asRemovedEvent())
 
                 updateRelay.accept(master to "master-update-2")
             }
@@ -78,13 +77,11 @@ class FragmentFlowStoreTest {
     }
 
     @Test fun `various fragments added`() {
-        store.state(FragmentEnvironment())
-            .map { it.states }
-            .test()
+        fragmentStoreStates()
             .apply {
-                store.onLifecycleEffect(LifecycleEvent.Added(Master(1)))
-                store.onLifecycleEffect(LifecycleEvent.Added(Detail(1)))
-                store.onLifecycleEffect(LifecycleEvent.Added(Detail(2)))
+                store.onLifecycleEffect(Master(1).asAddedEvent())
+                store.onLifecycleEffect(Detail(1).asAddedEvent())
+                store.onLifecycleEffect(Detail(2).asAddedEvent())
             }
             .assertValues(
                 expectedState(),
@@ -96,6 +93,12 @@ class FragmentFlowStoreTest {
                     Detail(2) to "detail-2-state"
                 )
             )
+    }
+
+    private fun fragmentStoreStates(): TestObserver<Map<FragmentKey, KeyState>> {
+        return store.state(FragmentEnvironment())
+            .map { it.states.mapKeys { entry -> entry.key.key } }
+            .test()
     }
 
     private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, KeyState> {
@@ -117,4 +120,7 @@ class FragmentFlowStoreTest {
         val updates = updateRelay.filter { it.first == key }.map { it.second }
         return updates.startWithItem("${key.tag}-state")
     }
+
+    private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
+    private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 }

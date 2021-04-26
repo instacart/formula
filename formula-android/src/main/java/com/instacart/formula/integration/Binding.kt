@@ -2,7 +2,6 @@ package com.instacart.formula.integration
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.fragment.FragmentEnvironment
-import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.internal.CompositeBinding
 
 /**
@@ -21,7 +20,7 @@ abstract class Binding<ParentComponent> {
     data class Input<Component>(
         val environment: FragmentEnvironment,
         val component: Component,
-        val activeKeys: List<FragmentKey>,
+        val activeKeys: List<FragmentId>,
         val onInitializeFeature: (FeatureEvent) -> Unit,
     )
 

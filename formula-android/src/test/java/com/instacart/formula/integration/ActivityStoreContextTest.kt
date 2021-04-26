@@ -78,7 +78,8 @@ class ActivityStoreContextTest {
         context.isFragmentStarted(contract)
             .test()
             .apply {
-                context.updateFragmentLifecycleState(contract, Lifecycle.State.STARTED)
+                val instance = FragmentId("", contract)
+                context.updateFragmentLifecycleState(instance, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
     }
@@ -88,7 +89,8 @@ class ActivityStoreContextTest {
         context.isFragmentResumed(contract)
             .test()
             .apply {
-                context.updateFragmentLifecycleState(contract, Lifecycle.State.RESUMED)
+                val instance = FragmentId("", contract)
+                context.updateFragmentLifecycleState(instance, Lifecycle.State.RESUMED)
             }
             .assertValues(false, true)
     }

@@ -42,11 +42,11 @@ internal class FeatureBinding<Component>(
             output = state,
             updates = context.updates {
                 input.activeKeys.forEachIndices { key ->
-                    if (binds(key)) {
+                    if (binds(key.key)) {
                         Stream.onData(key).onEvent {
                             transition {
                                 try {
-                                    val feature = feature.initialize(input.component, key)
+                                    val feature = feature.initialize(input.component, key.key)
                                     input.onInitializeFeature(FeatureEvent.Init(key, feature))
                                 } catch (e: Exception) {
                                     input.onInitializeFeature(FeatureEvent.Failure(key, e))

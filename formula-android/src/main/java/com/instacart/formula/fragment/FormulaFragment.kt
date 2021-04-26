@@ -13,6 +13,7 @@ import com.jakewharton.rxrelay3.BehaviorRelay
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     companion object {
         private const val ARG_CONTRACT = "formula fragment contract"
+        internal const val ARG_FORMULA_ID = "formula:fragment:id"
 
         @JvmStatic
         fun newInstance(key: FragmentKey): FormulaFragment {
