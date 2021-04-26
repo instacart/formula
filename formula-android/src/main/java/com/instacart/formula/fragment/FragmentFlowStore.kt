@@ -127,17 +127,17 @@ class FragmentFlowStore(
                 }
 
                 state.features.entries.forEach { entry ->
-                    val key = entry.key
+                    val fragmentId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
                         RxStream.fromObservable(feature) {
                             feature.state.onErrorResumeNext {
-                                input.onScreenError(key.key, it)
+                                input.onScreenError(fragmentId.key, it)
                                 Observable.empty()
                             }
                         }.onEvent {
-                            val keyState = KeyState(key.key, it)
-                            transition(state.copy(states = state.states.plus(key to keyState)))
+                            val keyState = KeyState(fragmentId.key, it)
+                            transition(state.copy(states = state.states.plus(fragmentId to keyState)))
                         }
                     }
                 }

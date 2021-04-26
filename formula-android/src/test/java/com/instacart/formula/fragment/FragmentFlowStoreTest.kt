@@ -5,6 +5,7 @@ import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.KeyState
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.observers.TestObserver
 import kotlinx.android.parcel.Parcelize
 import org.junit.Before
 import org.junit.Test
@@ -53,10 +54,8 @@ class FragmentFlowStoreTest {
     @Test fun `subscribed to state until removed from backstack`() {
         val master = Master(1)
         val detail = Detail(1)
-        store
-            .state(FragmentEnvironment())
-            .map { it.states.mapKeys { it.key.key } }
-            .test()
+
+        fragmentStoreStates()
             .apply {
                 store.onLifecycleEffect(master.asAddedEvent())
                 store.onLifecycleEffect(detail.asAddedEvent())
@@ -78,9 +77,7 @@ class FragmentFlowStoreTest {
     }
 
     @Test fun `various fragments added`() {
-        store.state(FragmentEnvironment())
-            .map { it.states.mapKeys { it.key.key } }
-            .test()
+        fragmentStoreStates()
             .apply {
                 store.onLifecycleEffect(Master(1).asAddedEvent())
                 store.onLifecycleEffect(Detail(1).asAddedEvent())
@@ -96,6 +93,12 @@ class FragmentFlowStoreTest {
                     Detail(2) to "detail-2-state"
                 )
             )
+    }
+
+    private fun fragmentStoreStates(): TestObserver<Map<FragmentKey, KeyState>> {
+        return store.state(FragmentEnvironment())
+            .map { it.states.mapKeys { entry -> entry.key.key } }
+            .test()
     }
 
     private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, KeyState> {
