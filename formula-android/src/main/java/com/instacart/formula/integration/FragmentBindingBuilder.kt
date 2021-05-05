@@ -2,6 +2,7 @@ package com.instacart.formula.integration
 
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
@@ -142,9 +143,10 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
     }
 
     /**
-     * Binds a flow integration.
+     * Binds a flow factory.
      */
-    fun bind(flowIntegration: FlowIntegration<Component, *>) = apply {
-        bind(flowIntegration.binding())
+    fun bind(flowFactory: FlowFactory<Component, *>) = apply {
+        val binding = Binding.composite(flowFactory)
+        bind(binding)
     }
 }

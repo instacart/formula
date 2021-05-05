@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.integration.internal.CompositeBinding
 
@@ -9,6 +10,14 @@ import com.instacart.formula.integration.internal.CompositeBinding
  */
 abstract class Binding<ParentComponent> {
     companion object {
+        fun <ParentComponent, Component> composite(
+            flowFactory: FlowFactory<ParentComponent, Component>,
+        ): Binding<ParentComponent> {
+            return composite(
+                flowFactory::createComponent,
+                flowFactory.createFlow().bindings
+            )
+        }
         fun <ParentComponent, Component> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
             bindings: Bindings<Component>
