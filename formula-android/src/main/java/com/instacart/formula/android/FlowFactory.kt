@@ -42,7 +42,7 @@ import com.instacart.formula.integration.FragmentBindingBuilder
  * @param FlowComponent A component that is initialized when user enters this flow and is shared
  * between all the screens within flow. Component will be destroyed when user exits the flow
  */
-interface FlowFactory<Dependencies, FlowComponent> {
+interface FlowFactory<in Dependencies, FlowComponent> {
 
     /**
      * Using [dependencies] passed by the parent, this function creates a component used by
