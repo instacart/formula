@@ -1,6 +1,8 @@
 package com.instacart.formula.integration
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.Flow
+import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowStore
@@ -14,10 +16,10 @@ import org.junit.Test
 
 class FragmentFlowStoreTest {
     class AppComponent {
-        val initialized = mutableListOf<Pair<AuthFlowDeclaration.Component, FragmentContract<*>>>()
+        val initialized = mutableListOf<Pair<AuthFlowFactory.Component, FragmentContract<*>>>()
 
-        fun createAuthFlowComponent(): DisposableScope<AuthFlowDeclaration.Component> {
-            val component = AuthFlowDeclaration.Component(onInitialized = { component, key ->
+        fun createAuthFlowComponent(): DisposableScope<AuthFlowFactory.Component> {
+            val component = AuthFlowFactory.Component(onInitialized = { component, key ->
                 initialized.add(component to key)
             })
             return DisposableScope(component, {
@@ -26,13 +28,17 @@ class FragmentFlowStoreTest {
         }
     }
 
-    class AuthFlowDeclaration : FlowDeclaration<AuthFlowDeclaration.Component>() {
+    class AuthFlowFactory : FlowFactory<AppComponent, AuthFlowFactory.Component> {
         class Component(
             val onInitialized: (Component, FragmentContract<*>) -> Unit
         )
 
+        override fun createComponent(dependencies: AppComponent): DisposableScope<Component> {
+            return dependencies.createAuthFlowComponent()
+        }
+
         override fun createFlow(): Flow<Component> {
-            return build {
+            return Flow.build {
                 bind { component, key: TestLoginFragmentContract ->
                     component.onInitialized(component, key)
                     Observable.empty<String>()
@@ -43,14 +49,6 @@ class FragmentFlowStoreTest {
                     Observable.empty<String>()
                 }
             }
-        }
-    }
-
-    class AuthFlowIntegration : FlowIntegration<AppComponent, AuthFlowDeclaration.Component>() {
-        override val flowDeclaration = AuthFlowDeclaration()
-
-        override fun createComponent(parentComponent: AppComponent): DisposableScope<AuthFlowDeclaration.Component> {
-            return parentComponent.createAuthFlowComponent()
         }
     }
 
@@ -112,8 +110,8 @@ class FragmentFlowStoreTest {
         var exception: Throwable? = null
         try {
             FragmentFlowStore.init(AppComponent()) {
-                bind(AuthFlowIntegration())
-                bind(AuthFlowIntegration())
+                bind(AuthFlowFactory())
+                bind(AuthFlowFactory())
             }
         } catch (t: Throwable) {
             exception = t
@@ -143,7 +141,7 @@ class FragmentFlowStoreTest {
 
     fun createStore(component: AppComponent): FragmentFlowStore {
         return FragmentFlowStore.init(component) {
-            bind(AuthFlowIntegration())
+            bind(AuthFlowFactory())
         }
     }
 
