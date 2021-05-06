@@ -4,7 +4,7 @@ This module has been designed for gradual adoption. You can use as much or as li
 
 Some of the goals for this module are:
 
-    - Use single RxJava stream to drive the UI.
+    - Use a single RxJava stream to drive the UI.
     - Separate state management from Android UI lifecycle.
     - Ability to group multiple fragments into a flow and share state between them.
     - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
@@ -15,7 +15,9 @@ fragments. For this example, we will connect `CounterRenderView` and `CounterFor
 main getting started [guide](index.md). 
 
 ### Define a fragment key
-Fragment key is used an a unique identifier for a `FormulaFragment`.
+Fragment key is used to instantiate `FormulaFragment` and to identify which `FeatureFactory` to 
+use. You can also use it to add arguments that the fragment instance needs. 
+
 ```kotlin
 /**
  * Fragment key has to provide Parcelable implementation because it is passed 
@@ -30,9 +32,9 @@ data class CounterKey(
 ```
 
 ### Define a feature factory
-Feature factory creates state observable and a view factory for a fragment with a 
-specific `FragmentKey` type. To continue our example, we define a `CounterFeatureFactory` 
-which will handle `CounterKey` fragments.
+A feature factory creates the state observable and a view factory for a fragment. To continue our 
+example, we define a `CounterFeatureFactory` which will handle `CounterKey` fragments.
+
 ```kotlin
 class CounterFeatureFactory : FeatureFactory<Any, CounterKey> {
     override fun initialize(dependencies: Any, key: CounterKey): Feature<*> {
@@ -56,7 +58,7 @@ class CounterViewFactory : LayoutViewFactory<CounterRenderModel>(R.layout.counte
 }
 ```
 
-We now need to register our feature factory with the activity in which the counter will be shown in.
+We now need to register our feature factory with the activity in which the counter will be shown.
 ```kotlin
 class MyApp : Application() {
     
@@ -99,8 +101,13 @@ class MyActivity : FormulaAppCompatActivity() {
 If your `Activity` has another base class, you can just copy logic from `FormulaAppCompatActivity` into your `Activity`.
 
 ### And that's it
-Formula takes care of the rest. The RxJava state stream is instantiated and subscribed to when the user enters 
-declared navigation destination. We dispose of the stream only when user exits the destination. 
+Formula takes care of the rest. This is how the state observable works:
+
+- When `FormulaFragment` is added, we instantiate and subscribe to the state observable.
+- When `FormulaFragment` is removed, we destroy the state observable.
+
+The state management observable continues to run during configuration changes or if you navigate
+to another fragment.
 
 ## Passing arguments to a fragment
 Arguments can be passed using fragment key class. For example, we want to pass initial count 
@@ -197,7 +204,7 @@ class MyActivityComponent(
 }
 ```
 
-To pass this component to feature factories, we need to update configuration that lives 
+To pass this component to feature factories, we need to update the configuration that lives 
 within our `Application`.
 
 ```kotlin
