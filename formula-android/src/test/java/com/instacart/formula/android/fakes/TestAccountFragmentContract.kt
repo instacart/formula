@@ -1,4 +1,4 @@
-package com.instacart.formula.integration.test
+package com.instacart.formula.android.fakes
 
 import android.view.View
 import com.instacart.formula.fragment.FragmentComponent
@@ -10,6 +10,7 @@ data class TestAccountFragmentContract(
     override val tag: String = "account fragment",
     override val layoutId: Int = -1
 ) : FragmentContract<String>() {
+
     override fun createComponent(view: View): FragmentComponent<String> {
         return FragmentComponent.noOp()
     }

@@ -1,9 +1,10 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.internal.ActivityStoreContextImpl
 import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.integration.FragmentId
 import com.jakewharton.rxrelay3.PublishRelay
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify

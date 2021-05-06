@@ -1,22 +1,33 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.android.Flow
-import com.instacart.formula.android.FlowFactory
+import com.instacart.formula.android.fakes.DetailKey
+import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.fragment.FragmentLifecycleEvent
-import com.instacart.formula.integration.test.TestAccountFragmentContract
-import com.instacart.formula.integration.test.TestLoginFragmentContract
-import com.instacart.formula.integration.test.TestSignUpFragmentContract
+import com.instacart.formula.android.fakes.TestAccountFragmentContract
+import com.instacart.formula.android.fakes.TestLoginFragmentContract
+import com.instacart.formula.android.fakes.TestSignUpFragmentContract
+import com.instacart.formula.integration.DisposableScope
+import com.instacart.formula.integration.FragmentId
+import com.instacart.formula.integration.KeyState
+import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
 class FragmentFlowStoreTest {
     class AppComponent {
         val initialized = mutableListOf<Pair<AuthFlowFactory.Component, FragmentContract<*>>>()
+        val updateRelay: PublishRelay<Pair<FragmentKey, String>> = PublishRelay.create()
+
+        fun state(key: FragmentKey): Observable<String> {
+            val updates = updateRelay.filter { it.first == key }.map { it.second }
+            return updates.startWithItem("${key.tag}-state")
+        }
 
         fun createAuthFlowComponent(): DisposableScope<AuthFlowFactory.Component> {
             val component = AuthFlowFactory.Component(onInitialized = { component, key ->
@@ -117,7 +128,7 @@ class FragmentFlowStoreTest {
             exception = t
         }
         assertThat(exception?.message).isEqualTo(
-            "Binding for class com.instacart.formula.integration.test.TestLoginFragmentContract already exists"
+            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentContract already exists"
         )
     }
 
@@ -139,9 +150,88 @@ class FragmentFlowStoreTest {
             }
     }
 
+    @Test fun `subscribed to state until removed from backstack`() {
+        val master = MainKey(1)
+        val detail = DetailKey(1)
+
+        val component = AppComponent()
+        val store = createStore(component)
+        store
+            .toStates()
+            .apply {
+                store.onLifecycleEffect(master.asAddedEvent())
+                store.onLifecycleEffect(detail.asAddedEvent())
+
+                component.updateRelay.accept(master to "main-update")
+                store.onLifecycleEffect(detail.asRemovedEvent())
+                store.onLifecycleEffect(master.asRemovedEvent())
+
+                component.updateRelay.accept(master to "main-update-2")
+            }
+            .assertValues(
+                expectedState(),
+                expectedState(master to "main-1-state"),
+                expectedState(master to "main-1-state", detail to "detail-1-state"),
+                expectedState(master to "main-update", detail to "detail-1-state"),
+                expectedState(master to "main-update"),
+                expectedState()
+            )
+    }
+
+    @Test fun `various fragments added`() {
+
+        val component = AppComponent()
+        val store = createStore(component)
+        store.toStates()
+            .apply {
+                store.onLifecycleEffect(MainKey(1).asAddedEvent())
+                store.onLifecycleEffect(DetailKey(1).asAddedEvent())
+                store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+            }
+            .assertValues(
+                expectedState(),
+                expectedState(MainKey(1) to "main-1-state"),
+                expectedState(MainKey(1) to "main-1-state", DetailKey(1) to "detail-1-state"),
+                expectedState(
+                    MainKey(1) to "main-1-state",
+                    DetailKey(1) to "detail-1-state",
+                    DetailKey(2) to "detail-2-state"
+                )
+            )
+    }
+
+    private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, KeyState>> {
+        return state(FragmentEnvironment())
+            .map { it.states.mapKeys { entry -> entry.key.key } }
+            .test()
+    }
+
+    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, KeyState> {
+        return expectedState(states.asList())
+    }
+
+    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): Map<FragmentKey, KeyState> {
+        val initial = mutableMapOf<FragmentKey, KeyState>()
+        return states.foldRight(initial) { value, acc ->
+            if (value.second != null) {
+                acc.put(value.first, KeyState(value.first, value.second!!))
+            }
+
+            acc
+        }
+    }
+
     fun createStore(component: AppComponent): FragmentFlowStore {
         return FragmentFlowStore.init(component) {
             bind(AuthFlowFactory())
+
+            bind(MainKey::class) { component, key ->
+                component.state(key)
+            }
+
+            bind(DetailKey::class) { component, key ->
+                component.state(key)
+            }
         }
     }
 
