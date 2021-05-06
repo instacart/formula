@@ -2,6 +2,8 @@ package com.instacart.formula.android
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.fakes.DetailKey
+import com.instacart.formula.android.fakes.FakeAuthFlowFactory
+import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentEnvironment
@@ -11,60 +13,30 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
-import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.KeyState
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
 class FragmentFlowStoreTest {
-    class AppComponent {
-        val initialized = mutableListOf<Pair<AuthFlowFactory.Component, FragmentContract<*>>>()
-        val updateRelay: PublishRelay<Pair<FragmentKey, String>> = PublishRelay.create()
 
-        fun state(key: FragmentKey): Observable<String> {
-            val updates = updateRelay.filter { it.first == key }.map { it.second }
-            return updates.startWithItem("${key.tag}-state")
-        }
-
-        fun createAuthFlowComponent(): DisposableScope<AuthFlowFactory.Component> {
-            val component = AuthFlowFactory.Component(onInitialized = { component, key ->
-                initialized.add(component to key)
-            })
-            return DisposableScope(component, {
-                initialized.clear()
-            })
-        }
-    }
-
-    class AuthFlowFactory : FlowFactory<AppComponent, AuthFlowFactory.Component> {
-        class Component(
-            val onInitialized: (Component, FragmentContract<*>) -> Unit
-        )
-
-        override fun createComponent(dependencies: AppComponent): DisposableScope<Component> {
-            return dependencies.createAuthFlowComponent()
-        }
-
-        override fun createFlow(): Flow<Component> {
-            return Flow.build {
-                bind { component, key: TestLoginFragmentContract ->
-                    component.onInitialized(component, key)
-                    Observable.empty<String>()
-                }
-
-                bind { component, key: TestSignUpFragmentContract ->
-                    component.onInitialized(component, key)
-                    Observable.empty<String>()
-                }
+    @Test fun `duplicate contract registration throws an exception`() {
+        var exception: Throwable? = null
+        try {
+            FragmentFlowStore.init(FakeComponent()) {
+                bind(FakeAuthFlowFactory())
+                bind(FakeAuthFlowFactory())
             }
+        } catch (t: Throwable) {
+            exception = t
         }
+        assertThat(exception?.message).isEqualTo(
+            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentContract already exists"
+        )
     }
 
-    @Test fun `component is shared between flow integrations`() {
-        val appComponent = AppComponent()
+    @Test fun `component is shared between flow features`() {
+        val appComponent = FakeComponent()
         val store = createStore(appComponent)
         store
             .state(FragmentEnvironment())
@@ -80,7 +52,7 @@ class FragmentFlowStoreTest {
     }
 
     @Test fun `component is disposed once flow exits`() {
-        val appComponent = AppComponent()
+        val appComponent = FakeComponent()
         val store = createStore(appComponent)
         store
             .state(FragmentEnvironment())
@@ -101,8 +73,8 @@ class FragmentFlowStoreTest {
             }
     }
 
-    @Test fun `component is alive if we enter another integration`() {
-        val appComponent = AppComponent()
+    @Test fun `component is alive if we enter another feature`() {
+        val appComponent = FakeComponent()
         val store = createStore(appComponent)
         store
             .state(FragmentEnvironment())
@@ -117,23 +89,8 @@ class FragmentFlowStoreTest {
             }
     }
 
-    @Test fun `duplicate contract registration throws an exception`() {
-        var exception: Throwable? = null
-        try {
-            FragmentFlowStore.init(AppComponent()) {
-                bind(AuthFlowFactory())
-                bind(AuthFlowFactory())
-            }
-        } catch (t: Throwable) {
-            exception = t
-        }
-        assertThat(exception?.message).isEqualTo(
-            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentContract already exists"
-        )
-    }
-
     @Test fun `unsubscribe disposes of component`() {
-        val appComponent = AppComponent()
+        val appComponent = FakeComponent()
         val store = createStore(appComponent)
         store
             .state(FragmentEnvironment())
@@ -154,7 +111,7 @@ class FragmentFlowStoreTest {
         val master = MainKey(1)
         val detail = DetailKey(1)
 
-        val component = AppComponent()
+        val component = FakeComponent()
         val store = createStore(component)
         store
             .toStates()
@@ -180,7 +137,7 @@ class FragmentFlowStoreTest {
 
     @Test fun `various fragments added`() {
 
-        val component = AppComponent()
+        val component = FakeComponent()
         val store = createStore(component)
         store.toStates()
             .apply {
@@ -221,9 +178,9 @@ class FragmentFlowStoreTest {
         }
     }
 
-    fun createStore(component: AppComponent): FragmentFlowStore {
+    fun createStore(component: FakeComponent): FragmentFlowStore {
         return FragmentFlowStore.init(component) {
-            bind(AuthFlowFactory())
+            bind(FakeAuthFlowFactory())
 
             bind(MainKey::class) { component, key ->
                 component.state(key)
