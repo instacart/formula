@@ -10,7 +10,7 @@ deterministic, composable, testable applications.
 The Android module provides declarative API to connect reactive state management to Android Fragments. 
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
-To learn more, see our [Integration Guide](docs/Integration.md).
+To learn more, see our [Integration Guide](docs/Formula-Android.md).
 
 ## Download
 Add the library to your list of dependencies:

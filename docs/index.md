@@ -180,7 +180,7 @@ class MyApp : Application() {
 
 And that's it. You can see the full <a href="https://github.com/instacart/formula/tree/master/samples/counter" target="_blank">sample here</a>.
 
-To learn more about Formula Android module see [Formula Android Guide](Integration.md). 
+To learn more about Formula Android module see [Formula Android Guide](Formula-Android.md). 
 
 ### Download
 Add the library to your list of dependencies:
