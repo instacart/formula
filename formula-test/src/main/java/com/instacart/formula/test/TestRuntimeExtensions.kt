@@ -5,8 +5,9 @@ import com.instacart.formula.Stream
 import io.reactivex.rxjava3.core.Observable
 
 /**
+ * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
+ *
  * @param input Input passed to [IFormula].
- * @param builder Enables to set a mock render model for children formulas.
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     input: Input
@@ -16,8 +17,9 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
 
 
 /**
- * @param input A stream of inputs passed to [Formula].
- * @param builder Enables to set a mock render model for children formulas.
+ * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
+ *
+ * @param input A stream of inputs passed to [IFormula].
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     input: Observable<Input>
@@ -29,7 +31,7 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
 }
 
 /**
- * @param builder Enables to set a mock render model for children formulas.
+ * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
  */
 fun <Output : Any, F: IFormula<Unit, Output>> F.test() = test(Unit)
 
