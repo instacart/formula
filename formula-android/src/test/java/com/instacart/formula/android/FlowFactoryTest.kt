@@ -7,6 +7,7 @@ import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
+import com.instacart.formula.android.internal.FunctionUtils
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 

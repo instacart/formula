@@ -15,6 +15,7 @@ import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
 import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.KeyState
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
@@ -154,6 +155,29 @@ class FragmentFlowStoreTest {
                     DetailKey(1) to "detail-1-state",
                     DetailKey(2) to "detail-2-state"
                 )
+            )
+    }
+
+    @Test fun `bind feature factory with to dependencies defined`() {
+        val myFeatureFactory = object : FeatureFactory<String, MainKey> {
+            override fun initialize(dependencies: String, key: MainKey): Feature<*> {
+                return TestUtils.feature(
+                    stateValue = dependencies
+                )
+            }
+        }
+
+        val store = FragmentFlowStore.init(100) {
+            bind(myFeatureFactory) {
+                "Dependency: $it"
+            }
+        }
+
+        store.toStates()
+            .apply { store.onLifecycleEffect(MainKey(1).asAddedEvent()) }
+            .assertValues(
+                expectedState(),
+                expectedState(MainKey(1) to "Dependency: 100")
             )
     }
 
