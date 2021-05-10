@@ -261,29 +261,112 @@ class MyActivity : FragmentActivity() {
 ```
 This is already in place for you if you use `FormulaAppCompatActivity`.
 
-## Fragment flow
-Flow enables to group multiple fragments and share state between all of them. 
+## Fragment flow factory
+A flow factory groups multiple fragments and allows to share state, routers, action handlers
+and other dependencies between them. It has two generic parameters:
+
+- `Dependencies` that the parent needs to provide. 
+- `FlowComponent` that will be shared with all features defined by this flow.
+
+For this example, let's say we are building authentication for our app. The backend provides view
+information such as the hints we should show for email or password fields. We want to only fetch 
+this data once and share it between the login and sign up fragments. Let's say our repository 
+class looks something like this
 
 ```kotlin
-class MyFlowDeclaration : FlowDeclaration<MyFlowDeclaration.Component>() {
-  // Define the shared component for the flow 
-  class Component(
-    val sharedService: MyFlowService,
-    val onSomeEvent: () -> Unit
-  )
+class AuthRepo(private val retrofit: Retrofit) {
 
-  override fun createFlow(): Flow<Component> {
-    return build {
-      bind(Contract1::class) { component, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-      }
-      bind(Contract2::class) { component, contract ->
-        TODO("return an RxJava state stream that drives the UI")
-      }
-    } 
-  }
+    // Backend provides data that helps us render auth pages.
+    data class PageResponse(
+        val emailHint: String,
+        val passwordHint: String,
+    )
+
+    // This will check if we have in-memory response and
+    // return that, otherwise make a fresh call.
+    fun pageEvents(): Observable<AuthPageResponse> { ... }
 }
 ```
+
+As you can see above, this repository class needs a `Retrofit` instance to function. We can define
+the dependencies we need using an interface.
+```kotlin
+interface Dependencies {
+    fun retrofit(): Retrofit    
+}
+```
+
+Let's create our flow component. In a real application, component would usually be implemented by DI framework such as `Dagger`.
+```kotlin
+class AuthFlowComponent(private val dependencies: Dependencies) {
+    // Auth repo needs to be a singleton so we instantiate 
+    // this once when component is created.
+    val authRepo = AuthRepo(dependencies.retrofit())
+}
+```
+
+We can now define `AuthFlowFactory`. A flow factory has two methods:
+
+- `createComponent` - we create `AuthFlowComponent` here
+- `createFlow` - we register feature factories that are part of our flow
+
+```kotlin
+class AuthFlowFactory : FlowFactory<Dependencies, AuthFlowComponent> {
+    interface Dependencies {
+        fun retrofit(): Retrofit    
+    }
+    
+    class AuthFlowComponent(private val dependencies: Dependencies) {
+        val authRepo = AuthRepo(dependencies.retrofit())
+    }
+
+    override fun createComponent(
+        dependencies: Dependencies
+    ): DisposableScope<AuthFlowComponent> {
+        val flowComponent = AuthFlowComponent(dependencies)
+        return DisposableScope(flowComponent, onDispose = {
+            // Here you can clear observables and dispose of other resources 
+            // that the component needed
+        })
+    }
+
+    override fun createFlow(): Flow<AuthFlowComponent> {
+        return Flow.build {
+            bind(AuthRootFeatureFactory())
+            bind(LoginFeatureFactory())
+            bind(SignUpFeatureFactory())
+        }
+    }
+}
+```
+
+Before we integrate `AuthFlowFactory` within our application, we need to update our app component
+to provide dependencies.
+
+```kotlin
+class AppComponent() : AuthFlowFactory.Dependencies {
+    override fun retrofit(): Retrofit {
+        return ...
+    }
+}
+```
+ 
+ 
+Now that we have our dependencies configured, let's bind the flow factory to our activity store
+```kotlin
+val appComponent = AppComponent()
+FormulaAndroid.init(this) {
+    activity(MyActivity::class) {
+        store(appComponent) {
+            bind(AuthFlowFactory())
+        }
+    }
+}
+```
+
+Formula calls `createComponent` when a formula fragment handled by `createFlow` is added. This 
+component lives as long as there are any formula fragments defined by `createFlow` alive. The 
+component is disposed once the last formula fragment is removed.     
 
 ## Activity state management
 One of the goals of Formula is to make doing the right thing easy. As part of that we wanted to provide an easy
