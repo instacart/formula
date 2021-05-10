@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
 import com.google.common.truth.Truth.assertThat
