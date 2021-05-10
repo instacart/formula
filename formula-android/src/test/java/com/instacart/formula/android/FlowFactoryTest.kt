@@ -61,4 +61,15 @@ class FlowFactoryTest {
             bind(EmptyFlowFactory<Any>())
         }
     }
+
+    @Test
+    fun `bind flow factory with to dependencies defined`() {
+        val flowFactoryWithStringDependencies = EmptyFlowFactory<String>()
+        val store = FragmentFlowStore.init(100) {
+            // If it compiles, it's a success
+            bind(flowFactoryWithStringDependencies) { component ->
+                component.toString()
+            }
+        }
+    }
 }

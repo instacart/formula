@@ -178,4 +178,15 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
         val binding = Binding.composite(flowFactory)
         bind(binding)
     }
+
+    /**
+     * Binds a flow factory.
+     */
+    fun <Dependencies> bind(
+        flowFactory: FlowFactory<Dependencies, *>,
+        toDependencies: (Component) -> Dependencies
+    ) = apply {
+        val binding = Binding.composite(flowFactory, toDependencies)
+        bind(binding)
+    }
 }

@@ -18,6 +18,20 @@ abstract class Binding<in ParentComponent> {
                 flowFactory.createFlow().bindings
             )
         }
+
+        fun <ParentComponent, Dependencies, Component> composite(
+            flowFactory: FlowFactory<Dependencies, Component>,
+            toDependencies: (ParentComponent) -> Dependencies,
+        ): Binding<ParentComponent> {
+            return composite(
+                scopeFactory = { component ->
+                    val dependencies = toDependencies(component)
+                    flowFactory.createComponent(dependencies)
+                },
+                flowFactory.createFlow().bindings
+            )
+        }
+
         fun <ParentComponent, Component> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
             bindings: Bindings<Component>
