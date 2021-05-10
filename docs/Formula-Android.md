@@ -262,7 +262,7 @@ class MyActivity : FragmentActivity() {
 This is already in place for you if you use `FormulaAppCompatActivity`.
 
 ## Fragment flow factory
-A flow factory enables to group multiple fragments and share state, routers, action handlers
+A flow factory groups multiple fragments and allows to share state, routers, action handlers
 and other dependencies between them. It has two generic parameters:
 
 - `Dependencies` that the parent needs to provide. 
@@ -283,7 +283,7 @@ class AuthRepo(private val retrofit: Retrofit) {
     )
 
     // This will check if we have in-memory response and
-    // return that otherwise make a fresh call.
+    // return that, otherwise make a fresh call.
     fun pageEvents(): Observable<AuthPageResponse> { ... }
 }
 ```
@@ -296,10 +296,10 @@ interface Dependencies {
 }
 ```
 
-Let's create our flow component. In a real application, this would usually be a `Dagger` component.
+Let's create our flow component. In a real application, component would usually be implemented by DI framework such as `Dagger`.
 ```kotlin
 class AuthFlowComponent(private val dependencies: Dependencies) {
-    // Auth repo needs to be a singleton so we we instantiate 
+    // Auth repo needs to be a singleton so we instantiate 
     // this once when component is created.
     val authRepo = AuthRepo(dependencies.retrofit())
 }
@@ -365,7 +365,7 @@ FormulaAndroid.init(this) {
 ```
 
 Formula calls `createComponent` when a formula fragment handled by `createFlow` is added. This 
-component lives as long as there is any formula fragments defined by `createFlow` alive. The 
+component lives as long as there are any formula fragments defined by `createFlow` alive. The 
 component is disposed once the last formula fragment is removed.     
 
 ## Activity state management
