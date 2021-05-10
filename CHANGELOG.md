@@ -15,7 +15,8 @@
 - **Breaking**: Removed `BackStackStore` and `BackStack`.
 - **Breaking**: Removed `SharedStateStore`.
 - **Breaking**: Replacing `FlowDeclaration` and `FlowIntegration` with `FlowFactory`.
-- Added `bind(myFeatureFactory) { component.myFeatureDependency() }` functionality.
+- Added `bind(myFeatureFactory) { component -> component.myFeatureDependency() }` binding method.
+- Added `bind(myFlowFactory) { component -> component.createMyFlowDependencies() }` binding method.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
