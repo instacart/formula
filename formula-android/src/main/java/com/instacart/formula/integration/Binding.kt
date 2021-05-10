@@ -8,7 +8,7 @@ import com.instacart.formula.integration.internal.CompositeBinding
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<ParentComponent> {
+abstract class Binding<in ParentComponent> {
     companion object {
         fun <ParentComponent, Component> composite(
             flowFactory: FlowFactory<ParentComponent, Component>,
@@ -26,7 +26,7 @@ abstract class Binding<ParentComponent> {
         }
     }
 
-    data class Input<Component>(
+    data class Input<out Component>(
         val environment: FragmentEnvironment,
         val component: Component,
         val activeKeys: List<FragmentId>,

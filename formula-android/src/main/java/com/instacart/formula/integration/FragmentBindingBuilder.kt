@@ -3,6 +3,7 @@ package com.instacart.formula.integration
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FlowFactory
+import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
@@ -28,26 +29,54 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
     /**
      * Binds a [feature factory][FeatureFactory] for a specific [key][type].
      *
-     * @param type The class which describes the [key][T].
+     * @param type The class which describes the [key][Key].
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
      */
-    fun <T : FragmentKey> bind(
-        type : KClass<T>,
-        featureFactory: FeatureFactory<Component, T>
+    fun <Dependencies, Key : FragmentKey> bind(
+        type : KClass<Key>,
+        featureFactory: FeatureFactory<Dependencies, Key>,
+        toDependencies: (Component) -> Dependencies
     ) = apply {
-        val binding = FeatureBinding(type.java, featureFactory as FeatureFactory<Component, FragmentKey>)
+        val binding = FeatureBinding(type.java, featureFactory, toDependencies)
         bind(binding as Binding<Component>)
     }
 
     /**
-     * A convenience inline function that binds a feature factory for a specific [key][T].
+     * Binds a [feature factory][FeatureFactory] for a specific [key][type].
+     *
+     * @param type The class which describes the [key][Key].
+     * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     */
+    fun <Key : FragmentKey> bind(
+        type : KClass<Key>,
+        featureFactory: FeatureFactory<Component, Key>
+    ) = apply {
+        bind(type, featureFactory, FunctionUtils.identity())
+    }
+
+    /**
+     * A convenience inline function that binds a feature factory for a specific [key][Key].
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
-    inline fun <reified T: FragmentKey> bind(
-        featureFactory: FeatureFactory<Component, T>
+    inline fun <reified Key: FragmentKey> bind(
+        featureFactory: FeatureFactory<Component, Key>
     ) = apply {
-        bind(T::class, featureFactory)
+        bind(Key::class, featureFactory)
+    }
+
+    /**
+     * A convenience inline function that binds a feature factory for a specific [key][Key].
+     *
+     * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
+     */
+    inline fun <Dependencies, reified Key: FragmentKey> bind(
+        featureFactory: FeatureFactory<Dependencies, Key>,
+        noinline toDependencies: (Component) -> Dependencies
+    ) = apply {
+        bind(Key::class, featureFactory, toDependencies)
     }
 
     /**
