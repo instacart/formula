@@ -1,6 +1,7 @@
 package com.instacart.formula.android
 
 import com.google.common.truth.Truth
+import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.integration.test.TestAccountFragmentContract
@@ -32,6 +33,16 @@ class FlowFactoryTest {
         }
     }
 
+    class EmptyFlowFactory<Dependencies> : FlowFactory<Dependencies, Unit> {
+        override fun createComponent(dependencies: Dependencies): DisposableScope<Unit> {
+            return DisposableScope(Unit, {})
+        }
+
+        override fun createFlow(): Flow<Unit> {
+            return Flow.build {  }
+        }
+    }
+
     @Test
     fun `binds only declared contracts`() {
 
@@ -40,5 +51,13 @@ class FlowFactoryTest {
         Truth.assertThat(binding.binds(TestSignUpFragmentContract())).isTrue()
 
         Truth.assertThat(binding.binds(TestAccountFragmentContract())).isFalse()
+    }
+
+    @Test
+    fun `bind flow factory with Any dependency type`() {
+        val store = FragmentFlowStore.init("Component") {
+            // If it compiles, it's a success
+            bind(EmptyFlowFactory<Any>())
+        }
     }
 }
