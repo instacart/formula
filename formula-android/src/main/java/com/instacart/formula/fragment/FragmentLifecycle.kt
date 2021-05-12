@@ -3,6 +3,7 @@ package com.instacart.formula.fragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentInspector
 import androidx.fragment.app.FragmentManager
+import com.instacart.formula.android.internal.EmptyFragmentKey
 import com.instacart.formula.integration.FragmentId
 
 /**
@@ -30,7 +31,7 @@ internal object FragmentLifecycle {
 
 private fun Fragment.getFragmentKey(): FragmentKey {
     val fragment = this as? BaseFormulaFragment<*>
-    return fragment?.getFragmentKey() ?: EmptyFragmentContract(tag.orEmpty())
+    return fragment?.getFragmentKey() ?: EmptyFragmentKey(tag.orEmpty())
 }
 
 private fun Fragment.getFragmentInstanceId(): String {
