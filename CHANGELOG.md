@@ -23,6 +23,7 @@
 - Move `FragmentId` into `android` package.
 - Move `FormulaAppCompatActivity` into `android` package.
 - Move `ActivityResult` into `android.events` package.
+- Move `FragmentKey` into `android` package.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

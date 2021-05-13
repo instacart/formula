@@ -1,7 +1,5 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.fragment.FragmentKey
-
 /**
  * An object used to identify a fragment. It combines both a user generated [key] and
  * a generated [String] id.

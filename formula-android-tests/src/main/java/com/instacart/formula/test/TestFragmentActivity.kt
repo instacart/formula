@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.R
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.fragment.FragmentKey
+import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
 
 class TestFragmentActivity : FormulaAppCompatActivity() {

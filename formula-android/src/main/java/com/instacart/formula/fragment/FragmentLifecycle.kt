@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentInspector
 import androidx.fragment.app.FragmentManager
 import com.instacart.formula.android.internal.EmptyFragmentKey
 import com.instacart.formula.android.FragmentId
+import com.instacart.formula.android.FragmentKey
 
 /**
  * Provides utility method [lifecycleEvents] to track what fragments are added and removed from the backstack.

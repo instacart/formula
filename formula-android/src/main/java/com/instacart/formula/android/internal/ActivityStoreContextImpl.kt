@@ -4,7 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowState
-import com.instacart.formula.fragment.FragmentKey
+import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ActivityStoreContext
 import com.jakewharton.rxrelay3.BehaviorRelay

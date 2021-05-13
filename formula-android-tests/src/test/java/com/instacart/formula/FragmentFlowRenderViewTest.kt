@@ -8,7 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentFlowState
-import com.instacart.formula.fragment.FragmentKey
+import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.integration.BackCallback
 import com.instacart.formula.test.TestContract
 import com.instacart.formula.test.TestContractWithId

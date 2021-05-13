@@ -1,4 +1,4 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android
 
 import android.os.Parcelable
 import androidx.fragment.app.FragmentManager
