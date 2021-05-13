@@ -2,7 +2,7 @@ package com.instacart.formula.android.fakes
 
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.integration.DisposableScope
+import com.instacart.formula.android.DisposableScope
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 

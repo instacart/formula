@@ -1,7 +1,5 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.integration.DisposableScope
-
 /**
  * A flow factory enables to group multiple fragments and share state, routers, action handlers
  * and other dependencies between them. A shared [FlowComponent] will be instantiated when user

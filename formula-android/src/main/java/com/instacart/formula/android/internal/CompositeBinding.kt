@@ -5,7 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 import com.instacart.formula.android.Binding
-import com.instacart.formula.integration.DisposableScope
+import com.instacart.formula.android.DisposableScope
 
 /**
  * Defines how a group of keys should be bound to their integrations.

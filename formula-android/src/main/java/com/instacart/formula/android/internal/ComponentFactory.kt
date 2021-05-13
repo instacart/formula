@@ -1,6 +1,6 @@
 package com.instacart.formula.android.internal
 
-import com.instacart.formula.integration.DisposableScope
+import com.instacart.formula.android.DisposableScope
 
 /**
  * Component factory creates a child component from a parent component.

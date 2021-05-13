@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 /**
  * Defines a component that can be disposed. This enables us to clean up
