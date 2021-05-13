@@ -5,7 +5,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.internal.ActivityManager
-import com.instacart.formula.activity.ActivityResult
+import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import java.util.UUID
 

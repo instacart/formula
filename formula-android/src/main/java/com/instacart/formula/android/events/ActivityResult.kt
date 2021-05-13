@@ -1,4 +1,4 @@
-package com.instacart.formula.activity
+package com.instacart.formula.android.events
 
 import android.content.Intent
 
