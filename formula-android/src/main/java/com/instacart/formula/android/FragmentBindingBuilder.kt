@@ -1,5 +1,7 @@
 package com.instacart.formula.android
 
+import com.instacart.formula.android.internal.Binding
+import com.instacart.formula.android.internal.Bindings
 import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
@@ -190,7 +192,8 @@ class FragmentBindingBuilder<Component> {
         bind(binding)
     }
 
-    fun build(): Bindings<Component> {
+    @PublishedApi
+    internal fun build(): Bindings<Component> {
         return Bindings(
             types = types,
             bindings = bindings

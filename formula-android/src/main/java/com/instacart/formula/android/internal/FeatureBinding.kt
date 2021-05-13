@@ -6,7 +6,6 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.Binding
 import com.instacart.formula.android.FeatureEvent
 
 /**

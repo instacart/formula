@@ -1,13 +1,16 @@
-package com.instacart.formula.android
+package com.instacart.formula.android.internal
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.android.internal.ComponentFactory
-import com.instacart.formula.android.internal.CompositeBinding
+import com.instacart.formula.android.FeatureEvent
+import com.instacart.formula.android.FlowFactory
+import com.instacart.formula.android.FragmentEnvironment
+import com.instacart.formula.android.FragmentId
 
 /**
  * Defines how specific keys bind to the state management associated
  */
-abstract class Binding<in ParentComponent> {
+@PublishedApi
+internal abstract class Binding<in ParentComponent> {
     companion object {
         fun <ParentComponent, Component> composite(
             flowFactory: FlowFactory<ParentComponent, Component>,
@@ -31,7 +34,7 @@ abstract class Binding<in ParentComponent> {
             )
         }
 
-        fun <ParentComponent, Component> composite(
+        @PublishedApi internal fun <ParentComponent, Component> composite(
             scopeFactory: ComponentFactory<ParentComponent, Component>,
             bindings: Bindings<Component>
         ): Binding<ParentComponent> {
