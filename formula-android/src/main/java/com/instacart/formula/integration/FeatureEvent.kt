@@ -1,6 +1,7 @@
 package com.instacart.formula.integration
 
 import com.instacart.formula.android.Feature
+import com.instacart.formula.android.FragmentId
 
 sealed class FeatureEvent {
     data class Init(override val id: FragmentId, val feature: Feature<*>): FeatureEvent()

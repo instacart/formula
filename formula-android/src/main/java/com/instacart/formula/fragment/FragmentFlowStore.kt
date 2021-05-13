@@ -3,7 +3,7 @@ package com.instacart.formula.fragment
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.integration.FragmentId
+import com.instacart.formula.android.FragmentId
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FeatureEvent

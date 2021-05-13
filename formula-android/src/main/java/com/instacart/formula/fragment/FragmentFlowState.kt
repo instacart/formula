@@ -1,6 +1,6 @@
 package com.instacart.formula.fragment
 
-import com.instacart.formula.integration.FragmentId
+import com.instacart.formula.android.FragmentId
 import com.instacart.formula.integration.FeatureEvent
 import com.instacart.formula.android.FragmentState
 

@@ -1,6 +1,6 @@
 package com.instacart.formula.fragment
 
-import com.instacart.formula.integration.FragmentId
+import com.instacart.formula.android.FragmentId
 
 /**
  * Models when a fragment key is attached and detached. Provides a way to indicate

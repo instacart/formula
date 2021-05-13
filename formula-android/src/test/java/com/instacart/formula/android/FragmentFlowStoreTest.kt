@@ -13,7 +13,6 @@ import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
-import com.instacart.formula.integration.FragmentId
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
