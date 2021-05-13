@@ -3,7 +3,6 @@ package com.instacart.formula.android
 import io.reactivex.rxjava3.core.Observable
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.integration.FragmentBindingBuilder
 
 /**
  * Feature is based on uni-directional state management where a single state model drives

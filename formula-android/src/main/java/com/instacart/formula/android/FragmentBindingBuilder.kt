@@ -1,19 +1,17 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
-import com.instacart.formula.android.Feature
-import com.instacart.formula.android.FeatureFactory
-import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.android.internal.FeatureBinding
+import com.instacart.formula.integration.Integration
 import io.reactivex.rxjava3.core.Observable
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
- * Used to create a [Binding] for [FragmentContract] keys.
+ * Used to create a [Binding] for [FragmentKey] keys.
  */
 class FragmentBindingBuilder<Component> {
     companion object {

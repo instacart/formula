@@ -5,10 +5,10 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.rxjava3.RxStream
-import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.FeatureEvent
+import com.instacart.formula.android.Binding
+import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.integration.DisposableScope
-import com.instacart.formula.integration.FragmentBindingBuilder
+import com.instacart.formula.android.FragmentBindingBuilder
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay

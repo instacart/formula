@@ -17,7 +17,7 @@ import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 import com.instacart.formula.fragment.getFormulaFragmentId
 import com.instacart.formula.integration.BackCallback
-import com.instacart.formula.integration.FeatureEvent
+import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
 import java.util.LinkedList
 import java.util.UUID

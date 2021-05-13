@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.ViewFactory
-import com.instacart.formula.integration.FeatureEvent
+import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
 import java.lang.IllegalStateException
 

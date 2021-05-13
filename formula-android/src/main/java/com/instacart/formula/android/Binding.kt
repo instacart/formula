@@ -1,8 +1,6 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.android.FlowFactory
-import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.internal.ComponentFactory
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.android.internal.CompositeBinding
