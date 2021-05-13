@@ -1,11 +1,10 @@
-package com.instacart.formula.integration.internal
+package com.instacart.formula.android.internal
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 import com.instacart.formula.android.FeatureFactory
-import com.instacart.formula.android.internal.forEachIndices
 import com.instacart.formula.fragment.FragmentKey
 import com.instacart.formula.integration.Binding
 import com.instacart.formula.integration.FeatureEvent

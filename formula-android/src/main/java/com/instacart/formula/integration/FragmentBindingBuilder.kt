@@ -7,7 +7,7 @@ import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
-import com.instacart.formula.integration.internal.FeatureBinding
+import com.instacart.formula.android.internal.FeatureBinding
 import io.reactivex.rxjava3.core.Observable
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
