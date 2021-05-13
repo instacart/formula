@@ -18,6 +18,7 @@
 - Added `bind(myFeatureFactory) { component -> component.myFeatureDependency() }` binding method.
 - Added `bind(myFlowFactory) { component -> component.createMyFlowDependencies() }` binding method.
 - Rename `KeyState` to `FragmentState` and move it to `android` package.
+- Move `ActivityStoreContext` into `android` package.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
