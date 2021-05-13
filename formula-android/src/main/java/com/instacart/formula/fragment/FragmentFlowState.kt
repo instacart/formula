@@ -2,7 +2,7 @@ package com.instacart.formula.fragment
 
 import com.instacart.formula.integration.FragmentId
 import com.instacart.formula.integration.FeatureEvent
-import com.instacart.formula.integration.KeyState
+import com.instacart.formula.android.FragmentState
 
 /**
  * Represents currently [activeKeys] and their [states].
@@ -15,7 +15,7 @@ data class FragmentFlowState(
     val activeIds: List<FragmentId> = emptyList(),
     val visibleIds: List<FragmentId> = emptyList(),
     val features: Map<FragmentId, FeatureEvent> = emptyMap(),
-    val states: Map<FragmentId, KeyState> = emptyMap()
+    val states: Map<FragmentId, FragmentState> = emptyMap()
 ) {
     @Deprecated("use activeIds")
     val activeKeys: List<FragmentKey>

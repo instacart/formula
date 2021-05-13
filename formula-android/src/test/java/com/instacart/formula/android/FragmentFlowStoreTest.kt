@@ -14,8 +14,6 @@ import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
 import com.instacart.formula.integration.FragmentId
-import com.instacart.formula.integration.KeyState
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
@@ -181,21 +179,21 @@ class FragmentFlowStoreTest {
             )
     }
 
-    private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, KeyState>> {
+    private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, FragmentState>> {
         return state(FragmentEnvironment())
             .map { it.states.mapKeys { entry -> entry.key.key } }
             .test()
     }
 
-    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, KeyState> {
+    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, FragmentState> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): Map<FragmentKey, KeyState> {
-        val initial = mutableMapOf<FragmentKey, KeyState>()
+    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): Map<FragmentKey, FragmentState> {
+        val initial = mutableMapOf<FragmentKey, FragmentState>()
         return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
-                acc.put(value.first, KeyState(value.first, value.second!!))
+                acc.put(value.first, FragmentState(value.first, value.second!!))
             }
 
             acc
