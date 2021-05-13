@@ -7,15 +7,15 @@ import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
-import com.instacart.formula.integration.internal.BaseBindingBuilder
 import com.instacart.formula.integration.internal.FeatureBinding
 import io.reactivex.rxjava3.core.Observable
+import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
  * Used to create a [Binding] for [FragmentContract] keys.
  */
-class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
+class FragmentBindingBuilder<Component> {
     companion object {
 
         @PublishedApi
@@ -25,6 +25,9 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
             return FragmentBindingBuilder<Component>().apply(init).build()
         }
     }
+
+    private val types = mutableSetOf<Class<*>>()
+    private val bindings: MutableList<Binding<Component>> = mutableListOf()
 
     /**
      * Binds a [feature factory][FeatureFactory] for a specific [key][type].
@@ -188,5 +191,23 @@ class FragmentBindingBuilder<Component> : BaseBindingBuilder<Component>() {
     ) = apply {
         val binding = Binding.composite(flowFactory, toDependencies)
         bind(binding)
+    }
+
+    fun build(): Bindings<Component> {
+        return Bindings(
+            types = types,
+            bindings = bindings
+        )
+    }
+
+    private fun bind(binding: Binding<Component>) = apply {
+        binding.types().forEach {
+            if (types.contains(it)) {
+                throw IllegalStateException("Binding for $it already exists")
+            }
+            types += it
+        }
+
+        bindings += binding
     }
 }

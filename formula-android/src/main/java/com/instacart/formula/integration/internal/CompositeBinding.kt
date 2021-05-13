@@ -4,14 +4,14 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
+import com.instacart.formula.android.internal.forEachIndices
 import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.ComponentFactory
+import com.instacart.formula.android.internal.ComponentFactory
 import com.instacart.formula.integration.DisposableScope
 
 /**
  * Defines how a group of keys should be bound to their integrations.
  *
- * @param Key A key type associated with this binding.
  * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
  * @param ScopedComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
