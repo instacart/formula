@@ -1,7 +1,6 @@
 package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.integration.ActivityStore
 import kotlin.reflect.KClass
 
 /**

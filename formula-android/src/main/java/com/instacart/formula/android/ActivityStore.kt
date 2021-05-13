@@ -1,7 +1,6 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.android.StreamConfigurator
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
 import com.instacart.formula.fragment.FragmentLifecycleEvent
@@ -9,7 +8,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * An ActivityStore is responsible for managing state of multiple fragments. It maps each
- * navigation destination [com.instacart.formula.fragment.FragmentContract] to its state
+ * navigation destination [com.instacart.formula.fragment.FragmentKey] to its state
  * management stream.
  *
  * @param contracts Fragment state management defined for this [Activity].

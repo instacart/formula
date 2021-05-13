@@ -4,7 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.activity.ActivityResult
 import com.instacart.formula.fragment.FragmentEnvironment
-import com.instacart.formula.integration.ActivityStore
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.integration.FragmentFlowRenderView
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
