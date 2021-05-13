@@ -1,6 +1,4 @@
-package com.instacart.formula.fragment
-
-import com.instacart.formula.android.FragmentKey
+package com.instacart.formula.android
 
 interface BaseFormulaFragment<State> {
 
