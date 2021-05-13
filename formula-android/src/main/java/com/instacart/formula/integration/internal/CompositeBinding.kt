@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 import com.instacart.formula.android.internal.forEachIndices
 import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.ComponentFactory
+import com.instacart.formula.android.internal.ComponentFactory
 import com.instacart.formula.integration.DisposableScope
 
 /**
