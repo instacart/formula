@@ -9,6 +9,7 @@ import com.instacart.formula.android.Binding
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.android.FragmentBindingBuilder
+import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay

@@ -2,7 +2,6 @@ package com.instacart.formula.android
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.android.internal.ComponentFactory
-import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.android.internal.CompositeBinding
 
 /**

@@ -11,7 +11,7 @@ import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
 import com.instacart.formula.fragment.BaseFormulaFragment
 import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.fragment.FragmentEnvironment
+import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentLifecycle
 import com.instacart.formula.fragment.FragmentLifecycleEvent
