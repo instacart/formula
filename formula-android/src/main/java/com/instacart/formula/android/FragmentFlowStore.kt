@@ -1,16 +1,10 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.android.FragmentId
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.android.internal.Binding
-import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.DisposableScope
-import com.instacart.formula.android.FragmentBindingBuilder
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay

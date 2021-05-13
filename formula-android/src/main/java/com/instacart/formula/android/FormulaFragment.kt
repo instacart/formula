@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.Cancelable
-import com.instacart.formula.fragment.FragmentLifecycleCallback
 import com.jakewharton.rxrelay3.BehaviorRelay
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
