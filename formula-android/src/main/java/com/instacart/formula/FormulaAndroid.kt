@@ -9,7 +9,7 @@ import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
-import com.instacart.formula.android.AppManager
+import com.instacart.formula.android.internal.AppManager
 import com.instacart.formula.android.FragmentKey
 import java.lang.IllegalStateException
 
