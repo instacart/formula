@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentManager
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BaseFormulaFragment
-import com.instacart.formula.fragment.FormulaFragment
+import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.fragment.FragmentLifecycleEvent
 
 /**

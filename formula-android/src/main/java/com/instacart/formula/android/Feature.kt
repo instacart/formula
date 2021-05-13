@@ -1,7 +1,6 @@
 package com.instacart.formula.android
 
 import io.reactivex.rxjava3.core.Observable
-import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentFlowStore
 
 /**

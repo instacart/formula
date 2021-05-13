@@ -4,7 +4,6 @@ import android.view.View
 import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
 import com.instacart.formula.android.views.FeatureViewBindFunction
-import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentLifecycleCallback
 
 /**
