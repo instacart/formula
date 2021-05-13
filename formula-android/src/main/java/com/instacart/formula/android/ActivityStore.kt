@@ -3,7 +3,7 @@ package com.instacart.formula.android
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.android.events.FragmentLifecycleEvent
 import io.reactivex.rxjava3.disposables.Disposable
 
 /**

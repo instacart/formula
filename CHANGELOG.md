@@ -28,6 +28,7 @@
 - Move `DisposableScope` into `android` package.
 - Move `FormulaFragment` into `android` package.
 - Move `BackCallback` into `android` package.
+- Move `FragmentLifecycleEvent` into `android.events` package.
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

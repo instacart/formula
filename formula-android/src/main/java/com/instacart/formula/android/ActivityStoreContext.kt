@@ -5,7 +5,7 @@ import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.fragment.FragmentFlowState
 import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.android.events.FragmentLifecycleEvent
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 

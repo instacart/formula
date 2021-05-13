@@ -11,6 +11,7 @@ import com.instacart.formula.android.DisposableScope
 import com.instacart.formula.android.FragmentBindingBuilder
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
+import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable

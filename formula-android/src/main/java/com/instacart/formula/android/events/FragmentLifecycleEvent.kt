@@ -1,4 +1,4 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android.events
 
 import com.instacart.formula.android.FragmentId
 
