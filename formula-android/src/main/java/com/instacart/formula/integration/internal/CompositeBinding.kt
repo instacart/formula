@@ -12,7 +12,6 @@ import com.instacart.formula.integration.DisposableScope
 /**
  * Defines how a group of keys should be bound to their integrations.
  *
- * @param Key A key type associated with this binding.
  * @param ParentComponent A component associated with the parent. Often this will map to the parent dagger component.
  * @param ScopedComponent A component that is initialized when user enters this flow and is shared between
  *                  all the screens within the flow. Component will be destroyed when user exists the flow.
