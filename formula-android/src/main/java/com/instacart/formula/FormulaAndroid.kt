@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.ActivityConfigurator
-import com.instacart.formula.activity.ActivityResult
+import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.fragment.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.AppManager

@@ -3,7 +3,7 @@ package com.examples.todoapp
 import com.examples.todoapp.data.TaskRepo
 import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.examples.todoapp.tasks.TaskListFormula
-import com.instacart.formula.integration.ActivityStoreContext
+import com.instacart.formula.android.ActivityStoreContext
 
 class TodoAppComponent(
     private val store: ActivityStoreContext<TodoActivity>

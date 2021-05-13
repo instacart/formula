@@ -3,13 +3,13 @@ package com.instacart.formula.fragment
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.integration.FragmentId
+import com.instacart.formula.android.FragmentId
 import com.instacart.formula.rxjava3.RxStream
-import com.instacart.formula.integration.Binding
-import com.instacart.formula.integration.FeatureEvent
+import com.instacart.formula.android.Binding
+import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.integration.DisposableScope
-import com.instacart.formula.integration.FragmentBindingBuilder
-import com.instacart.formula.integration.KeyState
+import com.instacart.formula.android.FragmentBindingBuilder
+import com.instacart.formula.android.FragmentState
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -136,7 +136,7 @@ class FragmentFlowStore(
                                 Observable.empty()
                             }
                         }.onEvent {
-                            val keyState = KeyState(fragmentId.key, it)
+                            val keyState = FragmentState(fragmentId.key, it)
                             transition(state.copy(states = state.states.plus(fragmentId to keyState)))
                         }
                     }

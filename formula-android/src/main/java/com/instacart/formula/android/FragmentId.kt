@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import com.instacart.formula.fragment.FragmentKey
 

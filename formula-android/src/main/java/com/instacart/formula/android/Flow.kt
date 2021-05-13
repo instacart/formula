@@ -1,8 +1,5 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.integration.Bindings
-import com.instacart.formula.integration.FragmentBindingBuilder
-
 /**
  * A flow defines a group of features that share a same [FlowComponent].
  */

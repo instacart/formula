@@ -1,10 +1,9 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.android.internal.ComponentFactory
 import com.instacart.formula.fragment.FragmentEnvironment
-import com.instacart.formula.integration.internal.CompositeBinding
+import com.instacart.formula.android.internal.CompositeBinding
 
 /**
  * Defines how specific keys bind to the state management associated
