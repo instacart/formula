@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import com.examples.todoapp.tasks.TaskListKey
 import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.integration.FormulaAppCompatActivity
+import com.instacart.formula.android.FormulaAppCompatActivity
 
 class TodoActivity : FormulaAppCompatActivity() {
 

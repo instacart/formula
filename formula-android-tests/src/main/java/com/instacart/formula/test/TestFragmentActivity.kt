@@ -7,7 +7,7 @@ import com.instacart.formula.R
 import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.fragment.FragmentKey
-import com.instacart.formula.integration.FormulaAppCompatActivity
+import com.instacart.formula.android.FormulaAppCompatActivity
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
     @VisibleForTesting lateinit var initialContract: FragmentContract<*>
