@@ -1,4 +1,4 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,11 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.Cancelable
-import com.instacart.formula.android.BaseFormulaFragment
-import com.instacart.formula.android.FeatureView
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.ViewFactory
 import com.jakewharton.rxrelay3.BehaviorRelay
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {

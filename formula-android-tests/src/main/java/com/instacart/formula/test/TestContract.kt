@@ -2,8 +2,8 @@ package com.instacart.formula.test
 
 import android.view.View
 import com.instacart.formula.R
-import com.instacart.formula.fragment.FragmentComponent
-import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.android.FragmentComponent
+import com.instacart.formula.android.FragmentContract
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize

@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 import io.reactivex.rxjava3.core.Observable
 

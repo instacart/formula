@@ -1,4 +1,4 @@
-package com.instacart.formula.integration
+package com.instacart.formula.android
 
 /**
  * Used to indicate that a screen render model

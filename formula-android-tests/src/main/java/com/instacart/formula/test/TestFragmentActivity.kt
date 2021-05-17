@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.R
-import com.instacart.formula.fragment.FormulaFragment
-import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.android.FormulaFragment
+import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
 
