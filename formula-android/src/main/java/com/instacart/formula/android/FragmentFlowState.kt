@@ -1,8 +1,4 @@
-package com.instacart.formula.fragment
-
-import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.FragmentState
+package com.instacart.formula.android
 
 /**
  * Represents currently [activeKeys] and their [states].

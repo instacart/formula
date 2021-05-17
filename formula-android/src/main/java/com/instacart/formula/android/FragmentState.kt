@@ -1,7 +1,5 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.fragment.FragmentKey
-
 /**
  * Defines the current render model for a specific [key].
  */

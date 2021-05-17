@@ -4,7 +4,7 @@ import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.LayoutViewFactory
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.ViewInstance
-import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.android.FragmentContract
 
 /**
  * An implementation of [ViewFactory] which delegates implementation to [FragmentContract].

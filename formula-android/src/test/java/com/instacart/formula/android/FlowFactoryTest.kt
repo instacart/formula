@@ -1,11 +1,10 @@
 package com.instacart.formula.android
 
 import com.google.common.truth.Truth
-import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.integration.DisposableScope
 import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract
+import com.instacart.formula.android.internal.Binding
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 

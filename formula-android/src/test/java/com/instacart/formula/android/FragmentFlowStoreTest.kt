@@ -5,11 +5,7 @@ import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeAuthFlowFactory
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
-import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.fragment.FragmentEnvironment
-import com.instacart.formula.fragment.FragmentFlowStore
-import com.instacart.formula.fragment.FragmentKey
-import com.instacart.formula.fragment.FragmentLifecycleEvent
+import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.TestAccountFragmentContract
 import com.instacart.formula.android.fakes.TestLoginFragmentContract
 import com.instacart.formula.android.fakes.TestSignUpFragmentContract

@@ -3,7 +3,6 @@ package com.instacart.formula.android
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import com.instacart.formula.fragment.FormulaFragment
 import com.instacart.formula.android.views.DelegateLayoutViewFactory
 
 /**

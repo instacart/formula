@@ -2,8 +2,6 @@ package com.instacart.formula.android
 
 import android.view.View
 import com.instacart.formula.Cancelable
-import com.instacart.formula.fragment.FragmentLifecycleCallback
-import com.instacart.formula.fragment.FormulaFragment
 import io.reactivex.rxjava3.core.Observable
 
 /**
