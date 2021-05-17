@@ -1,7 +1,6 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android
 
 import android.view.View
-import com.instacart.formula.android.FragmentKey
 
 /**
  * Responsible for providing a [FragmentComponent]

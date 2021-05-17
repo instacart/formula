@@ -1,8 +1,8 @@
 package com.instacart.formula.android.fakes
 
 import android.view.View
-import com.instacart.formula.fragment.FragmentComponent
-import com.instacart.formula.fragment.FragmentContract
+import com.instacart.formula.android.FragmentComponent
+import com.instacart.formula.android.FragmentContract
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize

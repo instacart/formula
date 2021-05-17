@@ -1,4 +1,4 @@
-package com.instacart.formula.fragment
+package com.instacart.formula.android
 
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView

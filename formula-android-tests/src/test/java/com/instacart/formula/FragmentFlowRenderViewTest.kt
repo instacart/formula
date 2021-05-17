@@ -6,8 +6,8 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.fragment.FragmentContract
-import com.instacart.formula.fragment.FragmentFlowState
+import com.instacart.formula.android.FragmentContract
+import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.test.TestContract

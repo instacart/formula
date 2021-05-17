@@ -4,7 +4,6 @@ import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.internal.Bindings
 import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.views.FragmentContractViewFactory
-import com.instacart.formula.fragment.FragmentContract
 import com.instacart.formula.android.internal.FeatureBinding
 import io.reactivex.rxjava3.core.Observable
 import java.lang.IllegalStateException

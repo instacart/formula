@@ -12,7 +12,7 @@ import com.instacart.formula.RenderView
 import com.instacart.formula.android.BaseFormulaFragment
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.fragment.FragmentFlowState
+import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FeatureEvent
