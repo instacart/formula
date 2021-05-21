@@ -1,7 +1,7 @@
 package com.instacart.formula.android.internal
 
 import com.instacart.formula.android.FragmentKey
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 internal data class EmptyFragmentKey(

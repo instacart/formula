@@ -6,8 +6,8 @@ import com.instacart.formula.R
 import com.instacart.formula.android.FragmentComponent
 import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.FragmentLifecycleCallback
-import kotlinx.android.parcel.IgnoredOnParcel
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TestLifecycleContract(
