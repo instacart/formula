@@ -28,6 +28,7 @@ class FragmentFlowRenderViewTest {
 
     private var lastState: FragmentFlowState? = null
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentContract<*>, Any>>()
+    private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
@@ -35,6 +36,7 @@ class FragmentFlowRenderViewTest {
                     store(
                         configureActivity = {
                             initialContract = TestContract()
+                            onPreCreated(this)
                         },
                         onRenderFragmentState = { a, state ->
                             lastState = state
@@ -205,9 +207,9 @@ class FragmentFlowRenderViewTest {
         scenario.onActivity { it.onBackPressed() }
     }
 
-    private fun navigateToTaskDetail(id: Int = 1) {
+    private fun navigateToTaskDetail(id: Int = 1, allowStateLoss: Boolean = false) {
         scenario.onActivity {
-            it.navigateTo(TestContractWithId(id))
+            it.navigateTo(TestContractWithId(id), allowStateLoss = allowStateLoss)
         }
     }
 
