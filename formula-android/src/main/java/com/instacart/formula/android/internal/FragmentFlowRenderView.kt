@@ -114,6 +114,8 @@ internal class FragmentFlowRenderView(
 
             if (FragmentLifecycle.shouldTrack(f)) {
                 onLifecycleEvent(FragmentLifecycle.createAddedEvent(f))
+            } else {
+                fragmentEnvironment.logger("Ignoring attach event for fragment: $f")
             }
         }
 
