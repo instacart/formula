@@ -1,18 +1,13 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.ben-manes.versions"
+apply plugin: "kotlin-parcelize"
 
 apply from: rootProject.file('.buildscript/configure-dokka.gradle')
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
 apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
-
-androidExtensions {
-    experimental = true
-    features = ['parcelize']
-}
 
 android {
     compileSdkVersion constants.compileSdk

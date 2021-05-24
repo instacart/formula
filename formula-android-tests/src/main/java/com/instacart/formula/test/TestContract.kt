@@ -4,7 +4,7 @@ import android.view.View
 import com.instacart.formula.R
 import com.instacart.formula.android.FragmentComponent
 import com.instacart.formula.android.FragmentContract
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TestContract(

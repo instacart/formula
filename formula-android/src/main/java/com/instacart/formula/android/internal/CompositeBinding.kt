@@ -53,7 +53,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
             val childInput = Input(
                 input.environment,
                 component.component,
-                input.activeKeys,
+                input.activeFragments,
                 input.onInitializeFeature,
             )
             bindings.forEachIndices {
@@ -63,7 +63,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
         return Evaluation(
             output = Unit,
             updates = context.updates {
-                val isInScope = input.activeKeys.any { binds(it.key) }
+                val isInScope = input.activeFragments.any { binds(it.key) }
                 events(Stream.onData(isInScope)) {
                     if (isInScope && component == null) {
                         transition(State(component = scopeFactory.invoke(input.component)))

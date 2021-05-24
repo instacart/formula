@@ -45,7 +45,7 @@ internal abstract class Binding<in ParentComponent> {
     data class Input<out Component>(
         val environment: FragmentEnvironment,
         val component: Component,
-        val activeKeys: List<FragmentId>,
+        val activeFragments: List<FragmentId>,
         val onInitializeFeature: (FeatureEvent) -> Unit,
     )
 

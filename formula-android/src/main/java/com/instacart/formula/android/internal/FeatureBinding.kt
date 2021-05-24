@@ -41,16 +41,17 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
         return Evaluation(
             output = state,
             updates = context.updates {
-                input.activeKeys.forEachIndices { key ->
-                    if (binds(key.key)) {
-                        Stream.onData(key).onEvent {
+                input.activeFragments.forEachIndices { fragmentId ->
+                    val key = fragmentId.key
+                    if (binds(key)) {
+                        Stream.onData(fragmentId).onEvent {
                             transition {
                                 try {
                                     val dependencies = toDependencies(input.component)
-                                    val feature = feature.initialize(dependencies, key.key as Key)
-                                    input.onInitializeFeature(FeatureEvent.Init(key, feature))
+                                    val feature = feature.initialize(dependencies, key as Key)
+                                    input.onInitializeFeature(FeatureEvent.Init(fragmentId, feature))
                                 } catch (e: Exception) {
-                                    input.onInitializeFeature(FeatureEvent.Failure(key, e))
+                                    input.onInitializeFeature(FeatureEvent.Failure(fragmentId, e))
                                 }
                             }
                         }

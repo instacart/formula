@@ -68,7 +68,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
         val rootInput = Binding.Input(
             environment = input,
             component = Unit,
-            activeKeys = state.activeIds,
+            activeFragments = state.activeIds,
             onInitializeFeature = context.eventCallback { event ->
                 val features = state.features.plus(event.id to event)
                 transition(state.copy(features = features))
