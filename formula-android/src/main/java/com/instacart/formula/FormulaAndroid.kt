@@ -21,10 +21,12 @@ object FormulaAndroid {
     /**
      * Initializes Formula Android integration. Should be called within [Application.onCreate].
      *
+     * @param logger A logger for debug Formula Android events.
      * @param onFragmentError A global handler for fragment errors. Override this to log the crashes.
      */
     fun init(
         application: Application,
+        logger: ((String) -> Unit)? = null,
         onFragmentError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
         activities: ActivityConfigurator.() -> Unit
     ) {
@@ -33,7 +35,7 @@ object FormulaAndroid {
             throw IllegalStateException("can only initialize the store once.")
         }
 
-        val fragmentEnvironment = FragmentEnvironment(onFragmentError)
+        val fragmentEnvironment = FragmentEnvironment(logger ?: {}, onFragmentError)
         val factory = ActivityStoreFactory(fragmentEnvironment, activities)
         val appManager = AppManager(factory)
         application.registerActivityLifecycleCallbacks(appManager)
