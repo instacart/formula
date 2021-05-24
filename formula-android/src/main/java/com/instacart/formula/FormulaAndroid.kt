@@ -26,7 +26,7 @@ object FormulaAndroid {
      */
     fun init(
         application: Application,
-        logger: (String) -> Unit = {},
+        logger: ((String) -> Unit)? = null,
         onFragmentError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
         activities: ActivityConfigurator.() -> Unit
     ) {
@@ -35,7 +35,7 @@ object FormulaAndroid {
             throw IllegalStateException("can only initialize the store once.")
         }
 
-        val fragmentEnvironment = FragmentEnvironment(logger, onFragmentError)
+        val fragmentEnvironment = FragmentEnvironment(logger ?: {}, onFragmentError)
         val factory = ActivityStoreFactory(fragmentEnvironment, activities)
         val appManager = AppManager(factory)
         application.registerActivityLifecycleCallbacks(appManager)
