@@ -6,7 +6,7 @@ import io.reactivex.rxjava3.core.Observable
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
-    fun test() = TestFormula().test()
+    fun test() = TestFormula().test(Unit)
 
     class TestFormula : Formula<Unit, Int, Int> {
         private val initial = RxStream.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }

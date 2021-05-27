@@ -17,7 +17,7 @@ class FormulaRuntimeTest {
     @Test
     fun `multiple event updates`() {
         StartStopFormula()
-            .test()
+            .test(Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .apply { formula.incrementEvents.triggerIncrement() }
@@ -31,7 +31,7 @@ class FormulaRuntimeTest {
     @Test
     fun `no state changes after event stream is removed`() {
         StartStopFormula()
-            .test()
+            .test(Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerIncrement() }
             .output { stopListening() }
@@ -47,7 +47,7 @@ class FormulaRuntimeTest {
     fun `each child event handler should be scoped to latest state`() {
         MultipleChildEvents
             .formula()
-            .test()
+            .test(Unit)
             .output { child.incrementAndMessage() }
             .output { child.incrementAndMessage() }
             .output { child.incrementAndMessage() }
@@ -85,7 +85,7 @@ class FormulaRuntimeTest {
         val sideEffectCallback = TestCallback()
         TransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
-            .test()
+            .test(Unit)
             .output { triggerSideEffect() }
             .output { triggerSideEffect() }
             .assertOutputCount(1)
@@ -99,7 +99,7 @@ class FormulaRuntimeTest {
         val sideEffectCallback = TestCallback()
         ChildTransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
-            .test()
+            .test(Unit)
             .output { child.triggerSideEffect() }
             .output { child.triggerSideEffect() }
             .assertOutputCount(1)
@@ -114,7 +114,7 @@ class FormulaRuntimeTest {
         val sideEffectCallback = TestCallback()
         NestedChildTransitionAfterNoEvaluationPass
             .formula(sideEffectCallback)
-            .test()
+            .test(Unit)
             .output { child.child.triggerSideEffect() }
             .output { child.child.triggerSideEffect() }
             .assertOutputCount(1)
@@ -152,7 +152,7 @@ class FormulaRuntimeTest {
     fun `child message with no parent state change`() {
         ChildMessageNoParentStateChange
             .formula()
-            .test()
+            .test(Unit)
             .output { child.triggerMessage() }
             .assertOutputCount(1)  // no state change, so no re-evaluation
     }
@@ -161,7 +161,7 @@ class FormulaRuntimeTest {
     fun `child message with parent state change`() {
         ChildMessageWithParentStateChange
             .formula()
-            .test()
+            .test(Unit)
             .output { child.triggerMessage() }
             .assertOutputCount(2)
             .output { assertThat(state).isEqualTo(1) }
@@ -171,7 +171,7 @@ class FormulaRuntimeTest {
     fun `side effect triggers parent state transition`() {
         ChildMessageTriggersEventTransitionInParent
             .formula()
-            .test()
+            .test(Unit)
             .output { child.triggerSideEffect() }
             .output {
                 assertThat(count).isEqualTo(1)
@@ -182,7 +182,7 @@ class FormulaRuntimeTest {
     fun `child state is reset after toggle`() {
         ChildStateResetAfterToggle
             .formula()
-            .test()
+            .test(Unit)
             .output { child!!.incrementAndMessage() }
             .output { child!!.incrementAndMessage() }
             .output { assertThat(child!!.state).isEqualTo(2) }
@@ -208,7 +208,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `multiple event callbacks using the same render model`() {
-        EventCallbackFormula().test()
+        EventCallbackFormula().test(Unit)
             .output {
                 changeState("one")
                 changeState("two")
@@ -222,7 +222,7 @@ class FormulaRuntimeTest {
         OptionalChildFormula(MessageFormula()) {
             MessageFormula.Input(messageHandler = eventCallback { none() })
         }
-            .test()
+            .test(Unit)
             .output {
                 val cachedChild = child!!
                 toggleChild()
@@ -248,7 +248,7 @@ class FormulaRuntimeTest {
 
     @Test
     fun `event callbacks are equal across render model changes`() {
-        EventCallbackFormula().test()
+        EventCallbackFormula().test(Unit)
             .output {
                 changeState("one")
                 changeState("two")
@@ -262,7 +262,7 @@ class FormulaRuntimeTest {
     @Test
     fun `removed callback is disabled`() {
         OptionalCallbackFormula()
-            .test()
+            .test(Unit)
             .output {
 
                 callback?.invoke()
@@ -277,7 +277,7 @@ class FormulaRuntimeTest {
     @Test
     fun `callbacks are not the same after removing then adding it again`() {
         OptionalCallbackFormula()
-            .test()
+            .test(Unit)
             .output {
                 toggleCallback()
                 toggleCallback()
@@ -290,7 +290,7 @@ class FormulaRuntimeTest {
     @Test
     fun `removed event callback is disabled`() {
         OptionalEventCallbackFormula()
-            .test()
+            .test(Unit)
             .output {
                 callback?.invoke(1)
                 toggleCallback()
@@ -304,7 +304,7 @@ class FormulaRuntimeTest {
     @Test
     fun `event callbacks are not the same after removing then adding it again`() {
         OptionalEventCallbackFormula()
-            .test()
+            .test(Unit)
             .output {
                 toggleCallback()
                 toggleCallback()
@@ -323,7 +323,7 @@ class FormulaRuntimeTest {
     @Test
     fun `using key to scope callbacks within another function`() {
         UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
-            .test()
+            .test(Unit)
             .assertOutputCount(1)
     }
 
@@ -357,7 +357,10 @@ class FormulaRuntimeTest {
     @Test
     fun `input changed message`() {
         StreamInputFormula()
-            .test(input = Observable.range(0, 3))
+            .test()
+            .input(0)
+            .input(1)
+            .input(2)
             .apply {
                 assertThat(formula.messages).containsExactly(0, 1, 2).inOrder()
             }
@@ -366,7 +369,11 @@ class FormulaRuntimeTest {
     @Test
     fun `events api ignores duplicate inputs`() {
         StreamInputFormula()
-            .test(input = Observable.just(0, 0, 0, 0))
+            .test()
+            .input(0)
+            .input(0)
+            .input(0)
+            .input(0)
             .apply {
                 assertThat(formula.messages).containsExactly(0).inOrder()
             }
@@ -399,7 +406,7 @@ class FormulaRuntimeTest {
         }
 
         formula
-            .test()
+            .test(Unit)
             .assertOutputCount(1)
     }
 
@@ -416,7 +423,7 @@ class FormulaRuntimeTest {
         }
 
         formula
-            .test()
+            .test(Unit)
             .assertOutputCount(1)
     }
 
@@ -431,7 +438,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test() }.errorOrNull()?.cause
+        val error = Try { formula.test(Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -446,7 +453,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.test().assertOutputCount(1)
+        formula.test(Unit).assertOutputCount(1)
     }
 
     @Test
@@ -466,7 +473,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        formula.test().apply {
+        formula.test(Unit).apply {
             assertThat(executed).isEqualTo(2)
         }
     }
@@ -500,14 +507,14 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test() }.errorOrNull()?.cause
+        val error = Try { formula.test(Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
     fun `disposing formula triggers terminate message`() {
         TerminateFormula()
-            .test()
+            .test(Unit)
             .apply {
                 assertThat(formula.timesTerminateCalled).isEqualTo(0)
             }
@@ -521,7 +528,7 @@ class FormulaRuntimeTest {
     fun `removing child formula triggers terminate message`() {
         val terminateFormula = TerminateFormula()
         OptionalChildFormula(terminateFormula)
-            .test()
+            .test(Unit)
             .apply {
                 assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
             }
@@ -545,7 +552,10 @@ class FormulaRuntimeTest {
         }
 
         formula
-            .test(Observable.just(1, 2, 3))
+            .test()
+            .input(1)
+            .input(2)
+            .input(3)
             .dispose()
             .apply {
                 assertThat(emissions).isEqualTo(1)
@@ -558,7 +568,7 @@ class FormulaRuntimeTest {
         val terminateFormula = TerminateFormula()
         val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
 
-        formula.test().output { toggleChild() }.apply {
+        formula.test(Unit).output { toggleChild() }.apply {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
     }
@@ -574,13 +584,15 @@ class FormulaRuntimeTest {
                 return Evaluation(Unit)
             }
         }
-        formula.test().dispose()
+        formula.test(Unit).dispose()
         assertThat(terminateFormula.timesTerminateCalled).isEqualTo(10)
     }
 
     @Test fun `nested termination with input changed`() {
-        NestedTerminationWithInputChanged()
-            .test(Observable.just(false, true, false))
+        NestedTerminationWithInputChanged().test()
+            .input(false)
+            .input(true)
+            .input(false)
             .apply {
                 assertThat(formula.terminateFormula.timesTerminateCalled).isEqualTo(1)
             }
@@ -589,13 +601,9 @@ class FormulaRuntimeTest {
     @Test
     fun `canceling terminate stream does not emit terminate message`() {
         val terminateCallback = TestCallback()
-        RemovingTerminateStreamSendsNoMessagesFormula()
-            .test(
-                input = Observable.just(
-                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback),
-                    RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null)
-                )
-            )
+        RemovingTerminateStreamSendsNoMessagesFormula().test()
+            .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback))
+            .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null))
             .apply {
                 terminateCallback.assertTimesCalled(0)
             }
@@ -604,12 +612,9 @@ class FormulaRuntimeTest {
     @Test
     fun `using from observable with input`() {
         val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
-        FromObservableWithInputFormula()
-            .test(
-                input = Observable.just("1", "2").map {
-                    FromObservableWithInputFormula.Input(it, onItem = onItem)
-                }
-            )
+        FromObservableWithInputFormula().test()
+            .input(FromObservableWithInputFormula.Input("1", onItem = onItem))
+            .input(FromObservableWithInputFormula.Input("2", onItem = onItem))
             .apply {
                 assertThat(onItem.values()).containsExactly(
                     FromObservableWithInputFormula.Item("1"),
@@ -626,14 +631,14 @@ class FormulaRuntimeTest {
 
     @Test
     fun `initialize 100 levels nested formula`() {
-        ExtremelyNestedFormula.nested(100).test().output {
+        ExtremelyNestedFormula.nested(100).test(Unit).output {
             assertThat(this).isEqualTo(100)
         }
     }
 
     @Test
     fun `initialize 250 levels nested formula`() {
-        ExtremelyNestedFormula.nested(250).test().output {
+        ExtremelyNestedFormula.nested(250).test(Unit).output {
             assertThat(this).isEqualTo(250)
         }
     }
@@ -641,7 +646,7 @@ class FormulaRuntimeTest {
     @Ignore("stack overflows when there are 500 nested child formulas")
     @Test
     fun `initialize 500 levels nested formula`() {
-        ExtremelyNestedFormula.nested(500).test().output {
+        ExtremelyNestedFormula.nested(500).test(Unit).output {
             assertThat(this).isEqualTo(500)
         }
     }
@@ -649,14 +654,14 @@ class FormulaRuntimeTest {
     @Test
     fun `mixing callback use with key use`() {
         MixingCallbackUseWithKeyUse.ParentFormula()
-            .test()
+            .test(Unit)
             .assertOutputCount(1)
     }
 
     // TODO: maybe worth adding support eventually.
     @Test
     fun `nested keys are not allowed`() {
-        val error = Try { NestedKeyFormula().test() }.errorOrNull()?.cause
+        val error = Try { NestedKeyFormula().test(Unit) }.errorOrNull()?.cause
         assertThat(error)
             .apply { isInstanceOf(IllegalStateException::class.java)  }
             .hasMessageThat().startsWith("Nested scopes are not supported currently.")

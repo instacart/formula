@@ -2,7 +2,6 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
-import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 
 class DynamicFormulaInputTest {
@@ -10,7 +9,10 @@ class DynamicFormulaInputTest {
     @Test
     fun `using dynamic input`() {
         TestFormula()
-            .test(Observable.just(1, 2, 3))
+            .test()
+            .input(1)
+            .input(2)
+            .input(3)
             .apply {
                 assertThat(values()).containsExactly(1, 2, 3).inOrder()
             }

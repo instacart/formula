@@ -13,7 +13,7 @@ class ManyEmissionStreamTest {
 
     @Test fun `all increment events go through`() {
         TestFormula()
-            .test()
+            .test(Unit)
             .apply {
                 assertThat(values()).containsExactly(EMISSION_COUNT).inOrder()
             }

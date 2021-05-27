@@ -11,7 +11,7 @@ class FetchDataExampleTest {
     @Test fun `fake network example`() {
 
         MyFormula()
-            .test()
+            .test(Unit)
             .apply {
                 values().last().onChangeId("1")
                 values().last().onChangeId("2")

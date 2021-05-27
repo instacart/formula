@@ -35,6 +35,8 @@
 - Move `FragmentContract` into `android` package.
 - Move `FragmentFlowState` into `android` package.
 - Move `FragmentFlowStore` into `android` package.
+- **Breaking**: Replaced `formula.test(inputObservable)` with `formula.test().input()` 
+- Add `TestFormulaObserver.assertNoErrors()`
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.

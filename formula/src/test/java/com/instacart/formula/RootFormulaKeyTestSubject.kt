@@ -2,12 +2,11 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
-import com.jakewharton.rxrelay3.BehaviorRelay
 
 class RootFormulaKeyTestSubject {
 
-    private val inputRelay = BehaviorRelay.createDefault(0)
-    private val subject = MyFormula.test(inputRelay)
+    private var input: Int = 0
+    private val subject = MyFormula.test(input)
 
     fun increment() = apply {
         subject.output { increment() }
@@ -20,7 +19,8 @@ class RootFormulaKeyTestSubject {
     }
 
     fun resetKey() = apply {
-        inputRelay.accept(inputRelay.value + 1)
+        input += 1
+        subject.input(input)
     }
 
 

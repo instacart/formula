@@ -4,7 +4,7 @@ import com.instacart.formula.test.test
 
 object UsingCallbacksWithinAnotherFunction {
 
-    fun test() = TestFormula().test()
+    fun test() = TestFormula().test(Unit)
 
     class TestOutput(
         val first: () -> Unit,

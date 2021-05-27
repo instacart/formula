@@ -7,7 +7,7 @@ import org.junit.Test
 class InputChangedTest {
 
     @Test fun `input changes`() {
-        ParentFormula().test()
+        ParentFormula().test(Unit)
             .output { onChildNameChanged("first") }
             .output { onChildNameChanged("second") }
             .apply {
