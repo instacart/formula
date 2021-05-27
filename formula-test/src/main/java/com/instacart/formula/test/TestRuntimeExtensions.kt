@@ -5,6 +5,8 @@ import com.instacart.formula.Stream
 
 /**
  * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
+ *
+ * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(): TestFormulaObserver<Input, Output, F> {
     return TestFormulaObserver(this)

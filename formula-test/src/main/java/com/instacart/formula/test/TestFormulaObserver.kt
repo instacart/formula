@@ -8,8 +8,8 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     val formula: FormulaT
 ) {
 
+    private var started: Boolean = false
     private val inputRelay = BehaviorSubject.create<Input>()
-
     private val observer = formula
         .toObservable(inputRelay)
         .test()
@@ -23,16 +23,19 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
      * Passes input to [formula].
      */
     fun input(value: Input) = apply {
+        started = true
         inputRelay.onNext(value)
         assertNoErrors()
     }
 
     inline fun output(assert: Output.() -> Unit) = apply {
+        ensureFormulaIsRunning()
         assert(values().last())
         assertNoErrors()
     }
 
     fun assertOutputCount(count: Int) = apply {
+        ensureFormulaIsRunning()
         val size = values().size
         assert(size == count) {
             "Expected: $count, was: $size"
@@ -45,5 +48,10 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
 
     fun dispose() = apply {
         observer.dispose()
+    }
+
+    @PublishedApi
+    internal fun ensureFormulaIsRunning() {
+        if (!started) throw IllegalStateException("Formula is not running. Call [TeatFormulaObserver.input] to start it.")
     }
 }
