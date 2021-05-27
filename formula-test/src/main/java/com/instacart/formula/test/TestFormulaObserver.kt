@@ -24,18 +24,21 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
      */
     fun input(value: Input) = apply {
         started = true
+        assertNoErrors() // Check before interaction
         inputRelay.onNext(value)
-        assertNoErrors()
+        assertNoErrors() // Check after interaction
     }
 
     inline fun output(assert: Output.() -> Unit) = apply {
         ensureFormulaIsRunning()
+        assertNoErrors() // Check before interaction
         assert(values().last())
-        assertNoErrors()
+        assertNoErrors() // Check after interaction
     }
 
     fun assertOutputCount(count: Int) = apply {
         ensureFormulaIsRunning()
+        assertNoErrors()
         val size = values().size
         assert(size == count) {
             "Expected: $count, was: $size"
