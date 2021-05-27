@@ -2,14 +2,12 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
-import com.jakewharton.rxrelay3.PublishRelay
 
 class DynamicStreamSubject {
-    private val streams = PublishRelay.create<List<String>>()
-    private val subject = TestFormula().test(streams)
+    private val subject = TestFormula().test()
 
     fun updateStreams(vararg keys: String) = apply {
-        streams.accept(keys.asList())
+        subject.input(keys.asList())
         assertRunning(*keys)
     }
 

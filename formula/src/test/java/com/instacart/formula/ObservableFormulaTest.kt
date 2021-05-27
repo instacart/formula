@@ -3,7 +3,6 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.test.test
-import com.jakewharton.rxrelay3.BehaviorRelay
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
@@ -35,12 +34,11 @@ class ObservableFormulaTest {
 
     @Test
     fun `new input restarts formula`() {
-        val inputRelay = PublishRelay.create<String>()
         SubjectFormula()
-            .test(inputRelay)
-            .apply { inputRelay.accept("initial") }
+            .test()
+            .input("initial")
             .apply { formula.relay.accept(1) }
-            .apply { inputRelay.accept("reset") }
+            .input("reset")
             .apply { formula.relay.accept(1) }
             .apply {
                 Truth.assertThat(values()).containsExactly(0, 1, 0, 1).inOrder()

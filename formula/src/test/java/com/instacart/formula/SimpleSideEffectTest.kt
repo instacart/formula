@@ -14,7 +14,7 @@ class SimpleSideEffectTest {
         TestFormula(
             increment = Observable.fromIterable(intRange.map { Unit }),
             onGameOver = gameOverCallback
-        ).test()
+        ).test(Unit)
 
         gameOverCallback.assertTimesCalled(1)
     }

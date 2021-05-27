@@ -16,7 +16,7 @@ class TestFormulaTest {
     @Before fun setup() {
         childFormula = FakeChildFormula()
         parentFormula = ParentFormula(childFormula)
-        subject = ParentFormula(childFormula = childFormula).test()
+        subject = ParentFormula(childFormula = childFormula).test(Unit)
     }
 
     @Test fun `trigger callback using child input`() {

@@ -8,7 +8,7 @@ import com.instacart.formula.test.test
 import java.lang.IllegalStateException
 
 object EmitErrorTest {
-    fun test() = MyFormula().test()
+    fun test() = MyFormula().test(Unit)
 
     class MyFormula : StatelessFormula<Unit, Unit>() {
         override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {

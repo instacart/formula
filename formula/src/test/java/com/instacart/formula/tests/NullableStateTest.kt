@@ -11,7 +11,7 @@ class NullableStateTest {
 
     @Test fun `nullable state changes`() {
         TestFormula()
-            .test()
+            .test(Unit)
             .output { Truth.assertThat(state).isNull() }
             .output { updateState("new state") }
             .output { Truth.assertThat(state).isEqualTo("new state") }

@@ -9,7 +9,7 @@ import kotlin.IllegalStateException
 class DuplicateChildrenTest {
 
     @Test fun `adding duplicate child throws an exception`() {
-        val error = Try { ParentFormula().test() }.errorOrNull()?.cause
+        val error = Try { ParentFormula().test(Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 

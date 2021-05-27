@@ -13,7 +13,7 @@ class ChildRemovedOnMessage {
                 }
             )
         })
-        .test()
+        .test(Unit)
 
     fun assertChildIsVisible(visible: Boolean) = apply {
         subject.output {

@@ -2,15 +2,16 @@ package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
 import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
-    private val input: Observable<Input>,
     val formula: FormulaT
 ) {
 
+    private val inputRelay = BehaviorSubject.create<Input>()
+
     private val observer = formula
-        .toObservable(input)
+        .toObservable(inputRelay)
         .test()
         .assertNoErrors()
 
@@ -18,8 +19,17 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         return observer.values()
     }
 
+    /**
+     * Passes input to [formula].
+     */
+    fun input(value: Input) = apply {
+        inputRelay.onNext(value)
+        assertNoErrors()
+    }
+
     inline fun output(assert: Output.() -> Unit) = apply {
         assert(values().last())
+        assertNoErrors()
     }
 
     fun assertOutputCount(count: Int) = apply {
@@ -27,6 +37,10 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         assert(size == count) {
             "Expected: $count, was: $size"
         }
+    }
+
+    fun assertNoErrors() = apply {
+        observer.assertNoErrors()
     }
 
     fun dispose() = apply {

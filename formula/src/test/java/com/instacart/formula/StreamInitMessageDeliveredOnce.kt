@@ -3,7 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.test.test
 
 object StreamInitMessageDeliveredOnce {
-    fun test() = TestFormula().test()
+    fun test() = TestFormula().test(Unit)
 
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var timesInitializedCalled = 0
