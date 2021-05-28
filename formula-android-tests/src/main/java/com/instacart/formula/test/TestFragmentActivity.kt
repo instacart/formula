@@ -26,7 +26,7 @@ class TestFragmentActivity : FormulaAppCompatActivity() {
         }
     }
 
-    fun navigateTo(key: FragmentKey) {
+    fun navigateTo(key: FragmentKey, allowStateLoss: Boolean = false) {
         val entryIndex = supportFragmentManager.backStackEntryCount - 1
         val fragment = if (entryIndex >= 0) {
             val entry = supportFragmentManager.getBackStackEntryAt(entryIndex)
@@ -41,7 +41,13 @@ class TestFragmentActivity : FormulaAppCompatActivity() {
             }
             add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
             addToBackStack(key.tag)
-        }.commit()
+        }.apply {
+            if (allowStateLoss) {
+                commitAllowingStateLoss()
+            } else {
+                commit()
+            }
+        }
     }
 
     override fun onBackPressed() {

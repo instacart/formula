@@ -39,10 +39,6 @@ internal class FragmentFlowRenderView(
     private var fragmentState: FragmentFlowState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
-    private var removedEarly = mutableListOf<FragmentId>()
-    private var backStackEntries = mutableListOf<FragmentManager.BackStackEntry>()
-    private var stateRestored: Boolean = false
-
     private val featureProvider = object : FeatureProvider {
         override fun getFeature(id: FragmentId): FeatureEvent? {
             return fragmentState?.features?.get(id)
@@ -57,11 +53,6 @@ internal class FragmentFlowRenderView(
             savedInstanceState: Bundle?
         ) {
             super.onFragmentViewCreated(fm, f, v, savedInstanceState)
-
-            if (!stateRestored) {
-                recordBackstackChange()
-                stateRestored = true
-            }
 
             visibleFragments.add(f)
 
@@ -98,9 +89,7 @@ internal class FragmentFlowRenderView(
             visibleFragments.remove(f)
 
             notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
-            if (!removedEarly.contains(f.getFormulaFragmentId())) {
-                onFragmentViewStateChanged(f.getFormulaFragmentId(), false)
-            }
+            onFragmentViewStateChanged(f.getFormulaFragmentId(), false)
         }
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
@@ -125,19 +114,12 @@ internal class FragmentFlowRenderView(
             // Only trigger detach, when fragment is actually being removed from the backstack
             if (FragmentLifecycle.shouldTrack(f) && !FragmentLifecycle.isKept(fm, f)) {
                 val event = FragmentLifecycle.createRemovedEvent(f)
-                val wasRemovedEarly = removedEarly.remove(f.getFormulaFragmentId())
-                if (!wasRemovedEarly) {
-                    onLifecycleEvent(event)
-                }
+                onLifecycleEvent(event)
             }
         }
     }
 
     init {
-        activity.supportFragmentManager.addOnBackStackChangedListener {
-            recordBackstackChange()
-        }
-
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, false)
     }
 
@@ -174,36 +156,6 @@ internal class FragmentFlowRenderView(
                 }
             }
         }
-    }
-
-    private fun recordBackstackChange() {
-        val backStackEntryCount = backStackEntries.size
-        val newBackStackEntryCount = activity.supportFragmentManager.backStackEntryCount
-        if (backStackEntryCount > newBackStackEntryCount) {
-            val removedEntries = backStackEntries.drop(newBackStackEntryCount)
-            removedEntries.forEach { removed ->
-                val poppedFragmentName = removed.name
-                if (poppedFragmentName != null) {
-                    visibleFragments.find { it.tag == poppedFragmentName }?.let { poppedFragment ->
-                        // In case backstack gets repopulated before onDestroyView/onFragmentDetached gets called,
-                        // we internally clear it so it doesn't potentially interfere with a fragment that could have the same contract
-                        removeFragment(poppedFragment)
-                    }
-                }
-                backStackEntries.remove(removed)
-            }
-        } else if (backStackEntryCount < newBackStackEntryCount) {
-            for (i in backStackEntryCount until newBackStackEntryCount) {
-                backStackEntries.add(activity.supportFragmentManager.getBackStackEntryAt(i))
-            }
-        }
-    }
-
-    private fun removeFragment(fragment: Fragment) {
-        onFragmentViewStateChanged(fragment.getFormulaFragmentId(), false)
-        val event = FragmentLifecycle.createRemovedEvent(fragment)
-        onLifecycleEvent(event)
-        removedEarly.add(fragment.getFormulaFragmentId())
     }
 
     /**
