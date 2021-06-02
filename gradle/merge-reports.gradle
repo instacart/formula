@@ -1,8 +1,23 @@
+subprojects { project ->
+    if (!project.name.contains("formula")) {
+        return
+    }
+
+    project.plugins.withId("com.android.application") {
+        disableHtmlTestReport(project)
+    }
+
+    project.plugins.withId("com.android.library") {
+        disableHtmlTestReport(project)
+    }
+}
+
 // make sure this project depends on the evaluation of all sub projects so that
 // it's evaluated last.
 project.evaluationDependsOnChildren()
 
 afterEvaluate {
+
     def testTasks = subprojects.findAll { it.name.contains("formula") }.collect { it.tasks.withType(Test) }.flatten()
     if (testTasks.isEmpty()) {
         throw IllegalStateException("misconfiguration: no test tasks found")
@@ -18,19 +33,11 @@ afterEvaluate {
     }
 }
 
-subprojects {
-    if (!name.contains("formula")) {
-        return
-    }
-
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.application") || plugins.hasPlugin("com.android.library")) {
-            android {
-                testOptions {
-                    unitTests.all {
-                        reports.html.enabled = false
-                    }
-                }
+def disableHtmlTestReport(Project project) {
+    project.android {
+        testOptions {
+            unitTests.all {
+                reports.html.enabled = false
             }
         }
     }
