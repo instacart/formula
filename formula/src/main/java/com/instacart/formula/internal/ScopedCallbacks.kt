@@ -101,7 +101,7 @@ internal class ScopedCallbacks private constructor(
 
     private fun ensureNotRunning() {
         if (!enabled) {
-            throw java.lang.IllegalStateException("cannot call this after evaluation finished.")
+            throw java.lang.IllegalStateException("Cannot call this callback after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }
 }
