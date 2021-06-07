@@ -42,7 +42,7 @@ class FormulaContextImpl<State> internal constructor(
 
     private fun ensureNotRunning() {
         if (transitionCallback.running) {
-            throw IllegalStateException("cannot call this transition $transitionId after evaluation finished.")
+            throw IllegalStateException("cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }
 }
