@@ -42,7 +42,7 @@ class FormulaContextImpl<State> internal constructor(
 
     private fun ensureNotRunning() {
         if (transitionCallback.running) {
-            throw IllegalStateException("cannot call this after evaluation finished.")
+            throw IllegalStateException("cannot call this transition $transitionId after evaluation finished.")
         }
     }
 }

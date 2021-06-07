@@ -101,7 +101,7 @@ internal class ScopedCallbacks private constructor(
 
     private fun ensureNotRunning() {
         if (!enabled) {
-            throw java.lang.IllegalStateException("cannot call this after evaluation finished.")
+            throw java.lang.IllegalStateException("cannot call this callback $currentKey after evaluation finished.")
         }
     }
 }
