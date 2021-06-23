@@ -50,6 +50,8 @@ android {
 
 dependencies {
     implementation project(":formula-rxjava3")
+    implementation project(":formula-android")
+    implementation project(":formula-android-compose")
 
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat
