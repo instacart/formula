@@ -1,5 +1,6 @@
 include ':formula'
 include ':formula-android'
+include ':formula-android-compose'
 include ':formula-android-tests'
 include ':formula-rxjava3'
 include ':formula-test'

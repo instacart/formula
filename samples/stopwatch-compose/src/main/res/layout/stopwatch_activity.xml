@@ -1,46 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/time_passed_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:textSize="22sp"
-            tools:text="5s 10ms"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/start_stop_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/startStopButton"
-                android:textColor="@android:color/white"
-                tools:text="Start" />
-
-            <Button
-                android:id="@+id/reset_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Reset" />
-        </LinearLayout>
-    </LinearLayout>
-</FrameLayout>
+    android:orientation="vertical" />
