@@ -1,10 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.ben-manes.versions"
-apply plugin: "kotlin-parcelize"
 
-apply from: rootProject.file('.buildscript/configure-dokka.gradle')
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
 apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
 
@@ -66,14 +63,9 @@ artifacts {
 
 dependencies {
     api project(":formula-android")
-
-    implementation libraries.androidx.annotation
-    implementation libraries.androidx.appcompat
-
-    api libraries.rxandroid
-    api libraries.rxrelays
     api libraries.androidx.compose.ui
-    api libraries.androidx.compose.rxjava3
+
+    implementation libraries.androidx.compose.rxjava3
 
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner

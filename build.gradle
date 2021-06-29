@@ -17,7 +17,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        jcenter()
         maven { url 'https://jitpack.io' }
     }
 
@@ -26,17 +25,29 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "com.vanniktech:gradle-android-junit-jacoco-plugin:0.16.0"
         classpath "com.github.ben-manes:gradle-versions-plugin:0.28.0"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.18"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
+        classpath "org.jetbrains.dokka:android-documentation-plugin:1.4.32"
         classpath "com.vanniktech:gradle-maven-publish-plugin:0.14.2"
     }
 }
+
+apply plugin: "org.jetbrains.dokka"
 
 allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
+    }
+
+    tasks.withType(org.jetbrains.dokka.gradle.DokkaTaskPartial).configureEach {
+        dokkaSourceSets.named("main") {
+            configuration {
+                jdkVersion.set(8)
+                skipDeprecated.set(true)
+                skipEmptyPackages.set(true)
+                reportUndocumented.set(false)
+            }
+        }
     }
 }
 
@@ -64,8 +75,8 @@ junitJacoco {
     includeNoLocationClasses = true
     includeInstrumentationCoverageInMergedReport = true
 }
-apply from: 'gradle/merge-reports.gradle'
 
+apply from: 'gradle/merge-reports.gradle'
 
 tasks.register("install") {
     def publishTasks = []
