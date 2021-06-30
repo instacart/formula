@@ -24,7 +24,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     }
 
     private val key: FragmentKey by lazy(LazyThreadSafetyMode.NONE) {
-        arguments!!.getParcelable<FragmentKey>(ARG_CONTRACT)!!
+        requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
     internal lateinit var fragmentEnvironment: FragmentEnvironment

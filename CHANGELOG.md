@@ -1,5 +1,8 @@
 # Changelog
-## [0.6.2] - TBD
+## [0.7.1] - TBD
+- 
+
+## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.
 - Removing `rxjava3` from core module.
 - Moving `key` function into `IFormula`
@@ -37,6 +40,7 @@
 - Move `FragmentFlowStore` into `android` package.
 - **Breaking**: Replaced `formula.test(inputObservable)` with `formula.test().input()` 
 - Add `TestFormulaObserver.assertNoErrors()`
+- Added `formula-android-compose` module
 
 ## [0.6.1] - November 18, 2020
 - Bugfix: Fix runtime ignoring `Formula.key` for the root formula.
