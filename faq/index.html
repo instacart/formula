@@ -370,6 +370,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#after-evaluation-finished" class="md-nav__link">
+    After evaluation finished
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -437,6 +444,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#after-evaluation-finished" class="md-nav__link">
+    After evaluation finished
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -468,6 +482,97 @@ you will see the following exception.
 </code></pre></div></p>
 <h3 id="callback-is-already-defined">Callback is already defined.</h3>
 <p>TODO..</p>
+<h3 id="after-evaluation-finished">After evaluation finished</h3>
+<p>If a <code>callback</code> or <code>eventCallback</code> is called after the Formula evaluation is finished, you will see
+this exception.
+<div class="highlight"><pre><span></span><code>Caused by: java.lang.IllegalStateException: Cannot call this after evaluation finished.
+</code></pre></div>
+This can happen for a number of reasons. Likely, you are creating a <code>callback</code> or <code>eventCallback</code>
+within the <code>onEvent</code> or <code>events</code> method of your <code>updates</code> lambda for the given Formula. This can
+cause your callbacks to be scoped to a stale state instance. Instead, you should create your callbacks
+within the <code>evaluate</code> function itself, passing the data you might be using from the <code>onEvent</code> into
+the <code>State</code> defined for that Formula. For example, instead of:
+<div class="highlight"><pre><span></span><code>class TaskDetailFormula @Inject constructor(
+    private val repo: TasksRepo,
+) : Formula&lt;TaskDetailFormula.Input, TaskDetailFormula.State, TaskDetailRenderModel&gt; {
+
+    data class Input(
+        val taskId: String
+    )
+
+    data class State(
+        val task: TaskDetailRenderModel? = null
+    )
+
+    override fun initialState(input: Input) = State()
+
+    override fun evaluate(
+        input: Input,
+        state: State,
+        context: FormulaContext&lt;State&gt;
+    ): Evaluation&lt;TaskDetailRenderModel?&gt; {
+        return Evaluation(
+            output = state.task,
+            updates = context.updates {
+                RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task -&gt;
+                  val renderModel = TaskDetailRenderModel(
+                      title = task.title,
+                      // Don&#39;t do: calling context.callback within &quot;onEvent&quot; will cause a crash described above
+                      onDeleteSelected = context.callback {
+                        ...
+                      }
+                   )
+                   transition(state.copy(task = renderModel))
+                }
+            }
+        )
+    }
+}
+</code></pre></div>
+which the render model and then stores it in the <code>State</code>, we would store the fetched task from the RxStream in
+the state and then construct the render model in the <code>evaluation</code> function itself:
+<div class="highlight"><pre><span></span><code>class TaskDetailFormula @Inject constructor(
+    private val repo: TasksRepo,
+) : Formula&lt;TaskDetailFormula.Input, TaskDetailFormula.State, TaskDetailRenderModel&gt; {
+
+    data class Input(
+        val taskId: String
+    )
+
+    data class State(
+        val task: Task? = null
+    )
+
+    override fun initialState(input: Input) = State()
+
+    override fun evaluate(
+        input: Input,
+        state: State,
+        context: FormulaContext&lt;State&gt;
+    ): Evaluation&lt;TaskDetailRenderModel?&gt; {
+        // Note that this is correct because the render model and therefore callback is constructed
+        // within `evaluate` instead of within `onEvent`
+        val renderModel = state.task?.let {
+            TaskDetailRenderModel(
+              title = it.title,
+              onDeleteSelected = context.callback {
+                ...
+              }
+            )
+        }
+        return Evaluation(
+            output = renderModel,
+            updates = context.updates {
+                RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task -&gt;
+                   transition(state.copy(task = renderModel))
+                }
+            }
+        )
+    }
+}
+</code></pre></div>
+Notice that the render model is no longer stored in the state, but instead constructed on each
+call to <code>evaluate</code> so that the callbacks are never stale.</p>
                 
               
               
