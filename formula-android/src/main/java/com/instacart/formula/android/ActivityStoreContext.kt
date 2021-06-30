@@ -113,7 +113,7 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
         noinline onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         noinline streams: (StreamConfigurator<ActivityT>.() -> Disposable)? = null,
-        crossinline contracts: FragmentBindingBuilder<Unit>.() -> Unit = {}
+        crossinline contracts: FragmentStoreBuilder<Unit>.() -> Unit = {}
     ): ActivityStore<ActivityT> {
         return store(
             configureActivity = configureActivity,
@@ -129,7 +129,7 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      */
     inline fun <Component> contracts(
         rootComponent: Component,
-        crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
+        crossinline contracts: FragmentStoreBuilder<Component>.() -> Unit
     ): FragmentFlowStore {
         return FragmentFlowStore.init(rootComponent, contracts)
     }

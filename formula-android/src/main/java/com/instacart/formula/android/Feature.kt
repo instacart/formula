@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.core.Observable
  * and the [state] observable.
  *
  * To define a feature, we need to create a [FeatureFactory] for a specific [FragmentKey] type
- * and [bind][FragmentBindingBuilder.bind] it to the [FragmentFlowStore].
+ * and [bind][FragmentStoreBuilder.bind] it to the [FragmentFlowStore].
  *
  * Take a look at [FeatureFactory] for more information.
  */

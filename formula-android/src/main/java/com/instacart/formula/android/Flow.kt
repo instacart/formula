@@ -13,9 +13,9 @@ data class Flow<FlowComponent> @PublishedApi internal constructor(
          * Utility function to build a flow.
          */
         inline fun <FlowComponent> build(
-            crossinline init: FragmentBindingBuilder<FlowComponent>.() -> Unit
+            crossinline init: FragmentStoreBuilder<FlowComponent>.() -> Unit
         ): Flow<FlowComponent> {
-            val bindings = FragmentBindingBuilder.build(init)
+            val bindings = FragmentStoreBuilder.build(init)
             return Flow(bindings)
         }
     }
