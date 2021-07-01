@@ -1,6 +1,6 @@
 # Changelog
 ## [0.7.1] - TBD
-- 
+- **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.
