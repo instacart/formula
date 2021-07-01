@@ -10,16 +10,17 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
- * Used to create a [Binding] for [FragmentKey] keys.
+ * A class used by [FragmentFlowStore] and [Flow] to register [fragment keys][FragmentKey] and their
+ * feature factories.
  */
-class FragmentBindingBuilder<Component> {
+class FragmentStoreBuilder<Component> {
     companion object {
 
         @PublishedApi
         internal inline fun <Component> build(
-            init: FragmentBindingBuilder<Component>.() -> Unit
+            init: FragmentStoreBuilder<Component>.() -> Unit
         ): Bindings<Component> {
-            return FragmentBindingBuilder<Component>().apply(init).build()
+            return FragmentStoreBuilder<Component>().apply(init).build()
         }
     }
 

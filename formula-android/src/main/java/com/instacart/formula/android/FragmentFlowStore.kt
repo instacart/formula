@@ -18,20 +18,20 @@ class FragmentFlowStore @PublishedApi internal constructor(
 ) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState> {
     companion object {
         inline fun init(
-            crossinline init: FragmentBindingBuilder<Unit>.() -> Unit
+            crossinline init: FragmentStoreBuilder<Unit>.() -> Unit
         ): FragmentFlowStore {
             return init(Unit, init)
         }
 
         inline fun <Component> init(
             rootComponent: Component,
-            crossinline contracts: FragmentBindingBuilder<Component>.() -> Unit
+            crossinline contracts: FragmentStoreBuilder<Component>.() -> Unit
         ): FragmentFlowStore {
             val factory: (Unit) -> DisposableScope<Component> = {
                 DisposableScope(component = rootComponent, onDispose = {})
             }
 
-            val bindings = FragmentBindingBuilder.build(contracts)
+            val bindings = FragmentStoreBuilder.build(contracts)
             val root = Binding.composite(factory, bindings)
             return FragmentFlowStore(root)
         }
