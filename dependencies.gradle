@@ -14,6 +14,8 @@ ext {
     truthVersion = "1.1.3"
     composeVersion = "1.0.1"
     kotlinCoroutinesVersion = "1.5.2"
+    lintVersion = "30.0.0"
+    autoServiceVersion = "1.0-rc7"
 
     libraries = [
             androidx             : [
@@ -63,10 +65,20 @@ ext {
                             runner  : "androidx.test:runner:$androidTestVersion"
                     ]
             ],
+            auto: [
+                    service: "com.google.auto.service:auto-service:${autoServiceVersion}",
+                    serviceAnnotations: "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+            ],
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
             coroutines           : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion",
             kotlinReflect        : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
+            lint: [
+                    core: "com.android.tools.lint:lint:${lintVersion}",
+                    api: "com.android.tools.lint:lint-api:${lintVersion}",
+                    checks: "com.android.tools.lint:lint-checks:${lintVersion}",
+                    tests: "com.android.tools.lint:lint-tests:${lintVersion}",
+            ],
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
             rxjava               : "io.reactivex.rxjava3:rxjava:3.1.1",
             rxandroid            : "io.reactivex.rxjava3:rxandroid:3.0.0",
