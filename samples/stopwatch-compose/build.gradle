@@ -29,6 +29,11 @@ android {
         useIR = true
     }
 
+    composeOptions {
+        kotlinCompilerVersion constants.kotlinVersion
+        kotlinCompilerExtensionVersion composeVersion
+    }
+
     buildTypes {
         release {
             minifyEnabled false
