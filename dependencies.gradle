@@ -11,7 +11,7 @@ ext {
     okhttpVersion = "3.13.1"
     robolectricVersion = "4.1" // be aware of updating https://github.com/robolectric/robolectric/pull/4736
     truthVersion = "1.0.1"
-    composeVersion = "1.0.0-beta08"
+    composeVersion = "1.0.1"
 
     libraries = [
             androidx             : [
