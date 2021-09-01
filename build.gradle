@@ -3,7 +3,7 @@ apply plugin: "com.github.ben-manes.versions"
 
 buildscript {
     ext {
-        kotlinVersion = '1.5.21'
+        kotlinVersion = '1.5.30'
 
         versions = [:]
         libraries = [:]
@@ -24,7 +24,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "com.vanniktech:gradle-android-junit-jacoco-plugin:0.16.0"
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.36.0"
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.38.0"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
         classpath "org.jetbrains.dokka:android-documentation-plugin:1.4.32"
         classpath "com.vanniktech:gradle-maven-publish-plugin:0.14.2"
