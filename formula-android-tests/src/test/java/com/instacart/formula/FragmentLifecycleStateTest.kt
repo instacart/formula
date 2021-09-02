@@ -16,6 +16,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
+import org.robolectric.annotation.LooperMode
 
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {
@@ -70,6 +71,7 @@ class FragmentLifecycleStateTest {
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
+    @LooperMode(LooperMode.Mode.LEGACY)
     @Test fun `navigate forward`() {
         navigateToTaskDetail()
 
