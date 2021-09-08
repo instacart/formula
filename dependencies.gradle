@@ -2,7 +2,7 @@ ext {
     androidXVersion = '1.2.0'
     androidTestVersion = "1.1.0"
     androidJUnitVersion = "1.1.0"
-    lifecycleVersion = '2.0.0'
+    lifecycleVersion = '2.2.0'
 
     espressoVersion = "3.1.1"
     junitVersion = "4.12"
