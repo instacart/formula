@@ -20,6 +20,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
+import org.robolectric.annotation.LooperMode
 
 @RunWith(AndroidJUnit4::class)
 class FragmentFlowRenderViewTest {
@@ -130,6 +131,7 @@ class FragmentFlowRenderViewTest {
         assertThat(activity.renderCalls).containsExactly(contract to "update").inOrder()
     }
 
+    @LooperMode(LooperMode.Mode.LEGACY)
     @Test fun `delegates back press to current render model`() {
         navigateToTaskDetail()
 
