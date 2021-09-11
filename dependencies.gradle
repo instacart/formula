@@ -24,7 +24,8 @@ ext {
                             ktx: "androidx.core:core-ktx:1.6.0"
                     ],
                     activity        : [
-                            compose : "androidx.activity:activity-compose:1.3.1"
+                            compose : "androidx.activity:activity-compose:1.3.1",
+                            ktx     : "androidx.activity:activity-ktx:1.3.1"
                     ],
                     compose         : [
                             foundation  : "androidx.compose.foundation:foundation:$composeVersion",
@@ -70,6 +71,8 @@ ext {
             rxjava               : "io.reactivex.rxjava3:rxjava:3.1.1",
             rxandroid            : "io.reactivex.rxjava3:rxandroid:3.0.0",
             rxrelays             : "com.jakewharton.rxrelay3:rxrelay:3.0.1",
-            truth                : "com.google.truth:truth:$truthVersion"
+            truth                : "com.google.truth:truth:$truthVersion",
+            cororutinesTest      : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+
     ]
 }

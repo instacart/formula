@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -73,7 +74,9 @@ interface FlowStream<Message> : Stream<Message> {
     val scope: CoroutineScope
 
     override fun start(send: (Message) -> Unit): Cancelable? {
-        val job = flow().launchIn(scope)
+        val job = flow()
+            .onEach { send(it) }
+            .launchIn(scope)
         return Cancelable(job::cancel)
     }
 }
