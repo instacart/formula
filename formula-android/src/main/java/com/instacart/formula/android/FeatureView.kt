@@ -1,6 +1,7 @@
 package com.instacart.formula.android
 
 import android.view.View
+import androidx.lifecycle.LifecycleObserver
 import com.instacart.formula.Cancelable
 import io.reactivex.rxjava3.core.Observable
 
@@ -14,7 +15,7 @@ import io.reactivex.rxjava3.core.Observable
  *
  * @param view The root Android view.
  * @param bind A bind function connects state observable to the view rendering.
- * @param lifecycleCallbacks Optional lifecycle callbacks if you need to know the Fragment state.
+ * @param lifecycleObserver Optional lifecycle callbacks if you need to know the Fragment state.
  */
 class FeatureView<RenderModel>(
     val view: View,

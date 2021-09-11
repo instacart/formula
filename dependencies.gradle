@@ -3,6 +3,7 @@ ext {
     androidTestVersion = "1.4.0"
     androidJUnitVersion = "1.1.0"
     lifecycleVersion = '2.2.0'
+    lifecycleKtxVersion = '2.4.0-alpha03'
 
     espressoVersion = "3.4.0"
     junitVersion = "4.13.2"
@@ -12,6 +13,7 @@ ext {
     robolectricVersion = "4.6.1"
     truthVersion = "1.1.3"
     composeVersion = "1.0.1"
+    kotlinCoroutinesVersion = "1.5.2"
 
     libraries = [
             androidx             : [
@@ -38,7 +40,9 @@ ext {
                     constraintlayout: "androidx.constraintlayout:constraintlayout:2.1.0",
                     lifecycle       : [
                             runtime   : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion",
-                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion",
+                            runtimektx   : "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleKtxVersion",
+                            extensionsktx: "androidx.lifecycle:lifecycle-extensions-ktx:$lifecycleKtxVersion",
                     ],
                     recyclerview    : "androidx.recyclerview:recyclerview:$androidXVersion",
                     fragment        : [
@@ -60,6 +64,7 @@ ext {
             ],
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+            coroutines           : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion",
             kotlinReflect        : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
             rxjava               : "io.reactivex.rxjava3:rxjava:3.1.1",
