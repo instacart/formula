@@ -4,23 +4,16 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.coroutines.FlowStream
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.TimeUnit
 
-class StopwatchFormula(private val scope: CoroutineScope = MainScope()) : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel> {
+class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel> {
 
     data class State(
         val timePassedInMillis: Long,
         val isRunning: Boolean
     )
-
-    private val analytics = StopwatchAnalytics()
 
     override fun initialState(input: Unit): State = State(
         timePassedInMillis = 0,
@@ -38,7 +31,7 @@ class StopwatchFormula(private val scope: CoroutineScope = MainScope()) : Formul
             ),
             updates = context.updates {
                 if (state.isRunning) {
-                    val incrementTimePassed = FlowStream.fromFlow(scope) {
+                    val incrementTimePassed = FlowStream.fromFlow {
 
                         flow {
                             while(true) {

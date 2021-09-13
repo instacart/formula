@@ -3,12 +3,10 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Stream
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
 
 /**
  * Formula [Stream] adapter to enable coroutine's Flow use.
@@ -26,7 +24,7 @@ interface FlowStream<Message> : Stream<Message> {
          * ```
          */
         inline fun <Message> fromFlow(
-            scope: CoroutineScope,
+            scope: CoroutineScope = MainScope(),
             crossinline create: () -> Flow<Message>
         ): Stream<Message> {
             return object : FlowStream<Message> {
@@ -53,7 +51,7 @@ interface FlowStream<Message> : Stream<Message> {
          * @param key Used to distinguish this [Stream] from other streams.
          */
         inline fun <Message> fromFlow(
-            scope: CoroutineScope,
+            scope: CoroutineScope = MainScope(),
             key: Any?,
             crossinline create: () -> Flow<Message>
         ): Stream<Message> {
