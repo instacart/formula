@@ -30,7 +30,9 @@ object FlowRuntime {
             }
 
             awaitClose {
-                runtime.terminate()
+                if(!channel.isClosedForSend) {
+                    runtime.terminate()
+                }
             }
 
         }.distinctUntilChanged()
