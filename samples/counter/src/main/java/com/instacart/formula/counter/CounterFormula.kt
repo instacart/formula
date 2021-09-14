@@ -16,10 +16,10 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel> {
         return Evaluation(
             output = CounterRenderModel(
                 count = "Count: $state",
-                onDecrement = context.callback {
+                onDecrement = context.onEvent {
                     transition(state - 1)
                 },
-                onIncrement = context.callback {
+                onIncrement = context.onEvent {
                     transition(state + 1)
                 }
             )

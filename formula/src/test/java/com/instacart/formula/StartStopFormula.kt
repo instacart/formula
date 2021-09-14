@@ -35,10 +35,10 @@ class StartStopFormula : Formula<Unit, State, Output> {
             },
             output = Output(
                 state = state.count,
-                startListening = context.callback {
+                startListening = context.onEvent {
                     transition(state.copy(listenForEvents = true))
                 },
-                stopListening = context.callback {
+                stopListening = context.onEvent {
                     transition(state.copy(listenForEvents = false))
                 }
             )

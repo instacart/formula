@@ -16,12 +16,12 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>
         return Evaluation(
             output = Output(
                 state = state,
-                triggerMessage = context.callback {
+                triggerMessage = context.onEvent {
                     transition {
                         input.messageHandler(state)
                     }
                 },
-                incrementAndMessage = context.callback {
+                incrementAndMessage = context.onEvent {
                     val newState = state + 1
                     transition(newState) {
                         input.messageHandler(newState)

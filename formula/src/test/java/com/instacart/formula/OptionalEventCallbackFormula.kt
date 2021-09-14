@@ -16,7 +16,7 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
 
     override fun evaluate(input: Unit, state: State, context: FormulaContext<State>): Evaluation<Output> {
         val callback = if (state.callbackEnabled) {
-            context.eventCallback<Int> {
+            context.onEvent<Int> {
                 transition(state.copy(state = it))
             }
         } else {
@@ -27,7 +27,7 @@ class OptionalEventCallbackFormula : Formula<Unit, OptionalEventCallbackFormula.
             output = Output(
                 state = state.state,
                 callback = callback,
-                toggleCallback = context.callback {
+                toggleCallback = context.onEvent {
                     transition(state.copy(callbackEnabled = !state.callbackEnabled))
                 }
             )

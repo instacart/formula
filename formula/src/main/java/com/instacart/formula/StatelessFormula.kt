@@ -28,8 +28,8 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
     /**
      * The primary purpose of evaluate is to create an [output][Evaluation.output]. Within
      * this method, we can also [compose][FormulaContext.child] child formulas, handle
-     * callbacks [with data][FormulaContext.eventCallback] or [without data][FormulaContext.callback],
-     * and [respond][FormulaContext.updates] to arbitrary asynchronous events.
+     * callbacks [FormulaContext.onEvent], and [respond][FormulaContext.updates] to
+     * arbitrary asynchronous events.
      *
      * Evaluate will be called whenever [input][Input] or child output changes.
      *

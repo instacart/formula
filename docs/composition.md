@@ -61,7 +61,7 @@ val listRenderModel = context
     .input {
         ListInput(
             items = state.items,
-            onItemSelected = context.eventCallback {
+            onItemSelected = context.onEvent<ItemSelected> { event ->
                 // you can respond to child event
             }
     }

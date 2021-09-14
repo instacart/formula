@@ -75,7 +75,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                 state.timePassedInMillis > 0 -> "Resume"
                 else -> "Start"
             },
-            onSelected = context.callback {
+            onSelected = context.onEvent {
                 transition(state.copy(isRunning = !state.isRunning))
             }
         )
@@ -84,7 +84,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
     private fun resetButton(state: State, context: FormulaContext<State>): ButtonRenderModel {
         return ButtonRenderModel(
             text = "Reset",
-            onSelected = context.callback {
+            onSelected = context.onEvent {
                 transition(state.copy(timePassedInMillis = 0, isRunning = false))
             }
         )

@@ -5,9 +5,8 @@ import com.instacart.formula.internal.ScopedCallbacks
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
- * child formulas, handle events [with data][FormulaContext.eventCallback] or
- * [without data][FormulaContext.callback], and [respond][FormulaContext.updates] to arbitrary
- * asynchronous events.
+ * child formulas, handle events [FormulaContext.onEvent], and [respond][FormulaContext.updates]
+ * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
     @PublishedApi internal val callbacks: ScopedCallbacks
@@ -18,13 +17,71 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses inlined callback anonymous class for type.
      */
-    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
-        val callback: () -> Unit = {
+    inline fun onEvent(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
+        val callback: (Unit) -> Unit = {
             performTransition(transition(Transition.Factory))
         }
         val reference = callbacks.initOrFindCallback(callback::class)
-        reference.callback = callback
+        reference.delegate = callback
         return reference
+    }
+
+    /**
+     * Creates a callback to be used for handling UI event transitions.
+     *
+     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
+     */
+    inline fun onEvent(
+        key: Any,
+        crossinline transition: Transition.Factory.() -> Transition<State>
+    ): () -> Unit {
+        val callback = callbacks.initOrFindCallback(key)
+        callback.delegate = {
+            performTransition(transition(Transition.Factory))
+        }
+        return callback
+    }
+
+    /**
+     * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     *
+     * It uses inlined callback anonymous class for type.
+     */
+    inline fun <UIEvent> onEvent(
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+    ): (UIEvent) -> Unit {
+        val callback: (UIEvent) -> Unit = {
+            performTransition(transition(Transition.Factory, it))
+        }
+
+        val reference = callbacks.initOrFindEventCallback<UIEvent>(callback::class)
+        reference.delegate = callback
+        return reference
+    }
+
+    /**
+     * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     *
+     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
+     */
+    inline fun <UIEvent> onEvent(
+        key: Any,
+        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+    ): (UIEvent) -> Unit {
+        val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
+        callback.delegate = {
+            performTransition(transition(Transition.Factory, it))
+        }
+        return callback
+    }
+
+    /**
+     * Creates a callback to be used for handling UI event transitions.
+     *
+     * It uses inlined callback anonymous class for type.
+     */
+    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
+        return onEvent(transition)
     }
 
     /**
@@ -36,11 +93,7 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         crossinline transition: Transition.Factory.() -> Transition<State>
     ): () -> Unit {
-        val callback = callbacks.initOrFindCallback(key)
-        callback.callback = {
-            performTransition(transition(Transition.Factory))
-        }
-        return callback
+        return onEvent(key, transition)
     }
 
     /**
@@ -51,13 +104,7 @@ abstract class FormulaContext<State> internal constructor(
     inline fun <UIEvent> eventCallback(
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
-        val callback: (UIEvent) -> Unit = {
-            performTransition(transition(Transition.Factory, it))
-        }
-
-        val reference = callbacks.initOrFindEventCallback<UIEvent>(callback::class)
-        reference.callback = callback
-        return reference
+        return onEvent(transition)
     }
 
     /**
@@ -69,11 +116,7 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
-        val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
-        callback.callback = {
-            performTransition(transition(Transition.Factory, it))
-        }
-        return callback
+        return onEvent(key, transition)
     }
 
     /**

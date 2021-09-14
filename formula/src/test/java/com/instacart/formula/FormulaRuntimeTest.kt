@@ -220,7 +220,7 @@ class FormulaRuntimeTest {
     @Test
     fun `using a removed child callback should do nothing`() {
         OptionalChildFormula(MessageFormula()) {
-            MessageFormula.Input(messageHandler = eventCallback { none() })
+            MessageFormula.Input(messageHandler = onEvent<Int> { none() })
         }
             .test(Unit)
             .output {

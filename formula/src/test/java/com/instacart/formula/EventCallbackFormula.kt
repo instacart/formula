@@ -13,7 +13,7 @@ class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.Output> 
         return Evaluation(
             output = Output(
                 state = state,
-                changeState = context.eventCallback { newState ->
+                changeState = context.onEvent { newState ->
                     transition(newState)
                 }
             )

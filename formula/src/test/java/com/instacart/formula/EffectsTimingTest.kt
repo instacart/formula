@@ -50,7 +50,7 @@ class EffectsTimingTest {
             return Evaluation(
                 output = Output(
                     events = state,
-                    trigger = context.callback {
+                    trigger = context.onEvent {
                         transition(state.plus(State.INTERNAL)) {
                             input.trigger()
                         }

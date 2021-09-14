@@ -13,19 +13,16 @@ data class FormRenderModel(
 )
 ```
 
-All callbacks should be created within `Formula.evaluate` block.
+To create a callback use `FormulaContext.onEvent`. Note: All callbacks should be created within `Formula.evaluate` block.
 ```kotlin
 override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
   return Evaluation(
     output = FormRenderModel(
-      // Use FormulaContext.eventCallback for callbacks that have a parameter.
-      onNameChanged = context.eventCallback { newName ->
+      onNameChanged = context.onEvent<String> { newName ->
         // Use "newName" to perform a transition
         transition(state.copy(name = newName))
       },
-
-      // Use FormulaContext.callback for callbacks with no parameters.
-      onSaveSelected = context.callback {
+      onSaveSelected = context.onEvent {
         // No state change, performing side-effects.
         transition {
           userService.updateName(state.name)  
@@ -46,14 +43,14 @@ is called again and the callbacks are recreated.
 
 ```kotlin
 // Updating state
-context.eventCallback { newName: String ->
+context.onEvent { newName: String ->
   // We use kotlin data class copy function
   // to create a new state with new name
   transition(state.copy(name = newName))
 }
 
 // Updating onSaveSelected to include validation
-context.callback {
+context.onEvent {
   if (state.name.isBlank()) {
     // A transition which performs a side-effect.
     transition {
@@ -93,7 +90,7 @@ override fun evaluate(input: ItemListInput, state, context): ... {
       context.key(item.id) {
         ItemRow(
           name = item.name,
-          onClick = context.callback {
+          onClick = context.onEvent {
             // Notifying parent that item was selected.
             transition {
               input.onItemSelected(item.id)
@@ -149,7 +146,7 @@ ItemListRenderModel(
   items = state.items.map { item ->
     ItemRenderModel(
       name = item.name,
-      onSelected = context.callback {
+      onSelected = context.onEvent {
         // perform a transition
       }
     )
@@ -162,7 +159,7 @@ To fix it, you should wrap `ItemRenderModel` creation block in `context.key` whe
 context.key(item.id) {
   ItemRenderModel(
     name = item.name,
-    onSelected = context.callback {
+    onSelected = context.onEvent {
       // perform a transition
     }
   )
@@ -175,7 +172,7 @@ Let's say you have a function that takes FormulaContext and creates a ChildRende
 ```kotlin
 fun createChildRenderModel(context: FormulaContext<...>): ChildRenderModel {
   return ChildRenderModel(
-    onClick = context.callback {}
+    onClick = context.onEvent {}
   )
 }
 ```

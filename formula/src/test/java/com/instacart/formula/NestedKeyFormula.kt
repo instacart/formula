@@ -14,7 +14,7 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output> {
 
         val callback = context.key("first level") {
             context.key("second level") {
-                context.callback {
+                context.onEvent {
                     none()
                 }
             }

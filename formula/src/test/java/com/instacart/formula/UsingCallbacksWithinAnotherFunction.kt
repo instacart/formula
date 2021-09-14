@@ -22,7 +22,7 @@ object UsingCallbacksWithinAnotherFunction {
         }
 
         private fun createDefaultCallback(context: FormulaContext<Unit>): () -> Unit {
-            return context.callback {
+            return context.onEvent {
                 none()
             }
         }

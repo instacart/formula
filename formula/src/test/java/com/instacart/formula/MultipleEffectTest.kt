@@ -61,7 +61,7 @@ class MultipleEffectTest {
             val started = state.started
             return Evaluation(
                 output = Output(
-                    start = context.eventCallback {
+                    start = context.onEvent<Int> {
                         transition(state.copy(started = started.plus(it))) {
                             input.onEvent(Event.Started(it))
                         }

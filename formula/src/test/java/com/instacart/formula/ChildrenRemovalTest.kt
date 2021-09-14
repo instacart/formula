@@ -51,13 +51,13 @@ class ChildrenRemovalTest {
                     children = state.map { id ->
                         val childInput = ChildFormula.Input(
                             id = id,
-                            exit = context.callback("exit-$id") {
+                            exit = context.onEvent("exit-$id") {
                                 transition(state.minus(id))
                             }
                         )
                         context.child(ChildFormula(logExit), childInput)
                     },
-                    onClearAll = context.callback {
+                    onClearAll = context.onEvent {
                         transition(emptyList())
                     }
                 )
@@ -83,7 +83,7 @@ class ChildrenRemovalTest {
         override fun evaluate(input: Input, state: Unit, context: FormulaContext<Unit>): Evaluation<RenderModel> {
             return Evaluation(
                 output = RenderModel(
-                    onExit = context.callback {
+                    onExit = context.onEvent {
                         transition {
                             input.exit()
                             logExit()

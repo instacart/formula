@@ -28,12 +28,12 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
                     id = task.id,
                     text = task.title,
                     isSelected = task.isCompleted,
-                    onClick = context.callback {
+                    onClick = context.onEvent {
                         transition {
                             input.showToast("Task selected: ${task.title}")
                         }
                     },
-                    onToggle = context.callback {
+                    onToggle = context.onEvent {
                         transition {
                             val event = TaskCompletedEvent(
                                 taskId = task.id,
@@ -77,7 +77,7 @@ class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Inpu
             context.key(type.name) {
                 TaskFilterRenderModel(
                     title = type.name,
-                    onSelected = context.callback {
+                    onSelected = context.onEvent {
                         transition(state.copy(filterType = type))
                     }
                 )

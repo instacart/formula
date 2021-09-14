@@ -53,8 +53,8 @@ class TaskDetailFormula @Inject constructor(
                 RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
                   val renderModel = TaskDetailRenderModel(
                       title = task.title,
-                      // Don't do: calling context.callback within "onEvent" will cause a crash described above
-                      onDeleteSelected = context.callback {
+                      // Don't do: calling context.onEvent within "onEvent" will cause a crash described above
+                      onDeleteSelected = context.onEvent {
                         ...
                       }
                    )
@@ -92,7 +92,7 @@ class TaskDetailFormula @Inject constructor(
         val renderModel = state.task?.let {
             TaskDetailRenderModel(
               title = it.title,
-              onDeleteSelected = context.callback {
+              onDeleteSelected = context.onEvent {
                 ...
               }
             )

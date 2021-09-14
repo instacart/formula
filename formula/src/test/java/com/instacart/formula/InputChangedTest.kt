@@ -31,7 +31,7 @@ class InputChangedTest {
             return Evaluation(
                 output = Output(
                     childName = context.child(childFormula, state),
-                    onChildNameChanged = context.eventCallback { name ->
+                    onChildNameChanged = context.onEvent { name ->
                         transition(name)
                     }
                 )

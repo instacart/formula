@@ -8,7 +8,7 @@ class ChildRemovedOnMessage {
         child = MessageFormula(),
         childInput = { state ->
             MessageFormula.Input(
-                messageHandler = eventCallback {
+                messageHandler = onEvent<Int> {
                     transition(state.copy(showChild = false))
                 }
             )

@@ -3,7 +3,7 @@ package com.instacart.formula
 object ChildMessageNoParentStateChange {
     fun formula() = HasChildFormula(MessageFormula()) {
         MessageFormula.Input(
-            messageHandler = eventCallback { none() }
+            messageHandler = onEvent<Int> { none() }
         )
     }
 }
