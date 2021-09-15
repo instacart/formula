@@ -23,6 +23,7 @@ nav:
   - 'Using Input': input.md
   - 'Composition': composition.md
   - 'Testing': testing.md
+  - 'Declarative API': Declarative-API.md
   - 'Formula Android': Formula-Android.md
   - 'Using Android View Model': using_android_view_model.md
   - 'FAQ': faq.md
