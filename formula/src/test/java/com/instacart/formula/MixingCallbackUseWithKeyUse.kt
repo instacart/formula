@@ -18,11 +18,11 @@ class MixingCallbackUseWithKeyUse {
         ): Evaluation<ParentOutput> {
             return Evaluation(
                 output = ParentOutput(
-                    firstCallback = context.callback { none() },
+                    firstCallback = context.onEvent { none() },
                     secondCallback = context.key("scoped") {
-                        context.callback { none() }
+                        context.onEvent { none() }
                     },
-                    thirdCallback = context.callback { none() }
+                    thirdCallback = context.onEvent { none() }
                 )
             )
         }

@@ -36,7 +36,7 @@ class NullableStateTest {
             return Evaluation(
                 output = Output(
                     state = state,
-                    updateState = context.eventCallback {
+                    updateState = context.onEvent<String?> {
                         transition(it)
                     }
                 )

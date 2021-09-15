@@ -76,8 +76,7 @@ data class ItemListInput(
 Formula provides an easy way to maintain callback equality. Within your parent formula, 
 you can use `FormulaContext` to instantiate callbacks by using:
 
-- `FormulaContext.callback`
-- `FormulaContext.eventCallback` 
+- `FormulaContext.onEvent`
 
 **Don't:** Don't instantiate functions within `Formula.evaluate`.
 ```kotlin
@@ -94,7 +93,7 @@ override fun evaluate(...) {
 ```kotlin
 override fun evaluate(...) {
     val itemListInput = ItemListInput(
-        onItemSelected = context.eventCallback {
+        onItemSelected = context.onEvent { _ ->
             transition { analytics.track("item_selected") }
         }
     )

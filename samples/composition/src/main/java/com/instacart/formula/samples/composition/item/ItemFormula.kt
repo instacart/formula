@@ -28,11 +28,11 @@ class ItemFormula : Formula<ItemFormula.Input, ItemFormula.State, ItemRenderMode
                 name = input.itemName,
                 displayQuantity = "${state.quantity}",
                 isDecrementEnabled = state.quantity > 0,
-                onDecrement = context.callback {
+                onDecrement = context.onEvent {
                     val newQuantity = max(0, state.quantity - 1)
                     transition(state.copy(quantity = newQuantity))
                 },
-                onIncrement = context.callback {
+                onIncrement = context.onEvent {
                     transition(state.copy(quantity = state.quantity + 1))
                 }
             )

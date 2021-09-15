@@ -53,7 +53,7 @@ class FetchDataExampleTest {
             return Evaluation(
                 output = Output(
                     title = state.response?.name ?: "",
-                    onChangeId = context.eventCallback { id ->
+                    onChangeId = context.onEvent { id ->
                         transition(state.copy(selectedId = id))
                     }
                 ),

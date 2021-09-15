@@ -35,7 +35,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
         return Evaluation(
             output = Output(
                 child = childOutput,
-                toggleChild = context.callback {
+                toggleChild = context.onEvent {
                     transition(state.copy(showChild = !state.showChild))
                 }
             )

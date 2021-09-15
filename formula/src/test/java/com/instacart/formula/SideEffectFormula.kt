@@ -13,7 +13,7 @@ class SideEffectFormula(
     override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int>): Evaluation<Output> {
         return Evaluation(
             output = Output(
-                triggerSideEffect = context.callback {
+                triggerSideEffect = context.onEvent {
                     transition { onSideEffect() }
                 }
             )

@@ -66,7 +66,7 @@ abstract class TestFormula<Input, Output> :
     ): Evaluation<Output> {
         stateMap[state.initialInput] = Value(
             input = input,
-            onNewOutput = context.eventCallback {
+            onNewOutput = context.onEvent<Output> {
                 transition(state.copy(output = it))
             }
         )

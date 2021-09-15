@@ -27,7 +27,7 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
 
         private fun createChild(context: FormulaContext<Unit>): ChildOutput {
             return ChildOutput(
-                callback = context.callback {
+                callback = context.onEvent {
                     none()
                 }
             )

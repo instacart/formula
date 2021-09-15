@@ -69,7 +69,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
             environment = input,
             component = Unit,
             activeFragments = state.activeIds,
-            onInitializeFeature = context.eventCallback { event ->
+            onInitializeFeature = context.onEvent { event ->
                 val features = state.features.plus(event.id to event)
                 transition(state.copy(features = features))
             }

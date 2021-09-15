@@ -3,6 +3,7 @@
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
 - **Breaking**: Removed old `com.instacart.formula.RxStream`. Note: you should use `com.instacart.formula.rxjava3.RxStream`.
 - **Breaking**: Removed `Formula.start()` extension, use `Formula.toObservable()` extension instead.
+- Add `FormulaContext.onEvent` to replace `FormulaContext.callback` and `FormulaContext.eventCallback`
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.

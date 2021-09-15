@@ -81,10 +81,10 @@ class CounterFormula : Formula<Unit, CounterState, CounterRenderModel> {
     return Evaluation(
       output = CounterRenderModel(
         title = "Count: $count",
-        onDecrement = context.callback {
+        onDecrement = context.onEvent {
           transition(state.copy(count = count - 1))
         },
-        onIncrement = context.callback {
+        onIncrement = context.onEvent {
           transition(state.copy(count = count + 1))
         }
       )
@@ -98,11 +98,11 @@ The most import part is the `Formula.evaluate` function. It gives us the current
 is created.
 
 There is also a special object called `FormulaContext` being passed. Formula Context allows us to respond to events by
-declaring transitions. We use `context.callback` for both `onIncrement` and `onDecrement`. Let's look at one of these
+declaring transitions. We use `context.onEvent` for both `onIncrement` and `onDecrement`. Let's look at one of these
 functions closer.
 
 ```kotlin
-onDecrement = context.callback {
+onDecrement = context.onEvent {
   transition(state.copy(count = count - 1))
 }
 ```
@@ -113,7 +113,7 @@ method to create `Transition<CounterState>` object which we return.
 If you notice, our logic currently allows user to decrement to a number below 0. We can update the transition logic to 
 prevent this.
 ```kotlin
-onDecrement = context.callback {
+onDecrement = context.onEvent {
   if (count == 0) {
     none()
   } else {

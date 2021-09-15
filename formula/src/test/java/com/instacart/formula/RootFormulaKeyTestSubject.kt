@@ -43,7 +43,7 @@ class RootFormulaKeyTestSubject {
             return Evaluation(
                 output = Output(
                     value = state,
-                    increment = context.callback {
+                    increment = context.onEvent {
                         transition(state + 1)
                     }
                 )

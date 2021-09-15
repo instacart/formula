@@ -37,7 +37,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output> {
         context: FormulaContext<Boolean>
     ): Evaluation<Output> {
         // We use a callback to check if formula runtime is in the right state.
-        context.callback { none() }
+        context.onEvent { none() }
         context.child(passThroughFormula, state)
 
         return Evaluation(
