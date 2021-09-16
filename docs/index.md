@@ -1,5 +1,8 @@
-Formula is a functional reactive framework built in Kotlin for managing state and side effects. It enables building 
+A Kotlin framework for managing state and side effects. It is inspired by MVU(model, view, update)
+architecture and best of functional, declarative and reactive patterns. It enables building
 deterministic, composable, testable applications.
+
+<img src="assets/formula-mvu-graph.png" alt="MVU graph"/>
 
 ### Quick example
 To demonstrate some of the concepts we will make a simple counter application. It shows the current count and 
