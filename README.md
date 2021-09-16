@@ -3,7 +3,7 @@ A Kotlin framework for managing state and side effects. It is inspired by MVU(mo
 architecture and best of functional, declarative and reactive patterns. It enables building 
 deterministic, composable, testable applications.
 
-<img src="docs/assets/formula-mvu-graph.png" alt="MVU graph" width="200"/>
+<img src="docs/assets/formula-mvu-graph.png" alt="MVU graph"/>
 
 [Check documentation](https://instacart.github.io/formula/)
 
