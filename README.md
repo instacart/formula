@@ -1,6 +1,9 @@
 # Formula
-A functional reactive framework for managing state and side effects based on RxJava. It enables building 
+A Kotlin framework for managing state and side effects. It is inspired by MVU(model, view, update) 
+architecture and best of functional, declarative and reactive patterns. It enables building 
 deterministic, composable, testable applications.
+
+<img src="docs/assets/formula-mvu-graph.png" alt="MVU graph" width="200"/>
 
 [Check documentation](https://instacart.github.io/formula/)
 
