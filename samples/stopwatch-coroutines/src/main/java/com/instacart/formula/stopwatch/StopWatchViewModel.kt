@@ -9,10 +9,7 @@ import kotlinx.coroutines.flow.shareIn
 
 class StopWatchViewModel(private val formula: StopwatchFormula = StopwatchFormula()) : ViewModel() {
 
-    val rendererStream by lazy {
-        formula.toFlow() //Let's imagine this flow uses a really expensive resource (i.e. Connectivity monitoring)
-            //Cannot use .stateIn() since we do not have initial StopwatchRenderModel
-            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
-            .distinctUntilChanged()
+    val renderModelFlow by lazy {
+        formula.toFlow().shareIn(viewModelScope, SharingStarted.Eagerly, 1)
     }
 }

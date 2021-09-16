@@ -1,8 +1,10 @@
 package com.instacart.formula.stopwatch
 
+import android.util.Log
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Stream
 import com.instacart.formula.coroutines.FlowStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -38,6 +40,12 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
 
                     incrementTimePassed.onEvent {
                         transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
+                    }
+                }
+
+                Stream.onTerminate().onEvent {
+                    transition {
+                        Log.d("Formula", "Exit")
                     }
                 }
             }

@@ -10,7 +10,6 @@ class StopwatchRenderView(root: ViewGroup) : RenderView<StopwatchRenderModel> {
     private val timePassed: TextView = root.findViewById(R.id.time_passed_text_view)
 
     override val render: Renderer<StopwatchRenderModel> = Renderer { model ->
-
         timePassed.text = model.timePassed
     }
 }

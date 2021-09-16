@@ -10,10 +10,8 @@ class TestFormulaFlow<Input : Any, Output : Any, FormulaT : IFormula<Input, Outp
     scope: CoroutineScope,
     val formula: FormulaT
 ) {
-
     private var started: Boolean = false
-    private val inputFlow =
-        MutableSharedFlow<Input>(1)
+    private val inputFlow = MutableSharedFlow<Input>(1)
     private val testFlow = formula
         .toFlow(inputFlow.distinctUntilChanged())
         .test(scope)

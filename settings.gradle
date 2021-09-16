@@ -12,5 +12,3 @@ include ':samples:stopwatch'
 include ':samples:stopwatch-coroutines'
 include ':samples:stopwatch-compose'
 include ':samples:todoapp'
-include ':samples:counter-coroutines'
-

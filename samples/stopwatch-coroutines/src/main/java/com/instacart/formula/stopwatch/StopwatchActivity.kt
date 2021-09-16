@@ -20,7 +20,7 @@ class StopwatchActivity : FragmentActivity() {
 
         val renderView = StopwatchRenderView(findViewById(R.id.activity_content))
 
-        val renderModels = counterViewModel.rendererStream
+        val renderModels = counterViewModel.renderModelFlow
 
         renderModels.safeCollect { renderView.render(it) }
     }
