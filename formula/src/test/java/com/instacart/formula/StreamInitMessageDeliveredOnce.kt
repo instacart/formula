@@ -1,9 +1,9 @@
 package com.instacart.formula
 
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 
 object StreamInitMessageDeliveredOnce {
-    fun test() = TestFormula().test(Unit)
+    fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
 
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var timesInitializedCalled = 0

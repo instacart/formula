@@ -22,7 +22,10 @@ dependencies {
     implementation libraries.kotlin
 
     testImplementation project(":formula-test")
+    testImplementation project(":formula-rxjava3")
+    testImplementation project(":formula-coroutines")
     testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.rxrelays
+    testImplementation libraries.coroutinesTest
 }

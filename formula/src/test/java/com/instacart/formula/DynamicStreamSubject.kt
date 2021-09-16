@@ -1,10 +1,10 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 
-class DynamicStreamSubject {
-    private val subject = TestFormula().test()
+class DynamicStreamSubject(runtime: TestableRuntime) {
+    private val subject = runtime.test(TestFormula())
 
     fun updateStreams(vararg keys: String) = apply {
         subject.input(keys.asList())

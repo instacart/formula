@@ -1,22 +1,21 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
-import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
-    val formula: FormulaT
+    private val delegate: FormulaTestDelegate<Input, Output, FormulaT>,
 ) {
 
     private var started: Boolean = false
-    private val inputRelay = BehaviorSubject.create<Input>()
-    private val observer = formula
-        .toObservable(inputRelay)
-        .test()
-        .assertNoErrors()
+
+    val formula: FormulaT = delegate.formula
+
+    init {
+        delegate.assertNoErrors()
+    }
 
     fun values(): List<Output> {
-        return observer.values()
+        return delegate.values()
     }
 
     /**
@@ -25,7 +24,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     fun input(value: Input) = apply {
         started = true
         assertNoErrors() // Check before interaction
-        inputRelay.onNext(value)
+        delegate.input(value)
         assertNoErrors() // Check after interaction
     }
 
@@ -46,15 +45,15 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     }
 
     fun assertNoErrors() = apply {
-        observer.assertNoErrors()
+        delegate.assertNoErrors()
     }
 
     fun dispose() = apply {
-        observer.dispose()
+        delegate.dispose()
     }
 
     @PublishedApi
     internal fun ensureFormulaIsRunning() {
-        if (!started) throw IllegalStateException("Formula is not running. Call [TeatFormulaObserver.input] to start it.")
+        if (!started) throw IllegalStateException("Formula is not running. Call [TestFormulaObserver.input] to start it.")
     }
 }

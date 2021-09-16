@@ -1,16 +1,16 @@
 package com.instacart.formula
 
 import com.instacart.formula.rxjava3.RxStream
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 import io.reactivex.rxjava3.core.Observable
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
-    fun test() = TestFormula().test(Unit)
+    fun test(runtime: TestableRuntime) = runtime.test(TestFormula(runtime), Unit)
 
-    class TestFormula : Formula<Unit, Int, Int> {
+    class TestFormula(runtime: TestableRuntime) : Formula<Unit, Int, Int> {
         private val initial = RxStream.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }
-        private val incrementRelay = IncrementRelay()
+        private val incrementRelay = runtime.newIncrementRelay()
 
         override fun initialState(input: Unit): Int = 0
 

@@ -1,10 +1,10 @@
 package com.instacart.formula
 
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 
 object UsingCallbacksWithinAnotherFunction {
 
-    fun test() = TestFormula().test(Unit)
+    fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
 
     class TestOutput(
         val first: () -> Unit,

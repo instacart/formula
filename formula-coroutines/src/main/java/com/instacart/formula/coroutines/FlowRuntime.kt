@@ -39,7 +39,6 @@ object FlowRuntime {
                 threadChecker.check("Need to unsubscribe on the main thread.")
                 runtime.terminate()
             }
-
         }.distinctUntilChanged()
     }
 }

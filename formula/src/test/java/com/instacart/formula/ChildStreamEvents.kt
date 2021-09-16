@@ -1,12 +1,12 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 
-class ChildStreamEvents {
+class ChildStreamEvents(runtime: TestableRuntime) {
 
-    private val child = StartStopFormula()
-    private val subject = HasChildFormula(child).test(Unit)
+    private val child = StartStopFormula(runtime)
+    private val subject = runtime.test(HasChildFormula(child), Unit)
 
     fun startListening() = apply {
         subject.output { child.startListening() }
