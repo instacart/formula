@@ -1,4 +1,4 @@
-package com.instacart.formula.stopwatch
+package com.instacart.formula.coroutines
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope

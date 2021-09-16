@@ -20,6 +20,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         isRunning = true
     )
 
+    @ExperimentalStdlibApi
     override fun evaluate(
         input: Unit,
         state: State,
@@ -32,13 +33,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
             updates = context.updates {
                 if (state.isRunning) {
                     val incrementTimePassed = FlowStream.fromFlow {
-
-                        flow {
-                            while(true) {
-                                emit(Unit)
-                                delay(1)
-                            }
-                        }
+                        ticker()
                     }
 
                     incrementTimePassed.onEvent {
@@ -72,4 +67,11 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         }
     }
 
+}
+
+fun ticker() = flow {
+    while (true) {
+        emit(Unit)
+        delay(1)
+    }
 }

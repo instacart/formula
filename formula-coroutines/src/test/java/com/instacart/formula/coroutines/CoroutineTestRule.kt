@@ -1,4 +1,4 @@
-package com.instacart.formula.stopwatch
+package com.instacart.formula.coroutines
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

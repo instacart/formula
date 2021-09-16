@@ -72,7 +72,7 @@ ext {
             rxandroid            : "io.reactivex.rxjava3:rxandroid:3.0.0",
             rxrelays             : "com.jakewharton.rxrelay3:rxrelay:3.0.1",
             truth                : "com.google.truth:truth:$truthVersion",
-            cororutinesTest      : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+            coroutinesTest      : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
 
     ]
 }
