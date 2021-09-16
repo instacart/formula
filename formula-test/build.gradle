@@ -21,7 +21,6 @@ dependencies {
     implementation libraries.coroutines
 
     api project(":formula-rxjava3")
-    api project(":formula-coroutines")
 
     testImplementation libraries.truth
     testImplementation libraries.junit

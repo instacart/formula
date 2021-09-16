@@ -3,7 +3,9 @@ package com.instacart.formula.coroutines
 import com.google.common.truth.Truth
 import com.instacart.formula.test.test
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import org.junit.Rule
 import org.junit.Test
 

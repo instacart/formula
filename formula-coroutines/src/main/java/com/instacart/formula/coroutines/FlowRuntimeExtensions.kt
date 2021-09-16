@@ -4,7 +4,6 @@ import com.instacart.formula.IFormula
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-
 fun <Output : Any> IFormula<Unit, Output>.toFlow(): Flow<Output> {
     return toFlow(input = Unit)
 }

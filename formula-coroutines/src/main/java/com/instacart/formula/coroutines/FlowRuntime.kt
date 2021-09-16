@@ -19,7 +19,6 @@ object FlowRuntime {
         return callbackFlow<Output> {
             threadChecker.check("Need to subscribe on main thread.")
 
-
             var runtime = FormulaRuntime(threadChecker, formula, ::trySendBlocking, channel::close)
 
             input.collect { input ->
