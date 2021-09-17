@@ -12,16 +12,14 @@ import kotlinx.coroutines.launch
 
 class StopwatchActivity : FragmentActivity() {
 
-    private val counterViewModel by viewModels<StopWatchViewModel>()
+    private val stopwatchViewModel by viewModels<StopWatchViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.stopwatch_activity)
 
         val renderView = StopwatchRenderView(findViewById(R.id.activity_content))
-
-        val renderModels = counterViewModel.renderModelFlow
-
+        val renderModels = stopwatchViewModel.renderModelFlow
         renderModels.safeCollect { renderView.render(it) }
     }
 
@@ -32,5 +30,4 @@ class StopwatchActivity : FragmentActivity() {
             }
         }
     }
-
 }

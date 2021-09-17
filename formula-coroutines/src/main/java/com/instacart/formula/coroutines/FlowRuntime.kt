@@ -3,16 +3,18 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.internal.ThreadChecker
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 object FlowRuntime {
+
+    @ExperimentalCoroutinesApi
     fun <Input : Any, Output : Any> start(
         input: Flow<Input>,
         formula: IFormula<Input, Output>

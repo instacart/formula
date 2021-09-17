@@ -42,12 +42,6 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                         transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
                     }
                 }
-
-                Stream.onTerminate().onEvent {
-                    transition {
-                        Log.d("Formula", "Exit")
-                    }
-                }
             }
         )
     }
