@@ -6,6 +6,7 @@ import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionIdManager
 import com.instacart.formula.internal.TransitionListener
+import java.lang.IllegalStateException
 import java.util.LinkedList
 
 /**
@@ -64,6 +65,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun terminate() {
+        if (manager?.terminated == true) throw IllegalStateException("wtf")
         manager?.apply {
             markAsTerminated()
             performTerminationSideEffects()

@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 object FlowRuntime {
     fun <Input : Any, Output : Any> start(
@@ -19,22 +21,21 @@ object FlowRuntime {
         return callbackFlow<Output> {
             threadChecker.check("Need to subscribe on main thread.")
 
-            var runtime = FormulaRuntime(threadChecker, formula, ::trySendBlocking, channel::close)
+            var runtime = FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close)
 
-            input.collect { input ->
+            input.onEach { input ->
                 threadChecker.check("Input arrived on a wrong thread.")
                 if (!runtime.isKeyValid(input)) {
                     runtime.terminate()
                     runtime =
-                        FormulaRuntime(threadChecker, formula, ::trySendBlocking, channel::close)
+                        FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close)
                 }
                 runtime.onInput(input)
-            }
+            }.launchIn(this)
 
             awaitClose {
-                if(!channel.isClosedForSend) {
-                    runtime.terminate()
-                }
+                threadChecker.check("Need to unsubscribe on the main thread.")
+                runtime.terminate()
             }
 
         }.distinctUntilChanged()
