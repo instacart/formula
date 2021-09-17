@@ -62,6 +62,10 @@ commands:
           command: |
             ./gradlew :formula:test --no-daemon
       - run:
+          name: Run Kotlin Coroutine Runtime Tests
+          command: |
+            ./gradlew :formula-coroutines:test --no-daemon
+      - run:
           name: Run Formula Android Unit Tests
           command: |
             ./gradlew :formula-android:testRelease --no-daemon
@@ -118,6 +122,10 @@ commands:
           name: Assemble Stopwatch Compose Sample
           command: |
             ./gradlew :samples:stopwatch-compose:assembleDebug --no-daemon
+      - run:
+          name: Assemble Stopwatch Kotlin Coroutine Sample
+          command: |
+            ./gradlew :samples:stopwatch-coroutines:assembleDebug --no-daemon
 
 executors:
   android:

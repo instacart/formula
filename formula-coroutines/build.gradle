@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+    id 'kotlin'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    implementation libraries.kotlin
+    implementation libraries.coroutines
+
+    api project(":formula")
+
+    testImplementation project(":formula-test")
+    testImplementation libraries.truth
+    testImplementation libraries.junit
+    testImplementation libraries.coroutinesTest
+}
