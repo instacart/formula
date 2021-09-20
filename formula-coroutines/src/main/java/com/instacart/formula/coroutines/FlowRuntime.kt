@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.onEach
 
 object FlowRuntime {
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun <Input : Any, Output : Any> start(
         input: Flow<Input>,
         formula: IFormula<Input, Output>
