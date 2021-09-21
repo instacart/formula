@@ -8,7 +8,6 @@ import com.instacart.formula.coroutines.toFlow
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,7 +25,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
-@OptIn(ExperimentalStdlibApi::class)
+
 object CoroutinesTestableRuntime : TestableRuntime {
     private val coroutineTestRule = CoroutineTestRule()
 
@@ -80,9 +79,6 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     private val inputFlow = MutableSharedFlow<Input>(1)
     private val formulaFlow = formula.toFlow(inputFlow)
         .onEach { values.add(it) }
-        .onCompletion {
-            println("complete")
-        }
         .catch { errors.add(it) }
 
     private val job = formulaFlow.launchIn(scope)
@@ -106,8 +102,7 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     }
 }
 
-@ExperimentalStdlibApi
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalStdlibApi::class)
 private class CoroutineTestRule(
     val testCoroutineScope: TestCoroutineScope = TestCoroutineScope(TestCoroutineDispatcher())
 ) : TestWatcher() {
