@@ -79,7 +79,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { changeState("state 2") }
             .apply {
                 val expected = listOf("", "state 1", "state 2")
-                assertThat(values()).isEqualTo(expected)
+                assertThat(values().map { it.state }).isEqualTo(expected)
             }
     }
 
@@ -90,8 +90,22 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { changeState("state 1") }
             .apply {
                 val expected = listOf("", "state 1")
-                assertThat(values()).isEqualTo(expected)
+                assertThat(values().map { it.state }).isEqualTo(expected)
             }
+    }
+
+    @Test
+    fun `state change is performed before transition side-effects`() {
+        // TODO: not sure if this test is very clear.
+        val formula = StateTransitionTimingFormula(runtime)
+        val expectedStates = listOf(
+            StateTransitionTimingFormula.State.INTERNAL,
+            StateTransitionTimingFormula.State.EXTERNAL
+        )
+
+        runtime.test(formula, Unit).output { onStateTransition() }.output {
+            assertThat(events).isEqualTo(expectedStates)
+        }
     }
 
     @Test fun `input change invokes onInputChanged`() {
@@ -134,20 +148,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 val expected = listOf(1)
                 assertThat(values()).isEqualTo(expected)
             }
-    }
-
-    @Test
-    fun `transition effects are performed after state is updated`() {
-        // TODO: not sure if this test is very clear.
-        val formula = StateTransitionTimingFormula(runtime)
-        val expectedStates = listOf(
-            StateTransitionTimingFormula.State.INTERNAL,
-            StateTransitionTimingFormula.State.EXTERNAL
-        )
-
-        runtime.test(formula, Unit).output { onStateTransition() }.output {
-            assertThat(events).isEqualTo(expectedStates)
-        }
     }
 
     @Test

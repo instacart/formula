@@ -20,7 +20,7 @@ class EventFormula<EventT>(
     private val captured = TestEventCallback<Event<EventT>>()
 
     fun capturedStates() = captured.values().map { it.state }
-    fun capturedEvents() = captured.values().map { }
+    fun capturedEvents() = captured.values().map { it.event }
 
     override fun initialState(input: Unit): Int = 0
 
