@@ -12,8 +12,8 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -36,21 +36,29 @@ object CoroutinesTestableRuntime : TestableRuntime {
         return TestFormulaObserver(delegate)
     }
 
-    override fun newIncrementRelay(): IncrementRelay {
-        return FlowIncrementRelay()
+    override fun newRelay(): Relay {
+        return FlowRelay()
     }
 
     override fun streamFormula(): StreamFormulaSubject {
         return FlowStreamFormulaSubject()
     }
+
+    override fun <T> emitEvents(events: List<T>): Stream<T> {
+        return FlowStream.fromFlow {
+            flow {
+                events.forEach { emit(it) }
+            }
+        }
+    }
 }
 
-private class FlowIncrementRelay : IncrementRelay {
+private class FlowRelay : Relay {
     private val sharedFlow = MutableSharedFlow<Unit>(0, 1)
 
     override fun stream(): Stream<Unit> = FlowStream.fromFlow { sharedFlow }
 
-    override fun triggerIncrement() {
+    override fun triggerEvent() {
         sharedFlow.tryEmit(Unit)
     }
 }
