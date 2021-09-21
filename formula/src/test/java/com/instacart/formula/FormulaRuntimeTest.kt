@@ -5,18 +5,49 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.streams.EmptyStream
+import com.instacart.formula.subjects.ChildMessageNoParentStateChange
+import com.instacart.formula.subjects.ChildMessageTriggersEventTransitionInParent
+import com.instacart.formula.subjects.ChildMessageWithParentStateChange
+import com.instacart.formula.subjects.ChildRemovedOnMessage
+import com.instacart.formula.subjects.ChildStateResetAfterToggle
+import com.instacart.formula.subjects.ChildStreamEvents
+import com.instacart.formula.subjects.ChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.DelegateFormula
+import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EmptyFormula
+import com.instacart.formula.subjects.EventCallbackFormula
 import com.instacart.formula.subjects.HasChildFormula
 import com.instacart.formula.subjects.EventFormula
+import com.instacart.formula.subjects.ExtremelyNestedFormula
+import com.instacart.formula.subjects.FromObservableWithInputFormula
+import com.instacart.formula.subjects.KeyUsingListFormula
+import com.instacart.formula.subjects.MessageFormula
+import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
+import com.instacart.formula.subjects.MultipleChildEvents
+import com.instacart.formula.subjects.NestedChildTransitionAfterNoEvaluationPass
+import com.instacart.formula.subjects.NestedKeyFormula
+import com.instacart.formula.subjects.NestedTerminationWithInputChanged
+import com.instacart.formula.subjects.OnlyUpdateFormula
+import com.instacart.formula.subjects.OptionalCallbackFormula
+import com.instacart.formula.subjects.OptionalChildFormula
+import com.instacart.formula.subjects.OptionalEventCallbackFormula
+import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
+import com.instacart.formula.subjects.RootFormulaKeyTestSubject
+import com.instacart.formula.subjects.StartStopFormula
 import com.instacart.formula.subjects.StateTransitionTimingFormula
+import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
 import com.instacart.formula.subjects.StreamInputFormula
+import com.instacart.formula.subjects.SubscribesToAllUpdatesBeforeDeliveringMessages
+import com.instacart.formula.subjects.TerminateFormula
+import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
+import com.instacart.formula.subjects.UseInputFormula
+import com.instacart.formula.subjects.UsingCallbacksWithinAnotherFunction
+import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.test.test
 import com.instacart.formula.tests.EmitErrorTest
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
@@ -40,6 +71,70 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @get:Rule
     val rule = RuleChain.outerRule(TestName()).around(runtime.rule)
+
+    @Test fun `state change triggers an evaluation`() {
+        val formula = EventCallbackFormula()
+        runtime.test(formula, Unit)
+            .output { changeState("state 1") }
+            .output { changeState("state 2") }
+            .apply {
+                val expected = listOf("", "state 1", "state 2")
+                assertThat(values()).isEqualTo(expected)
+            }
+    }
+
+    @Test fun `state change is ignored if value is the same as last value`() {
+        val formula = EventCallbackFormula()
+        runtime.test(formula, Unit)
+            .output { changeState("state 1") }
+            .output { changeState("state 1") }
+            .apply {
+                val expected = listOf("", "state 1")
+                assertThat(values()).isEqualTo(expected)
+            }
+    }
+
+    @Test fun `input change invokes onInputChanged`() {
+        val formula = UseInputFormula<String>()
+        runtime.test(formula)
+            .input("first")
+            .input("second")
+            .apply {
+                assertThat(values()).containsExactly("first", "second").inOrder()
+            }
+    }
+
+    @Test fun `input change triggers an evaluation`() {
+        val formula = object : StatelessFormula<Int, Int>() {
+            override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
+                return Evaluation(output = input)
+            }
+        }
+
+        runtime.test(formula)
+            .input(1)
+            .input(2)
+            .input(3)
+            .apply {
+                assertThat(values()).containsExactly(1, 2, 3).inOrder()
+            }
+    }
+
+    @Test fun `input change is ignored if value is the same as last value`() {
+        val formula = object : StatelessFormula<Int, Int>() {
+            override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
+                return Evaluation(output = input)
+            }
+        }
+
+        runtime.test(formula)
+            .input(1)
+            .input(1)
+            .apply {
+                val expected = listOf(1)
+                assertThat(values()).isEqualTo(expected)
+            }
+    }
 
     @Test
     fun `transition effects are performed after state is updated`() {
