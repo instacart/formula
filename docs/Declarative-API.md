@@ -17,7 +17,7 @@ fetchUserStream.onEvent { userResult ->
 }
 ```
 
-The logic looks very similar to the first option, but the key difference here is that `Observable.subscribe` hasn’t run yet - the execution
+The logic looks very similar to the first option, but the key difference here is that `Observable.subscribe` hasn't run yet - the execution
 is deferred. It might not be clear why this is useful just from this example, but deferring execution allows us to provide a declarative API.
 For example, we can add conditional logic to only fetch user when user id is set.
 ```kotlin
@@ -76,5 +76,29 @@ fun onStateChanged(state: State) {
             actionCache[key] = action.start()
         }
     }  
+}
+```
+
+It's worth mentioning that this is an approximate and not the actual implementation. Within our
+assumptions we didn't discuss formula inputs (passed to configure Formula) and child 
+formulas (enables re-use and composition) which also have an affect on evaluation. Similarly, 
+to how we used `State` to control the lifecycle of the action, we can use formula input or child 
+formula outputs. 
+
+To expand on the previous assumptions, let's define how `Input` interacts 
+with `Formula`. Input is passed by the outside world to configure `Formula` instance. Similarly
+to `State`:
+
+- `Input` is usually an immutable data class
+- We use `Input` object in the `evaluate(input, state)` function to create `Pair<UIModel, Actions>`
+- Any time there is an `Input` change, the Formula runtime will call `evaluate` again.
+
+This means that similarly to `State`, we can also use `Input` to define action conditions.
+```kotlin
+if (input.userId != null) {
+    val fetchUserStream = RxStream.fromObservable { repository.fetchUser(input.userId) }
+    fetchUserStream.onEvent { userResult ->
+        // Do something with the result
+    } 
 }
 ```
