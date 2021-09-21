@@ -20,8 +20,12 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
         updateStreams()
     }
 
-    private fun assertRunning(vararg keys: String) = apply {
+    fun assertRunning(vararg keys: String) = apply {
         assertThat(subject.formula.running).containsExactly(*keys).inOrder()
+    }
+
+    fun dispose() = apply {
+        subject.dispose()
     }
 
     class TestFormula : StatelessFormula<List<String>, Unit>() {

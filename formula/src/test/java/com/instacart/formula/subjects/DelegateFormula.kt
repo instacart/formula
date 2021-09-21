@@ -10,7 +10,7 @@ class DelegateFormula<Type>(
 
     data class Output<Type>(
         val childValue: Type,
-        val onChildValueChanged: (Type) -> Unit
+        val changeChildInput: (Type) -> Unit
     )
 
     private val childFormula = UseInputFormula<Type>()
@@ -25,9 +25,7 @@ class DelegateFormula<Type>(
         return Evaluation(
             output = Output(
                 childValue = context.child(childFormula, state),
-                onChildValueChanged = context.onEvent { name ->
-                    transition(name)
-                }
+                changeChildInput = context.onEvent { name -> transition(name) }
             )
         )
     }

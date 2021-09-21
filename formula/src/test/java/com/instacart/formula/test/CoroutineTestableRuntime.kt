@@ -46,10 +46,18 @@ object CoroutinesTestableRuntime : TestableRuntime {
 
     override fun <T> emitEvents(events: List<T>): Stream<T> {
         return FlowStream.fromFlow {
-            flow {
-                events.forEach { emit(it) }
-            }
+            toFlow(events)
         }
+    }
+
+    override fun <T> emitEvents(key: Any?, events: List<T>): Stream<T> {
+        return FlowStream.fromFlow(key = key) {
+            toFlow(events)
+        }
+    }
+
+    private fun <T> toFlow(events: List<T>) = flow {
+        events.forEach { emit(it) }
     }
 }
 
