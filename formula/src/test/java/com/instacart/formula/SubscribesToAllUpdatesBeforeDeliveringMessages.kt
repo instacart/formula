@@ -10,7 +10,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
     class TestFormula(runtime: TestableRuntime) : Formula<Unit, Int, Int> {
         private val initial = RxStream.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }
-        private val incrementRelay = runtime.newIncrementRelay()
+        private val incrementRelay = runtime.newRelay()
 
         override fun initialState(input: Unit): Int = 0
 
@@ -19,7 +19,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
                 output = state,
                 updates = context.updates {
                     events(initial) {
-                        transition { incrementRelay.triggerIncrement() }
+                        transition { incrementRelay.triggerEvent() }
                     }
 
                     incrementRelay.stream().onEvent {

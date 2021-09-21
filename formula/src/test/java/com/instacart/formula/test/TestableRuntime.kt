@@ -27,14 +27,16 @@ interface TestableRuntime {
         return test(formula).input(input)
     }
 
-    fun newIncrementRelay(): IncrementRelay
+    fun newRelay(): Relay
 
     fun streamFormula(): StreamFormulaSubject
+
+    fun <T> emitEvents(events: List<T>): Stream<T>
 }
 
-interface IncrementRelay {
+interface Relay {
     fun stream(): Stream<Unit>
-    fun triggerIncrement()
+    fun triggerEvent()
 }
 
 interface StreamFormulaSubject : IFormula<String, Int> {

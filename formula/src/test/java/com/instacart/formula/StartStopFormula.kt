@@ -6,7 +6,7 @@ import com.instacart.formula.test.TestableRuntime
 
 class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output> {
 
-    val incrementEvents = runtime.newIncrementRelay()
+    val incrementEvents = runtime.newRelay()
 
     data class State(
         val listenForEvents: Boolean = false,

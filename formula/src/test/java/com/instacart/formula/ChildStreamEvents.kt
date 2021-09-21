@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.subjects.HasChildFormula
 import com.instacart.formula.test.TestableRuntime
 
 class ChildStreamEvents(runtime: TestableRuntime) {
@@ -19,7 +20,7 @@ class ChildStreamEvents(runtime: TestableRuntime) {
     fun incrementBy(step: Int) = apply {
         val range = 1..step
         range.forEach {
-            child.incrementEvents.triggerIncrement()
+            child.incrementEvents.triggerEvent()
         }
     }
 

@@ -5,6 +5,12 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.streams.EmptyStream
+import com.instacart.formula.subjects.DelegateFormula
+import com.instacart.formula.subjects.EmptyFormula
+import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.EventFormula
+import com.instacart.formula.subjects.StateTransitionTimingFormula
+import com.instacart.formula.subjects.StreamInputFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
@@ -36,12 +42,26 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     val rule = RuleChain.outerRule(TestName()).around(runtime.rule)
 
     @Test
+    fun `transition effects are performed after state is updated`() {
+        // TODO: not sure if this test is very clear.
+        val formula = StateTransitionTimingFormula(runtime)
+        val expectedStates = listOf(
+            StateTransitionTimingFormula.State.INTERNAL,
+            StateTransitionTimingFormula.State.EXTERNAL
+        )
+
+        runtime.test(formula, Unit).output { onStateTransition() }.output {
+            assertThat(events).isEqualTo(expectedStates)
+        }
+    }
+
+    @Test
     fun `multiple event updates`() {
         runtime.test(StartStopFormula(runtime), Unit)
             .output { startListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerEvent() }
+            .apply { formula.incrementEvents.triggerEvent() }
+            .apply { formula.incrementEvents.triggerEvent() }
             .apply {
                 val expected = listOf(0, 0, 1, 2, 3)
                 assertThat(values().map { it.state }).isEqualTo(expected)
@@ -52,10 +72,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `no state changes after event stream is removed`() {
         runtime.test(StartStopFormula(runtime), Unit)
             .output { startListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerEvent() }
             .output { stopListening() }
-            .apply { formula.incrementEvents.triggerIncrement() }
-            .apply { formula.incrementEvents.triggerIncrement() }
+            .apply { formula.incrementEvents.triggerEvent() }
+            .apply { formula.incrementEvents.triggerEvent() }
             .apply {
                 val expected = listOf(0, 0, 1, 1)
                 assertThat(values().map { it.state }).isEqualTo(expected)
@@ -587,7 +607,66 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
+    @Test fun `stream event callback is scoped to latest state`() {
+        val events = listOf("a", "b")
+        val formula = EventFormula(runtime, events)
+
+        val expectedStates = listOf(1, 2)
+        runtime.test(formula, Unit).apply {
+            assertThat(formula.capturedStates()).isEqualTo(expectedStates)
+        }
+    }
+
+    @Test fun `stream events are captured in order`() {
+        val events = listOf("first", "second", "third", "third")
+        val formula = EventFormula(runtime, events)
+        runtime.test(formula, Unit).apply {
+            assertThat(formula.capturedEvents()).isEqualTo(events)
+        }
+    }
+
+    @Test fun `stream event callbacks can handle at least 100k events`() {
+        val eventCount = 100000
+        val events = (1..eventCount).toList()
+        val formula = EventFormula(runtime, events)
+        runtime.test(formula, Unit)
+            .apply {
+                assertThat(values()).containsExactly(eventCount).inOrder()
+            }
+    }
+
     // End of stream tests
+
+    // Child specific test cases
+
+    @Test fun `child formula input changes`() {
+        val formula = DelegateFormula("default")
+        runtime.test(formula, Unit)
+            .output { onChildValueChanged("first") }
+            .output { onChildValueChanged("second") }
+            .apply {
+                val expected = listOf("default", "first", "second")
+                assertThat(values().map { it.childValue }).isEqualTo(expected)
+            }
+    }
+
+    @Test fun `adding duplicate child throws an exception`() {
+        val formula = object : StatelessFormula<Unit, List<Unit>>() {
+            override fun evaluate(
+                input: Unit,
+                context: FormulaContext<Unit>
+            ): Evaluation<List<Unit>> {
+                return Evaluation(
+                    output = listOf(1, 2, 3).map {
+                        context.child(EmptyFormula())
+                    }
+                )
+            }
+        }
+
+        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        assertThat(error).isInstanceOf(IllegalStateException::class.java)
+    }
 
     @Test
     fun `parent removal triggers childs terminate message`() {
@@ -598,6 +677,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
     }
+
+
+    // End of child specific test cases
 
     @Test
     fun `multiple termination side-effects`() {
@@ -682,11 +764,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `mixing callback use with key use`() {
-        runtime.test(
-            MixingCallbackUseWithKeyUse.ParentFormula(),
-            Unit
-        )
-            .assertOutputCount(1)
+        val formula = MixingCallbackUseWithKeyUse.ParentFormula()
+        runtime.test(formula, Unit).assertOutputCount(1)
     }
 
     // TODO: maybe worth adding support eventually.

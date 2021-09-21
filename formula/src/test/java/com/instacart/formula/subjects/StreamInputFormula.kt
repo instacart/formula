@@ -1,4 +1,9 @@
-package com.instacart.formula
+package com.instacart.formula.subjects
+
+import com.instacart.formula.Evaluation
+import com.instacart.formula.FormulaContext
+import com.instacart.formula.StatelessFormula
+import com.instacart.formula.Stream
 
 class StreamInputFormula : StatelessFormula<Int, Unit>()  {
     val messages = mutableListOf<Int>()

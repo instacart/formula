@@ -1,4 +1,9 @@
-package com.instacart.formula
+package com.instacart.formula.subjects
+
+import com.instacart.formula.Evaluation
+import com.instacart.formula.Formula
+import com.instacart.formula.FormulaContext
+import com.instacart.formula.IFormula
 
 class HasChildFormula<ChildInput, ChildOutput>(
     private val child: IFormula<ChildInput, ChildOutput>,

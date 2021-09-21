@@ -10,16 +10,6 @@ import org.junit.Test
 
 class MultipleEffectTest {
 
-    @Test fun `multiple effect order should be maintained`() {
-        val triggerEventHandler = TestEventCallback<Int>()
-        TestFormula()
-            .test(TestFormula.Input(trigger = triggerEventHandler))
-            .apply {
-                val expected = listOf(0, 1, 2, 3)
-                assertThat(triggerEventHandler.values()).isEqualTo(expected)
-            }
-    }
-
     @Test fun `multiple effect order maintained across multiple event streams`() {
         // A state transition has a side effect and triggers another state transition which triggers a side-effect
 
@@ -73,34 +63,6 @@ class MultipleEffectTest {
                             transition(state.copy(started = started.minus(id))) {
                                 input.onEvent(Event.Stopped(id))
                             }
-                        }
-                    }
-                }
-            )
-        }
-    }
-
-
-    class TestFormula : Formula<TestFormula.Input, Int, Unit> {
-
-        data class Input(
-            val trigger: (Int) -> Unit
-        )
-
-        override fun initialState(input: Input) = 0
-
-        override fun evaluate(
-            input: Input,
-            state: Int,
-            context: FormulaContext<Int>
-        ): Evaluation<Unit> {
-            return Evaluation(
-                output = Unit,
-                updates = context.updates {
-                    RxStream.fromObservable { Observable.range(0, 4) }.onEvent {
-                        val updated = state + 1
-                        transition(updated) {
-                            input.trigger(state)
                         }
                     }
                 }
