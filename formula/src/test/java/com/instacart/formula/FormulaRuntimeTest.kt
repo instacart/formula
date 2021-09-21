@@ -13,6 +13,7 @@ import com.instacart.formula.subjects.ChildStateResetAfterToggle
 import com.instacart.formula.subjects.ChildStreamEvents
 import com.instacart.formula.subjects.ChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.DelegateFormula
+import com.instacart.formula.subjects.DynamicParentFormula
 import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EffectOrderFormula
 import com.instacart.formula.subjects.EmptyFormula
@@ -41,6 +42,7 @@ import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
 import com.instacart.formula.subjects.StreamInputFormula
 import com.instacart.formula.subjects.SubscribesToAllUpdatesBeforeDeliveringMessages
 import com.instacart.formula.subjects.TerminateFormula
+import com.instacart.formula.subjects.TestKey
 import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.UseInputFormula
 import com.instacart.formula.subjects.UsingCallbacksWithinAnotherFunction
@@ -828,29 +830,30 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `parent removes all child formulas`() {
-        val runningKeys = arrayOf("1", "2", "3")
-        DynamicStreamSubject(runtime)
-            .updateStreams(keys = runningKeys)
-            .assertRunning(keys = runningKeys)
-            .removeAll()
-            .assertRunning(keys = emptyArray())
+        val formula = DynamicParentFormula()
+        runtime.test(formula, Unit)
+            .output { addChild(TestKey("1")) }
+            .output { addChild(TestKey("2")) }
+            .output { addChild(TestKey("3")) }
+            .output {
+                val expected = listOf("1", "2", "3")
+                assertThat(children.map { it.input.id }).isEqualTo(expected)
+            }
+            .output { removeAllChildren() }
+            .output {
+                assertThat(children).isEmpty()
+            }
     }
 
     @Test fun `adding duplicate child throws an exception`() {
-        val formula = object : StatelessFormula<Unit, List<Unit>>() {
-            override fun evaluate(
-                input: Unit,
-                context: FormulaContext<Unit>
-            ): Evaluation<List<Unit>> {
-                return Evaluation(
-                    output = listOf(1, 2, 3).map {
-                        context.child(EmptyFormula())
-                    }
-                )
-            }
+        val result = Try {
+            val formula = DynamicParentFormula()
+            runtime.test(formula, Unit)
+                .output { addChild(TestKey("1")) }
+                .output { addChild(TestKey("1")) }
         }
 
-        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        val error = result.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
