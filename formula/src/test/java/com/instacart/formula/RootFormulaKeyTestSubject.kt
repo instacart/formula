@@ -1,12 +1,12 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.test.test
+import com.instacart.formula.test.TestableRuntime
 
-class RootFormulaKeyTestSubject {
+class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
 
     private var input: Int = 0
-    private val subject = MyFormula.test(input)
+    private val subject = runtime.test(MyFormula, input)
 
     fun increment() = apply {
         subject.output { increment() }

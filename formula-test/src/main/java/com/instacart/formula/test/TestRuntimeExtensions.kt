@@ -9,7 +9,7 @@ import com.instacart.formula.Stream
  * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(): TestFormulaObserver<Input, Output, F> {
-    return TestFormulaObserver(this)
+    return TestFormulaObserver(RxJavaFormulaTestDelegate(this))
 }
 
 /**
@@ -26,3 +26,4 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
 }
 
 fun <Message> Stream<Message>.test() = TestStreamObserver(this)
+

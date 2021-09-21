@@ -2,10 +2,11 @@ package com.instacart.formula
 
 import com.instacart.formula.StartStopFormula.Output
 import com.instacart.formula.StartStopFormula.State
+import com.instacart.formula.test.TestableRuntime
 
-class StartStopFormula : Formula<Unit, State, Output> {
+class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output> {
 
-    val incrementEvents = IncrementRelay()
+    val incrementEvents = runtime.newIncrementRelay()
 
     data class State(
         val listenForEvents: Boolean = false,
