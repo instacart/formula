@@ -13,13 +13,15 @@ import com.instacart.formula.subjects.ChildStateResetAfterToggle
 import com.instacart.formula.subjects.ChildStreamEvents
 import com.instacart.formula.subjects.ChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.DelegateFormula
+import com.instacart.formula.subjects.DynamicParentFormula
 import com.instacart.formula.subjects.DynamicStreamSubject
+import com.instacart.formula.subjects.EffectOrderFormula
 import com.instacart.formula.subjects.EmptyFormula
 import com.instacart.formula.subjects.EventCallbackFormula
-import com.instacart.formula.subjects.HasChildFormula
 import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
+import com.instacart.formula.subjects.HasChildFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
@@ -27,6 +29,7 @@ import com.instacart.formula.subjects.MultipleChildEvents
 import com.instacart.formula.subjects.NestedChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.NestedKeyFormula
 import com.instacart.formula.subjects.NestedTerminationWithInputChanged
+import com.instacart.formula.subjects.NullableStateFormula
 import com.instacart.formula.subjects.OnlyUpdateFormula
 import com.instacart.formula.subjects.OptionalCallbackFormula
 import com.instacart.formula.subjects.OptionalChildFormula
@@ -39,6 +42,7 @@ import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
 import com.instacart.formula.subjects.StreamInputFormula
 import com.instacart.formula.subjects.SubscribesToAllUpdatesBeforeDeliveringMessages
 import com.instacart.formula.subjects.TerminateFormula
+import com.instacart.formula.subjects.TestKey
 import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.UseInputFormula
 import com.instacart.formula.subjects.UsingCallbacksWithinAnotherFunction
@@ -48,7 +52,6 @@ import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.tests.EmitErrorTest
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -92,6 +95,16 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 val expected = listOf("", "state 1")
                 assertThat(values().map { it.state }).isEqualTo(expected)
             }
+    }
+
+    @Test fun `state can be a null value`() {
+        val formula = NullableStateFormula()
+        runtime.test(formula, Unit)
+            .output { assertThat(state).isNull() }
+            .output { updateState("new state") }
+            .output { assertThat(state).isEqualTo("new state") }
+            .output { updateState(null) }
+            .output { assertThat(state).isNull() }
     }
 
     @Test
@@ -187,32 +200,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `multiple child worker updates`() {
-        ChildStreamEvents(runtime)
-            .startListening()
-            .incrementBy(3)
-            .assertCurrentValue(3)
-    }
-
-    @Test
-    fun `child worker is removed`() {
-        ChildStreamEvents(runtime)
-            .startListening()
-            .incrementBy(2)
-            .stopListening()
-            .incrementBy(4)
-            .assertCurrentValue(2)
-    }
-
-    @Test
-    fun `parent removes child when child emits a message`() {
-        ChildRemovedOnMessage(runtime)
-            .assertChildIsVisible(true)
-            .closeByChildMessage()
-            .assertChildIsVisible(false)
-    }
-
-    @Test
     fun `transition after no re-evaluation pass`() {
         val sideEffectCallback = TestCallback()
         runtime.test(TransitionAfterNoEvaluationPass.formula(sideEffectCallback), Unit)
@@ -294,6 +281,22 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output {
                 assertThat(count).isEqualTo(1)
             }
+    }
+
+    @Test fun `transition effect queue maintains FIFO order when starting a new stream during a transition`() {
+        val onEvent = TestEventCallback<EffectOrderFormula.Event>()
+        val initialInput = EffectOrderFormula.Input(onEvent = onEvent)
+        runtime.test(EffectOrderFormula(), initialInput)
+            .output { triggerEvent() }
+            .output { triggerEvent() }
+
+        val expected = listOf(
+            EffectOrderFormula.Event(1),
+            EffectOrderFormula.Event(2),
+            EffectOrderFormula.Event(3),
+            EffectOrderFormula.Event(4)
+        )
+        assertThat(onEvent.values()).isEqualTo(expected)
     }
 
     @Test
@@ -446,6 +449,57 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { assertThat(items).hasSize(2) }
     }
 
+    // Stream test cases
+
+    @Test fun `stream event triggers a state change`() {
+        val formula = StartStopFormula(runtime)
+        runtime.test(formula, Unit)
+            .output { this.startListening() }
+            .output { assertThat(state).isEqualTo(0) }
+            .apply { formula.incrementEvents.triggerEvent() }
+            .output { assertThat(state).isEqualTo(1) }
+    }
+
+    @Test fun `stream triggers only a side-effect`() {
+        val eventCallback = TestEventCallback<String>()
+        val events = listOf("a", "b")
+        val formula = OnlyUpdateFormula<Unit> {
+            runtime.emitEvents(events).onEvent {
+                transition {
+                    eventCallback(it)
+                }
+            }
+        }
+
+        val observer = runtime.test(formula, Unit)
+        assertThat(observer.values()).containsExactly(Unit).inOrder()
+        assertThat(eventCallback.values()).containsExactly("a", "b").inOrder()
+    }
+
+    @Test fun `stream is disposed when evaluation does not contain it`() {
+        DynamicStreamSubject(runtime)
+            .updateStreams(keys = arrayOf("1"))
+            .assertRunning(keys = arrayOf("1"))
+            .updateStreams(keys = emptyArray())
+            .assertRunning(keys = emptyArray())
+    }
+
+    @Test fun `stream is removed when formula is removed`() {
+        DynamicStreamSubject(runtime)
+            .updateStreams(keys = arrayOf("1"))
+            .assertRunning(keys = arrayOf("1"))
+            .dispose()
+            .assertRunning(keys = emptyArray())
+    }
+
+    @Test fun `stream is reset when key changes`() {
+        DynamicStreamSubject(runtime)
+            .updateStreams("1")
+            .assertRunning("1")
+            .updateStreams("2")
+            .assertRunning("2")
+    }
+
     @Test
     fun `subscribes to updates before delivering messages`() {
         SubscribesToAllUpdatesBeforeDeliveringMessages
@@ -454,6 +508,24 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(this).isEqualTo(4)
             }
             .assertOutputCount(1)
+    }
+
+    @Test
+    fun `multiple child worker updates`() {
+        ChildStreamEvents(runtime)
+            .startListening()
+            .incrementBy(3)
+            .assertCurrentValue(3)
+    }
+
+    @Test
+    fun `child worker is removed`() {
+        ChildStreamEvents(runtime)
+            .startListening()
+            .incrementBy(2)
+            .stopListening()
+            .incrementBy(4)
+            .assertCurrentValue(2)
     }
 
     @Test
@@ -491,6 +563,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         DynamicStreamSubject(runtime)
             .updateStreams("one", "two", "three")
             .removeAll()
+            .assertRunning(keys = emptyArray())
     }
 
     @Test
@@ -498,6 +571,66 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         DynamicStreamSubject(runtime)
             .updateStreams("one", "two", "three")
             .updateStreams("one", "three", "four")
+    }
+
+    @Test fun `stream formula emits initial value`() {
+        runtime.test(runtime.streamFormula())
+            .input("initial")
+            .apply {
+                Truth.assertThat(values()).containsExactly(0).inOrder()
+            }
+    }
+
+    @Test fun `stream formula emits initial value and subsequent events`() {
+        runtime.test(runtime.streamFormula())
+            .input("initial")
+            .apply {
+                formula.emitEvent(1)
+                formula.emitEvent(2)
+                formula.emitEvent(3)
+            }
+            .apply {
+                assertThat(values()).containsExactly(0, 1, 2, 3).inOrder()
+            }
+    }
+
+    @Test fun `stream formula resets state when input changes`() {
+        runtime.test(runtime.streamFormula())
+            .input("initial")
+            .apply { formula.emitEvent(1) }
+            .input("reset")
+            .apply { formula.emitEvent(1) }
+            .apply {
+                assertThat(values()).containsExactly(0, 1, 0, 1).inOrder()
+            }
+    }
+
+    @Test fun `stream event callback is scoped to latest state`() {
+        val events = listOf("a", "b")
+        val formula = EventFormula(runtime, events)
+
+        val expectedStates = listOf(1, 2)
+        runtime.test(formula, Unit).apply {
+            assertThat(formula.capturedStates()).isEqualTo(expectedStates)
+        }
+    }
+
+    @Test fun `stream events are captured in order`() {
+        val events = listOf("first", "second", "third", "third")
+        val formula = EventFormula(runtime, events)
+        runtime.test(formula, Unit).apply {
+            assertThat(formula.capturedEvents()).isEqualTo(events)
+        }
+    }
+
+    @Test fun `stream event callbacks can handle at least 100k events`() {
+        val eventCount = 100000
+        val events = (1..eventCount).toList()
+        val formula = EventFormula(runtime, events)
+        runtime.test(formula, Unit)
+            .apply {
+                assertThat(values()).containsExactly(eventCount).inOrder()
+            }
     }
 
     @Test
@@ -617,10 +750,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `disposing formula triggers terminate message`() {
-        runtime.test(
-            TerminateFormula(),
-            Unit
-        )
+        runtime.test(TerminateFormula(), Unit)
             .apply {
                 assertThat(formula.timesTerminateCalled).isEqualTo(0)
             }
@@ -668,98 +798,62 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    // Stream tests
-
-    @Test fun `stream formula emits initial value`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply {
-                Truth.assertThat(values()).containsExactly(0).inOrder()
-            }
-    }
-
-    @Test fun `stream formula emits initial value and subsequent events`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply {
-                formula.emitEvent(1)
-                formula.emitEvent(2)
-                formula.emitEvent(3)
-            }
-            .apply {
-                assertThat(values()).containsExactly(0, 1, 2, 3).inOrder()
-            }
-    }
-
-    @Test fun `stream formula resets state when input changes`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply { formula.emitEvent(1) }
-            .input("reset")
-            .apply { formula.emitEvent(1) }
-            .apply {
-                assertThat(values()).containsExactly(0, 1, 0, 1).inOrder()
-            }
-    }
-
-    @Test fun `stream event callback is scoped to latest state`() {
-        val events = listOf("a", "b")
-        val formula = EventFormula(runtime, events)
-
-        val expectedStates = listOf(1, 2)
-        runtime.test(formula, Unit).apply {
-            assertThat(formula.capturedStates()).isEqualTo(expectedStates)
-        }
-    }
-
-    @Test fun `stream events are captured in order`() {
-        val events = listOf("first", "second", "third", "third")
-        val formula = EventFormula(runtime, events)
-        runtime.test(formula, Unit).apply {
-            assertThat(formula.capturedEvents()).isEqualTo(events)
-        }
-    }
-
-    @Test fun `stream event callbacks can handle at least 100k events`() {
-        val eventCount = 100000
-        val events = (1..eventCount).toList()
-        val formula = EventFormula(runtime, events)
-        runtime.test(formula, Unit)
-            .apply {
-                assertThat(values()).containsExactly(eventCount).inOrder()
-            }
-    }
-
-    // End of stream tests
+    // End of stream test cases
 
     // Child specific test cases
 
-    @Test fun `child formula input changes`() {
+    @Test fun `child state change triggers parent formula evaluation`() {
+        val childFormula = EventCallbackFormula()
+        val formula = HasChildFormula(childFormula)
+        runtime.test(formula, Unit)
+            .output { child.changeState("new state") }
+            .output { assertThat(child.state).isEqualTo("new state") }
+    }
+
+    @Test fun `child formula input change triggers an evaluation`() {
         val formula = DelegateFormula("default")
         runtime.test(formula, Unit)
-            .output { onChildValueChanged("first") }
-            .output { onChildValueChanged("second") }
+            .output { changeChildInput("first") }
+            .output { changeChildInput("second") }
             .apply {
                 val expected = listOf("default", "first", "second")
                 assertThat(values().map { it.childValue }).isEqualTo(expected)
             }
     }
 
-    @Test fun `adding duplicate child throws an exception`() {
-        val formula = object : StatelessFormula<Unit, List<Unit>>() {
-            override fun evaluate(
-                input: Unit,
-                context: FormulaContext<Unit>
-            ): Evaluation<List<Unit>> {
-                return Evaluation(
-                    output = listOf(1, 2, 3).map {
-                        context.child(EmptyFormula())
-                    }
-                )
+    @Test
+    fun `parent removes child when child emits a message`() {
+        ChildRemovedOnMessage(runtime)
+            .assertChildIsVisible(true)
+            .closeByChildMessage()
+            .assertChildIsVisible(false)
+    }
+
+    @Test fun `parent removes all child formulas`() {
+        val formula = DynamicParentFormula()
+        runtime.test(formula, Unit)
+            .output { addChild(TestKey("1")) }
+            .output { addChild(TestKey("2")) }
+            .output { addChild(TestKey("3")) }
+            .output {
+                val expected = listOf("1", "2", "3")
+                assertThat(children.map { it.input.id }).isEqualTo(expected)
             }
+            .output { removeAllChildren() }
+            .output {
+                assertThat(children).isEmpty()
+            }
+    }
+
+    @Test fun `adding duplicate child throws an exception`() {
+        val result = Try {
+            val formula = DynamicParentFormula()
+            runtime.test(formula, Unit)
+                .output { addChild(TestKey("1")) }
+                .output { addChild(TestKey("1")) }
         }
 
-        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        val error = result.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -828,7 +922,12 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `emit error`() {
-        val error = Try { EmitErrorTest.test(runtime) }.errorOrNull()?.cause
+        val formula = OnlyUpdateFormula<Unit> {
+            events(Stream.onInit()) {
+                throw java.lang.IllegalStateException("crashed")
+            }
+        }
+        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
         assertThat(error?.message).isEqualTo("crashed")
     }
 
