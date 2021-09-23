@@ -368,6 +368,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../Declarative-API/" class="md-nav__link">
+        Declarative API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Formula-Android/" class="md-nav__link">
         Formula Android
       </a>
@@ -522,18 +537,15 @@ one parameter to pass data as part of the event.</p>
   <span class="kd">val</span> <span class="nv">onNameChanged</span><span class="p">:</span> <span class="p">(</span><span class="n">newName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
 <span class="p">)</span>
 </code></pre></div></p>
-<p>All callbacks should be created within <code>Formula.evaluate</code> block.
+<p>To create a callback use <code>FormulaContext.onEvent</code>. Note: All callbacks should be created within <code>Formula.evaluate</code> block.
 <div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">):</span> <span class="p">...</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">FormRenderModel</span><span class="p">(</span>
-      <span class="c1">// Use FormulaContext.eventCallback for callbacks that have a parameter.</span>
-      <span class="n">onNameChanged</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">eventCallback</span> <span class="p">{</span> <span class="n">newName</span> <span class="o">-&gt;</span>
+      <span class="n">onNameChanged</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span> <span class="p">{</span> <span class="n">newName</span> <span class="o">-&gt;</span>
         <span class="c1">// Use &quot;newName&quot; to perform a transition</span>
         <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">newName</span><span class="p">))</span>
       <span class="p">},</span>
-
-      <span class="c1">// Use FormulaContext.callback for callbacks with no parameters.</span>
-      <span class="n">onSaveSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+      <span class="n">onSaveSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
         <span class="c1">// No state change, performing side-effects.</span>
         <span class="n">transition</span> <span class="p">{</span>
           <span class="n">userService</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">)</span>  
@@ -550,14 +562,14 @@ uses transitions to update internal state and/or perform side-effects to other c
 Callbacks are scoped to the current state. Any time we transition to a new state, evaluate
 is called again and the callbacks are recreated.</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Updating state</span>
-<span class="n">context</span><span class="p">.</span><span class="na">eventCallback</span> <span class="p">{</span> <span class="n">newName</span><span class="p">:</span> <span class="kt">String</span> <span class="o">-&gt;</span>
+<span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span> <span class="n">newName</span><span class="p">:</span> <span class="kt">String</span> <span class="o">-&gt;</span>
   <span class="c1">// We use kotlin data class copy function</span>
   <span class="c1">// to create a new state with new name</span>
   <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">newName</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="c1">// Updating onSaveSelected to include validation</span>
-<span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+<span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">.</span><span class="na">isBlank</span><span class="p">())</span> <span class="p">{</span>
     <span class="c1">// A transition which performs a side-effect.</span>
     <span class="n">transition</span> <span class="p">{</span>
@@ -590,7 +602,7 @@ will be executed after the state change is performed.</p>
       <span class="n">context</span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">ItemRow</span><span class="p">(</span>
           <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
-          <span class="n">onClick</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+          <span class="n">onClick</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
             <span class="c1">// Notifying parent that item was selected.</span>
             <span class="n">transition</span> <span class="p">{</span>
               <span class="n">input</span><span class="p">.</span><span class="na">onItemSelected</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span>
@@ -639,7 +651,7 @@ There are a couple of cases when this is not sufficient and you need to explicit
   <span class="n">items</span> <span class="o">=</span> <span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">.</span><span class="na">map</span> <span class="p">{</span> <span class="n">item</span> <span class="o">-&gt;</span>
     <span class="n">ItemRenderModel</span><span class="p">(</span>
       <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
-      <span class="n">onSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+      <span class="n">onSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
         <span class="c1">// perform a transition</span>
       <span class="p">}</span>
     <span class="p">)</span>
@@ -650,7 +662,7 @@ There are a couple of cases when this is not sufficient and you need to explicit
 <div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">ItemRenderModel</span><span class="p">(</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
-    <span class="n">onSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+    <span class="n">onSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
       <span class="c1">// perform a transition</span>
     <span class="p">}</span>
   <span class="p">)</span>
@@ -661,7 +673,7 @@ There are a couple of cases when this is not sufficient and you need to explicit
 Let's say you have a function that takes FormulaContext and creates a ChildRenderModel.
 <div class="highlight"><pre><span></span><code><span class="kd">fun</span> <span class="nf">createChildRenderModel</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">):</span> <span class="n">ChildRenderModel</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">ChildRenderModel</span><span class="p">(</span>
-    <span class="n">onClick</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{}</span>
+    <span class="n">onClick</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{}</span>
   <span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div></p>

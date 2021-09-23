@@ -347,6 +347,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../Declarative-API/" class="md-nav__link">
+        Declarative API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Formula-Android/" class="md-nav__link">
         Formula Android
       </a>
@@ -533,8 +548,7 @@ equality such as callback functions or observables. </p>
 <p>Formula provides an easy way to maintain callback equality. Within your parent formula, 
 you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
 <ul>
-<li><code>FormulaContext.callback</code></li>
-<li><code>FormulaContext.eventCallback</code> </li>
+<li><code>FormulaContext.onEvent</code></li>
 </ul>
 <p><strong>Don't:</strong> Don't instantiate functions within <code>Formula.evaluate</code>.
 <div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
@@ -548,7 +562,7 @@ you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
 <p><strong>Do:</strong> Use <code>eventCallback</code>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
     <span class="kd">val</span> <span class="nv">itemListInput</span> <span class="o">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
-        <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">eventCallback</span> <span class="p">{</span>
+        <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span> <span class="n">_</span> <span class="o">-&gt;</span>
             <span class="n">transition</span> <span class="p">{</span> <span class="n">analytics</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="s">&quot;item_selected&quot;</span><span class="p">)</span> <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">)</span>

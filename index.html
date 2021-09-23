@@ -389,6 +389,21 @@
   
   
     <li class="md-nav__item">
+      <a href="Declarative-API/" class="md-nav__link">
+        Declarative API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
       <a href="Formula-Android/" class="md-nav__link">
         Formula Android
       </a>
@@ -552,8 +567,10 @@
                 
                   <h1>Overview</h1>
                 
-                <p>Formula is a functional reactive framework built in Kotlin for managing state and side effects. It enables building 
+                <p>A Kotlin framework for managing state and side effects. It is inspired by MVU(model, view, update)
+architecture and best of functional, declarative and reactive patterns. It enables building
 deterministic, composable, testable applications.</p>
+<p><img src="assets/formula-mvu-graph.png" alt="MVU graph"/></p>
 <h3 id="quick-example">Quick example</h3>
 <p>To demonstrate some of the concepts we will make a simple counter application. It shows the current count and 
 has two buttons to increment and decrement it.</p>
@@ -619,10 +636,10 @@ various events by transitioning to a new state. </p>
     <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
       <span class="n">output</span> <span class="o">=</span> <span class="n">CounterRenderModel</span><span class="p">(</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Count: </span><span class="si">$</span><span class="n">count</span><span class="s">&quot;</span><span class="p">,</span>
-        <span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+        <span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
           <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">-</span> <span class="m">1</span><span class="p">))</span>
         <span class="p">},</span>
-        <span class="n">onIncrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+        <span class="n">onIncrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
           <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="m">1</span><span class="p">))</span>
         <span class="p">}</span>
       <span class="p">)</span>
@@ -634,9 +651,9 @@ various events by transitioning to a new state. </p>
 <code>Evaluation&lt;RenderModel&gt;</code> back. Any time we transition to a new state, evaluate is called again and new Render Model 
 is created.</p>
 <p>There is also a special object called <code>FormulaContext</code> being passed. Formula Context allows us to respond to events by
-declaring transitions. We use <code>context.callback</code> for both <code>onIncrement</code> and <code>onDecrement</code>. Let's look at one of these
+declaring transitions. We use <code>context.onEvent</code> for both <code>onIncrement</code> and <code>onDecrement</code>. Let's look at one of these
 functions closer.</p>
-<div class="highlight"><pre><span></span><code><span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
   <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">-</span> <span class="m">1</span><span class="p">))</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -644,7 +661,7 @@ functions closer.</p>
 method to create <code>Transition&lt;CounterState&gt;</code> object which we return. </p>
 <p>If you notice, our logic currently allows user to decrement to a number below 0. We can update the transition logic to 
 prevent this.
-<div class="highlight"><pre><span></span><code><span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">callback</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="n">onDecrement</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">none</span><span class="p">()</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -704,8 +721,8 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
 <h3 id="download">Download</h3>
 <p>Add the library to your list of dependencies:</p>
 <div class="highlight"><pre><span></span><code><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-rxjava3:0.7.0&#39;</span>
-    <span class="n">implementation</span> <span class="s1">&#39;com.github.instacart:formula-android:0.7.0&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.instacart.formula:formula-rxjava3:0.7.0&#39;</span>
+    <span class="n">implementation</span> <span class="s1">&#39;com.instacart.formula:formula-android:0.7.0&#39;</span>
 <span class="o">}</span>
 </code></pre></div>
 <h3 id="inspiration">Inspiration</h3>
@@ -720,7 +737,7 @@ a look at <a href="using_android_view_model/">AndroidX Guide</a>.</p>
 <h3 id="license">License</h3>
 <div class="highlight"><pre><span></span><code>The Clear BSD License
 
-Copyright (c) 2019 Maplebear Inc. dba Instacart
+Copyright (c) 2021 Maplebear Inc. dba Instacart
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted 

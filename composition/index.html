@@ -334,6 +334,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../Declarative-API/" class="md-nav__link">
+        Declarative API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Formula-Android/" class="md-nav__link">
         Formula Android
       </a>
@@ -498,7 +513,7 @@
     <span class="p">.</span><span class="na">input</span> <span class="p">{</span>
         <span class="n">ListInput</span><span class="p">(</span>
             <span class="n">items</span> <span class="o">=</span> <span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">,</span>
-            <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">eventCallback</span> <span class="p">{</span>
+            <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="n">ItemSelected</span><span class="o">&gt;</span> <span class="p">{</span> <span class="n">event</span> <span class="o">-&gt;</span>
                 <span class="c1">// you can respond to child event</span>
             <span class="p">}</span>
     <span class="p">}</span>

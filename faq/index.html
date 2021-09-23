@@ -291,6 +291,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../Declarative-API/" class="md-nav__link">
+        Declarative API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Formula-Android/" class="md-nav__link">
         Formula Android
       </a>
@@ -517,8 +532,8 @@ the <code>State</code> defined for that Formula. For example, instead of:
                 RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task -&gt;
                   val renderModel = TaskDetailRenderModel(
                       title = task.title,
-                      // Don&#39;t do: calling context.callback within &quot;onEvent&quot; will cause a crash described above
-                      onDeleteSelected = context.callback {
+                      // Don&#39;t do: calling context.onEvent within &quot;onEvent&quot; will cause a crash described above
+                      onDeleteSelected = context.onEvent {
                         ...
                       }
                    )
@@ -555,7 +570,7 @@ the state and then construct the render model in the <code>evaluation</code> fun
         val renderModel = state.task?.let {
             TaskDetailRenderModel(
               title = it.title,
-              onDeleteSelected = context.callback {
+              onDeleteSelected = context.onEvent {
                 ...
               }
             )
