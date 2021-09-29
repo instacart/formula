@@ -25,7 +25,7 @@ class DelegateFormula<Type>(
         return Evaluation(
             output = Output(
                 childValue = context.child(childFormula, state),
-                changeChildInput = context.onEvent { name -> transition(name) }
+                changeChildInput = context.onEvent<Type> { name -> transition(name) }
             )
         )
     }

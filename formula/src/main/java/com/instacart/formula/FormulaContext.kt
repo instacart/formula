@@ -19,11 +19,9 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses inlined callback anonymous class for type.
      */
-    inline fun onEvent(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
-        val callback: (Unit) -> Unit = {
-            transitionDispatcher.dispatch(transition(Transition.Factory))
-        }
-        val reference = callbacks.initOrFindCallback(callback::class)
+    fun onEvent(transition: UpdateType<State, Unit>): () -> Unit {
+        val callback = transitionDispatcher.toCallback(transition)
+        val reference = callbacks.initOrFindCallback(transition::class)
         reference.delegate = callback
         return reference
     }
@@ -33,14 +31,12 @@ abstract class FormulaContext<State> internal constructor(
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    inline fun onEvent(
+    fun onEvent(
         key: Any,
-        crossinline transition: Transition.Factory.() -> Transition<State>
+        transition: UpdateType<State, Unit>,
     ): () -> Unit {
         val callback = callbacks.initOrFindCallback(key)
-        callback.delegate = {
-            transitionDispatcher.dispatch(transition(Transition.Factory))
-        }
+        callback.delegate = transitionDispatcher.toCallback(transition)
         return callback
     }
 
@@ -49,14 +45,11 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses inlined callback anonymous class for type.
      */
-    inline fun <UIEvent> onEvent(
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+    fun <UIEvent> onEvent(
+        transition: UpdateType<State, UIEvent>,
     ): (UIEvent) -> Unit {
-        val callback: (UIEvent) -> Unit = {
-            transitionDispatcher.dispatch(transition(Transition.Factory, it))
-        }
-
-        val reference = callbacks.initOrFindEventCallback<UIEvent>(callback::class)
+        val callback = transitionDispatcher.toCallback(transition)
+        val reference = callbacks.initOrFindEventCallback<UIEvent>(transition::class)
         reference.delegate = callback
         return reference
     }
@@ -66,14 +59,12 @@ abstract class FormulaContext<State> internal constructor(
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    inline fun <UIEvent> onEvent(
+    fun <UIEvent> onEvent(
         key: Any,
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+        transition: UpdateType<State, UIEvent>,
     ): (UIEvent) -> Unit {
         val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
-        callback.delegate = {
-            transitionDispatcher.dispatch(transition(Transition.Factory, it))
-        }
+        callback.delegate = transitionDispatcher.toCallback(transition)
         return callback
     }
 
@@ -82,7 +73,7 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses inlined callback anonymous class for type.
      */
-    inline fun callback(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
+    fun callback(transition: UpdateType<State, Unit>): () -> Unit {
         return onEvent(transition)
     }
 
@@ -91,9 +82,9 @@ abstract class FormulaContext<State> internal constructor(
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    inline fun callback(
+    fun callback(
         key: Any,
-        crossinline transition: Transition.Factory.() -> Transition<State>
+        transition: UpdateType<State, Unit>
     ): () -> Unit {
         return onEvent(key, transition)
     }
@@ -103,8 +94,8 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses inlined callback anonymous class for type.
      */
-    inline fun <UIEvent> eventCallback(
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+    fun <UIEvent> eventCallback(
+        transition: UpdateType<State, UIEvent>,
     ): (UIEvent) -> Unit {
         return onEvent(transition)
     }
@@ -114,9 +105,9 @@ abstract class FormulaContext<State> internal constructor(
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    inline fun <UIEvent> eventCallback(
+    fun <UIEvent> eventCallback(
         key: Any,
-        crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
+        transition: UpdateType<State, UIEvent>,
     ): (UIEvent) -> Unit {
         return onEvent(key, transition)
     }
@@ -172,9 +163,9 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Message> events(
+        fun <Message> events(
             stream: Stream<Message>,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
+            transition: UpdateType<State, Message>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -185,10 +176,10 @@ abstract class FormulaContext<State> internal constructor(
          *
          * @param transition Callback invoked when [Stream] sends us a [Message].
          */
-        inline fun <Message> onEvent(
+        fun <Message> onEvent(
             stream: Stream<Message>,
             avoidParameterClash: Any = this,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
+            transition: UpdateType<State, Message>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -206,8 +197,8 @@ abstract class FormulaContext<State> internal constructor(
          * }
          * ```
          */
-        inline fun <Message> Stream<Message>.onEvent(
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
+        fun <Message> Stream<Message>.onEvent(
+            transition: UpdateType<State, Message>,
         ) {
             val stream = this
             this@UpdateBuilder.events(stream, transition)
@@ -221,17 +212,13 @@ abstract class FormulaContext<State> internal constructor(
             updates.add(connection)
         }
 
-        @PublishedApi internal inline fun <Message> createConnection(
+        @PublishedApi internal fun <Message> createConnection(
             stream: Stream<Message>,
-            crossinline transition: Transition.Factory.(Message) -> Transition<State>
+            transition: UpdateType<State, Message>,
         ): BoundStream<Message> {
-            val callback: (Message) -> Unit = {
-                val value = transition(Transition.Factory, it)
-                transitionDispatcher.dispatch(value)
-            }
-
+            val callback = transitionDispatcher.toCallback(transition)
             return BoundStream(
-                key = JoinedKey(stream.key(), callback::class),
+                key = JoinedKey(stream.key(), transition::class),
                 stream = stream,
                 initial = callback
             )

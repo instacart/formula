@@ -1,6 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
+import com.instacart.formula.UpdateType
 
 @PublishedApi
 internal class TransitionDispatcher<State>(
@@ -25,5 +26,18 @@ internal class TransitionDispatcher<State>(
         }
 
         handleTransition(transition)
+    }
+
+    /**
+     * We define this as inline function because we want to generate an anonymous class at the
+     * call-site because we will use the type as key.
+     */
+    fun <Event> toCallback(
+        update: UpdateType<State, Event>
+    ): (Event) -> Unit {
+        return {
+            val transition = Transition.Factory.run { update.run { create(it) } }
+            dispatch(transition)
+        }
     }
 }

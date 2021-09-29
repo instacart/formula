@@ -14,7 +14,7 @@ sealed class Transition<out State> {
          * }
          * ```
          */
-        inline fun <State> create(init: Factory.() -> Transition<State>): Transition<State> {
+        inline fun <State> create(init: TransitionContext.() -> Transition<State>): Transition<State> {
             return init(Factory)
         }
     }
@@ -46,34 +46,7 @@ sealed class Transition<out State> {
     /**
      * Factory uses as a receiver parameter to provide transition constructor dsl.
      */
-    object Factory {
-
-        /**
-         * A transition that does nothing.
-         */
-        fun none(): Transition<Nothing> {
-            return None
-        }
-
-        /**
-         * Creates a transition to a new [State] and executes [invokeEffects] callback
-         * after the state change.
-         */
-        fun <State> transition(
-            state: State,
-            invokeEffects: (() -> Unit)? = null
-        ): Stateful<State> {
-            return Stateful(state, invokeEffects)
-        }
-
-        /**
-         * Creates a transition that only executes [invokeEffects].
-         */
-        fun transition(
-            invokeEffects: () -> Unit
-        ): OnlyEffects {
-            return OnlyEffects(invokeEffects)
-        }
+    object Factory : TransitionContext {
     }
 
     abstract val effects: Effects?
