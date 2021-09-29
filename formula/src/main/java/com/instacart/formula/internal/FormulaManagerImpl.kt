@@ -56,7 +56,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun updateTransitionId(transitionId: TransitionId) {
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.transitionCallbackWrapper.transitionId = transitionId
+        lastFrame.transitionDispatcher.transitionId = transitionId
 
         children?.forEachValue { it.updateTransitionId(transitionId) }
     }
@@ -81,10 +81,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         callbacks.evaluationStarted()
-        val transitionCallback = TransitionCallbackWrapper(this::handleTransition, transitionId)
-        val context = FormulaContextImpl(transitionId, callbacks, this, transitionCallback)
+        val transitionDispatcher = TransitionDispatcher(this::handleTransition, transitionId)
+        val context = FormulaContextImpl(transitionId, callbacks, this, transitionDispatcher)
         val result = formula.evaluate(input, state, context)
-        val frame = Frame(input, state, result, transitionCallback)
+        val frame = Frame(input, state, result, transitionDispatcher)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
@@ -96,7 +96,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             pendingRemoval?.add(it)
         }
 
-        transitionCallback.running = true
+        transitionDispatcher.running = true
         return result
     }
 
@@ -175,7 +175,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun markAsTerminated() {
         terminated = true
-        frame?.transitionCallbackWrapper?.terminated = true
+        frame?.transitionDispatcher?.terminated = true
         callbacks.disableAll()
         children?.forEachValue { it.markAsTerminated() }
     }

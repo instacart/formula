@@ -10,8 +10,8 @@ class FormulaContextImpl<State> internal constructor(
     private val transitionId: TransitionId,
     callbacks: ScopedCallbacks,
     private val delegate: Delegate,
-    private val transitionCallback: TransitionCallbackWrapper<State>
-) : FormulaContext<State>(callbacks) {
+    transitionDispatcher: TransitionDispatcher<State>
+) : FormulaContext<State>(callbacks, transitionDispatcher) {
 
     interface Delegate {
         fun <ChildInput, ChildOutput> child(
@@ -21,13 +21,9 @@ class FormulaContextImpl<State> internal constructor(
         ): ChildOutput
     }
 
-    override fun performTransition(transition: Transition<State>) {
-        transitionCallback.invoke(transition)
-    }
-
     override fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>> {
         ensureNotRunning()
-        val builder = UpdateBuilder(transitionCallback)
+        val builder = UpdateBuilder(transitionDispatcher)
         builder.init()
         return builder.updates
     }
@@ -41,7 +37,7 @@ class FormulaContextImpl<State> internal constructor(
     }
 
     private fun ensureNotRunning() {
-        if (transitionCallback.running) {
+        if (transitionDispatcher.running) {
             throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }

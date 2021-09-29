@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
+import com.instacart.formula.internal.TransitionDispatcher
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -9,7 +10,8 @@ import com.instacart.formula.internal.ScopedCallbacks
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
-    @PublishedApi internal val callbacks: ScopedCallbacks
+    @PublishedApi internal val callbacks: ScopedCallbacks,
+    @PublishedApi internal val transitionDispatcher: TransitionDispatcher<State>,
 ) {
 
     /**
@@ -19,7 +21,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     inline fun onEvent(crossinline transition: Transition.Factory.() -> Transition<State>): () -> Unit {
         val callback: (Unit) -> Unit = {
-            performTransition(transition(Transition.Factory))
+            transitionDispatcher.dispatch(transition(Transition.Factory))
         }
         val reference = callbacks.initOrFindCallback(callback::class)
         reference.delegate = callback
@@ -37,7 +39,7 @@ abstract class FormulaContext<State> internal constructor(
     ): () -> Unit {
         val callback = callbacks.initOrFindCallback(key)
         callback.delegate = {
-            performTransition(transition(Transition.Factory))
+            transitionDispatcher.dispatch(transition(Transition.Factory))
         }
         return callback
     }
@@ -51,7 +53,7 @@ abstract class FormulaContext<State> internal constructor(
         crossinline transition: Transition.Factory.(UIEvent) -> Transition<State>
     ): (UIEvent) -> Unit {
         val callback: (UIEvent) -> Unit = {
-            performTransition(transition(Transition.Factory, it))
+            transitionDispatcher.dispatch(transition(Transition.Factory, it))
         }
 
         val reference = callbacks.initOrFindEventCallback<UIEvent>(callback::class)
@@ -70,7 +72,7 @@ abstract class FormulaContext<State> internal constructor(
     ): (UIEvent) -> Unit {
         val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
         callback.delegate = {
-            performTransition(transition(Transition.Factory, it))
+            transitionDispatcher.dispatch(transition(Transition.Factory, it))
         }
         return callback
     }
@@ -156,13 +158,11 @@ abstract class FormulaContext<State> internal constructor(
         return value
     }
 
-    @PublishedApi internal abstract fun performTransition(transition: Transition<State>)
-
     /**
      * Provides methods to declare various events and effects.
      */
-    class UpdateBuilder<State>(
-        @PublishedApi internal val transitionCallback: (Transition<State>) -> Unit
+    class UpdateBuilder<State> internal constructor(
+        @PublishedApi internal val transitionDispatcher: TransitionDispatcher<State>
     ) {
         internal val updates = mutableListOf<BoundStream<*>>()
 
@@ -227,7 +227,7 @@ abstract class FormulaContext<State> internal constructor(
         ): BoundStream<Message> {
             val callback: (Message) -> Unit = {
                 val value = transition(Transition.Factory, it)
-                transitionCallback(value)
+                transitionDispatcher.dispatch(value)
             }
 
             return BoundStream(
