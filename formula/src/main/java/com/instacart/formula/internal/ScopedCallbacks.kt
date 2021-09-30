@@ -17,7 +17,7 @@ internal class ScopedCallbacks<State> private constructor(
 
     internal var enabled: Boolean = false
 
-    fun <Event> initOrFindEventCallback(key: Any): CallbackImpl<State, Event> {
+    fun <Event> initOrFindCallback(key: Any): CallbackImpl<State, Event> {
         ensureNotRunning()
         return currentCallbacks().initOrFindCallback<Event>(key)
     }

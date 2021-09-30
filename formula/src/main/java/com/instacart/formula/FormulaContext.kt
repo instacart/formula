@@ -35,7 +35,7 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: Update<State, Event>,
     ): Listener<Event> {
-        val callback = callbacks.initOrFindEventCallback<Event>(key)
+        val callback = callbacks.initOrFindCallback<Event>(key)
         callback.transitionDispatcher = transitionDispatcher
         callback.transition = transition
         return callback

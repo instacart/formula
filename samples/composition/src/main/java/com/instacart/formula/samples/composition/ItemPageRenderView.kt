@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
+import com.instacart.formula.invoke
 import com.instacart.formula.samples.composition.item.ItemRenderModel
 
 class ItemPageRenderView(private val root: ViewGroup): RenderView<ItemPageRenderModel> {

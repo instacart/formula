@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.examples.todoapp.R
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
+import com.instacart.formula.invoke
 
 class TaskListRenderView(private val root: View) : RenderView<TaskListRenderModel> {
     private val toolbar: Toolbar = root.findViewById(R.id.toolbar)

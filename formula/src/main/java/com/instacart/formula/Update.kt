@@ -1,24 +1,10 @@
 package com.instacart.formula
 
 /**
- *
- * TODO: document / find a better name.
- *
- * Maybe `Dispatcher`?
- *
- * Naming?
- * - State
- * - Update
- * - Transition
- * - Action
- * - Event
- * - Action -> Event -> Transition/Update ->
- *
- * What am I doing here?
- * - I want to clearly capture the meaning of event handling.
- *
- * Issues:
- * - Typealiases are not good for inheritance.
+ * An update function takes an [Event] and calculates the [Transition] that should happen. A
+ * transition can contain a new [state][State] object which would trigger a [Formula.evaluate]
+ * and/or [Effects] that should be performed. You can return [Transition.None] if nothing
+ * should happen.
  */
 fun interface Update<State, Event> {
     fun TransitionContext.create(event: Event): Transition<State>

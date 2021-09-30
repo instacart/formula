@@ -1,5 +1,7 @@
 package com.instacart.formula.stopwatch
 
+import com.instacart.formula.Listener
+
 data class StopwatchRenderModel(
     val timePassed: String,
     val startStopButton: ButtonRenderModel,
@@ -8,5 +10,5 @@ data class StopwatchRenderModel(
 
 data class ButtonRenderModel(
     val text: String,
-    val onSelected: () -> Unit
+    val onSelected: Listener<Unit>
 )

@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.instacart.formula.Renderer
 import com.instacart.formula.RenderView
+import com.instacart.formula.invoke
 
 class CounterRenderView(private val root: ViewGroup): RenderView<CounterRenderModel> {
     private val decrementButton: Button = root.findViewById(R.id.decrement_button)
