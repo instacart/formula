@@ -12,16 +12,16 @@ import com.instacart.formula.internal.UnitCallback
  */
 abstract class FormulaContext<State> internal constructor(
     @PublishedApi internal val callbacks: ScopedCallbacks<State>,
-    @PublishedApi internal val transitionDispatcher: TransitionDispatcher<State>,
+    private val transitionDispatcher: TransitionDispatcher<State>,
 ) {
 
     /**
-     * Creates a callback that takes a [Event] and performs a [Transition].
+     * Creates a callback that takes an [Event] and performs a [Transition].
      *
-     * It uses inlined callback anonymous class for type.
+     * It uses [transition] type as key.
      */
     fun <Event> onEvent(
-        transition: UpdateType<State, Event>,
+        transition: Update<State, Event>,
     ): Listener<Event> {
         return onEvent(key = transition::class, transition)
     }
@@ -33,7 +33,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> onEvent(
         key: Any,
-        transition: UpdateType<State, Event>,
+        transition: Update<State, Event>,
     ): Listener<Event> {
         val callback = callbacks.initOrFindEventCallback<Event>(key)
         callback.transitionDispatcher = transitionDispatcher
@@ -44,9 +44,9 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback to be used for handling UI event transitions.
      *
-     * It uses inlined callback anonymous class for type.
+     * It uses [transition] type as key.
      */
-    fun callback(transition: UpdateType<State, Unit>): () -> Unit {
+    fun callback(transition: Update<State, Unit>): () -> Unit {
         val event = onEvent(transition)
         return UnitCallback(event)
     }
@@ -58,7 +58,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun callback(
         key: Any,
-        transition: UpdateType<State, Unit>
+        transition: Update<State, Unit>
     ): () -> Unit {
         val event = onEvent(key, transition)
         return UnitCallback(event)
@@ -67,10 +67,10 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Creates a callback that takes a [Event] and performs a [Transition].
      *
-     * It uses inlined callback anonymous class for type.
+     * It uses [transition] type as key.
      */
     fun <Event> eventCallback(
-        transition: UpdateType<State, Event>,
+        transition: Update<State, Event>,
     ): Listener<Event> {
         return onEvent(transition)
     }
@@ -82,7 +82,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> eventCallback(
         key: Any,
-        transition: UpdateType<State, Event>,
+        transition: Update<State, Event>,
     ): (Event) -> Unit {
         return onEvent(key, transition)
     }
@@ -128,7 +128,7 @@ abstract class FormulaContext<State> internal constructor(
      * Provides methods to declare various events and effects.
      */
     class UpdateBuilder<State> internal constructor(
-        @PublishedApi internal val transitionDispatcher: TransitionDispatcher<State>
+        private val transitionDispatcher: TransitionDispatcher<State>
     ) {
         internal val updates = mutableListOf<BoundStream<*>>()
 
@@ -140,7 +140,7 @@ abstract class FormulaContext<State> internal constructor(
          */
         fun <Message> events(
             stream: Stream<Message>,
-            transition: UpdateType<State, Message>,
+            transition: Update<State, Message>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -154,7 +154,7 @@ abstract class FormulaContext<State> internal constructor(
         fun <Message> onEvent(
             stream: Stream<Message>,
             avoidParameterClash: Any = this,
-            transition: UpdateType<State, Message>,
+            transition: Update<State, Message>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -173,7 +173,7 @@ abstract class FormulaContext<State> internal constructor(
          * ```
          */
         fun <Message> Stream<Message>.onEvent(
-            transition: UpdateType<State, Message>,
+            transition: Update<State, Message>,
         ) {
             val stream = this
             this@UpdateBuilder.events(stream, transition)
@@ -189,7 +189,7 @@ abstract class FormulaContext<State> internal constructor(
 
         @PublishedApi internal fun <Message> createConnection(
             stream: Stream<Message>,
-            transition: UpdateType<State, Message>,
+            transition: Update<State, Message>,
         ): BoundStream<Message> {
             val callback = transitionDispatcher.toCallback(transition)
             return BoundStream(

@@ -20,7 +20,7 @@ package com.instacart.formula
  * Issues:
  * - Typealiases are not good for inheritance.
  */
-fun interface UpdateType<State, Event> {
+fun interface Update<State, Event> {
     fun TransitionContext.create(event: Event): Transition<State>
 }
 

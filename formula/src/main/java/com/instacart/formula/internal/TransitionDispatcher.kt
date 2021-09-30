@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
-import com.instacart.formula.UpdateType
+import com.instacart.formula.Update
 
 @PublishedApi
 internal class TransitionDispatcher<State>(
@@ -29,7 +29,7 @@ internal class TransitionDispatcher<State>(
     }
 
     // TODO: naming UpdateType as transition seems weird. We need to resolve these two types.
-    fun <Event> dispatch(transition: UpdateType<State, Event>, event: Event) {
+    fun <Event> dispatch(transition: Update<State, Event>, event: Event) {
         val transition = Transition.Factory.run { transition.run { create(event) } }
         dispatch(transition)
     }
@@ -39,7 +39,7 @@ internal class TransitionDispatcher<State>(
      * call-site because we will use the type as key.
      */
     fun <Event> toCallback(
-        update: UpdateType<State, Event>
+        update: Update<State, Event>
     ): (Event) -> Unit {
         return {
             val transition = Transition.Factory.run { update.run { create(it) } }
