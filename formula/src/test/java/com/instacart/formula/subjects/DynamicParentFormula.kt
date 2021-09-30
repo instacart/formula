@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 
 class DynamicParentFormula(
     private val childFormula: KeyFormula = KeyFormula()
@@ -16,7 +17,7 @@ class DynamicParentFormula(
         val children: List<TestOutput> = emptyList(),
         val addChild: (TestKey) -> Unit,
         val removeChild: (TestKey) -> Unit,
-        val removeAllChildren: () -> Unit,
+        val removeAllChildren: Listener<Unit>,
     )
 
     override fun initialState(input: Unit): State = State()

@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
 internal class Callbacks {
-    private var callbacks: SingleRequestMap<Any, Callback<*>>? = null
+    private var callbacks: SingleRequestMap<Any, CallbackImpl<*>>? = null
 
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
@@ -12,32 +12,32 @@ internal class Callbacks {
         return "Callback $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
-    fun initOrFindCallbackT(key: Any): UnitCallback {
+    fun initOrFindCallbackT(key: Any): UnitCallbackImpl {
         val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, Callback<*>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, CallbackImpl<*>> = mutableMapOf()
             this.callbacks = initialized
             initialized
         }
 
         return callbacks
-            .findOrInit(key) { UnitCallback(key) }
+            .findOrInit(key) { UnitCallbackImpl(key) }
             .requestAccess {
                 duplicateKeyErrorMessage(key)
-            } as UnitCallback
+            } as UnitCallbackImpl
     }
 
-    fun <UIEvent> initOrFindCallbackT(key: Any): Callback<UIEvent> {
+    fun <UIEvent> initOrFindCallbackT(key: Any): CallbackImpl<UIEvent> {
         val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, Callback<*>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, CallbackImpl<*>> = mutableMapOf()
             this.callbacks = initialized
             initialized
         }
 
         return callbacks
-            .findOrInit(key) { Callback<UIEvent>(key) }
+            .findOrInit(key) { CallbackImpl<UIEvent>(key) }
             .requestAccess {
                 duplicateKeyErrorMessage(key)
-            } as Callback<UIEvent>
+            } as CallbackImpl<UIEvent>
     }
 
     fun evaluationFinished() {

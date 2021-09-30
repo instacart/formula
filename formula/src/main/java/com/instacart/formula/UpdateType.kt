@@ -24,13 +24,4 @@ fun interface UpdateType<State, Event> {
     fun TransitionContext.create(event: Event): Transition<State>
 }
 
-/*
- * UpdateName
- */
-class UpdateNameV2 : UpdateType<String, String> {
-    override fun TransitionContext.create(event: String): Transition<String> {
-        return transition(state = event)
-    }
-}
-
 

@@ -17,12 +17,12 @@ internal class ScopedCallbacks private constructor(
 
     internal var enabled: Boolean = false
 
-    fun initOrFindCallback(key: Any): UnitCallback {
+    fun initOrFindCallback(key: Any): UnitCallbackImpl {
         ensureNotRunning()
         return currentCallbacks().initOrFindCallbackT(key)
     }
 
-    fun <UIEvent> initOrFindEventCallback(key: Any): Callback<UIEvent> {
+    fun <UIEvent> initOrFindEventCallback(key: Any): CallbackImpl<UIEvent> {
         ensureNotRunning()
         return currentCallbacks().initOrFindCallbackT<UIEvent>(key)
     }

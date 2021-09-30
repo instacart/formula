@@ -2,7 +2,6 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
-import com.instacart.formula.Transition
 import com.instacart.formula.BoundStream
 import java.lang.IllegalStateException
 

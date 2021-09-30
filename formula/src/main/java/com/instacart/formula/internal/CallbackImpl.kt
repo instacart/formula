@@ -1,10 +1,12 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.Listener
+
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal open class Callback<T>(internal var key: Any) : (T) -> Unit {
+internal open class CallbackImpl<T>(internal var key: Any) : Listener<T> {
     @PublishedApi internal var delegate: ((T) -> Unit)? = null
 
     override fun invoke(p1: T) {
@@ -17,6 +19,6 @@ internal open class Callback<T>(internal var key: Any) : (T) -> Unit {
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal class UnitCallback(key: Any): Callback<Unit>(key), () -> Unit {
+internal class UnitCallbackImpl(key: Any): CallbackImpl<Unit>(key), () -> Unit {
     override fun invoke() = invoke(Unit)
 }

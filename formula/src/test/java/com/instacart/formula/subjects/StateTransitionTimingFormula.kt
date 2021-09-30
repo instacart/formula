@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.test.TestableRuntime
 
 class StateTransitionTimingFormula(
@@ -14,7 +15,10 @@ class StateTransitionTimingFormula(
         EXTERNAL
     }
 
-    data class Output(val events: List<State>, val onStateTransition: () -> Unit)
+    data class Output(
+        val events: List<State>,
+        val onStateTransition: Listener<Unit>,
+    )
 
     private val relay = runtime.newRelay()
 

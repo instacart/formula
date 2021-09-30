@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.test.TestableRuntime
 
 class KeyUsingListFormula :
@@ -17,7 +18,7 @@ class KeyUsingListFormula :
 
     data class ItemRenderModel(
         val item: String,
-        val onDeleteSelected: () -> Unit
+        val onDeleteSelected: Listener<Unit>
     )
 
     data class Input(val items: List<String>)

@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 
 class OptionalEventCallbackFormula :
     Formula<Unit, OptionalEventCallbackFormula.State, OptionalEventCallbackFormula.Output> {
@@ -13,8 +14,8 @@ class OptionalEventCallbackFormula :
 
     data class Output(
         val state: Int,
-        val callback: ((Int) -> Unit)?,
-        val toggleCallback: () -> Unit
+        val callback: Listener<Int>?,
+        val toggleCallback: Listener<Unit>
     )
 
     override fun initialState(input: Unit) = State()

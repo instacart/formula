@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 
 class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output> {
 
@@ -10,8 +11,8 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>
 
     class Output(
         val state: Int,
-        val triggerMessage: () -> Unit,
-        val incrementAndMessage: () -> Unit
+        val triggerMessage: Listener<Unit>,
+        val incrementAndMessage: Listener<Unit>,
     )
 
     override fun initialState(input: Input): Int = 0

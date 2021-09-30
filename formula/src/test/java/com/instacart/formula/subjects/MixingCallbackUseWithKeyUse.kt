@@ -3,13 +3,14 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 
 class MixingCallbackUseWithKeyUse {
 
     class ParentOutput(
-        val firstCallback: () -> Unit,
-        val secondCallback: () -> Unit,
-        val thirdCallback: () -> Unit
+        val firstCallback: Listener<Unit>,
+        val secondCallback: Listener<Unit>,
+        val thirdCallback: Listener<Unit>,
     )
 
     class ParentFormula : Formula<Unit, Unit, ParentOutput> {

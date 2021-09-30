@@ -15,55 +15,28 @@ abstract class FormulaContext<State> internal constructor(
 ) {
 
     /**
-     * Creates a callback to be used for handling UI event transitions.
+     * Creates a callback that takes a [Event] and performs a [Transition].
      *
      * It uses inlined callback anonymous class for type.
      */
-    fun onEvent(transition: UpdateType<State, Unit>): () -> Unit {
-        val callback = transitionDispatcher.toCallback(transition)
-        val reference = callbacks.initOrFindCallback(transition::class)
-        reference.delegate = callback
+    fun <Event> onEvent(
+        transition: UpdateType<State, Event>,
+    ): Listener<Event> {
+        val reference = callbacks.initOrFindEventCallback<Event>(transition::class)
+        reference.delegate = transitionDispatcher.toCallback(transition)
         return reference
     }
 
     /**
-     * Creates a callback to be used for handling UI event transitions.
+     * Creates a callback that takes a [Event] and performs a [Transition].
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    fun onEvent(
+    fun <Event> onEvent(
         key: Any,
-        transition: UpdateType<State, Unit>,
-    ): () -> Unit {
-        val callback = callbacks.initOrFindCallback(key)
-        callback.delegate = transitionDispatcher.toCallback(transition)
-        return callback
-    }
-
-    /**
-     * Creates a callback that takes a [UIEvent] and performs a [Transition].
-     *
-     * It uses inlined callback anonymous class for type.
-     */
-    fun <UIEvent> onEvent(
-        transition: UpdateType<State, UIEvent>,
-    ): (UIEvent) -> Unit {
-        val callback = transitionDispatcher.toCallback(transition)
-        val reference = callbacks.initOrFindEventCallback<UIEvent>(transition::class)
-        reference.delegate = callback
-        return reference
-    }
-
-    /**
-     * Creates a callback that takes a [UIEvent] and performs a [Transition].
-     *
-     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
-     */
-    fun <UIEvent> onEvent(
-        key: Any,
-        transition: UpdateType<State, UIEvent>,
-    ): (UIEvent) -> Unit {
-        val callback = callbacks.initOrFindEventCallback<UIEvent>(key)
+        transition: UpdateType<State, Event>,
+    ): Listener<Event> {
+        val callback = callbacks.initOrFindEventCallback<Event>(key)
         callback.delegate = transitionDispatcher.toCallback(transition)
         return callback
     }
@@ -74,7 +47,9 @@ abstract class FormulaContext<State> internal constructor(
      * It uses inlined callback anonymous class for type.
      */
     fun callback(transition: UpdateType<State, Unit>): () -> Unit {
-        return onEvent(transition)
+        val reference = callbacks.initOrFindCallback(transition::class)
+        reference.delegate = transitionDispatcher.toCallback(transition)
+        return reference
     }
 
     /**
@@ -86,29 +61,31 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: UpdateType<State, Unit>
     ): () -> Unit {
-        return onEvent(key, transition)
+        val callback = callbacks.initOrFindCallback(key)
+        callback.delegate = transitionDispatcher.toCallback(transition)
+        return callback
     }
 
     /**
-     * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     * Creates a callback that takes a [Event] and performs a [Transition].
      *
      * It uses inlined callback anonymous class for type.
      */
-    fun <UIEvent> eventCallback(
-        transition: UpdateType<State, UIEvent>,
-    ): (UIEvent) -> Unit {
+    fun <Event> eventCallback(
+        transition: UpdateType<State, Event>,
+    ): Listener<Event> {
         return onEvent(transition)
     }
 
     /**
-     * Creates a callback that takes a [UIEvent] and performs a [Transition].
+     * Creates a callback that takes a [Event] and performs a [Transition].
      *
      * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
      */
-    fun <UIEvent> eventCallback(
+    fun <Event> eventCallback(
         key: Any,
-        transition: UpdateType<State, UIEvent>,
-    ): (UIEvent) -> Unit {
+        transition: UpdateType<State, Event>,
+    ): (Event) -> Unit {
         return onEvent(key, transition)
     }
 
