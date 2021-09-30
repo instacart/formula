@@ -3,28 +3,23 @@ package com.instacart.formula.internal
 import com.instacart.formula.IFormula
 
 @PublishedApi
-internal class ScopedCallbacks private constructor(
+internal class ScopedCallbacks<State> private constructor(
     private val rootKey: Any
 ) {
     constructor(formula: IFormula<*, *>) : this(formula::class)
 
-    private var callbacks: SingleRequestMap<Any, Callbacks>? = null
+    private var callbacks: SingleRequestMap<Any, Callbacks<State>>? = null
 
-    private var lastCallbacks: Callbacks? = null
+    private var lastCallbacks: Callbacks<State>? = null
     private var lastKey: Any? = null
     private var currentKey: Any = rootKey
-    private var current: Callbacks? = null
+    private var current: Callbacks<State>? = null
 
     internal var enabled: Boolean = false
 
-    fun initOrFindCallback(key: Any): UnitCallbackImpl {
+    fun <UIEvent> initOrFindEventCallback(key: Any): CallbackImpl<State, UIEvent> {
         ensureNotRunning()
-        return currentCallbacks().initOrFindCallbackT(key)
-    }
-
-    fun <UIEvent> initOrFindEventCallback(key: Any): CallbackImpl<UIEvent> {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindCallbackT<UIEvent>(key)
+        return currentCallbacks().initOrFindCallback<UIEvent>(key)
     }
 
     fun enterScope(key: Any) {
@@ -85,9 +80,9 @@ internal class ScopedCallbacks private constructor(
         callbacks?.clear()
     }
 
-    private fun currentCallbacks(): Callbacks {
+    private fun currentCallbacks(): Callbacks<State> {
         val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, Callbacks> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, Callbacks<State>> = mutableMapOf()
             this.callbacks = initialized
             initialized
         }

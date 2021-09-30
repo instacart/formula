@@ -17,7 +17,7 @@ import com.instacart.formula.Transition
 internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val callbacks: ScopedCallbacks,
+    private val callbacks: ScopedCallbacks<State>,
     private val transitionListener: TransitionListener
 ) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
 

@@ -7,7 +7,7 @@ import java.lang.IllegalStateException
 
 class FormulaContextImpl<State> internal constructor(
     private val transitionId: TransitionId,
-    callbacks: ScopedCallbacks,
+    callbacks: ScopedCallbacks<State>,
     private val delegate: Delegate,
     transitionDispatcher: TransitionDispatcher<State>
 ) : FormulaContext<State>(callbacks, transitionDispatcher) {

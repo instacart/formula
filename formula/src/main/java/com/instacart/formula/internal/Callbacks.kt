@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
-internal class Callbacks {
-    private var callbacks: SingleRequestMap<Any, CallbackImpl<*>>? = null
+internal class Callbacks<State> {
+    private var callbacks: SingleRequestMap<Any, CallbackImpl<State, *>>? = null
 
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
@@ -12,47 +12,31 @@ internal class Callbacks {
         return "Callback $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
-    fun initOrFindCallbackT(key: Any): UnitCallbackImpl {
+    fun <Event> initOrFindCallback(key: Any): CallbackImpl<State, Event> {
         val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, CallbackImpl<*>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, CallbackImpl<State, *>> = mutableMapOf()
             this.callbacks = initialized
             initialized
         }
 
         return callbacks
-            .findOrInit(key) { UnitCallbackImpl(key) }
+            .findOrInit(key) { CallbackImpl<State, Event>(key) }
             .requestAccess {
                 duplicateKeyErrorMessage(key)
-            } as UnitCallbackImpl
-    }
-
-    fun <UIEvent> initOrFindCallbackT(key: Any): CallbackImpl<UIEvent> {
-        val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, CallbackImpl<*>> = mutableMapOf()
-            this.callbacks = initialized
-            initialized
-        }
-
-        return callbacks
-            .findOrInit(key) { CallbackImpl<UIEvent>(key) }
-            .requestAccess {
-                duplicateKeyErrorMessage(key)
-            } as CallbackImpl<UIEvent>
+            } as CallbackImpl<State, Event>
     }
 
     fun evaluationFinished() {
         callbacks?.clearUnrequested {
-            it.delegate = {
-                // TODO log that disabled callback was invoked.
-            }
+            // TODO log that disabled callback was invoked.
+            it.disable()
         }
     }
 
     fun disableAll() {
         callbacks?.forEachValue {
-            it.delegate = {
-                // TODO log that event is invalid because child was removed
-            }
+            // TODO log that event is invalid because child was removed
+            it.disable()
         }
         callbacks?.clear()
     }

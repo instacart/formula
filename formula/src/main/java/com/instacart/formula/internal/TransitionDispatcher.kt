@@ -28,6 +28,12 @@ internal class TransitionDispatcher<State>(
         handleTransition(transition)
     }
 
+    // TODO: naming UpdateType as transition seems weird. We need to resolve these two types.
+    fun <Event> dispatch(transition: UpdateType<State, Event>, event: Event) {
+        val transition = Transition.Factory.run { transition.run { create(event) } }
+        dispatch(transition)
+    }
+
     /**
      * We define this as inline function because we want to generate an anonymous class at the
      * call-site because we will use the type as key.

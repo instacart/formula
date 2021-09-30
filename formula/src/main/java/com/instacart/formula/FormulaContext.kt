@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedCallbacks
 import com.instacart.formula.internal.TransitionDispatcher
+import com.instacart.formula.internal.UnitCallback
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -10,7 +11,7 @@ import com.instacart.formula.internal.TransitionDispatcher
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
-    @PublishedApi internal val callbacks: ScopedCallbacks,
+    @PublishedApi internal val callbacks: ScopedCallbacks<State>,
     @PublishedApi internal val transitionDispatcher: TransitionDispatcher<State>,
 ) {
 
@@ -22,9 +23,7 @@ abstract class FormulaContext<State> internal constructor(
     fun <Event> onEvent(
         transition: UpdateType<State, Event>,
     ): Listener<Event> {
-        val reference = callbacks.initOrFindEventCallback<Event>(transition::class)
-        reference.delegate = transitionDispatcher.toCallback(transition)
-        return reference
+        return onEvent(key = transition::class, transition)
     }
 
     /**
@@ -37,7 +36,8 @@ abstract class FormulaContext<State> internal constructor(
         transition: UpdateType<State, Event>,
     ): Listener<Event> {
         val callback = callbacks.initOrFindEventCallback<Event>(key)
-        callback.delegate = transitionDispatcher.toCallback(transition)
+        callback.transitionDispatcher = transitionDispatcher
+        callback.transition = transition
         return callback
     }
 
@@ -47,9 +47,8 @@ abstract class FormulaContext<State> internal constructor(
      * It uses inlined callback anonymous class for type.
      */
     fun callback(transition: UpdateType<State, Unit>): () -> Unit {
-        val reference = callbacks.initOrFindCallback(transition::class)
-        reference.delegate = transitionDispatcher.toCallback(transition)
-        return reference
+        val event = onEvent(transition)
+        return UnitCallback(event)
     }
 
     /**
@@ -61,9 +60,8 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: UpdateType<State, Unit>
     ): () -> Unit {
-        val callback = callbacks.initOrFindCallback(key)
-        callback.delegate = transitionDispatcher.toCallback(transition)
-        return callback
+        val event = onEvent(key, transition)
+        return UnitCallback(event)
     }
 
     /**

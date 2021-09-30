@@ -1,24 +1,35 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
+import com.instacart.formula.UpdateType
 
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal open class CallbackImpl<T>(internal var key: Any) : Listener<T> {
-    @PublishedApi internal var delegate: ((T) -> Unit)? = null
+internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Event> {
 
-    override fun invoke(p1: T) {
-        delegate?.invoke(p1)
+    internal var transitionDispatcher: TransitionDispatcher<State>? = null
+    internal var transition: UpdateType<State, Event>? = null
+
+    override fun invoke(event: Event) {
+        transitionDispatcher?.let { dispatcher ->
+            transition?.let { transition ->
+                dispatcher.dispatch(transition, event)
+            }
+        }
         // TODO: log if null callback (it might be due to formula removal or due to callback removal)
+    }
+
+    fun disable() {
+        transitionDispatcher = null
+        transition = null
     }
 }
 
 /**
- * Note: this class is not a data class because equality is based on instance and not [key].
+ * A wrapper to convert Listener<Unit> from (Unit) -> Unit into () -> Unit
  */
-@PublishedApi
-internal class UnitCallbackImpl(key: Any): CallbackImpl<Unit>(key), () -> Unit {
-    override fun invoke() = invoke(Unit)
+internal data class UnitCallback(val delegate: Listener<Unit>): () -> Unit {
+    override fun invoke() = delegate(Unit)
 }
