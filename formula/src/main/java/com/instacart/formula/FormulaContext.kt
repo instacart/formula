@@ -142,7 +142,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*>>
+    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>>
 
     /**
      * Scopes [create] block with a [key].
@@ -164,7 +164,7 @@ abstract class FormulaContext<State> internal constructor(
     class UpdateBuilder<State>(
         @PublishedApi internal val transitionCallback: (Transition<State>) -> Unit
     ) {
-        internal val updates = mutableListOf<Update<*>>()
+        internal val updates = mutableListOf<BoundStream<*>>()
 
         /**
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
@@ -213,7 +213,7 @@ abstract class FormulaContext<State> internal constructor(
             this@UpdateBuilder.events(stream, transition)
         }
 
-        @PublishedApi internal fun add(connection: Update<*>) {
+        @PublishedApi internal fun add(connection: BoundStream<*>) {
             if (updates.contains(connection)) {
                 throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
             }
@@ -224,13 +224,13 @@ abstract class FormulaContext<State> internal constructor(
         @PublishedApi internal inline fun <Message> createConnection(
             stream: Stream<Message>,
             crossinline transition: Transition.Factory.(Message) -> Transition<State>
-        ): Update<Message> {
+        ): BoundStream<Message> {
             val callback: (Message) -> Unit = {
                 val value = transition(Transition.Factory, it)
                 transitionCallback(value)
             }
 
-            return Update(
+            return BoundStream(
                 key = JoinedKey(stream.key(), callback::class),
                 stream = stream,
                 initial = callback

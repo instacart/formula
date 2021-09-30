@@ -10,5 +10,5 @@ package com.instacart.formula
  */
 data class Evaluation<out Output>(
     val output: Output,
-    val updates: List<Update<*>> = emptyList()
+    val updates: List<BoundStream<*>> = emptyList()
 )

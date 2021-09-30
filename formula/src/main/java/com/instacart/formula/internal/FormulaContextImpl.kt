@@ -3,7 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.Transition
-import com.instacart.formula.Update
+import com.instacart.formula.BoundStream
 import java.lang.IllegalStateException
 
 class FormulaContextImpl<State> internal constructor(
@@ -25,7 +25,7 @@ class FormulaContextImpl<State> internal constructor(
         transitionCallback.invoke(transition)
     }
 
-    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<Update<*>> {
+    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>> {
         ensureNotRunning()
         val builder = UpdateBuilder(transitionCallback)
         builder.init()

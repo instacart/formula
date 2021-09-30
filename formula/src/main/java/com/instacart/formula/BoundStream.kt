@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-class Update<Message>(
+class BoundStream<Message>(
     val key: Any,
     val stream: Stream<Message>,
     initial: (Message) -> Unit
@@ -24,7 +24,7 @@ class Update<Message>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Update<*>
+        other as BoundStream<*>
 
         if (key != other.key) return false
 
