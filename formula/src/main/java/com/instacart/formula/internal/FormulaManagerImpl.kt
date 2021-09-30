@@ -176,13 +176,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun markAsTerminated() {
         terminated = true
         frame?.transitionDispatcher?.terminated = true
-        callbacks.disableAll()
         children?.forEachValue { it.markAsTerminated() }
     }
 
     override fun performTerminationSideEffects() {
         children?.forEachValue { it.performTerminationSideEffects() }
         updateManager.terminate()
+        callbacks.disableAll()
     }
 
     private fun <ChildInput, ChildOutput> constructKey(

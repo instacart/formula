@@ -2,6 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
 import com.instacart.formula.Update
+import java.lang.IllegalStateException
 
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
@@ -16,6 +17,7 @@ internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Even
         transitionDispatcher?.let { dispatcher ->
             transition?.let { transition ->
                 dispatcher.dispatch(transition, event)
+                return
             }
         }
         // TODO: log if null callback (it might be due to formula removal or due to callback removal)

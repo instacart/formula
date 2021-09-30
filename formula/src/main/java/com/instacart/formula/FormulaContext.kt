@@ -12,7 +12,7 @@ import com.instacart.formula.internal.UnitCallback
  */
 abstract class FormulaContext<State> internal constructor(
     @PublishedApi internal val callbacks: ScopedCallbacks<State>,
-    private val transitionDispatcher: TransitionDispatcher<State>,
+    internal val transitionDispatcher: TransitionDispatcher<State>,
 ) {
 
     /**
@@ -128,7 +128,7 @@ abstract class FormulaContext<State> internal constructor(
      * Provides methods to declare various events and effects.
      */
     class UpdateBuilder<State> internal constructor(
-        private val transitionDispatcher: TransitionDispatcher<State>
+        private val formulaContext: FormulaContext<State>,
     ) {
         internal val updates = mutableListOf<BoundStream<*>>()
 
@@ -191,9 +191,10 @@ abstract class FormulaContext<State> internal constructor(
             stream: Stream<Message>,
             transition: Update<State, Message>,
         ): BoundStream<Message> {
-            val callback = transitionDispatcher.toCallback(transition)
+            val key = JoinedKey(stream.key(), transition::class)
+            val callback = formulaContext.onEvent(key, transition)
             return BoundStream(
-                key = JoinedKey(stream.key(), transition::class),
+                key = key,
                 stream = stream,
                 initial = callback
             )

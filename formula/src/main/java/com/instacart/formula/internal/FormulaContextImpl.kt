@@ -22,7 +22,7 @@ class FormulaContextImpl<State> internal constructor(
 
     override fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>> {
         ensureNotRunning()
-        val builder = UpdateBuilder(transitionDispatcher)
+        val builder = UpdateBuilder(this)
         builder.init()
         return builder.updates
     }
