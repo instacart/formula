@@ -1,9 +1,9 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.JoinedKey
-import com.instacart.formula.internal.ScopedCallbacks
+import com.instacart.formula.internal.ScopedListeners
 import com.instacart.formula.internal.TransitionDispatcher
-import com.instacart.formula.internal.UnitCallback
+import com.instacart.formula.internal.UnitListener
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -11,12 +11,12 @@ import com.instacart.formula.internal.UnitCallback
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
-    @PublishedApi internal val callbacks: ScopedCallbacks<State>,
+    @PublishedApi internal val listeners: ScopedListeners<State>,
     internal val transitionDispatcher: TransitionDispatcher<State>,
 ) {
 
     /**
-     * Creates a callback that takes an [Event] and performs a [Transition].
+     * Creates a [Listener] that takes an [Event] and performs a [Transition].
      *
      * It uses [transition] type as key.
      */
@@ -27,45 +27,45 @@ abstract class FormulaContext<State> internal constructor(
     }
 
     /**
-     * Creates a callback that takes a [Event] and performs a [Transition].
+     * Creates a [Listener] that takes a [Event] and performs a [Transition].
      *
-     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
+     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
      */
     fun <Event> onEvent(
         key: Any,
         transition: Transition.Factory.(Event) -> Transition<State>,
     ): Listener<Event> {
-        val callback = callbacks.initOrFindCallback<Event>(key)
-        callback.transitionDispatcher = transitionDispatcher
-        callback.transition = transition
-        return callback
+        val listener = listeners.initOrFindListener<Event>(key)
+        listener.transitionDispatcher = transitionDispatcher
+        listener.transition = transition
+        return listener
     }
 
     /**
-     * Creates a callback to be used for handling UI event transitions.
+     * Creates a listener that takes an event and performs a [Transition].
      *
      * It uses [transition] type as key.
      */
     fun callback(transition: Transition.Factory.(Unit) -> Transition<State>): () -> Unit {
         val event = onEvent(transition)
-        return UnitCallback(event)
+        return UnitListener(event)
     }
 
     /**
-     * Creates a callback to be used for handling UI event transitions.
+     * Creates a listener that takes an event and performs a [Transition].
      *
-     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
+     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
      */
     fun callback(
         key: Any,
         transition: Transition.Factory.(Unit) -> Transition<State>
     ): () -> Unit {
         val event = onEvent(key, transition)
-        return UnitCallback(event)
+        return UnitListener(event)
     }
 
     /**
-     * Creates a callback that takes a [Event] and performs a [Transition].
+     * Creates a listener that takes a [Event] and performs a [Transition].
      *
      * It uses [transition] type as key.
      */
@@ -76,14 +76,14 @@ abstract class FormulaContext<State> internal constructor(
     }
 
     /**
-     * Creates a callback that takes a [Event] and performs a [Transition].
+     * Creates a listener that takes a [Event] and performs a [Transition].
      *
-     * @param key key with which the callback is to be associated. Same key cannot be used for multiple callbacks.
+     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
      */
     fun <Event> eventCallback(
         key: Any,
         transition: Transition.Factory.(Event) -> Transition<State>,
-    ): (Event) -> Unit {
+    ): Listener<Event> {
         return onEvent(key, transition)
     }
 
@@ -118,9 +118,9 @@ abstract class FormulaContext<State> internal constructor(
      * @param key Unique identifier that will be used for this block.
      */
     inline fun <Value> key(key: Any, create: () -> Value): Value {
-        callbacks.enterScope(key)
+        listeners.enterScope(key)
         val value = create()
-        callbacks.endScope()
+        listeners.endScope()
         return value
     }
 
@@ -136,7 +136,7 @@ abstract class FormulaContext<State> internal constructor(
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          *
-         * @param transition Callback invoked when [Stream] sends us a [Message].
+         * @param transition A function that is invoked when [Stream] sends us a [Message].
          */
         fun <Message> events(
             stream: Stream<Message>,
@@ -149,7 +149,7 @@ abstract class FormulaContext<State> internal constructor(
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          *
-         * @param transition Callback invoked when [Stream] sends us a [Message].
+         * @param transition A function that is invoked when [Stream] sends us a [Message].
          */
         fun <Message> onEvent(
             stream: Stream<Message>,
@@ -163,7 +163,7 @@ abstract class FormulaContext<State> internal constructor(
          * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
          * and unsubscribed when it is not returned as part of [Evaluation].
          *
-         * @param transition Callback invoked when [Stream] sends us a [Message].
+         * @param transition A function that is invoked when [Stream] sends us a [Message].
          *
          * Example:
          * ```
@@ -192,11 +192,11 @@ abstract class FormulaContext<State> internal constructor(
             transition: Transition.Factory.(Message) -> Transition<State>,
         ): BoundStream<Message> {
             val key = JoinedKey(stream.key(), transition::class)
-            val callback = formulaContext.onEvent(key, transition)
+            val listener = formulaContext.onEvent(key, transition)
             return BoundStream(
                 key = key,
                 stream = stream,
-                initial = callback
+                initial = listener
             )
         }
     }

@@ -1,4 +1,4 @@
-Input is a Kotlin data class used to pass data and event callbacks to the Formula instance. Let's say we need to 
+Input is a Kotlin data class used to pass data and event listeners to the Formula instance. Let's say we need to 
 pass an item id to `ItemDetailFormula`. 
 ```kotlin
 class ItemDetailFormula() : Formula<ItemDetailFormula.Input, ..., ...> {
@@ -51,7 +51,7 @@ itemDetailFormula
 ## Equality
 Formula uses input equality to determine if it should re-evaluate. A parent can cause 
 a child formula to re-evaluate by changing the input it passes. This will also trigger
-`Formula.onInputChanged` callback on the child formula.
+`Formula.onInputChanged` on the child formula.
 
 This is a desired behavior as we do want the child to react when the data that we pass changes.
 ```kotlin
@@ -62,21 +62,19 @@ data class ItemInput(
 
 Making `Input` a data class and passing data as part of its properties makes it easy to reason
 about its equality. In some cases though, we want to pass objects that don't have property based
-equality such as callback functions or observables. 
+equality such as listeners or observables. 
 
-### Maintaining callback equality
-In many cases we want to pass callbacks to listen to formula events. 
+### Maintaining listener equality
+In many cases we want to pass listeners to listen to formula events. 
 
 ```kotlin
 data class ItemListInput(
-    val onItemSelected: (Item) -> Unit
+    val onItemSelected: Listener<Item>
 )
 ```
 
-Formula provides an easy way to maintain callback equality. Within your parent formula, 
-you can use `FormulaContext` to instantiate callbacks by using:
-
-- `FormulaContext.onEvent`
+Formula provides an easy way to maintain listener equality. Within your parent formula, 
+you can use `FormulaContext.onEvent` to instantiate listeners.
 
 **Don't:** Don't instantiate functions within `Formula.evaluate`.
 ```kotlin
@@ -89,7 +87,7 @@ override fun evaluate(...) {
 }
 ```
 
-**Do:** Use `eventCallback`
+**Do:** Use `onEvent`
 ```kotlin
 override fun evaluate(...) {
     val itemListInput = ItemListInput(
@@ -100,14 +98,16 @@ override fun evaluate(...) {
 }
 ```
 
-**Do:** Use already constructed callbacks
+**Do:** Use already constructed listeners 
 ```kotlin
-// Router is constructed outside of the "evaluate" function block
-val router: ItemRouter = ...
+// Listener is constructed outside of the "evaluate" function block
+val onItemSelectedListener = Listener<Item> {
+    
+}
 
 override fun evaluate(...): ... {
     val itemListInput = ItemListInput(
-        onItemSelected = router::onItemSelected
+        onItemSelected = onItemSelectedListener
     )
 }
 ```

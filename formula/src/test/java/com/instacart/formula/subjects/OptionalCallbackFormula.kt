@@ -14,7 +14,7 @@ class OptionalCallbackFormula :
 
     data class Output(
         val state: Int,
-        val callback: Listener<Unit>?,
+        val listener: Listener<Unit>?,
         val toggleCallback: Listener<Unit>,
     )
 
@@ -30,7 +30,7 @@ class OptionalCallbackFormula :
         return Evaluation(
             output = Output(
                 state = state.state,
-                callback = callback,
+                listener = callback,
                 toggleCallback = context.onEvent {
                     transition(state.copy(callbackEnabled = !state.callbackEnabled))
                 }

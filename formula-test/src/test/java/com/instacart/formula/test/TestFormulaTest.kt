@@ -19,7 +19,7 @@ class TestFormulaTest {
         subject = ParentFormula(childFormula = childFormula).test(Unit)
     }
 
-    @Test fun `trigger callback using child input`() {
+    @Test fun `trigger listener using child input`() {
         subject
             .apply {
                 childFormula.input { onChangeName("my name") }

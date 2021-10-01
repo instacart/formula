@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
-internal class Callbacks<State> {
-    private var callbacks: SingleRequestMap<Any, CallbackImpl<State, *>>? = null
+internal class Listeners<State> {
+    private var listeners: SingleRequestMap<Any, ListenerImpl<State, *>>? = null
 
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
@@ -12,32 +12,32 @@ internal class Callbacks<State> {
         return "Callback $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
-    fun <Event> initOrFindCallback(key: Any): CallbackImpl<State, Event> {
-        val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, CallbackImpl<State, *>> = mutableMapOf()
-            this.callbacks = initialized
+    fun <Event> initOrFindCallback(key: Any): ListenerImpl<State, Event> {
+        val listeners = listeners ?: run {
+            val initialized: SingleRequestMap<Any, ListenerImpl<State, *>> = mutableMapOf()
+            this.listeners = initialized
             initialized
         }
 
-        return callbacks
-            .findOrInit(key) { CallbackImpl<State, Event>(key) }
+        return listeners
+            .findOrInit(key) { ListenerImpl<State, Event>(key) }
             .requestAccess {
                 duplicateKeyErrorMessage(key)
-            } as CallbackImpl<State, Event>
+            } as ListenerImpl<State, Event>
     }
 
     fun evaluationFinished() {
-        callbacks?.clearUnrequested {
-            // TODO log that disabled callback was invoked.
+        listeners?.clearUnrequested {
+            // TODO log that disabled listener was invoked.
             it.disable()
         }
     }
 
     fun disableAll() {
-        callbacks?.forEachValue {
+        listeners?.forEachValue {
             // TODO log that event is invalid because child was removed
             it.disable()
         }
-        callbacks?.clear()
+        listeners?.clear()
     }
 }

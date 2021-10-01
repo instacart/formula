@@ -20,7 +20,7 @@ internal class TransitionDispatcher<State>(
 
         if (!terminated && transitionId.hasTransitioned()) {
             // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old transition callback: $transition.")
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition.")
         }
 
         handleTransition(transition)

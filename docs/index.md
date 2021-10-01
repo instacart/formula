@@ -13,12 +13,12 @@ actions the user will be able to take. This concept is called a `RenderModel` an
 
 #### Render Model
 Render Model is an immutable representation of your view. It will be used to update Android views. Typically,
-it will also contain callbacks that will be invoked when user interacts with the UI.
+it will also contain event listeners that will be invoked when user interacts with the UI.
 ```kotlin
 data class CounterRenderModel(
   val count: String,
-  val onDecrement: () -> Unit,
-  val onIncrement: () -> Unit 
+  val onDecrement: Listener<Unit>,
+  val onIncrement: Listener<Unit>,
 )
 ```
 
@@ -125,7 +125,7 @@ onDecrement = context.onEvent {
 }
 ```
 
-The callback block uses a DSL to provide access to `Transition.Factory` which has the `transition` and `none`
+The listener block uses a DSL to provide access to `Transition.Factory` which has the `transition` and `none`
 utility functions (take a look at that class for other utility functions).
 
 Now that we defined our state management, let's connect it to our `RenderView`.

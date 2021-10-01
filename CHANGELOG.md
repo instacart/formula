@@ -5,6 +5,7 @@
 - **Breaking**: Removed `Formula.start()` extension, use `Formula.toObservable()` extension instead.
 - Add `FormulaContext.onEvent` to replace `FormulaContext.callback` and `FormulaContext.eventCallback`
 - Add Kotlin coroutine support! New `formula-coroutines` module to provide `toFlow()` extension function and `FlowStream`.
+- Add `Listener` type to consolidate event handling types `() -> Unit` and `(Event) -> Unit` 
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.

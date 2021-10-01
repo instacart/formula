@@ -10,14 +10,14 @@ import com.instacart.formula.Transition
  *
  * Order of processing:
  * 1. Evaluate
- * 2. Disable old callbacks
+ * 2. Disable old event listeners
  * 3. Terminate removed children
  * 4. Prepare parent and alive children for updates.
  */
 internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val callbacks: ScopedCallbacks<State>,
+    private val listeners: ScopedListeners<State>,
     private val transitionListener: TransitionListener
 ) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
 
@@ -25,7 +25,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         formula: Formula<Input, State, Output>,
         input: Input,
         transitionListener: TransitionListener
-    ): this(formula, input, ScopedCallbacks(formula), transitionListener)
+    ): this(formula, input, ScopedListeners(formula), transitionListener)
 
     private val updateManager = UpdateManager()
 
@@ -80,15 +80,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
             state = formula.onInputChanged(prevInput, input, state)
         }
 
-        callbacks.evaluationStarted()
+        listeners.evaluationStarted()
         val transitionDispatcher = TransitionDispatcher(this::handleTransition, transitionId)
-        val context = FormulaContextImpl(transitionId, callbacks, this, transitionDispatcher)
+        val context = FormulaContextImpl(transitionId, listeners, this, transitionDispatcher)
         val result = formula.evaluate(input, state, context)
         val frame = Frame(input, state, result, transitionDispatcher)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame
 
-        callbacks.evaluationFinished()
+        listeners.evaluationFinished()
 
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
@@ -182,7 +182,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun performTerminationSideEffects() {
         children?.forEachValue { it.performTerminationSideEffects() }
         updateManager.terminate()
-        callbacks.disableAll()
+        listeners.disableAll()
     }
 
     private fun <ChildInput, ChildOutput> constructKey(

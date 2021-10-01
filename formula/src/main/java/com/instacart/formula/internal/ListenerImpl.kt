@@ -7,7 +7,7 @@ import com.instacart.formula.Transition
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Event> {
+internal class ListenerImpl<State, Event>(internal var key: Any) : Listener<Event> {
 
     internal var transitionDispatcher: TransitionDispatcher<State>? = null
     internal var transition: (Transition.Factory.(Event) -> Transition<State>)? = null
@@ -19,7 +19,7 @@ internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Even
                 return
             }
         }
-        // TODO: log if null callback (it might be due to formula removal or due to callback removal)
+        // TODO: log if null listener (it might be due to formula removal or due to callback removal)
     }
 
     fun disable() {
@@ -31,6 +31,6 @@ internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Even
 /**
  * A wrapper to convert Listener<Unit> from (Unit) -> Unit into () -> Unit
  */
-internal data class UnitCallback(val delegate: Listener<Unit>): () -> Unit {
+internal data class UnitListener(val delegate: Listener<Unit>): () -> Unit {
     override fun invoke() = delegate(Unit)
 }

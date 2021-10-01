@@ -23,7 +23,7 @@ sealed class Transition<out State> {
      * Stateful transition.
      *
      * @param state New state
-     * @param effects Optional effects such as parent callbacks, logging, db writes,
+     * @param effects Optional effects such as calling listeners, logging, db writes,
      * network requests, etc.
      */
     data class Stateful<State>(val state: State, override val effects: Effects? = null) : Transition<State>()
@@ -31,7 +31,7 @@ sealed class Transition<out State> {
     /**
      * Only effects are emitted as part of this transition
      *
-     * @param effects Effects such as parent callbacks, logging, db writes, network requests, etc.
+     * @param effects Effects such as calling listeners, logging, db writes, network requests, etc.
      */
     data class OnlyEffects(override val effects: Effects) : Transition<Nothing>()
 
@@ -55,7 +55,7 @@ sealed class Transition<out State> {
         }
 
         /**
-         * Creates a transition to a new [State] and executes [invokeEffects] callback
+         * Creates a transition to a new [State] and executes [invokeEffects] function
          * after the state change.
          */
         fun <State> transition(

@@ -14,8 +14,8 @@ class OptionalEventCallbackFormula :
 
     data class Output(
         val state: Int,
-        val callback: Listener<Int>?,
-        val toggleCallback: Listener<Unit>
+        val listener: Listener<Int>?,
+        val toggleListener: Listener<Unit>
     )
 
     override fun initialState(input: Unit) = State()
@@ -32,8 +32,8 @@ class OptionalEventCallbackFormula :
         return Evaluation(
             output = Output(
                 state = state.state,
-                callback = callback,
-                toggleCallback = context.onEvent {
+                listener = callback,
+                toggleListener = context.onEvent {
                     transition(state.copy(callbackEnabled = !state.callbackEnabled))
                 }
             )

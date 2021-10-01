@@ -1,19 +1,21 @@
-Event handling in Formula is based on simple callback functions. Callbacks can have zero or 
-one parameter to pass data as part of the event.
+Event handling in Formula is based on event listeners. A listener is just a function
+that is called when an event happens and could be described by a simple `(Event) -> Unit` 
+function type. We pass listeners to other parts of the codebase such as the view layer by
+adding the listener to the `Render Model`.
 
 ### UI Events
-To handle UI events, declare a function on the `Render Model` for each type of UI event you care about.
+To handle UI events, declare a `Listener` on the `Render Model` for each type of UI event you care about.
 ```kotlin
 data class FormRenderModel(
-  // A callback with no parameters
-  val onSaveSelected: () -> Unit,
+  // A listener where event contains no information (We use kotlin.Unit type).  
+  val onSaveSelected: Listener<Unit>,
 
-  // A callback where data is passed as part of the event.
-  val onNameChanged: (newName: String) -> Unit
+  // A listener where name string is passed as part of the event.
+  val onNameChanged: Listener<String>,
 )
 ```
 
-To create a callback use `FormulaContext.onEvent`. Note: All callbacks should be created within `Formula.evaluate` block.
+To create a listener use `FormulaContext.onEvent`. Note: All listeners should be created within `Formula.evaluate` block.
 ```kotlin
 override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
   return Evaluation(
@@ -22,7 +24,7 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
         // Use "newName" to perform a transition
         transition(state.copy(name = newName))
       },
-      onSaveSelected = context.onEvent {
+      onSaveSelected = context.onEvent<Unit> {
         // No state change, performing side-effects.
         transition {
           userService.updateName(state.name)  
@@ -36,10 +38,10 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
 
 This example is dense, but it shows almost every kind of scenario. Let's go over it.
 
-To create a callback, we pass a function that returns a `Transition<State>`. Formula
+To create a listener, we pass a function that returns a `Transition<State>`. Formula
 uses transitions to update internal state and/or perform side-effects to other components. 
-Callbacks are scoped to the current state. Any time we transition to a new state, evaluate
-is called again and the callbacks are recreated.
+Listeners are scoped to the current state. Any time we transition to a new state, evaluate
+is called again and the listeners are recreated.
 
 ```kotlin
 // Updating state
@@ -70,10 +72,10 @@ To ensure safe execution, all side-effects should be performed within `transitio
 will be executed after the state change is performed.
 
 ### Sending messages to the parent
-To pass events to the parent, first define the callbacks on the `Formula.Input` class.
+To pass events to the parent, first define the listener on the `Formula.Input` class.
 ```kotlin
 data class ItemListInput(
-  val onItemSelected: (itemId: String) -> Unit
+  val onItemSelected: Listener<ItemId>,
 )
 ```
 
@@ -111,17 +113,17 @@ Evaluation(
   output = ...,
   updates = context.updates {
     // Performs a side effect when formula is initialized
-    events(Stream.onInit()) {
+    Stream.onInit().onEvent {
       transition { analytics.trackScreenOpen() }
     }
 
     // Performs a side effect when formula is terminated
-    events(Stream.onTerminate()) {
+    Stream.onTerminate().onEvent {
       transition { analytics.trackClose() }
     }
 
     // Performs a side-effect when data changes
-    events(Stream.onData(), state.itemId) {
+    Stream.onData(state.itemId).onEvent {
       // This will call api.fetchItem for each unique itemId
       transition { api.fetchItem(state.itemId) }
     }
@@ -129,17 +131,18 @@ Evaluation(
 )
 ```
 
-### Formula retains callbacks
-Callbacks retain equality across re-evaluation (such as state changes). The first time formula
-requests a callback, we create it and persist it in the map. Subsequent calls will re-use this
+### Formula retains listeners
+Listeners retain equality across re-evaluation (such as state changes). The first time formula
+requests a listener, we create it and persist it in the map. Subsequent calls will re-use this
 instance. The instance is disabled and removed when your formula is removed or if you don't
-request this callback within Formula.evaluate block.
+request this listener within Formula.evaluate block.
 
-By default, we generate a key for each callback based on the position in code where it is called.
-There are a couple of cases when this is not sufficient and you need to explicitly provide a unique `key`.
+By default, we generate a key for each listener based on the listener type. Usually, this
+is an anonymous class which is associated with the position in code where it is called. There are
+a couple of cases when this is not sufficient and you need to explicitly provide a unique `key`.
 
-#### Case 1: Declaring callbacks within a loop
-For example, if you are mapping list of items and creating a callback within the `map` function.
+#### Case 1: Declaring listeners within a loop
+For example, if you are mapping list of items and creating a listener within the `map` function.
 ```kotlin
 // This will not work unless your list of items never changes (removal of item or position change).
 ItemListRenderModel(
@@ -167,7 +170,7 @@ context.key(item.id) {
 ```
 
 #### Case 2: Delegating to another function
-There is an issue with callbacks when passing `FormulaContext` to another function.
+There is an issue with listeners when passing `FormulaContext` to another function.
 Let's say you have a function that takes FormulaContext and creates a ChildRenderModel.
 ```kotlin
 fun createChildRenderModel(context: FormulaContext<...>): ChildRenderModel {
