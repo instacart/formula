@@ -4,6 +4,8 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Transition
+import com.instacart.formula.TransitionContext
 import com.instacart.formula.subjects.StartStopFormula.Output
 import com.instacart.formula.subjects.StartStopFormula.State
 import com.instacart.formula.test.TestableRuntime
@@ -40,13 +42,16 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output> 
             },
             output = Output(
                 state = state.count,
-                startListening = context.onEvent {
-                    transition(state.copy(listenForEvents = true))
-                },
-                stopListening = context.onEvent {
-                    transition(state.copy(listenForEvents = false))
-                }
+                // We need to specify keys since `UpdateListenFlag` type is used two times.
+                startListening = context.onEvent("start", UpdateListenFlag(listen = true)),
+                stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
             )
         )
+    }
+
+    private class UpdateListenFlag(val listen: Boolean): Transition<State, Unit> {
+        override fun TransitionContext<State>.toResult(event: Unit): Transition.Result<State> {
+            return transition(state.copy(listenForEvents = listen))
+        }
     }
 }

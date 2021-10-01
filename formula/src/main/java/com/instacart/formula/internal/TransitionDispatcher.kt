@@ -1,15 +1,17 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
+import com.instacart.formula.TransitionContext
 
 internal class TransitionDispatcher<State>(
-    private val handleTransition: (Transition<State>) -> Unit,
+    override val state: State,
+    private val handleTransition: (Transition.Result<State>) -> Unit,
     var transitionId: TransitionId
-) {
+) : TransitionContext<State> {
     var running = false
     var terminated = false
 
-    fun dispatch(transition: Transition<State>) {
+    private fun dispatch(transition: Transition.Result<State>) {
         if (!running) {
             throw IllegalStateException("Transitions are not allowed during evaluation")
         }
@@ -27,10 +29,10 @@ internal class TransitionDispatcher<State>(
     }
 
     fun <Event> dispatch(
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
         event: Event
     ) {
-        val transition = transition(Transition.Factory, event)
-        dispatch(transition)
+        val result = transition.run { toResult(event) }
+        dispatch(result)
     }
 }

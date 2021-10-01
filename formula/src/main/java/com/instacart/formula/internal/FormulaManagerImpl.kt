@@ -38,20 +38,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private var childTransitionListener: TransitionListener? = null
 
-    private fun handleTransition(transition: Transition<State>) {
+    private fun handleTransition(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            transitionListener.onTransition(transition, true)
+            transitionListener.onTransition(result, true)
             return
         }
 
-        if (transition is Transition.Stateful) {
-            state = transition.state
+        if (result is Transition.Result.Stateful) {
+            state = result.state
         }
         val frame = this.frame
         frame?.updateStateValidity(state)
         val isValid = frame != null && frame.isValid()
-        transitionListener.onTransition(transition, isValid)
+        transitionListener.onTransition(result, isValid)
     }
 
     override fun updateTransitionId(transitionId: TransitionId) {
@@ -81,7 +81,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         listeners.evaluationStarted()
-        val transitionDispatcher = TransitionDispatcher(this::handleTransition, transitionId)
+        val transitionDispatcher = TransitionDispatcher(state, this::handleTransition, transitionId)
         val context = FormulaContextImpl(transitionId, listeners, this, transitionDispatcher)
         val result = formula.evaluate(input, state, context)
         val frame = Frame(input, state, result, transitionDispatcher)

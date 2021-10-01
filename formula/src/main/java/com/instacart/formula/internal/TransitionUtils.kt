@@ -4,7 +4,7 @@ import com.instacart.formula.Transition
 
 internal object TransitionUtils {
 
-    fun isEmpty(transition: Transition<*>): Boolean {
-        return transition == Transition.None
+    fun isEmpty(result: Transition.Result<*>): Boolean {
+        return result == Transition.Result.None
     }
 }

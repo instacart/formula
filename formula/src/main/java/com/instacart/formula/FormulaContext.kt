@@ -21,7 +21,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> onEvent(
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ): Listener<Event> {
         return onEvent(key = transition::class, transition)
     }
@@ -33,7 +33,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> onEvent(
         key: Any,
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ): Listener<Event> {
         val listener = listeners.initOrFindListener<Event>(key)
         listener.transitionDispatcher = transitionDispatcher
@@ -46,7 +46,7 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses [transition] type as key.
      */
-    fun callback(transition: Transition.Factory.(Unit) -> Transition<State>): () -> Unit {
+    fun callback(transition: Transition<State, Unit>): () -> Unit {
         val listener = onEvent(transition)
         return UnitListener(listener)
     }
@@ -58,7 +58,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun callback(
         key: Any,
-        transition: Transition.Factory.(Unit) -> Transition<State>
+        transition: Transition<State, Unit>,
     ): () -> Unit {
         val joinedKey = JoinedKey(key, transition::class)
         val listener = onEvent(joinedKey, transition)
@@ -71,7 +71,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> eventCallback(
-        transition: Transition.Factory.(Event) -> Transition<State>
+        transition: Transition<State, Event>,
     ): Listener<Event> {
         return onEvent(transition)
     }
@@ -83,7 +83,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> eventCallback(
         key: Any,
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ): Listener<Event> {
         val joinedKey = JoinedKey(key, transition::class)
         return onEvent(joinedKey, transition)
@@ -125,5 +125,4 @@ abstract class FormulaContext<State> internal constructor(
         listeners.endScope()
         return value
     }
-
 }

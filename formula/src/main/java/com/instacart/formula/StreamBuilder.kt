@@ -21,7 +21,7 @@ class StreamBuilder<State> internal constructor(
      */
     fun <Event> events(
         stream: Stream<Event>,
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ) {
         add(createConnection(stream, transition))
     }
@@ -35,7 +35,7 @@ class StreamBuilder<State> internal constructor(
     fun <Event> onEvent(
         stream: Stream<Event>,
         avoidParameterClash: Any = this,
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ) {
         add(createConnection(stream, transition))
     }
@@ -54,7 +54,7 @@ class StreamBuilder<State> internal constructor(
      * ```
      */
     fun <Event> Stream<Event>.onEvent(
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ) {
         val stream = this
         this@StreamBuilder.events(stream, transition)
@@ -70,7 +70,7 @@ class StreamBuilder<State> internal constructor(
 
     @PublishedApi internal fun <Event> createConnection(
         stream: Stream<Event>,
-        transition: Transition.Factory.(Event) -> Transition<State>,
+        transition: Transition<State, Event>,
     ): BoundStream<Event> {
         val key = JoinedKey(stream.key(), transition::class)
         val listener = formulaContext.onEvent(key, transition)

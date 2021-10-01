@@ -1,79 +1,50 @@
 package com.instacart.formula
 
 /**
- * Defines an intent to transition by emitting a new [State] and optional [Effects].
+ * Transition is a function that is called when an [Event] happens and produces a [Result] which
+ * can indicate a [state][State] change, [side-effects][Result.effects] or nothing. This result
+ * will be passed and applied by the [Formula Runtime][FormulaRuntime].
  */
-sealed class Transition<out State> {
-    companion object {
+fun interface Transition<State, in Event> {
+
+    /**
+     * Defines a transition result which can request a state change and/or some action
+     * to be performed.
+     */
+    sealed class Result<out State> {
         /**
-         * A convenience method to define transitions.
+         * Stateful transition.
          *
-         * ```
-         * fun nameChanged(state: FormState, newName: String) = Transition.create {
-         *   transition(state.copy(name = newName))
-         * }
-         * ```
+         * @param state New state
+         * @param effects Optional effects such as calling listeners, logging, db writes,
+         * network requests, etc.
          */
-        inline fun <State> create(init: Factory.() -> Transition<State>): Transition<State> {
-            return init(Factory)
-        }
-    }
+        data class Stateful<State>(val state: State, override val effects: Effects? = null) : Result<State>()
 
-    /**
-     * Stateful transition.
-     *
-     * @param state New state
-     * @param effects Optional effects such as calling listeners, logging, db writes,
-     * network requests, etc.
-     */
-    data class Stateful<State>(val state: State, override val effects: Effects? = null) : Transition<State>()
-
-    /**
-     * Only effects are emitted as part of this transition
-     *
-     * @param effects Effects such as calling listeners, logging, db writes, network requests, etc.
-     */
-    data class OnlyEffects(override val effects: Effects) : Transition<Nothing>()
-
-    /**
-     * Nothing happens in this transition.
-     */
-    object None : Transition<Nothing>() {
-        override val effects: Effects? = null
-    }
-
-
-    /**
-     * Factory uses as a receiver parameter to provide transition constructor dsl.
-     */
-    object Factory {
         /**
-         * A transition that does nothing.
+         * Only effects are emitted as part of this transition
+         *
+         * @param effects Effects such as calling listeners, logging, db writes, network requests, etc.
          */
-        fun none(): Transition<Nothing> {
-            return None
+        data class OnlyEffects(override val effects: Effects) : Result<Nothing>()
+
+        /**
+         * Nothing happens in this transition.
+         */
+        object None : Result<Nothing>() {
+            override val effects: Effects? = null
         }
 
         /**
-         * Creates a transition to a new [State] and executes [invokeEffects] function
-         * after the state change.
+         * Optional side-effects function that will be executed by [Formula Runtime][FormulaRuntime].
          */
-        fun <State> transition(
-            state: State,
-            invokeEffects: (() -> Unit)? = null
-        ): Stateful<State> {
-            return Stateful(state, invokeEffects)
-        }
-
-        /**
-         * Creates a transition that only executes [invokeEffects].
-         */
-        fun transition(
-            invokeEffects: () -> Unit
-        ): OnlyEffects {
-            return OnlyEffects(invokeEffects)
-        }
+        abstract val effects: Effects?
     }
 
-    abstract val effects: Effects?
+    /**
+     * Called when an [Event] happens and creates a [Result] type which can indicate a state
+     * change and/or some executable effects. Use [TransitionContext.none] if nothing should happen
+     * as part of this event.
+     */
+    fun TransitionContext<State>.toResult(event: Event): Result<State>
 }
