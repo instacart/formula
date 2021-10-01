@@ -1,7 +1,6 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
-import com.instacart.formula.Update
 
 internal class TransitionDispatcher<State>(
     private val handleTransition: (Transition<State>) -> Unit,
@@ -27,9 +26,11 @@ internal class TransitionDispatcher<State>(
         handleTransition(transition)
     }
 
-    // TODO: naming UpdateType as transition seems weird. We need to resolve these two types.
-    fun <Event> dispatch(transition: Update<State, Event>, event: Event) {
-        val transition = Transition.Factory.run { transition.run { create(event) } }
+    fun <Event> dispatch(
+        transition: Transition.Factory.(Event) -> Transition<State>,
+        event: Event
+    ) {
+        val transition = transition(Transition.Factory, event)
         dispatch(transition)
     }
 }

@@ -1,8 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
-import com.instacart.formula.Update
-import java.lang.IllegalStateException
+import com.instacart.formula.Transition
 
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
@@ -11,7 +10,7 @@ import java.lang.IllegalStateException
 internal class CallbackImpl<State, Event>(internal var key: Any) : Listener<Event> {
 
     internal var transitionDispatcher: TransitionDispatcher<State>? = null
-    internal var transition: Update<State, Event>? = null
+    internal var transition: (Transition.Factory.(Event) -> Transition<State>)? = null
 
     override fun invoke(event: Event) {
         transitionDispatcher?.let { dispatcher ->

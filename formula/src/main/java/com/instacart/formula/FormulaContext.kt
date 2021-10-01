@@ -21,7 +21,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> onEvent(
-        transition: Update<State, Event>,
+        transition: Transition.Factory.(Event) -> Transition<State>,
     ): Listener<Event> {
         return onEvent(key = transition::class, transition)
     }
@@ -33,7 +33,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> onEvent(
         key: Any,
-        transition: Update<State, Event>,
+        transition: Transition.Factory.(Event) -> Transition<State>,
     ): Listener<Event> {
         val callback = callbacks.initOrFindCallback<Event>(key)
         callback.transitionDispatcher = transitionDispatcher
@@ -46,7 +46,7 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses [transition] type as key.
      */
-    fun callback(transition: Update<State, Unit>): () -> Unit {
+    fun callback(transition: Transition.Factory.(Unit) -> Transition<State>): () -> Unit {
         val event = onEvent(transition)
         return UnitCallback(event)
     }
@@ -58,7 +58,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun callback(
         key: Any,
-        transition: Update<State, Unit>
+        transition: Transition.Factory.(Unit) -> Transition<State>
     ): () -> Unit {
         val event = onEvent(key, transition)
         return UnitCallback(event)
@@ -70,7 +70,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> eventCallback(
-        transition: Update<State, Event>,
+        transition: Transition.Factory.(Event) -> Transition<State>
     ): Listener<Event> {
         return onEvent(transition)
     }
@@ -82,7 +82,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> eventCallback(
         key: Any,
-        transition: Update<State, Event>,
+        transition: Transition.Factory.(Event) -> Transition<State>,
     ): (Event) -> Unit {
         return onEvent(key, transition)
     }
@@ -140,7 +140,7 @@ abstract class FormulaContext<State> internal constructor(
          */
         fun <Message> events(
             stream: Stream<Message>,
-            transition: Update<State, Message>,
+            transition: Transition.Factory.(Message) -> Transition<State>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -154,7 +154,7 @@ abstract class FormulaContext<State> internal constructor(
         fun <Message> onEvent(
             stream: Stream<Message>,
             avoidParameterClash: Any = this,
-            transition: Update<State, Message>,
+            transition: Transition.Factory.(Message) -> Transition<State>,
         ) {
             add(createConnection(stream, transition))
         }
@@ -173,7 +173,7 @@ abstract class FormulaContext<State> internal constructor(
          * ```
          */
         fun <Message> Stream<Message>.onEvent(
-            transition: Update<State, Message>,
+            transition: Transition.Factory.(Message) -> Transition<State>,
         ) {
             val stream = this
             this@UpdateBuilder.events(stream, transition)
@@ -189,7 +189,7 @@ abstract class FormulaContext<State> internal constructor(
 
         @PublishedApi internal fun <Message> createConnection(
             stream: Stream<Message>,
-            transition: Update<State, Message>,
+            transition: Transition.Factory.(Message) -> Transition<State>,
         ): BoundStream<Message> {
             val key = JoinedKey(stream.key(), transition::class)
             val callback = formulaContext.onEvent(key, transition)
