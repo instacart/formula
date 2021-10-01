@@ -6,7 +6,7 @@ testImplementation 'com.instacart.formula:formula-test:{latest_version}'
 
 ### Basic example 
 Use `test` extension to start testing your formula. Then, you can use `output` 
-function to make assertions on the output or invoke callbacks.
+function to make assertions on the output or invoke event listeners.
 
 ```kotlin
 CounterFormula()
@@ -15,7 +15,7 @@ CounterFormula()
     .output {
         assertThat(count).isEqualTo("Count: 0")
     }
-    // Invoking the callbacks that live on the output.
+    // Invoking an event listener that live on the output.
     .output { onIncrement() }
     .output { onIncrement() }
     // Making assertion on final output
@@ -66,7 +66,7 @@ testFormula.input {
     assertThat(this.id).isEqualTo(1)
 }
 
-// Trigger a callback
+// Trigger an event 
 testFormula.input {
     this.onTextChanged("new text")
 }

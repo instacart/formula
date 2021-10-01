@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.Stream
 
 class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.State, EffectOrderFormula.Output> {
@@ -24,7 +25,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
     }
 
     data class Output(
-        val triggerEvent: () -> Unit
+        val triggerEvent: Listener<Unit>
     )
 
     override fun initialState(input: Input): State = State()

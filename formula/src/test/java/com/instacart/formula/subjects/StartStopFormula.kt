@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.subjects.StartStopFormula.Output
 import com.instacart.formula.subjects.StartStopFormula.State
 import com.instacart.formula.test.TestableRuntime
@@ -18,8 +19,8 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output> 
 
     class Output(
         val state: Int,
-        val startListening: () -> Unit,
-        val stopListening: () -> Unit
+        val startListening: Listener<Unit>,
+        val stopListening: Listener<Unit>,
     )
 
     override fun initialState(input: Unit): State = State()

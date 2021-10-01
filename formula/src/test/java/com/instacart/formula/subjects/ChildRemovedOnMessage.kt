@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth
+import com.instacart.formula.invoke
 import com.instacart.formula.test.TestableRuntime
 
 class ChildRemovedOnMessage(runtime: TestableRuntime) {

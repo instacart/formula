@@ -9,7 +9,7 @@ disposables += fetchUserObservable.subscribe { userResult ->
 ```
 
 Formula does things a bit differently. It manages the lifecycle of the asynchronous actions for you. Instead of manually subscribing and unsubscribing,
-you define the conditions for which the asynchronous action should run and the callback which handles events produced by the action.
+you define the conditions for which the asynchronous action should run and the listener which handles events produced by the action.
 ```kotlin
 val fetchUserStream = RxStream.fromObservable { repository.fetchUser() }
 fetchUserStream.onEvent { userResult ->

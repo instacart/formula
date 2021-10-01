@@ -3,28 +3,23 @@ package com.instacart.formula.internal
 import com.instacart.formula.IFormula
 
 @PublishedApi
-internal class ScopedCallbacks private constructor(
+internal class ScopedListeners<State> private constructor(
     private val rootKey: Any
 ) {
     constructor(formula: IFormula<*, *>) : this(formula::class)
 
-    private var callbacks: SingleRequestMap<Any, Callbacks>? = null
+    private var listeners: SingleRequestMap<Any, Listeners<State>>? = null
 
-    private var lastCallbacks: Callbacks? = null
+    private var lastListeners: Listeners<State>? = null
     private var lastKey: Any? = null
     private var currentKey: Any = rootKey
-    private var current: Callbacks? = null
+    private var current: Listeners<State>? = null
 
     internal var enabled: Boolean = false
 
-    fun initOrFindCallback(key: Any): UnitCallback {
+    fun <Event> initOrFindListener(key: Any): ListenerImpl<State, Event> {
         ensureNotRunning()
-        return currentCallbacks().initOrFindCallbackT(key)
-    }
-
-    fun <UIEvent> initOrFindEventCallback(key: Any): Callback<UIEvent> {
-        ensureNotRunning()
-        return currentCallbacks().initOrFindCallbackT<UIEvent>(key)
+        return currentCallbacks().initOrFindCallback<Event>(key)
     }
 
     fun enterScope(key: Any) {
@@ -34,7 +29,7 @@ internal class ScopedCallbacks private constructor(
         }
 
         lastKey = currentKey
-        lastCallbacks = current
+        lastListeners = current
         currentKey = JoinedKey(lastKey, key)
         current = null
     }
@@ -47,10 +42,10 @@ internal class ScopedCallbacks private constructor(
         }
 
         currentKey = lastKey ?: rootKey
-        current = lastCallbacks
+        current = lastListeners
 
         lastKey = null
-        lastCallbacks = null
+        lastListeners = null
     }
 
     fun evaluationStarted() {
@@ -60,7 +55,7 @@ internal class ScopedCallbacks private constructor(
     fun evaluationFinished() {
         enabled = false
 
-        val iterator = callbacks?.iterator()
+        val iterator = listeners?.iterator()
         if (iterator != null) {
             while (iterator.hasNext()) {
                 val entry = iterator.next()
@@ -68,8 +63,8 @@ internal class ScopedCallbacks private constructor(
                     entry.value.value.disableAll()
                     iterator.remove()
                 } else {
-                    val callbacks = entry.value.value
-                    callbacks.evaluationFinished()
+                    val listeners = entry.value.value
+                    listeners.evaluationFinished()
                     entry.value.requested = false
                 }
             }
@@ -79,20 +74,20 @@ internal class ScopedCallbacks private constructor(
     }
 
     fun disableAll() {
-        callbacks?.forEachValue {
+        listeners?.forEachValue {
             it.disableAll()
         }
-        callbacks?.clear()
+        listeners?.clear()
     }
 
-    private fun currentCallbacks(): Callbacks {
-        val callbacks = callbacks ?: run {
-            val initialized: SingleRequestMap<Any, Callbacks> = mutableMapOf()
-            this.callbacks = initialized
+    private fun currentCallbacks(): Listeners<State> {
+        val listeners = listeners ?: run {
+            val initialized: SingleRequestMap<Any, Listeners<State>> = mutableMapOf()
+            this.listeners = initialized
             initialized
         }
-        return current ?: callbacks
-            .findOrInit(currentKey) { Callbacks() }
+        return current ?: listeners
+            .findOrInit(currentKey) { Listeners() }
             .requestAccess { "Duplicate key: $currentKey" }
             .apply {
                 current = this
@@ -101,7 +96,7 @@ internal class ScopedCallbacks private constructor(
 
     private fun ensureNotRunning() {
         if (!enabled) {
-            throw java.lang.IllegalStateException("Cannot call this callback after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
+            throw java.lang.IllegalStateException("Cannot call this after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }
 }

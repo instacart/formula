@@ -7,12 +7,12 @@ import kotlin.reflect.KClass
  * an [output][Output]. Each formula can manage its own [internal state][Formula.initialState]
  * or be [stateless][StatelessFormula].
  *
- * @param Input A data class provided by the parent that contains data and callbacks. Input change
+ * @param Input A data class provided by the parent that contains data and event listeners. Input change
  * will trigger [Formula.onInputChanged] and [Formula.evaluate] to be called and new [Output] will
  * be created. Use [Unit] type when there is no input.
  *
- * @param Output A data class returned by this formula that contains data and callbacks. When it is
- * used to render UI, we call it a render model (Ex: ItemRenderModel).
+ * @param Output A data class returned by this formula that contains data and event listeners. When
+ * it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
 interface IFormula<in Input, out Output> {
     /**

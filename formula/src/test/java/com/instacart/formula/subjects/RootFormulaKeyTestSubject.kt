@@ -4,6 +4,8 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
+import com.instacart.formula.invoke
 import com.instacart.formula.test.TestableRuntime
 
 class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
@@ -12,7 +14,7 @@ class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
     private val subject = runtime.test(MyFormula, input)
 
     fun increment() = apply {
-        subject.output { increment() }
+        subject.output { this.increment() }
     }
 
     fun assertValue(value: Int) = apply {
@@ -29,7 +31,7 @@ class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
 
     data class Output(
         val value: Int,
-        val increment: () -> Unit
+        val increment: Listener<Unit>,
     )
 
     object MyFormula : Formula<Int, Int, Output> {

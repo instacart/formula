@@ -16,7 +16,6 @@ import com.instacart.formula.subjects.DelegateFormula
 import com.instacart.formula.subjects.DynamicParentFormula
 import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EffectOrderFormula
-import com.instacart.formula.subjects.EmptyFormula
 import com.instacart.formula.subjects.EventCallbackFormula
 import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
@@ -312,7 +311,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `multiple callbacks using the same render model`() {
+    fun `multiple listeners using the same render model`() {
         runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = {}))
             .output {
                 incrementAndMessage()
@@ -325,7 +324,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `multiple event callbacks using the same render model`() {
+    fun `multiple event listeners using the same render model`() {
         runtime.test(EventCallbackFormula(), Unit)
             .output {
                 changeState("one")
@@ -336,7 +335,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `using a removed child callback should do nothing`() {
+    fun `using a removed child listener should do nothing`() {
         val formula = OptionalChildFormula(MessageFormula()) {
             MessageFormula.Input(messageHandler = onEvent<Int> { none() })
         }
@@ -353,7 +352,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `callbacks are equal across render model changes`() {
+    fun `listeners are equal across render model changes`() {
         runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = {}))
             .output { incrementAndMessage() }
             .output { incrementAndMessage() }
@@ -364,7 +363,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `event callbacks are equal across render model changes`() {
+    fun `event listeners are equal across render model changes`() {
         runtime.test(EventCallbackFormula(), Unit)
             .output {
                 changeState("one")
@@ -377,12 +376,12 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `removed callback is disabled`() {
+    fun `removed listener is disabled`() {
         runtime.test(OptionalCallbackFormula(), Unit)
             .output {
-                callback?.invoke()
+                listener?.invoke()
                 toggleCallback()
-                callback?.invoke()
+                listener?.invoke()
             }
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
@@ -390,24 +389,24 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `callbacks are not the same after removing then adding it again`() {
+    fun `listeners are not the same after removing then adding it again`() {
         runtime.test(OptionalCallbackFormula(), Unit)
             .output {
                 toggleCallback()
                 toggleCallback()
             }
             .apply {
-                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+                assertThat(values().map { it.listener }.toSet()).hasSize(3)
             }
     }
 
     @Test
-    fun `removed event callback is disabled`() {
+    fun `removed event listener is disabled`() {
         runtime.test(OptionalEventCallbackFormula(), Unit)
             .output {
-                callback?.invoke(1)
-                toggleCallback()
-                callback?.invoke(5)
+                listener?.invoke(1)
+                toggleListener()
+                listener?.invoke(5)
             }
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
@@ -415,25 +414,25 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `event callbacks are not the same after removing then adding it again`() {
+    fun `event listeners are not the same after removing then adding it again`() {
         runtime.test(OptionalEventCallbackFormula(), Unit)
             .output {
-                toggleCallback()
-                toggleCallback()
+                toggleListener()
+                toggleListener()
             }
             .apply {
-                assertThat(values().map { it.callback }.toSet()).hasSize(3)
+                assertThat(values().map { it.listener }.toSet()).hasSize(3)
             }
     }
 
     @Test
-    fun `using callbacks within another function crashes`() {
+    fun `using listeners within another function crashes`() {
         val result = Try { UsingCallbacksWithinAnotherFunction.test(runtime) }
         assertThat(result.errorOrNull()?.cause).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
-    fun `using key to scope callbacks within another function`() {
+    fun `using key to scope listeners within another function`() {
         val formula = UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
         runtime.test(formula, Unit)
             .assertOutputCount(1)
@@ -605,7 +604,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    @Test fun `stream event callback is scoped to latest state`() {
+    @Test fun `stream event listener is scoped to latest state`() {
         val events = listOf("a", "b")
         val formula = EventFormula(runtime, events)
 
@@ -623,7 +622,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
     }
 
-    @Test fun `stream event callbacks can handle at least 100k events`() {
+    @Test fun `stream event listeners can handle at least 100k events`() {
         val eventCount = 100000
         val events = (1..eventCount).toList()
         val formula = EventFormula(runtime, events)
@@ -957,7 +956,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `mixing callback use with key use`() {
+    fun `mixing listener use with key use`() {
         val formula = MixingCallbackUseWithKeyUse.ParentFormula()
         runtime.test(formula, Unit).assertOutputCount(1)
     }

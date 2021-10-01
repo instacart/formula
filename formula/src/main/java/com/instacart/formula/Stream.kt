@@ -65,7 +65,7 @@ interface Stream<Message> {
     /**
      * This method is called when Stream is first declared within [Formula].
      *
-     * @param send Use this callback to pass messages back to [Formula].
+     * @param send Use this listener to pass messages back to [Formula].
      *             Note: you need to call this on the main thread.
      */
     fun start(send: (Message) -> Unit): Cancelable?

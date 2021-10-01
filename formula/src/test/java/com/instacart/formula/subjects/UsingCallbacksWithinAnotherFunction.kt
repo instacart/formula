@@ -2,6 +2,7 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestableRuntime
 
@@ -10,8 +11,8 @@ object UsingCallbacksWithinAnotherFunction {
     fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
 
     class TestOutput(
-        val first: () -> Unit,
-        val second: () -> Unit
+        val first: Listener<Unit>,
+        val second: Listener<Unit>,
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
@@ -24,7 +25,7 @@ object UsingCallbacksWithinAnotherFunction {
             )
         }
 
-        private fun createDefaultCallback(context: FormulaContext<Unit>): () -> Unit {
+        private fun createDefaultCallback(context: FormulaContext<Unit>): Listener<Unit> {
             return context.onEvent {
                 none()
             }

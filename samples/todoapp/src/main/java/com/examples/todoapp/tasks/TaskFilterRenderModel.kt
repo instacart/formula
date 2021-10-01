@@ -1,3 +1,8 @@
 package com.examples.todoapp.tasks
 
-data class TaskFilterRenderModel(val title: String, val onSelected: () -> Unit)
+import com.instacart.formula.Listener
+
+data class TaskFilterRenderModel(
+    val title: String,
+    val onSelected: Listener<Unit>,
+)

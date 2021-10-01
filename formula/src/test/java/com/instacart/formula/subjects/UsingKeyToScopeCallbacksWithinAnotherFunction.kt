@@ -2,12 +2,13 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Listener
 import com.instacart.formula.StatelessFormula
 
 object UsingKeyToScopeCallbacksWithinAnotherFunction {
 
     class ChildOutput(
-        val callback: () -> Unit
+        val callback: Listener<Unit>,
     )
 
     class TestOutput(

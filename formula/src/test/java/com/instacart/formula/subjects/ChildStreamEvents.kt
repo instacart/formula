@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.invoke
 import com.instacart.formula.test.TestableRuntime
 
 class ChildStreamEvents(runtime: TestableRuntime) {

@@ -10,23 +10,22 @@ Caused by: java.lang.IllegalStateException: Only thread that created it can trig
 After each transition, formula is re-evaluated and new event listeners are created. If you use an old listener
 you will see the following exception.
 ```
-Caused by: java.lang.IllegalStateException: Transition already happened. This is using old transition callback: $it.
+Caused by: java.lang.IllegalStateException: Transition already happened. This is using old event listener: $it.
 ```
 
-### Callback is already defined.
+### Listener is already defined.
 TODO..
 
 ### After evaluation finished
-If a `callback` or `eventCallback` is called after the Formula evaluation is finished, you will see
-this exception.
+If a `onEvent` is called after the Formula evaluation is finished, you will see this exception.
 ```
 Caused by: java.lang.IllegalStateException: Cannot call this after evaluation finished.
 ```
-This can happen for a number of reasons. Likely, you are creating a `callback` or `eventCallback`
-within the `onEvent` or `events` method of your `updates` lambda for the given Formula. This can
-cause your callbacks to be scoped to a stale state instance. Instead, you should create your callbacks
-within the `evaluate` function itself, passing the data you might be using from the `onEvent` into
-the `State` defined for that Formula. For example, instead of:
+This means that you called `onEvent` after `Formula.evalute` already returned `Evaluation`
+object. This can happen when you are calling `onEvent` within `transition` block. This is not 
+allowed because your listener would be scoped to a stale state instance. Instead, you should 
+create your listeners within the `evaluate` function itself, passing the data you might be 
+using from the `onEvent` into the `State` defined for that Formula. For example, instead of:
 ```
 class TaskDetailFormula @Inject constructor(
     private val repo: TasksRepo,
@@ -87,7 +86,7 @@ class TaskDetailFormula @Inject constructor(
         state: State,
         context: FormulaContext<State>
     ): Evaluation<TaskDetailRenderModel?> {
-        // Note that this is correct because the render model and therefore callback is constructed
+        // Note that this is correct because the render model and therefore listener is constructed
         // within `evaluate` instead of within `onEvent`
         val renderModel = state.task?.let {
             TaskDetailRenderModel(
@@ -109,4 +108,4 @@ class TaskDetailFormula @Inject constructor(
 }
 ```
 Notice that the render model is no longer stored in the state, but instead constructed on each
-call to `evaluate` so that the callbacks are never stale.
+call to `evaluate` so that the listeners are never stale.

@@ -3,12 +3,12 @@ package com.instacart.formula
 /**
  * Version of [IFormula] which has no internal state.
  *
- * @param Input A data class provided by the parent that contains data and callbacks. Input change
- * will trigger [Formula.evaluate] to be called and new [Output] will be created.
+ * @param Input A data class provided by the parent that contains data and event listeners. Input
+ * change will trigger [Formula.evaluate] to be called and new [Output] will be created.
  * Use [Unit] type when there is no input.
  *
- * @param Output A data class returned by this formula that contains data and callbacks. When it is
- * used to render UI, we call it a render model (Ex: ItemRenderModel).
+ * @param Output A data class returned by this formula that contains data and event
+ * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
 abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
 
@@ -28,14 +28,14 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
     /**
      * The primary purpose of evaluate is to create an [output][Evaluation.output]. Within
      * this method, we can also [compose][FormulaContext.child] child formulas, handle
-     * callbacks [FormulaContext.onEvent], and [respond][FormulaContext.updates] to
+     * events [FormulaContext.onEvent], and [respond][FormulaContext.updates] to
      * arbitrary asynchronous events.
      *
      * Evaluate will be called whenever [input][Input] or child output changes.
      *
      * ### Warning
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
-     * All side-effects should happen as part of event callbacks or [updates][Evaluation.updates].
+     * All side-effects should happen as part of event listeners or [updates][Evaluation.updates].
      */
      abstract fun evaluate(
         input: Input,
