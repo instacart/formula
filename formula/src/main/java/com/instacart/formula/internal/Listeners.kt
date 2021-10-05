@@ -6,10 +6,10 @@ internal class Listeners<State> {
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
             // This indicates manual key creation.
-            return "Callback $key is already defined. Make sure your key is unique."
+            return "Listener $key is already defined. Make sure your key is unique."
         }
         // This indicates automatic key generation
-        return "Callback $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
+        return "Listener $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
     fun <Event> initOrFindCallback(key: Any): ListenerImpl<State, Event> {

@@ -25,5 +25,5 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     }
 }
 
-fun <Message> Stream<Message>.test() = TestStreamObserver(this)
+fun <Event> Stream<Event>.test() = TestStreamObserver(this)
 

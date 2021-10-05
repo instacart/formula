@@ -1,17 +1,17 @@
 package com.instacart.formula
 
-class BoundStream<Message>(
+class BoundStream<Event>(
     val key: Any,
-    val stream: Stream<Message>,
-    initial: (Message) -> Unit
+    val stream: Stream<Event>,
+    initial: (Event) -> Unit
 ) {
 
-    internal var handler: (Message) -> Unit = initial
+    internal var listener: (Event) -> Unit = initial
     internal var cancelable: Cancelable? = null
 
     internal fun start() {
         cancelable = stream.start() { message ->
-            handler.invoke(message)
+            listener.invoke(message)
         }
     }
 

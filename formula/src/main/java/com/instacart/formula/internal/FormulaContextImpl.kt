@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.BoundStream
+import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
 
 class FormulaContextImpl<State> internal constructor(
@@ -20,9 +21,9 @@ class FormulaContextImpl<State> internal constructor(
         ): ChildOutput
     }
 
-    override fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>> {
+    override fun updates(init: StreamBuilder<State>.() -> Unit): List<BoundStream<*>> {
         ensureNotRunning()
-        val builder = UpdateBuilder(this)
+        val builder = StreamBuilder(this)
         builder.init()
         return builder.updates
     }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.onEach
 /**
  * Formula [Stream] adapter to enable coroutine's Flow use.
  */
-interface FlowStream<Message> : Stream<Message> {
+interface FlowStream<Event> : Stream<Event> {
 
     companion object {
         /**
@@ -23,15 +23,15 @@ interface FlowStream<Message> : Stream<Message> {
          * }
          * ```
          */
-        inline fun <Message> fromFlow(
+        inline fun <Event> fromFlow(
             scope: CoroutineScope = MainScope(),
-            crossinline create: () -> Flow<Message>
-        ): Stream<Message> {
-            return object : FlowStream<Message> {
+            crossinline create: () -> Flow<Event>
+        ): Stream<Event> {
+            return object : FlowStream<Event> {
 
                 override val scope: CoroutineScope = scope
 
-                override fun flow(): Flow<Message> {
+                override fun flow(): Flow<Event> {
                     return create()
                 }
 
@@ -50,15 +50,15 @@ interface FlowStream<Message> : Stream<Message> {
          *
          * @param key Used to distinguish this [Stream] from other streams.
          */
-        inline fun <Message> fromFlow(
+        inline fun <Event> fromFlow(
             scope: CoroutineScope = MainScope(),
             key: Any?,
-            crossinline create: () -> Flow<Message>
-        ): Stream<Message> {
-            return object : FlowStream<Message> {
+            crossinline create: () -> Flow<Event>
+        ): Stream<Event> {
+            return object : FlowStream<Event> {
                 override val scope: CoroutineScope = scope
 
-                override fun flow(): Flow<Message> {
+                override fun flow(): Flow<Event> {
                     return create()
                 }
 
@@ -67,11 +67,11 @@ interface FlowStream<Message> : Stream<Message> {
         }
     }
 
-    fun flow(): Flow<Message>
+    fun flow(): Flow<Event>
 
     val scope: CoroutineScope
 
-    override fun start(send: (Message) -> Unit): Cancelable? {
+    override fun start(send: (Event) -> Unit): Cancelable? {
         val job = flow()
             .onEach { send(it) }
             .launchIn(scope)

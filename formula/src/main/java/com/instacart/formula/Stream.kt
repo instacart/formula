@@ -14,13 +14,13 @@ package com.instacart.formula
  * )
  * ```
  *
- * @param Message A type of messages that the stream produces.
+ * @param Event A type of event that the stream produces.
  */
-interface Stream<Message> {
+interface Stream<Event> {
     companion object {
 
         /**
-         * Emits a message when [Stream] is initialized. Use this stream to send effects when [Formula]
+         * Emits an event when [Stream] is initialized. Use this stream to send effects when [Formula]
          * is initialized.
          * ```
          * events(Stream.onInit()) {
@@ -29,11 +29,11 @@ interface Stream<Message> {
          */
         fun onInit(): Stream<Unit> {
             @Suppress("UNCHECKED_CAST")
-            return StartMessageStream(Unit)
+            return StartEventStream(Unit)
         }
 
         /**
-         * Emits a message with [data] when [Stream] is initialized. Uses [data] as key.
+         * Emits a [data] event when [Stream] is initialized. Uses [data] as key.
          *
          * Use this stream to send a effects with latest [Data] value.
          * ```
@@ -43,11 +43,11 @@ interface Stream<Message> {
          * ```
          */
         fun <Data> onData(data: Data): Stream<Data> {
-            return StartMessageStream(data)
+            return StartEventStream(data)
         }
 
         /**
-         * Emits a message when [Formula] is terminated.
+         * Emits an event when [Formula] is terminated.
          * ```
          * events(Stream.onTerminate()) {
          *   transition { analytics.trackCloseEvent() }
@@ -58,17 +58,17 @@ interface Stream<Message> {
          * use to notify other services/analytics of [Formula] termination.
          */
         fun onTerminate(): Stream<Unit> {
-            return TerminateMessageStream
+            return TerminateEventStream
         }
     }
 
     /**
      * This method is called when Stream is first declared within [Formula].
      *
-     * @param send Use this listener to pass messages back to [Formula].
+     * @param send Use this listener to send events back to [Formula].
      *             Note: you need to call this on the main thread.
      */
-    fun start(send: (Message) -> Unit): Cancelable?
+    fun start(send: (Event) -> Unit): Cancelable?
 
     /**
      * Used to distinguish between different types of Streams.
@@ -77,9 +77,9 @@ interface Stream<Message> {
 }
 
 /**
- * Emits a message as soon as [Stream] is initialized.
+ * Emits an event as soon as [Stream] is initialized.
  */
-internal class StartMessageStream<Data>(
+internal class StartEventStream<Data>(
     private val data: Data
 ) : Stream<Data> {
 
@@ -92,9 +92,9 @@ internal class StartMessageStream<Data>(
 }
 
 /**
- * Emits a message when [Formula] is terminated.
+ * Emits an event when [Formula] is terminated.
  */
-internal object TerminateMessageStream : Stream<Unit> {
+internal object TerminateEventStream : Stream<Unit> {
     override fun start(send: (Unit) -> Unit): Cancelable {
         return Cancelable {
             send(Unit)
