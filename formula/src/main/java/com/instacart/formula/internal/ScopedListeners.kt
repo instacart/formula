@@ -19,7 +19,7 @@ internal class ScopedListeners<State> private constructor(
 
     fun <Event> initOrFindListener(key: Any): ListenerImpl<State, Event> {
         ensureNotRunning()
-        return currentCallbacks().initOrFindCallback<Event>(key)
+        return currentCallbacks().initOrFindCallback(key)
     }
 
     fun enterScope(key: Any) {
