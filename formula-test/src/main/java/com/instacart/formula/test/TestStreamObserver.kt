@@ -4,13 +4,13 @@ import com.instacart.formula.Cancelable
 import com.instacart.formula.Stream
 import java.lang.AssertionError
 
-class TestStreamObserver<Message>(private val stream: Stream<Message>) {
-    private val values = mutableListOf<Message>()
+class TestStreamObserver<Event>(private val stream: Stream<Event>) {
+    private val values = mutableListOf<Event>()
     private val cancelation = stream.start { values.add(it) }
 
-    fun values(): List<Message> = values
+    fun values(): List<Event> = values
 
-    fun assertValues(vararg expected: Message) {
+    fun assertValues(vararg expected: Event) {
         if (expected.size != values.size) {
             throw AssertionError("Value count differs; expected: ${expected.size}, was: ${values.size}")
         }

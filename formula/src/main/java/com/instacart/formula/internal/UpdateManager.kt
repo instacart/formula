@@ -21,9 +21,9 @@ internal class UpdateManager {
         running?.forEach { existing ->
             val update = new.firstOrNull { it == existing }
             if (update != null) {
-                existing.handler = update.handler as (Any?) -> Unit
+                existing.listener = update.listener as (Any?) -> Unit
             } else {
-                existing.handler = NO_OP
+                existing.listener = NO_OP
             }
         }
     }
@@ -82,7 +82,7 @@ internal class UpdateManager {
 
     private fun tearDownStream(stream: BoundStream<*>) {
         stream.tearDown()
-        stream.handler = NO_OP
+        stream.listener = NO_OP
     }
 
     private fun getOrInitRunningStreamList(): LinkedHashSet<BoundStream<*>> {
