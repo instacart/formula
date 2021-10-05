@@ -30,8 +30,8 @@ override fun evaluate(input: Input, state: State, context: FormulaContext): ... 
 
 Formula uses a `Stream` interface to define an asynchronous event producers/sources.
 ```kotlin
-interface Stream<Message> {
-  fun start(send: (Message) -> Unit): Cancelable?
+interface Stream<Event> {
+  fun start(send: (Event) -> Unit): Cancelable?
 }
 ```
 
@@ -102,8 +102,8 @@ of emitting them through onError.
 ### Extending Stream Interface
 If you need to use a different mechanism for asynchronous events, you can extend `Stream` interface.
 ```kotlin
-interface Stream<Message> {
-  fun start(send: (Message) -> Unit): Cancelable?
+interface Stream<Event> {
+  fun start(send: (Event) -> Unit): Cancelable?
 }
 ```
 

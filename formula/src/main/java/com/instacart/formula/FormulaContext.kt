@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedListeners
 import com.instacart.formula.internal.TransitionDispatcher
 import com.instacart.formula.internal.UnitListener
@@ -110,7 +109,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: UpdateBuilder<State>.() -> Unit): List<BoundStream<*>>
+    abstract fun updates(init: StreamBuilder<State>.() -> Unit): List<BoundStream<*>>
 
     /**
      * Scopes [create] block with a [key].
@@ -124,80 +123,4 @@ abstract class FormulaContext<State> internal constructor(
         return value
     }
 
-    /**
-     * Provides methods to declare various events and effects.
-     */
-    class UpdateBuilder<State> internal constructor(
-        private val formulaContext: FormulaContext<State>,
-    ) {
-        internal val updates = mutableListOf<BoundStream<*>>()
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param transition A function that is invoked when [Stream] sends us a [Message].
-         */
-        fun <Message> events(
-            stream: Stream<Message>,
-            transition: Transition.Factory.(Message) -> Transition<State>,
-        ) {
-            add(createConnection(stream, transition))
-        }
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param transition A function that is invoked when [Stream] sends us a [Message].
-         */
-        fun <Message> onEvent(
-            stream: Stream<Message>,
-            avoidParameterClash: Any = this,
-            transition: Transition.Factory.(Message) -> Transition<State>,
-        ) {
-            add(createConnection(stream, transition))
-        }
-
-        /**
-         * Adds a [Stream] as part of this [Evaluation]. [Stream] will be subscribed when it is initially added
-         * and unsubscribed when it is not returned as part of [Evaluation].
-         *
-         * @param transition A function that is invoked when [Stream] sends us a [Message].
-         *
-         * Example:
-         * ```
-         * Stream.onInit().onEvent {
-         *   transition { /* */ }
-         * }
-         * ```
-         */
-        fun <Message> Stream<Message>.onEvent(
-            transition: Transition.Factory.(Message) -> Transition<State>,
-        ) {
-            val stream = this
-            this@UpdateBuilder.events(stream, transition)
-        }
-
-        @PublishedApi internal fun add(connection: BoundStream<*>) {
-            if (updates.contains(connection)) {
-                throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
-            }
-
-            updates.add(connection)
-        }
-
-        @PublishedApi internal fun <Message> createConnection(
-            stream: Stream<Message>,
-            transition: Transition.Factory.(Message) -> Transition<State>,
-        ): BoundStream<Message> {
-            val key = JoinedKey(stream.key(), transition::class)
-            val listener = formulaContext.onEvent(key, transition)
-            return BoundStream(
-                key = key,
-                stream = stream,
-                initial = listener
-            )
-        }
-    }
 }
