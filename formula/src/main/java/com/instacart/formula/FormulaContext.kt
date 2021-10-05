@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.JoinedKey
 import com.instacart.formula.internal.ScopedListeners
 import com.instacart.formula.internal.TransitionDispatcher
 import com.instacart.formula.internal.UnitListener
@@ -46,8 +47,8 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun callback(transition: Transition.Factory.(Unit) -> Transition<State>): () -> Unit {
-        val event = onEvent(transition)
-        return UnitListener(event)
+        val listener = onEvent(transition)
+        return UnitListener(listener)
     }
 
     /**
@@ -59,8 +60,9 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: Transition.Factory.(Unit) -> Transition<State>
     ): () -> Unit {
-        val event = onEvent(key, transition)
-        return UnitListener(event)
+        val joinedKey = JoinedKey(key, transition::class)
+        val listener = onEvent(joinedKey, transition)
+        return UnitListener(listener)
     }
 
     /**
@@ -83,7 +85,8 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: Transition.Factory.(Event) -> Transition<State>,
     ): Listener<Event> {
-        return onEvent(key, transition)
+        val joinedKey = JoinedKey(key, transition::class)
+        return onEvent(joinedKey, transition)
     }
 
     /**
