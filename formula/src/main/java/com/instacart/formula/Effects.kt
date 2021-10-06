@@ -8,4 +8,6 @@ package com.instacart.formula
  * allows us to ensure that [Formula] is always in the correct state in case effects
  * trigger a new event.
  */
-typealias Effects = () -> Unit
+fun interface Effects {
+    fun execute()
+}

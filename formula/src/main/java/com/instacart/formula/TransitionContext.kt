@@ -18,22 +18,22 @@ interface TransitionContext<out State> {
     }
 
     /**
-     * Returns a result that contains a new [State] object and optional [effects][invokeEffects]
+     * Returns a result that contains a new [State] object and optional [effects][Effects]
      * that will be executed after the state is updated.
      */
     fun <State> transition(
         state: State,
-        invokeEffects: (() -> Unit)? = null
+        effects: Effects? = null
     ): Transition.Result.Stateful<State> {
-        return Transition.Result.Stateful(state, invokeEffects)
+        return Transition.Result.Stateful(state, effects)
     }
 
     /**
-     * Returns a result that requests [effects][invokeEffects] to be executed.
+     * Returns a result that requests [effects][Effects] to be executed.
      */
     fun transition(
-        invokeEffects: () -> Unit
+        effects: Effects
     ): Transition.Result.OnlyEffects {
-        return Transition.Result.OnlyEffects(invokeEffects)
+        return Transition.Result.OnlyEffects(effects)
     }
 }
