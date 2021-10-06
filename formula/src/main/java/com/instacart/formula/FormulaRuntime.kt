@@ -41,10 +41,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         this.key = formula.key(input)
 
         if (initialization) {
-            val transitionListener = TransitionListener { transition, isValid ->
+            val transitionListener = TransitionListener { result, isValid ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
 
-                transition.effects?.let {
+                result.effects?.let {
                     effectQueue.addLast(it)
                 }
 

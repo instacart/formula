@@ -7,27 +7,17 @@ import org.junit.Test
 class TransitionUtilsTest {
 
     @Test fun `none transition is empty`() {
-        val none = Transition.Factory.none()
+        val none = Transition.Result.None
         assertThat(TransitionUtils.isEmpty(none)).isTrue()
     }
 
     @Test fun `state change is not empty`() {
-        val transition = Transition.Stateful(state = "")
+        val transition = Transition.Result.Stateful(state = "")
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }
 
     @Test fun `transition with messages is not empty`() {
-        val transition = Transition.OnlyEffects(effects = {})
+        val transition = Transition.Result.OnlyEffects(effects = {})
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
-    }
-
-    @Test fun `simple transition create`() {
-        val transition = Transition.create {
-            transition("new state")
-        }
-
-        transition as Transition.Stateful<String>
-
-        assertThat(transition.state).isEqualTo("new state")
     }
 }
