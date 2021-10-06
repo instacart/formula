@@ -13,7 +13,7 @@ fun interface Transition<State, in Event> {
      */
     sealed class Result<out State> {
         /**
-         * Stateful transition.
+         * Transition result requesting a state change and option [effects] to be executed.
          *
          * @param state New state
          * @param effects Optional effects such as calling listeners, logging, db writes,
@@ -22,7 +22,7 @@ fun interface Transition<State, in Event> {
         data class Stateful<State>(val state: State, override val effects: Effects? = null) : Result<State>()
 
         /**
-         * Only effects are emitted as part of this transition
+         * Transition result requesting [effects] to be executed.
          *
          * @param effects Effects such as calling listeners, logging, db writes, network requests, etc.
          */
