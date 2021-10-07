@@ -73,7 +73,7 @@ various events by transitioning to a new state.
 ```kotlin
 class CounterFormula : Formula<Unit, CounterState, CounterRenderModel> {
 
-  override fun initialState(input: Unit): Int = CounterState(count = 0)
+  override fun initialState(input: Unit): CounterState = CounterState(count = 0)
 
   override fun evaluate(
     input: Unit,
@@ -96,7 +96,7 @@ class CounterFormula : Formula<Unit, CounterState, CounterRenderModel> {
 }
 ```
 
-The most import part is the `Formula.evaluate` function. It gives us the current `State` and expects an
+The most important part is the `Formula.evaluate` function. It gives us the current `State` and expects an
 `Evaluation<RenderModel>` back. Any time we transition to a new state, evaluate is called again and new Render Model 
 is created.
 
