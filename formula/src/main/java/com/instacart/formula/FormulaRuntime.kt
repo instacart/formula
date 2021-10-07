@@ -151,7 +151,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
-                effects()
+                effects.execute()
 
                 if (transitionId.hasTransitioned()) {
                     return true
