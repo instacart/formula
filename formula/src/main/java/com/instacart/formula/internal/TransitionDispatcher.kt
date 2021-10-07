@@ -32,7 +32,15 @@ internal class TransitionDispatcher<State>(
         transition: Transition<State, Event>,
         event: Event
     ) {
-        val result = transition.run { toResult(event) }
+        val result = transition.toResult(this, event)
         dispatch(result)
     }
+}
+
+
+internal fun <State, Event> Transition<State, Event>.toResult(
+    context: TransitionContext<State>,
+    event: Event
+): Transition.Result<State> {
+    return context.run { toResult(event) }
 }
