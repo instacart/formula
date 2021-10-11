@@ -24,7 +24,7 @@ abstract class FormulaContext<State> internal constructor(
         transition: Transition<State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = transition::class,
+            key = transition.type(),
             transition = transition
         )
     }
@@ -39,7 +39,7 @@ abstract class FormulaContext<State> internal constructor(
         transition: Transition<State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = JoinedKey(key, transition::class),
+            key = JoinedKey(key, transition.type()),
             transition = transition
         )
     }
