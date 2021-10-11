@@ -63,4 +63,11 @@ fun interface Transition<State, in Event> {
      * as part of this event.
      */
     fun TransitionContext<State>.toResult(event: Event): Result<State>
+
+    /**
+     * Transition type is used as part of the key to distinguish different transitions.
+     */
+    fun type(): Any {
+        return this::class
+    }
 }

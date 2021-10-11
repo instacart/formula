@@ -72,8 +72,8 @@ class StreamBuilder<State> internal constructor(
         stream: Stream<Event>,
         transition: Transition<State, Event>,
     ): BoundStream<Event> {
-        val key = JoinedKey(stream.key(), transition::class)
-        val listener = formulaContext.onEvent(key, transition)
+        val key = JoinedKey(stream.key(), transition.type())
+        val listener = formulaContext.eventListener(key, transition)
         return BoundStream(
             key = key,
             stream = stream,
