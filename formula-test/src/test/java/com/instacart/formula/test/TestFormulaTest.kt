@@ -37,7 +37,7 @@ class TestFormulaTest {
 
     class ParentFormula(
         private val childFormula: ChildFormula
-    ) : Formula<Unit, ParentFormula.State, ParentFormula.Output> {
+    ) : Formula<Unit, ParentFormula.State, ParentFormula.Output>() {
 
         data class State(val name: String)
 

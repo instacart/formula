@@ -34,7 +34,7 @@ class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
         val increment: Listener<Unit>,
     )
 
-    object MyFormula : Formula<Int, Int, Output> {
+    object MyFormula : Formula<Int, Int, Output>() {
         override fun initialState(input: Int): Int = 0
 
         // We reset formula whenever key changes.

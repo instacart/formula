@@ -9,7 +9,7 @@ import com.instacart.formula.test.TestableRuntime
 class EventFormula<EventT>(
     runtime: TestableRuntime,
     private val events: List<EventT>,
-) : Formula<Unit, Int, Int> {
+) : Formula<Unit, Int, Int>() {
 
     data class Event<EventT>(
         val state: Int,

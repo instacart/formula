@@ -4,7 +4,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 
-class UseInputFormula<Type> : Formula<Type, Type, Type> {
+class UseInputFormula<Type> : Formula<Type, Type, Type>() {
     override fun initialState(input: Type): Type = input
 
     override fun onInputChanged(oldInput: Type, input: Type, state: Type): Type {

@@ -14,7 +14,7 @@ import com.instacart.formula.subjects.NestedTerminationWithInputChanged.Output
  * 4. Because Frame object wasn't updated to have the new state, a new evaluation is triggered
  * 5. Parent tries to declare a callback in a bad state.e
  */
-class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output> {
+class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
     object Output
 
     val terminateFormula = TerminateFormula()

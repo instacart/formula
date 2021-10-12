@@ -22,7 +22,7 @@ object ChildMessageTriggersEventTransitionInParent {
         }
     }
 
-    class TestFormula : Formula<Unit, Int, TestFormula.RenderModel> {
+    class TestFormula : Formula<Unit, Int, TestFormula.RenderModel>() {
         private val service = Service()
         private val childFormula = SideEffectFormula(service::trigger)
 

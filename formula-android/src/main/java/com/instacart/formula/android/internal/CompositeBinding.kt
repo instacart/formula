@@ -17,12 +17,60 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
     private val scopeFactory: ComponentFactory<ParentComponent, ScopedComponent>,
     private val types: Set<Class<*>>,
     private val bindings: List<Binding<ScopedComponent>>
-) : Binding<ParentComponent>(),
-    Formula<Binding.Input<ParentComponent>, CompositeBinding.State<ScopedComponent>, Unit> {
+) : Binding<ParentComponent>() {
 
     data class State<ScopedComponent>(
         val component: DisposableScope<ScopedComponent>? = null
     )
+
+    private val formula = object : Formula<Input<ParentComponent>, State<ScopedComponent>, Unit>() {
+        override fun key(input: Input<ParentComponent>): Any? = this
+
+        override fun initialState(input: Input<ParentComponent>): State<ScopedComponent> {
+            return State()
+        }
+
+        override fun evaluate(
+            input: Input<ParentComponent>,
+            state: State<ScopedComponent>,
+            context: FormulaContext<State<ScopedComponent>>
+        ): Evaluation<Unit> {
+            val component = state.component
+            if (component != null) {
+                val childInput = Input(
+                    input.environment,
+                    component.component,
+                    input.activeFragments,
+                    input.onInitializeFeature,
+                )
+                bindings.forEachIndices {
+                    it.bind(context, childInput)
+                }
+            }
+            return Evaluation(
+                output = Unit,
+                updates = context.updates {
+                    val isInScope = input.activeFragments.any { binds(it.key) }
+                    events(Stream.onData(isInScope)) {
+                        if (isInScope && component == null) {
+                            transition(State(component = scopeFactory.invoke(input.component)))
+                        } else if (!isInScope && component != null) {
+                            transition(State<ScopedComponent>()) {
+                                component.dispose()
+                            }
+                        } else {
+                            none()
+                        }
+                    }
+
+                    events(Stream.onTerminate()) {
+                        transition { component?.dispose() }
+                    }
+                }
+            )
+        }
+    }
+
 
     override fun types(): Set<Class<*>> = types
 
@@ -34,52 +82,6 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
     }
 
     override fun bind(context: FormulaContext<*>, input: Input<ParentComponent>) {
-        context.child(this, input)
-    }
-
-    override fun key(input: Input<ParentComponent>): Any? = this
-
-    override fun initialState(input: Input<ParentComponent>): State<ScopedComponent> {
-        return State()
-    }
-
-    override fun evaluate(
-        input: Input<ParentComponent>,
-        state: State<ScopedComponent>,
-        context: FormulaContext<State<ScopedComponent>>
-    ): Evaluation<Unit> {
-        val component = state.component
-        if (component != null) {
-            val childInput = Input(
-                input.environment,
-                component.component,
-                input.activeFragments,
-                input.onInitializeFeature,
-            )
-            bindings.forEachIndices {
-                it.bind(context, childInput)
-            }
-        }
-        return Evaluation(
-            output = Unit,
-            updates = context.updates {
-                val isInScope = input.activeFragments.any { binds(it.key) }
-                events(Stream.onData(isInScope)) {
-                    if (isInScope && component == null) {
-                        transition(State(component = scopeFactory.invoke(input.component)))
-                    } else if (!isInScope && component != null) {
-                        transition(State<ScopedComponent>()) {
-                            component.dispose()
-                        }
-                    } else {
-                        none()
-                    }
-                }
-
-                events(Stream.onTerminate()) {
-                    transition { component?.dispose() }
-                }
-            }
-        )
+        context.child(formula, input)
     }
 }

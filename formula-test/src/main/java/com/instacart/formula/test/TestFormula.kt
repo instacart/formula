@@ -11,7 +11,7 @@ import java.lang.IllegalStateException
  * output updates and [inspect/interact][input] with input.
  */
 abstract class TestFormula<Input, Output> :
-    Formula<Input, TestFormula.State<Input, Output>, Output> {
+    Formula<Input, TestFormula.State<Input, Output>, Output>() {
 
     companion object {
         /**

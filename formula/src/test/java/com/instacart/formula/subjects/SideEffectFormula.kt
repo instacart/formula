@@ -7,7 +7,7 @@ import com.instacart.formula.Listener
 
 class SideEffectFormula(
     private val onSideEffect: () -> Unit
-) : Formula<Unit, Int, SideEffectFormula.Output> {
+) : Formula<Unit, Int, SideEffectFormula.Output>() {
 
     class Output(
         val triggerSideEffect: Listener<Unit>

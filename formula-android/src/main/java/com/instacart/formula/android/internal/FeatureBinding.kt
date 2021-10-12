@@ -15,7 +15,41 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
     private val type: Class<Key>,
     private val feature: FeatureFactory<Dependencies, Key>,
     private val toDependencies: (Component) -> Dependencies
-) : Binding<Component>(), Formula<Binding.Input<Component>, Unit, Unit> {
+) : Binding<Component>() {
+
+    private val formula = object : Formula<Input<Component>, Unit, Unit>() {
+        override fun key(input: Input<Component>): Any = type
+
+        override fun initialState(input: Input<Component>) = Unit
+
+        override fun evaluate(
+            input: Input<Component>,
+            state: Unit,
+            context: FormulaContext<Unit>
+        ): Evaluation<Unit> {
+            return Evaluation(
+                output = state,
+                updates = context.updates {
+                    input.activeFragments.forEachIndices { fragmentId ->
+                        val key = fragmentId.key
+                        if (binds(key)) {
+                            Stream.onData(fragmentId).onEvent {
+                                transition {
+                                    try {
+                                        val dependencies = toDependencies(input.component)
+                                        val feature = feature.initialize(dependencies, key as Key)
+                                        input.onInitializeFeature(FeatureEvent.Init(fragmentId, feature))
+                                    } catch (e: Exception) {
+                                        input.onInitializeFeature(FeatureEvent.Failure(fragmentId, e))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
 
     override fun types(): Set<Class<*>> {
         return setOf(type)
@@ -26,38 +60,6 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
     }
 
     override fun bind(context: FormulaContext<*>, input: Input<Component>) {
-        context.child(this, input)
-    }
-
-    override fun key(input: Input<Component>): Any = type
-
-    override fun initialState(input: Input<Component>) = Unit
-
-    override fun evaluate(
-        input: Input<Component>,
-        state: Unit,
-        context: FormulaContext<Unit>
-    ): Evaluation<Unit> {
-        return Evaluation(
-            output = state,
-            updates = context.updates {
-                input.activeFragments.forEachIndices { fragmentId ->
-                    val key = fragmentId.key
-                    if (binds(key)) {
-                        Stream.onData(fragmentId).onEvent {
-                            transition {
-                                try {
-                                    val dependencies = toDependencies(input.component)
-                                    val feature = feature.initialize(dependencies, key as Key)
-                                    input.onInitializeFeature(FeatureEvent.Init(fragmentId, feature))
-                                } catch (e: Exception) {
-                                    input.onInitializeFeature(FeatureEvent.Failure(fragmentId, e))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
+        context.child(formula, input)
     }
 }

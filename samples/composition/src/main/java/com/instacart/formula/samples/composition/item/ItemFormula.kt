@@ -5,7 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import kotlin.math.max
 
-class ItemFormula : Formula<ItemFormula.Input, ItemFormula.State, ItemRenderModel> {
+class ItemFormula : Formula<ItemFormula.Input, ItemFormula.State, ItemRenderModel>() {
     data class Input(
         val itemName: String
     )

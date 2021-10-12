@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Stream
 
 object ExtremelyNestedFormula {
-    class TestFormula(private val childFormula: Formula<Unit, *, Int>?) : Formula<Unit, Int, Int> {
+    class TestFormula(private val childFormula: Formula<Unit, *, Int>?) : Formula<Unit, Int, Int>() {
         override fun initialState(input: Unit): Int = 0
 
         override fun evaluate(

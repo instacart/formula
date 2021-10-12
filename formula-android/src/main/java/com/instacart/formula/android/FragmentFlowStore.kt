@@ -15,7 +15,7 @@ import io.reactivex.rxjava3.core.Observable
  */
 class FragmentFlowStore @PublishedApi internal constructor(
     private val root: Binding<Unit>
-) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState> {
+) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState>() {
     companion object {
         inline fun init(
             crossinline init: FragmentStoreBuilder<Unit>.() -> Unit

@@ -8,7 +8,7 @@ import com.instacart.formula.test.TestableRuntime
 
 class StateTransitionTimingFormula(
     runtime: TestableRuntime
-): Formula<Unit, List<StateTransitionTimingFormula.State>, StateTransitionTimingFormula.Output> {
+): Formula<Unit, List<StateTransitionTimingFormula.State>, StateTransitionTimingFormula.Output>() {
 
     enum class State {
         INTERNAL,
