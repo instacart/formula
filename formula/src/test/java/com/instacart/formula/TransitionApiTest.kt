@@ -10,13 +10,13 @@ class TransitionApiTest {
 
     @Test fun `none transition`() {
         val transition = Transition<Int, Unit> { none() }
-        val result = transition.toResult(FakeTransitionContext(0), Unit)
+        val result = transition.toResult(DelegateTransitionContext(0), Unit)
         Truth.assertThat(result).isEqualTo(Transition.Result.None)
     }
 
     @Test fun `stateful transition`() {
         val transition = Transition<Int, Unit> { transition(state + 1) }
-        val result = transition.toResult(FakeTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
     }
 
@@ -28,7 +28,7 @@ class TransitionApiTest {
             }
         }
 
-        val result = transition.toResult(FakeTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
@@ -43,7 +43,7 @@ class TransitionApiTest {
             }
         }
 
-        val result = transition.toResult(FakeTransitionContext(0), Unit)
+        val result = transition.toResult(DelegateTransitionContext(0), Unit)
         result.assertAndExecuteEffects()
         testListener.assertTimesCalled(1)
     }
@@ -53,7 +53,7 @@ class TransitionApiTest {
         val transition = Transition<Int, Unit> {
             delegate(AddTransition(), 5)
         }
-        val result = transition.toResult(FakeTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(5)
     }
 
@@ -146,6 +146,4 @@ class TransitionApiTest {
             }
         }
     }
-
-    class FakeTransitionContext<State>(override val state: State) : TransitionContext<State>
 }

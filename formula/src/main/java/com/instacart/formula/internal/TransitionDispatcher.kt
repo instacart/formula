@@ -3,7 +3,8 @@ package com.instacart.formula.internal
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
 
-internal class TransitionDispatcher<State>(
+internal class TransitionDispatcher<out Input, State>(
+    val input: Input,
     override val state: State,
     private val handleTransition: (Transition.Result<State>) -> Unit,
     var transitionId: TransitionId

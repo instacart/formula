@@ -16,14 +16,12 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
     private val implementation = object : Formula<Input, Unit, Output>() {
         override fun initialState(input: Input) = Unit
 
-        override fun evaluate(
-            input: Input,
-            state: Unit,
-            context: FormulaContext<Unit>
-        ): Evaluation<Output> {
-            return evaluate(input, context)
+        override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output> {
+            return this@StatelessFormula.run { evaluate() }
         }
     }
+
+    // TODO: maybe can simplify this to extend `Formula`
 
     /**
      * The primary purpose of evaluate is to create an [output][Evaluation.output]. Within
@@ -37,10 +35,7 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
      * All side-effects should happen as part of event listeners or [updates][Evaluation.updates].
      */
-     abstract fun evaluate(
-        input: Input,
-        context: FormulaContext<Unit>
-    ): Evaluation<Output>
+     abstract fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output>
 
     /**
      * A unique identifier used to distinguish formulas of the same type.

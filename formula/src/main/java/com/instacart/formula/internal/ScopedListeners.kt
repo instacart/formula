@@ -3,21 +3,21 @@ package com.instacart.formula.internal
 import com.instacart.formula.IFormula
 
 @PublishedApi
-internal class ScopedListeners<State> private constructor(
+internal class ScopedListeners private constructor(
     private val rootKey: Any
 ) {
     constructor(formula: IFormula<*, *>) : this(formula::class)
 
-    private var listeners: SingleRequestMap<Any, Listeners<State>>? = null
+    private var listeners: SingleRequestMap<Any, Listeners>? = null
 
-    private var lastListeners: Listeners<State>? = null
+    private var lastListeners: Listeners? = null
     private var lastKey: Any? = null
     private var currentKey: Any = rootKey
-    private var current: Listeners<State>? = null
+    private var current: Listeners? = null
 
     internal var enabled: Boolean = false
 
-    fun <Event> initOrFindListener(key: Any): ListenerImpl<State, Event> {
+    fun <Input, State, Event> initOrFindListener(key: Any): ListenerImpl<Input, State, Event> {
         ensureNotRunning()
         return currentCallbacks().initOrFindCallback(key)
     }
@@ -80,9 +80,9 @@ internal class ScopedListeners<State> private constructor(
         listeners?.clear()
     }
 
-    private fun currentCallbacks(): Listeners<State> {
+    private fun currentCallbacks(): Listeners {
         val listeners = listeners ?: run {
-            val initialized: SingleRequestMap<Any, Listeners<State>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, Listeners> = mutableMapOf()
             this.listeners = initialized
             initialized
         }

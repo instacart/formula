@@ -11,8 +11,8 @@ import com.instacart.formula.internal.UnitListener
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<State> internal constructor(
-    @PublishedApi internal val listeners: ScopedListeners<State>,
-    internal val transitionDispatcher: TransitionDispatcher<State>,
+    @PublishedApi internal val listeners: ScopedListeners,
+    internal val transitionDispatcher: TransitionDispatcher<*, State>,
 ) {
 
     /**
@@ -131,7 +131,7 @@ abstract class FormulaContext<State> internal constructor(
         key: Any,
         transition: Transition<State, Event>
     ): Listener<Event> {
-        val listener = listeners.initOrFindListener<Event>(key)
+        val listener = listeners.initOrFindListener<Any?, State, Event>(key)
         listener.transitionDispatcher = transitionDispatcher
         listener.transition = transition
         return listener

@@ -44,11 +44,7 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
      * All side-effects should happen as part of event listeners or [updates][Evaluation.updates].
      */
-    abstract fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<Output>
+    abstract fun Snapshot<Input, State>.evaluate(): Evaluation<Output>
 
     /**
      * A unique identifier used to distinguish formulas of the same type. This can also
