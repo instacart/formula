@@ -3,6 +3,7 @@ package com.instacart.formula.android.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.Stream
 import com.instacart.formula.android.DisposableScope
 
@@ -30,11 +31,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
             return State()
         }
 
-        override fun evaluate(
-            input: Input<ParentComponent>,
-            state: State<ScopedComponent>,
-            context: FormulaContext<State<ScopedComponent>>
-        ): Evaluation<Unit> {
+        override fun Snapshot<Input<ParentComponent>, State<ScopedComponent>>.evaluate(): Evaluation<Unit> {
             val component = state.component
             if (component != null) {
                 val childInput = Input(

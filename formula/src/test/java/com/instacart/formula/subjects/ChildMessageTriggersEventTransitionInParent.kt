@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxStream
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -33,11 +34,7 @@ object ChildMessageTriggersEventTransitionInParent {
 
         override fun initialState(input: Unit): Int = 0
 
-        override fun evaluate(
-            input: Unit,
-            state: Int,
-            context: FormulaContext<Int>
-        ): Evaluation<RenderModel> {
+        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<RenderModel> {
             return Evaluation(
                 output = RenderModel(
                     count = state,
