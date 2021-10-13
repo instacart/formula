@@ -1,16 +1,14 @@
 package com.instacart.formula.stopwatch
 
-import android.util.Log
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
-import com.instacart.formula.Stream
 import com.instacart.formula.coroutines.FlowStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
 
-class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel> {
+class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel>() {
 
     data class State(
         val timePassedInMillis: Long,

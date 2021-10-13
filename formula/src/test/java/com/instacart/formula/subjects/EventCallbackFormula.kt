@@ -4,7 +4,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 
-class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.Output> {
+class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.Output>() {
 
     data class Output(
         val state: String,

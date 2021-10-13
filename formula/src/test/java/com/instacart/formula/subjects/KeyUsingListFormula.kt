@@ -7,7 +7,7 @@ import com.instacart.formula.Listener
 import com.instacart.formula.test.TestableRuntime
 
 class KeyUsingListFormula :
-    Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.Output> {
+    Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.Output>() {
     companion object {
         fun test(runtime: TestableRuntime, items: List<String>) = runtime.test(KeyUsingListFormula(), Input(items))
     }

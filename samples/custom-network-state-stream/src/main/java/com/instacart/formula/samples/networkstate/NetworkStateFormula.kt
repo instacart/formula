@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 
 class NetworkStateFormula(
     private val networkStateStream: NetworkStateStream
-) : Formula<Unit, NetworkStateFormula.State, NetworkStateRenderModel> {
+) : Formula<Unit, NetworkStateFormula.State, NetworkStateRenderModel>() {
 
     data class State(val isOnline: Boolean = false)
 

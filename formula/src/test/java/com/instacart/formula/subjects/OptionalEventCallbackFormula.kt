@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 
 class OptionalEventCallbackFormula :
-    Formula<Unit, OptionalEventCallbackFormula.State, OptionalEventCallbackFormula.Output> {
+    Formula<Unit, OptionalEventCallbackFormula.State, OptionalEventCallbackFormula.Output>() {
     data class State(
         val callbackEnabled: Boolean = true,
         val state: Int = 0

@@ -18,7 +18,7 @@ abstract class StreamFormula<Input : Any, Output : Any> : IFormula<Input, Output
     abstract fun stream(input: Input): Stream<Output>
 
     // Implements the common API used by the runtime.
-    private val implementation = object : Formula<Input, Output, Output> {
+    private val implementation = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
 
         override fun evaluate(

@@ -13,20 +13,20 @@ package com.instacart.formula
  * @param Output A data class returned by this formula that contains data and event
  * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
-interface Formula<in Input, State, out Output> : IFormula<Input, Output> {
+abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
 
     /**
      * Creates the initial [state][State] to be used in [evaluation][Formula.evaluate]. This
      * method is called when formula first starts running or when the [key] changes.
      */
-    fun initialState(input: Input): State
+    abstract fun initialState(input: Input): State
 
     /**
      * This method is called if [Input] changes while [Formula] is already running. It
      * is called before invoking [evaluate]. You can use this method to change the [State]
      * in response to [Input] change.
      */
-    fun onInputChanged(
+    open fun onInputChanged(
         oldInput: Input,
         input: Input,
         state: State
@@ -44,7 +44,7 @@ interface Formula<in Input, State, out Output> : IFormula<Input, Output> {
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
      * All side-effects should happen as part of event listeners or [updates][Evaluation.updates].
      */
-    fun evaluate(
+    abstract fun evaluate(
         input: Input,
         state: State,
         context: FormulaContext<State>
@@ -59,7 +59,7 @@ interface Formula<in Input, State, out Output> : IFormula<Input, Output> {
      */
     override fun key(input: Input): Any? = null
 
-    override fun implementation(): Formula<Input, *, Output> {
+    final override fun implementation(): Formula<Input, *, Output> {
         return this
     }
 }

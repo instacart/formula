@@ -4,7 +4,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 
-class CounterFormula : Formula<Unit, Int, CounterRenderModel> {
+class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
 
     override fun initialState(input: Unit): Int = 0
 

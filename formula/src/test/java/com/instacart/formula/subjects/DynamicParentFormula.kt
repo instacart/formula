@@ -7,7 +7,7 @@ import com.instacart.formula.Listener
 
 class DynamicParentFormula(
     private val childFormula: KeyFormula = KeyFormula()
-) : Formula<Unit, DynamicParentFormula.State, DynamicParentFormula.Output> {
+) : Formula<Unit, DynamicParentFormula.State, DynamicParentFormula.Output>() {
 
     data class State(
         val childKeys: List<TestKey> = emptyList()

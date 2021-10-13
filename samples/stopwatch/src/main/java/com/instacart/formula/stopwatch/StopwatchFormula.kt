@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import java.util.concurrent.TimeUnit
 
-class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel> {
+class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel>() {
 
     data class State(
         val timePassedInMillis: Long,

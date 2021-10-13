@@ -8,7 +8,7 @@ import com.instacart.formula.IFormula
 class HasChildFormula<ChildInput, ChildOutput>(
     private val child: IFormula<ChildInput, ChildOutput>,
     private val createChildInput: FormulaContext<Int>.(Int) -> ChildInput
-) : Formula<Unit, Int, HasChildFormula.Output<ChildOutput>> {
+) : Formula<Unit, Int, HasChildFormula.Output<ChildOutput>>() {
     companion object {
         operator fun <ChildOutput> invoke(
             child: IFormula<Unit, ChildOutput>

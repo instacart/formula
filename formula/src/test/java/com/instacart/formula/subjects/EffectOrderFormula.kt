@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 import com.instacart.formula.Stream
 
-class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.State, EffectOrderFormula.Output> {
+class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.State, EffectOrderFormula.Output>() {
 
     data class Event(val id: Int)
 

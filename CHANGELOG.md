@@ -8,6 +8,7 @@
 - Add `Listener` type to consolidate event handling types `() -> Unit` and `(Event) -> Unit` 
 - **Breaking**: Rename and move `FormulaContext.UpdateBuilder` into `StreamBuilder`. 
 - **Breaking**: Restructuring `Transition` type into `Transition<State, Event>` and `Transition.Result<State>`
+- **Breaking**: Make `Formula` abstract class instead of an interface.
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.

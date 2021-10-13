@@ -6,7 +6,7 @@ import com.instacart.formula.FormulaContext
 
 class DelegateFormula<Type>(
     private val initialValue: Type
-) : Formula<Unit, Type, DelegateFormula.Output<Type>> {
+) : Formula<Unit, Type, DelegateFormula.Output<Type>>() {
 
     data class Output<Type>(
         val childValue: Type,

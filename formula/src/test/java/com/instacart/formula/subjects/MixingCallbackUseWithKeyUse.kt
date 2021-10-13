@@ -13,7 +13,7 @@ class MixingCallbackUseWithKeyUse {
         val thirdCallback: Listener<Unit>,
     )
 
-    class ParentFormula : Formula<Unit, Unit, ParentOutput> {
+    class ParentFormula : Formula<Unit, Unit, ParentOutput>() {
         override fun initialState(input: Unit) = Unit
 
         override fun evaluate(

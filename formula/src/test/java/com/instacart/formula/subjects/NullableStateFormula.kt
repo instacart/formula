@@ -4,7 +4,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 
-class NullableStateFormula : Formula<Unit, String?, NullableStateFormula.Output> {
+class NullableStateFormula : Formula<Unit, String?, NullableStateFormula.Output>() {
 
     data class Output(
         val state: String?,

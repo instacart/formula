@@ -5,7 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 
-class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output> {
+class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output>() {
 
     class Output(val callback: Listener<Unit>)
 

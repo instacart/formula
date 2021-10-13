@@ -11,7 +11,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
     fun test(runtime: TestableRuntime) = runtime.test(TestFormula(runtime), Unit)
 
-    class TestFormula(runtime: TestableRuntime) : Formula<Unit, Int, Int> {
+    class TestFormula(runtime: TestableRuntime) : Formula<Unit, Int, Int>() {
         private val initial = RxStream.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }
         private val incrementRelay = runtime.newRelay()
 

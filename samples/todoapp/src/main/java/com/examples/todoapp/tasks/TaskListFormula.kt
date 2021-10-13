@@ -7,7 +7,9 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.rxjava3.RxStream
 
-class TaskListFormula(private val repo: TaskRepo) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel> {
+class TaskListFormula(
+    private val repo: TaskRepo
+) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel>() {
 
     class Input(
         val showToast: (String) -> Unit

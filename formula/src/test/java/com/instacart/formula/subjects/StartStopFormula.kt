@@ -10,7 +10,7 @@ import com.instacart.formula.subjects.StartStopFormula.Output
 import com.instacart.formula.subjects.StartStopFormula.State
 import com.instacart.formula.test.TestableRuntime
 
-class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output> {
+class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>() {
 
     val incrementEvents = runtime.newRelay()
 

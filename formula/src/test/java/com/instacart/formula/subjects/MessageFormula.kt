@@ -5,7 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 
-class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output> {
+class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>() {
 
     data class Input(val messageHandler: (Int) -> Unit)
 
