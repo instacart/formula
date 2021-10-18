@@ -132,7 +132,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `input change triggers an evaluation`() {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(output = input)
             }
         }
@@ -148,7 +148,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `input change is ignored if value is the same as last value`() {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun evaluate(input: Int, context: FormulaContext<Unit>): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(output = input)
             }
         }
@@ -873,7 +873,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple termination side-effects`() {
         val terminateFormula = TerminateFormula()
         val formula = object : StatelessFormula<Unit, Unit>() {
-            override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
                 (0 until 10).forEach {
                     context.child(terminateFormula.id(it))
                 }

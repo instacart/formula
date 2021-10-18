@@ -5,6 +5,7 @@ import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxStream
 
 class TaskListFormula(
@@ -19,11 +20,7 @@ class TaskListFormula(
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
     }
 
-    override fun evaluate(
-        input: Input,
-        state: TaskListState,
-        context: FormulaContext<TaskListState>
-    ): Evaluation<TaskListRenderModel> {
+    override fun Snapshot<Input, TaskListState>.evaluate(): Evaluation<TaskListRenderModel> {
         val items = taskList(state).map { task ->
             context.key(task.id) {
                 TaskItemRenderModel(

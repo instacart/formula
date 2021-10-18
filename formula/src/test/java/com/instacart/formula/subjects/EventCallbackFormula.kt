@@ -2,7 +2,7 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 
 class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.Output>() {
 
@@ -13,7 +13,7 @@ class EventCallbackFormula : Formula<Unit, String, EventCallbackFormula.Output>(
 
     override fun initialState(input: Unit): String = ""
 
-    override fun evaluate(input: Unit, state: String, context: FormulaContext<String>): Evaluation<Output> {
+    override fun Snapshot<Unit, String>.evaluate(): Evaluation<Output> {
         return Evaluation(
             output = Output(
                 state = state,

@@ -2,7 +2,7 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 
 class UseInputFormula<Type> : Formula<Type, Type, Type>() {
     override fun initialState(input: Type): Type = input
@@ -12,11 +12,7 @@ class UseInputFormula<Type> : Formula<Type, Type, Type>() {
         return input
     }
 
-    override fun evaluate(
-        input: Type,
-        state: Type,
-        context: FormulaContext<Type>
-    ): Evaluation<Type> {
+    override fun Snapshot<Type, Type>.evaluate(): Evaluation<Type> {
         return Evaluation(output = state)
     }
 }

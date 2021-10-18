@@ -18,13 +18,13 @@ class MockitoFormulaTest {
     }
 
     class MyFormula : StatelessFormula<Unit, Unit>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(Unit)
         }
     }
 
     class ReplacementFormula : StatelessFormula<Unit, Unit>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(Unit)
         }
     }

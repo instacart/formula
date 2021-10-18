@@ -3,6 +3,7 @@ package com.instacart.formula.compose.stopwatch
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxStream
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -20,11 +21,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         isRunning = false
     )
 
-    override fun evaluate(
-        input: Unit,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<StopwatchRenderModel> {
+    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.timePassedInMillis),

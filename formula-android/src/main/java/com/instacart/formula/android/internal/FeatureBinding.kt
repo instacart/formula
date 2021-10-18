@@ -3,6 +3,7 @@ package com.instacart.formula.android.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.Stream
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
@@ -22,11 +23,7 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
 
         override fun initialState(input: Input<Component>) = Unit
 
-        override fun evaluate(
-            input: Input<Component>,
-            state: Unit,
-            context: FormulaContext<Unit>
-        ): Evaluation<Unit> {
+        override fun Snapshot<Input<Component>, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(
                 output = state,
                 updates = context.updates {

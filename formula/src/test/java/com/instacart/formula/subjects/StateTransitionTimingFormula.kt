@@ -2,8 +2,8 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestableRuntime
 
 class StateTransitionTimingFormula(
@@ -24,11 +24,7 @@ class StateTransitionTimingFormula(
 
     override fun initialState(input: Unit): List<State> = emptyList()
 
-    override fun evaluate(
-        input: Unit,
-        state: List<State>,
-        context: FormulaContext<List<State>>
-    ): Evaluation<Output> {
+    override fun Snapshot<Unit, List<State>>.evaluate(): Evaluation<Output> {
         return Evaluation(
             output = Output(
                 events = state,

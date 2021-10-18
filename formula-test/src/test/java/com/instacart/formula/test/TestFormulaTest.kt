@@ -3,8 +3,8 @@ package com.instacart.formula.test
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
+import com.instacart.formula.Snapshot
 import org.junit.Before
 import org.junit.Test
 
@@ -48,11 +48,7 @@ class TestFormulaTest {
 
         override fun initialState(input: Unit): State = State(name = "")
 
-        override fun evaluate(
-            input: Unit,
-            state: State,
-            context: FormulaContext<State>
-        ): Evaluation<Output> {
+        override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
             return Evaluation(
                 output = Output(
                     name = state.name,

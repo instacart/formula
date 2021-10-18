@@ -3,6 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestableRuntime
 
@@ -16,7 +17,7 @@ object UsingCallbacksWithinAnotherFunction {
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
-        override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<TestOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
             return Evaluation(
                 output = TestOutput(
                     first = createDefaultCallback(context),
