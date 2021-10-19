@@ -17,7 +17,7 @@ data class FormRenderModel(
 
 To create a listener use `FormulaContext.onEvent`. Note: All listeners should be created within `Formula.evaluate` block.
 ```kotlin
-override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<FormRenderModel> {
   return Evaluation(
     output = FormRenderModel(
       onNameChanged = context.onEvent<String> { newName ->

@@ -22,16 +22,16 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
             return Evaluation(
                 output = TestOutput(
                     first = context.key("first") {
-                        createChild(context)
+                        createChild()
                     },
                     second = context.key("second") {
-                        createChild(context)
+                        createChild()
                     }
                 )
             )
         }
 
-        private fun createChild(context: FormulaContext<Unit>): ChildOutput {
+        private fun Snapshot<*, Unit>.createChild(): ChildOutput {
             return ChildOutput(
                 callback = context.onEvent {
                     none()

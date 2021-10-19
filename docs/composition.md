@@ -73,9 +73,9 @@ class MainPageFormula(
     val headerFormula: HeaderFormula,
     val listFormula: ListFormula,
     val dialogFormula: DialogFormula
-) : Formula<> {
+) : Formula<Unit, MyState, MainRenderModel> {
     
-    override fun evaluate(input: Unit, state: MyState, context: FormulaContext<...>): Evaluation<...> {
+    override fun Snapshot<Unit, MyState>.evaluate(): Evaluation<MainRenderModel> {
         // "context.child" returns a RenderModel 
         val listRenderModel = context.child(listFormula, createListInput(state))
 

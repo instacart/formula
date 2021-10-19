@@ -53,7 +53,7 @@ class TaskListFormula(
             },
             output = TaskListRenderModel(
                 items = items,
-                filterOptions = filterOptions(state, context)
+                filterOptions = filterOptions()
             )
         )
     }
@@ -68,10 +68,7 @@ class TaskListFormula(
         }
     }
 
-    private fun filterOptions(
-        state: TaskListState,
-        context: FormulaContext<TaskListState>
-    ): List<TaskFilterRenderModel> {
+    private fun Snapshot<*, TaskListState>.filterOptions(): List<TaskFilterRenderModel> {
         return TasksFilterType.values().map { type ->
             context.key(type.name) {
                 TaskFilterRenderModel(

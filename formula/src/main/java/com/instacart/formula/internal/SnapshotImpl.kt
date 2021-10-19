@@ -7,7 +7,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
 
-class FormulaContextImpl<Input, State> internal constructor(
+class SnapshotImpl<Input, State> internal constructor(
     private val transitionId: TransitionId,
     listeners: ScopedListeners,
     private val delegate: Delegate,

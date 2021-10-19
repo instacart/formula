@@ -10,7 +10,7 @@ interface TaskRepo {
 
 All asynchronous events have to be declared within `Formula.evaluate` function.
 ```kotlin
-override fun evaluate(input: Input, state: State, context: FormulaContext): ... {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
   return Evaluation(
     output = createRenderModel(state.taskList),
     // All async events need to be declared within "context.updates" block.
@@ -74,11 +74,7 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
     val task: Task? = null
   )
 
-  override fun evaluate(
-    input: Input,
-    state: State,
-    context: FormulaContext<..>
-  ): Evaluation<Output> {
+  override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
     return Evaluation(
       updates = context.updates {
         val fetchTask = RxStream.fromObservable(key = input.taskId) { taskRepo.fetchTask(input.taskId) }
@@ -129,9 +125,9 @@ class NetworkStatusStream(
 
 We can now hook this up within our Formula:
 ```kotlin
-class MyFormula(val networkStatus: NetworkStatusStream): Formula {
+class MyFormula(val networkStatus: NetworkStatusStream): Formula<Input, State, Output> {
 
-  override fun evaluate(input: .., state: .., context: FormulaContext): .. {
+  override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
     return Evaluation(
       updates = context.updates {
         events(networkStatus) { status ->

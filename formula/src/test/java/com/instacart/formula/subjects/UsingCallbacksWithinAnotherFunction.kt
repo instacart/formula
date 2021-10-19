@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -20,13 +19,13 @@ object UsingCallbacksWithinAnotherFunction {
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
             return Evaluation(
                 output = TestOutput(
-                    first = createDefaultCallback(context),
-                    second = createDefaultCallback(context)
+                    first = createDefaultCallback(),
+                    second = createDefaultCallback()
                 )
             )
         }
 
-        private fun createDefaultCallback(context: FormulaContext<Unit>): Listener<Unit> {
+        private fun Snapshot<*, Unit>.createDefaultCallback(): Listener<Unit> {
             return context.onEvent {
                 none()
             }

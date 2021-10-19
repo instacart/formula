@@ -41,11 +41,7 @@ class TaskDetailFormula @Inject constructor(
 
     override fun initialState(input: Input) = State()
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<TaskDetailRenderModel?> {
+    override fun Snapshot<Input, State>.evaluate(): Evaluation<TaskDetailRenderModel?> {
         return Evaluation(
             output = state.task,
             updates = context.updates {
@@ -81,11 +77,7 @@ class TaskDetailFormula @Inject constructor(
 
     override fun initialState(input: Input) = State()
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<TaskDetailRenderModel?> {
+    override fun Snapshot<Input, State>.evaluate(): Evaluation<TaskDetailRenderModel?> {
         // Note that this is correct because the render model and therefore listener is constructed
         // within `evaluate` instead of within `onEvent`
         val renderModel = state.task?.let {
