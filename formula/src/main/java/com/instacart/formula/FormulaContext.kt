@@ -10,9 +10,9 @@ import com.instacart.formula.internal.UnitListener
  * child formulas, handle events [FormulaContext.onEvent], and [respond][FormulaContext.updates]
  * to arbitrary asynchronous events.
  */
-abstract class FormulaContext<State> internal constructor(
+abstract class FormulaContext<out Input, State> internal constructor(
     @PublishedApi internal val listeners: ScopedListeners,
-    internal val transitionDispatcher: TransitionDispatcher<*, State>,
+    internal val transitionDispatcher: TransitionDispatcher<Input, State>,
 ) {
 
     /**
@@ -21,7 +21,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> onEvent(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
             key = transition.type(),
@@ -36,7 +36,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> onEvent(
         key: Any,
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
             key = JoinedKey(key, transition.type()),
@@ -49,7 +49,7 @@ abstract class FormulaContext<State> internal constructor(
      *
      * It uses [transition] type as key.
      */
-    fun callback(transition: Transition<State, Unit>): () -> Unit {
+    fun callback(transition: Transition<Input, State, Unit>): () -> Unit {
         val listener = onEvent(transition)
         return UnitListener(listener)
     }
@@ -61,7 +61,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun callback(
         key: Any,
-        transition: Transition<State, Unit>,
+        transition: Transition<Input, State, Unit>,
     ): () -> Unit {
         val listener = onEvent(key, transition)
         return UnitListener(listener)
@@ -73,7 +73,7 @@ abstract class FormulaContext<State> internal constructor(
      * It uses [transition] type as key.
      */
     fun <Event> eventCallback(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return onEvent(transition)
     }
@@ -85,7 +85,7 @@ abstract class FormulaContext<State> internal constructor(
      */
     fun <Event> eventCallback(
         key: Any,
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return onEvent(key, transition)
     }
@@ -113,7 +113,7 @@ abstract class FormulaContext<State> internal constructor(
     /**
      * Provides an [UpdateBuilder] that enables [Formula] to declare various events and effects.
      */
-    abstract fun updates(init: StreamBuilder<State>.() -> Unit): List<BoundStream<*>>
+    abstract fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<BoundStream<*>>
 
     /**
      * Scopes [create] block with a [key].
@@ -129,9 +129,9 @@ abstract class FormulaContext<State> internal constructor(
 
     internal fun <Event> eventListener(
         key: Any,
-        transition: Transition<State, Event>
+        transition: Transition<Input, State, Event>
     ): Listener<Event> {
-        val listener = listeners.initOrFindListener<Any?, State, Event>(key)
+        val listener = listeners.initOrFindListener<Input, State, Event>(key)
         listener.transitionDispatcher = transitionDispatcher
         listener.transition = transition
         return listener

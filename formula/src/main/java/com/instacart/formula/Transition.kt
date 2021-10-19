@@ -7,7 +7,7 @@ package com.instacart.formula
  * which will be executed by the [FormulaRuntime]. If there was a state change, effects function
  * will be executed after [Formula.evaluate] is called.
  */
-fun interface Transition<State, in Event> {
+fun interface Transition<in Input, State, in Event> {
 
     /**
      * Result is an object returned by [Transition.toResult] which indicates what
@@ -62,7 +62,7 @@ fun interface Transition<State, in Event> {
      * change and/or some executable effects. Use [TransitionContext.none] if nothing should happen
      * as part of this event.
      */
-    fun TransitionContext<State>.toResult(event: Event): Result<State>
+    fun TransitionContext<Input, State>.toResult(event: Event): Result<State>
 
     /**
      * Transition type is used as part of the key to distinguish different transitions.

@@ -9,7 +9,7 @@ import com.instacart.formula.Snapshot
 
 class OptionalChildFormula<ChildInput, ChildOutput>(
     private val child: IFormula<ChildInput, ChildOutput>,
-    private val childInput: FormulaContext<State>.(State) -> ChildInput
+    private val childInput: FormulaContext<*, State>.(State) -> ChildInput
 ): Formula<Unit, OptionalChildFormula.State, OptionalChildFormula.Output<ChildOutput>>() {
     companion object {
         operator fun <ChildOutput> invoke(child: IFormula<Unit, ChildOutput>) = run {

@@ -45,8 +45,8 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>(
         )
     }
 
-    private class UpdateListenFlag(val listen: Boolean): Transition<State, Unit> {
-        override fun TransitionContext<State>.toResult(event: Unit): Transition.Result<State> {
+    private class UpdateListenFlag(val listen: Boolean): Transition<Any, State, Unit> {
+        override fun TransitionContext<Any, State>.toResult(event: Unit): Transition.Result<State> {
             return transition(state.copy(listenForEvents = listen))
         }
     }

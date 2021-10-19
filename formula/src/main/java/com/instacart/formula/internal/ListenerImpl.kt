@@ -10,7 +10,7 @@ import com.instacart.formula.Transition
 internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listener<Event> {
 
     internal var transitionDispatcher: TransitionDispatcher<Input, State>? = null
-    internal var transition: Transition<State, Event>? = null
+    internal var transition: Transition<Input, State, Event>? = null
 
     override fun invoke(event: Event) {
         transitionDispatcher?.let { dispatcher ->

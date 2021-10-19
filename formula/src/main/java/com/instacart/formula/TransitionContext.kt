@@ -5,13 +5,12 @@ import com.instacart.formula.internal.combine
 import com.instacart.formula.internal.toResult
 
 /**
- * Transition context provides the current [state] and utilities to help
+ * Transition context provides the current [input], the current [state] and utilities to help
  * create [Transition.Result] within [Transition.toResult].
- *
- * TODO: add Formula.Input as well.
  */
-interface TransitionContext<State> {
+interface TransitionContext<out Input, State> {
 
+    val input: Input
     val state: State
 
     /**
@@ -44,14 +43,14 @@ interface TransitionContext<State> {
     /**
      * Delegates to another [Transition] to provide the result.
      */
-    fun <Event> delegate(transition: Transition<State, Event>, event: Event): Transition.Result<State> {
+    fun <Event> delegate(transition: Transition<Input, State, Event>, event: Event): Transition.Result<State> {
         return transition.run { toResult(event) }
     }
 
     /**
      * Delegates to another [Transition] that has [Unit] event type to provide the result.
      */
-    fun delegate(transition: Transition<State, Unit>): Transition.Result<State> {
+    fun delegate(transition: Transition<Input, State, Unit>): Transition.Result<State> {
         return delegate(transition, Unit)
     }
 
@@ -59,7 +58,7 @@ interface TransitionContext<State> {
      * Function used to chain multiple transitions together.
      */
     fun <Event> Transition.Result<State>.andThen(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
         event: Event
     ): Transition.Result<State> {
         return when (this) {
@@ -70,7 +69,7 @@ interface TransitionContext<State> {
                 combine(this, transition.toResult(this@TransitionContext, event))
             }
             is Transition.Result.Stateful -> {
-                combine(this, transition.toResult(DelegateTransitionContext(this.state), event))
+                combine(this, transition.toResult(DelegateTransitionContext(input, this.state), event))
             }
         }
     }
@@ -79,7 +78,7 @@ interface TransitionContext<State> {
      * Function used to chain multiple transitions together.
      */
     fun Transition.Result<State>.andThen(
-        transition: Transition<State, Unit>,
+        transition: Transition<Input, State, Unit>,
     ): Transition.Result<State> {
         return andThen(transition, Unit)
     }
@@ -88,7 +87,7 @@ interface TransitionContext<State> {
      * Function to chain updated state with another transition.
      */
     fun <Event> State.andThen(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
         event: Event
     ): Transition.Result<State> {
         return transition(this).andThen(transition, event)
@@ -97,7 +96,7 @@ interface TransitionContext<State> {
     /**
      * Function to chain updated state with another transition.
      */
-    fun State.andThen(transition: Transition<State, Unit>): Transition.Result<State> {
+    fun State.andThen(transition: Transition<Input, State, Unit>): Transition.Result<State> {
         return transition(this).andThen(transition)
     }
 }

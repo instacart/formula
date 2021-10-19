@@ -7,16 +7,16 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
 
-class SnapshotImpl<Input, State> internal constructor(
+class SnapshotImpl<out Input, State> internal constructor(
     private val transitionId: TransitionId,
     listeners: ScopedListeners,
     private val delegate: Delegate,
     transitionDispatcher: TransitionDispatcher<Input, State>
-) : FormulaContext<State>(listeners, transitionDispatcher), Snapshot<Input, State> {
+) : FormulaContext<Input, State>(listeners, transitionDispatcher), Snapshot<Input, State> {
 
     override val input: Input = transitionDispatcher.input
     override val state: State = transitionDispatcher.state
-    override val context: FormulaContext<State> = this
+    override val context: FormulaContext<Input, State> = this
 
     interface Delegate {
         fun <ChildInput, ChildOutput> child(
@@ -26,7 +26,7 @@ class SnapshotImpl<Input, State> internal constructor(
         ): ChildOutput
     }
 
-    override fun updates(init: StreamBuilder<State>.() -> Unit): List<BoundStream<*>> {
+    override fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<BoundStream<*>> {
         ensureNotRunning()
         val builder = StreamBuilder(this)
         builder.init()
