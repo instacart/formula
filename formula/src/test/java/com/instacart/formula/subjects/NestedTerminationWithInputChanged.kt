@@ -2,7 +2,7 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.subjects.NestedTerminationWithInputChanged.Output
 
@@ -19,7 +19,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
 
     val terminateFormula = TerminateFormula()
     private val passThroughFormula = object : StatelessFormula<Boolean, Unit>() {
-        override fun evaluate(input: Boolean, context: FormulaContext<Unit>): Evaluation<Unit> {
+        override fun Snapshot<Boolean, Unit>.evaluate(): Evaluation<Unit> {
             if (input) {
                 context.child(terminateFormula)
             }
@@ -35,11 +35,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
         return input
     }
 
-    override fun evaluate(
-        input: Boolean,
-        state: Boolean,
-        context: FormulaContext<Boolean>
-    ): Evaluation<Output> {
+    override fun Snapshot<Boolean, Boolean>.evaluate(): Evaluation<Output> {
         // We use a callback to check if formula runtime is in the right state.
         context.onEvent<Unit> { none() }
         context.child(passThroughFormula, state)

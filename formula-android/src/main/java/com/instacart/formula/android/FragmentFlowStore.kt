@@ -2,7 +2,7 @@ package com.instacart.formula.android
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.events.FragmentLifecycleEvent
@@ -60,11 +60,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
 
     override fun initialState(input: FragmentEnvironment): FragmentFlowState = FragmentFlowState()
 
-    override fun evaluate(
-        input: FragmentEnvironment,
-        state: FragmentFlowState,
-        context: FormulaContext<FragmentFlowState>
-    ): Evaluation<FragmentFlowState> {
+    override fun Snapshot<FragmentEnvironment, FragmentFlowState>.evaluate(): Evaluation<FragmentFlowState> {
         val rootInput = Binding.Input(
             environment = input,
             component = Unit,

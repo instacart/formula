@@ -2,8 +2,8 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestableRuntime
 
 class KeyUsingListFormula :
@@ -25,11 +25,7 @@ class KeyUsingListFormula :
 
     override fun initialState(input: Input) = State(input.items)
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<Output> {
+    override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
 
         val items = state.items.map { itemName ->
             context.key(itemName) {

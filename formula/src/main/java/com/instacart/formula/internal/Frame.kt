@@ -10,7 +10,7 @@ internal class Frame<Input, State, Output>(
     val input: Input,
     val state: State,
     val evaluation: Evaluation<Output>,
-    val transitionDispatcher: TransitionDispatcher<State>
+    val transitionDispatcher: TransitionDispatcher<Input, State>
 ) {
     private var stateValid: Boolean = true
     private var childrenValid: Boolean = true

@@ -7,9 +7,9 @@ import com.instacart.formula.Transition
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal class ListenerImpl<State, Event>(internal var key: Any) : Listener<Event> {
+internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listener<Event> {
 
-    internal var transitionDispatcher: TransitionDispatcher<State>? = null
+    internal var transitionDispatcher: TransitionDispatcher<Input, State>? = null
     internal var transition: Transition<State, Event>? = null
 
     override fun invoke(event: Event) {

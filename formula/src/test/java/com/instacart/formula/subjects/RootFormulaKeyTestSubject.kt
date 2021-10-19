@@ -3,8 +3,8 @@ package com.instacart.formula.subjects
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 import com.instacart.formula.invoke
 import com.instacart.formula.test.TestableRuntime
 
@@ -40,11 +40,7 @@ class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
         // We reset formula whenever key changes.
         override fun key(input: Int): Any? = input
 
-        override fun evaluate(
-            input: Int,
-            state: Int,
-            context: FormulaContext<Int>
-        ): Evaluation<Output> {
+        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Output> {
             return Evaluation(
                 output = Output(
                     value = state,

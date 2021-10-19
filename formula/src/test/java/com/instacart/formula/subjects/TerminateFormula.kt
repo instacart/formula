@@ -2,8 +2,8 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.Stream
 import kotlin.reflect.KClass
@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 class TerminateFormula : StatelessFormula<Unit, Unit>() {
     var timesTerminateCalled = 0
 
-    override fun evaluate(input: Unit, context: FormulaContext<Unit>): Evaluation<Unit> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
         return Evaluation(
             output = Unit,
             updates = context.updates {

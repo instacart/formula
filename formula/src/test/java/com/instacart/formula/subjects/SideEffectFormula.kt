@@ -2,8 +2,8 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 
 class SideEffectFormula(
     private val onSideEffect: () -> Unit
@@ -15,7 +15,7 @@ class SideEffectFormula(
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun evaluate(input: Unit, state: Int, context: FormulaContext<Int>): Evaluation<Output> {
+    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
         return Evaluation(
             output = Output(
                 triggerSideEffect = context.onEvent {

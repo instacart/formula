@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.Listener
+import com.instacart.formula.Snapshot
 
 class OptionalChildFormula<ChildInput, ChildOutput>(
     private val child: IFormula<ChildInput, ChildOutput>,
@@ -27,11 +28,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
 
     override fun initialState(input: Unit) = State()
 
-    override fun evaluate(
-        input: Unit,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<Output<ChildOutput>> {
+    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output<ChildOutput>> {
         val childOutput = if (state.showChild) {
             context.child(child, childInput(context, state))
         } else {

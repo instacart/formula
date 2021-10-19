@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
-internal class Listeners<State> {
-    private var listeners: SingleRequestMap<Any, ListenerImpl<State, *>>? = null
+internal class Listeners {
+    private var listeners: SingleRequestMap<Any, ListenerImpl<*, *, *>>? = null
 
     private fun duplicateKeyErrorMessage(key: Any): String {
         if (key is String) {
@@ -12,18 +12,18 @@ internal class Listeners<State> {
         return "Listener $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
-    fun <Event> initOrFindCallback(key: Any): ListenerImpl<State, Event> {
+    fun <Input, State, Event> initOrFindCallback(key: Any): ListenerImpl<Input, State, Event> {
         val listeners = listeners ?: run {
-            val initialized: SingleRequestMap<Any, ListenerImpl<State, *>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, ListenerImpl<*, *, *>> = mutableMapOf()
             this.listeners = initialized
             initialized
         }
 
         return listeners
-            .findOrInit(key) { ListenerImpl<State, Event>(key) }
+            .findOrInit(key) { ListenerImpl<Input, State, Event>(key) }
             .requestAccess {
                 duplicateKeyErrorMessage(key)
-            } as ListenerImpl<State, Event>
+            } as ListenerImpl<Input, State, Event>
     }
 
     fun evaluationFinished() {

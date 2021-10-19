@@ -2,7 +2,7 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 
 class DelegateFormula<Type>(
     private val initialValue: Type
@@ -17,11 +17,7 @@ class DelegateFormula<Type>(
 
     override fun initialState(input: Unit): Type = initialValue
 
-    override fun evaluate(
-        input: Unit,
-        state: Type,
-        context: FormulaContext<Type>
-    ): Evaluation<Output<Type>> {
+    override fun Snapshot<Unit, Type>.evaluate(): Evaluation<Output<Type>> {
         return Evaluation(
             output = Output(
                 childValue = context.child(childFormula, state),

@@ -1,7 +1,7 @@
 package com.instacart.formula.samples.composition
 
 import com.instacart.formula.Evaluation
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.samples.composition.item.ItemFormula
 
@@ -18,10 +18,7 @@ class ItemPageFormula : StatelessFormula<Unit, ItemPageRenderModel>() {
         "Watermelon"
     )
 
-    override fun evaluate(
-        input: Unit,
-        context: FormulaContext<Unit>
-    ): Evaluation<ItemPageRenderModel> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<ItemPageRenderModel> {
         val items = items.map {
             context.child(itemFormula, ItemFormula.Input(itemName = it))
         }

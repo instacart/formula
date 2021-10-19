@@ -21,11 +21,7 @@ abstract class StreamFormula<Input : Any, Output : Any> : IFormula<Input, Output
     private val implementation = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
 
-        override fun evaluate(
-            input: Input,
-            state: Output,
-            context: FormulaContext<Output>
-        ): Evaluation<Output> {
+        override fun Snapshot<Input, Output>.evaluate(): Evaluation<Output> {
             return Evaluation(
                 output = state,
                 updates = context.updates {

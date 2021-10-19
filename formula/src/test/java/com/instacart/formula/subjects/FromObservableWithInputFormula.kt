@@ -1,7 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Evaluation
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.rxjava3.RxStream
 import io.reactivex.rxjava3.core.Observable
@@ -22,7 +22,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
 
     private val repo = Repo()
 
-    override fun evaluate(input: Input, context: FormulaContext<Unit>): Evaluation<Unit> {
+    override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
         return Evaluation(
             output = Unit,
             updates = context.updates {

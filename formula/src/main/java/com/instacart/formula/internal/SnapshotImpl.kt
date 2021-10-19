@@ -3,15 +3,20 @@ package com.instacart.formula.internal
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.BoundStream
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
 
-class FormulaContextImpl<State> internal constructor(
+class SnapshotImpl<Input, State> internal constructor(
     private val transitionId: TransitionId,
-    listeners: ScopedListeners<State>,
+    listeners: ScopedListeners,
     private val delegate: Delegate,
-    transitionDispatcher: TransitionDispatcher<State>
-) : FormulaContext<State>(listeners, transitionDispatcher) {
+    transitionDispatcher: TransitionDispatcher<Input, State>
+) : FormulaContext<State>(listeners, transitionDispatcher), Snapshot<Input, State> {
+
+    override val input: Input = transitionDispatcher.input
+    override val state: State = transitionDispatcher.state
+    override val context: FormulaContext<State> = this
 
     interface Delegate {
         fun <ChildInput, ChildOutput> child(

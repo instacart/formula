@@ -2,7 +2,7 @@ package com.instacart.formula.stopwatch
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.coroutines.FlowStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -20,12 +20,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         isRunning = true
     )
 
-    @ExperimentalStdlibApi
-    override fun evaluate(
-        input: Unit,
-        state: State,
-        context: FormulaContext<State>
-    ): Evaluation<StopwatchRenderModel> {
+    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.timePassedInMillis),

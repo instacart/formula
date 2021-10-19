@@ -17,9 +17,9 @@ import com.instacart.formula.Transition
 internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val listeners: ScopedListeners<State>,
+    private val listeners: ScopedListeners,
     private val transitionListener: TransitionListener
-) : FormulaContextImpl.Delegate, FormulaManager<Input, Output> {
+) : SnapshotImpl.Delegate, FormulaManager<Input, Output> {
 
     constructor(
         formula: Formula<Input, State, Output>,
@@ -81,9 +81,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         listeners.evaluationStarted()
-        val transitionDispatcher = TransitionDispatcher(state, this::handleTransitionResult, transitionId)
-        val context = FormulaContextImpl(transitionId, listeners, this, transitionDispatcher)
-        val result = formula.evaluate(input, state, context)
+        val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
+        val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
+        val result = snapshot.run { formula.run { evaluate() } }
         val frame = Frame(input, state, result, transitionDispatcher)
         updateManager.updateEventListeners(frame.evaluation.updates)
         this.frame = frame

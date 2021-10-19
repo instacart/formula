@@ -3,7 +3,7 @@ package com.instacart.formula.subjects
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Evaluation
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.Stream
 import com.instacart.formula.test.TestableRuntime
@@ -31,7 +31,7 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
     class TestFormula : StatelessFormula<List<String>, Unit>() {
         val running = mutableListOf<String>()
 
-        override fun evaluate(input: List<String>, context: FormulaContext<Unit>): Evaluation<Unit> {
+        override fun Snapshot<List<String>, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(
                 output = Unit,
                 updates = context.updates {

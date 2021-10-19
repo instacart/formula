@@ -2,7 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
+import com.instacart.formula.Snapshot
 import com.instacart.formula.Stream
 import java.lang.IllegalStateException
 
@@ -59,11 +59,7 @@ abstract class TestFormula<Input, Output> :
         return state.copy(currentInput = input)
     }
 
-    override fun evaluate(
-        input: Input,
-        state: State<Input, Output>,
-        context: FormulaContext<State<Input, Output>>
-    ): Evaluation<Output> {
+    override fun Snapshot<Input, State<Input, Output>>.evaluate(): Evaluation<Output> {
         stateMap[state.initialInput] = Value(
             input = input,
             onNewOutput = context.onEvent<Output> {
