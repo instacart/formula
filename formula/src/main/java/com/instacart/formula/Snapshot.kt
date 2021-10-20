@@ -22,5 +22,5 @@ interface Snapshot<out Input, State> {
      * Context is a short-lived object associated with the current evaluation. It should not be
      * used after evaluation has finished.
      */
-    val context: FormulaContext<State>
+    val context: FormulaContext<Input, State>
 }

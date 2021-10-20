@@ -2,7 +2,6 @@ package com.instacart.formula.compose.stopwatch
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxStream
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -25,8 +24,8 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.timePassedInMillis),
-                startStopButton = startStopButton(state, context),
-                resetButton = resetButton(state, context)
+                startStopButton = startStopButton(),
+                resetButton = resetButton()
             ),
             updates = context.updates {
                 if (state.isRunning) {
@@ -65,7 +64,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         }
     }
 
-    private fun startStopButton(state: State, context: FormulaContext<State>): ButtonRenderModel {
+    private fun Snapshot<*, State>.startStopButton(): ButtonRenderModel {
         return ButtonRenderModel(
             text = when {
                 state.isRunning -> "Stop"
@@ -78,7 +77,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         )
     }
 
-    private fun resetButton(state: State, context: FormulaContext<State>): ButtonRenderModel {
+    private fun Snapshot<*, State>.resetButton(): ButtonRenderModel {
         return ButtonRenderModel(
             text = "Reset",
             onSelected = context.onEvent {

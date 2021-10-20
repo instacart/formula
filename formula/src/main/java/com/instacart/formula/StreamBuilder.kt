@@ -8,8 +8,8 @@ import com.instacart.formula.internal.JoinedKey
  * the process and use [events] or [onEvent] to provide a [Transition]
  * which will be called when stream emits an event/
  */
-class StreamBuilder<State> internal constructor(
-    private val formulaContext: FormulaContext<State>,
+class StreamBuilder<out Input, State> internal constructor(
+    private val formulaContext: FormulaContext<Input, State>,
 ) {
     internal val updates = mutableListOf<BoundStream<*>>()
 
@@ -21,7 +21,7 @@ class StreamBuilder<State> internal constructor(
      */
     fun <Event> events(
         stream: Stream<Event>,
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ) {
         add(createConnection(stream, transition))
     }
@@ -35,7 +35,7 @@ class StreamBuilder<State> internal constructor(
     fun <Event> onEvent(
         stream: Stream<Event>,
         avoidParameterClash: Any = this,
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ) {
         add(createConnection(stream, transition))
     }
@@ -54,7 +54,7 @@ class StreamBuilder<State> internal constructor(
      * ```
      */
     fun <Event> Stream<Event>.onEvent(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ) {
         val stream = this
         this@StreamBuilder.events(stream, transition)
@@ -70,7 +70,7 @@ class StreamBuilder<State> internal constructor(
 
     @PublishedApi internal fun <Event> createConnection(
         stream: Stream<Event>,
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
     ): BoundStream<Event> {
         val key = JoinedKey(stream.key(), transition.type())
         val listener = formulaContext.eventListener(key, transition)

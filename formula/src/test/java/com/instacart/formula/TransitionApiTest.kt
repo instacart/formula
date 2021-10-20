@@ -9,26 +9,26 @@ import org.junit.Test
 class TransitionApiTest {
 
     @Test fun `none transition`() {
-        val transition = Transition<Int, Unit> { none() }
-        val result = transition.toResult(DelegateTransitionContext(0), Unit)
+        val transition = Transition<Unit, Int, Unit> { none() }
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit)
         Truth.assertThat(result).isEqualTo(Transition.Result.None)
     }
 
     @Test fun `stateful transition`() {
-        val transition = Transition<Int, Unit> { transition(state + 1) }
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val transition = Transition<Unit, Int, Unit> { transition(state + 1) }
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
     }
 
     @Test fun `stateful transition with effects`() {
         val testListener = TestListener<Unit>()
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             transition(state + 1) {
                 testListener.invoke(Unit)
             }
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
@@ -37,43 +37,43 @@ class TransitionApiTest {
 
     @Test fun `only effects transitions`() {
         val testListener = TestListener<Unit>()
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             transition {
                 testListener.invoke(Unit)
             }
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit)
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit)
         result.assertAndExecuteEffects()
         testListener.assertTimesCalled(1)
     }
 
     @Test
     fun `transition delegates to another transition`() {
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             delegate(AddTransition(), 5)
         }
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(5)
     }
 
     @Test fun `transition combine none transition with stateful transition`() {
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             none().andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
     }
 
     @Test fun `transition combine only effects transition with stateful transition`() {
         val testListener = TestListener<Unit>()
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             val result = transition { testListener.invoke(Unit) }
             result.andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
@@ -81,22 +81,22 @@ class TransitionApiTest {
     }
 
     @Test fun `transition combine stateful transition with another transition`() {
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             transition(state + 1).andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(2)
     }
 
     @Test fun `transition combine keeps effect order`() {
         val listener = TestListener<Int>()
         val incrementAndNotify = IncrementAndNotifyTransition(listener)
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             delegate(incrementAndNotify).andThen(incrementAndNotify)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(2)
 
         result.assertAndExecuteEffects()
@@ -104,21 +104,21 @@ class TransitionApiTest {
     }
 
     @Test fun `state andThen another stateful result`() {
-        val transition = Transition<Int, Unit> {
+        val transition = Transition<Unit, Int, Unit> {
             (state + 1).andThen(AddTransition(), 2)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(3)
     }
 
     @Test fun `state andThen empty result`() {
-        val transition = Transition<Int, Unit> {
-            val empty = Transition<Int, Unit> { none() }
+        val transition = Transition<Unit, Int, Unit> {
+            val empty = Transition<Any, Int, Unit> { none() }
             (state + 1).andThen(empty)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(0), Unit).assertStateful()
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
         Truth.assertThat(result.state).isEqualTo(1)
     }
 
@@ -132,14 +132,14 @@ class TransitionApiTest {
         effects?.execute()
     }
 
-    class AddTransition : Transition<Int, Int> {
-        override fun TransitionContext<Int>.toResult(event: Int): Transition.Result<Int> {
+    class AddTransition : Transition<Any, Int, Int> {
+        override fun TransitionContext<Any, Int>.toResult(event: Int): Transition.Result<Int> {
             return transition(state + event)
         }
     }
 
-    class IncrementAndNotifyTransition(private val listener: Listener<Int>): Transition<Int, Unit> {
-        override fun TransitionContext<Int>.toResult(event: Unit): Transition.Result<Int> {
+    class IncrementAndNotifyTransition(private val listener: Listener<Int>): Transition<Any, Int, Unit> {
+        override fun TransitionContext<Any, Int>.toResult(event: Unit): Transition.Result<Int> {
             val newState = state + 1
             return transition(newState) {
                 listener.invoke(newState)

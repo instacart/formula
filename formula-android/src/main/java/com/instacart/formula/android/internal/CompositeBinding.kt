@@ -78,7 +78,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
         return false
     }
 
-    override fun bind(context: FormulaContext<*>, input: Input<ParentComponent>) {
+    override fun bind(context: FormulaContext<*, *>, input: Input<ParentComponent>) {
         context.child(formula, input)
     }
 }

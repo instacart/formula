@@ -6,7 +6,7 @@ import com.instacart.formula.StatelessFormula
 import com.instacart.formula.StreamBuilder
 
 class OnlyUpdateFormula<Input>(
-    private val build: StreamBuilder<Unit>.(Input) -> Unit
+    private val build: StreamBuilder<*, Unit>.(Input) -> Unit
 ) : StatelessFormula<Input, Unit>() {
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {

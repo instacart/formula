@@ -59,5 +59,5 @@ internal abstract class Binding<in ParentComponent> {
     /**
      * Listens for active key changes and triggers [Input.onStateChanged] events.
      */
-    internal abstract fun bind(context: FormulaContext<*>, input: Input<ParentComponent>)
+    internal abstract fun bind(context: FormulaContext<*, *>, input: Input<ParentComponent>)
 }

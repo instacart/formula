@@ -4,11 +4,11 @@ import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
 
 internal class TransitionDispatcher<out Input, State>(
-    val input: Input,
+    override val input: Input,
     override val state: State,
     private val handleTransition: (Transition.Result<State>) -> Unit,
     var transitionId: TransitionId
-) : TransitionContext<State> {
+) : TransitionContext<Input, State> {
     var running = false
     var terminated = false
 
@@ -30,7 +30,7 @@ internal class TransitionDispatcher<out Input, State>(
     }
 
     fun <Event> dispatch(
-        transition: Transition<State, Event>,
+        transition: Transition<Input, State, Event>,
         event: Event
     ) {
         val result = transition.toResult(this, event)
@@ -39,8 +39,8 @@ internal class TransitionDispatcher<out Input, State>(
 }
 
 
-internal fun <State, Event> Transition<State, Event>.toResult(
-    context: TransitionContext<State>,
+internal fun <Input, State, Event> Transition<Input, State, Event>.toResult(
+    context: TransitionContext<Input, State>,
     event: Event
 ): Transition.Result<State> {
     return context.run { toResult(event) }

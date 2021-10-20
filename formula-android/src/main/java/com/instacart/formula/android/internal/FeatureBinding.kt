@@ -56,7 +56,7 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
         return type.isInstance(key)
     }
 
-    override fun bind(context: FormulaContext<*>, input: Input<Component>) {
+    override fun bind(context: FormulaContext<*, *>, input: Input<Component>) {
         context.child(formula, input)
     }
 }
