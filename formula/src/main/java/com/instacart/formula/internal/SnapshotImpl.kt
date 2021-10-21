@@ -30,7 +30,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         ensureNotRunning()
         val builder = StreamBuilderImpl(this)
         builder.init()
-        return builder.updates
+        return builder.boundedStreams
     }
 
     override fun <ChildInput, ChildOutput> child(

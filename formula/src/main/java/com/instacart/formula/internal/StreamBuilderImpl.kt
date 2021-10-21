@@ -11,11 +11,11 @@ import com.instacart.formula.Transition
  */
 internal class StreamBuilderImpl<out Input, State> internal constructor(
     private val snapshot: Snapshot<Input, State>,
-) : StreamBuilder<Input, State> {
-    override val input: Input = snapshot.input
-    override val state: State = snapshot.state
-
-    internal val updates = mutableListOf<BoundStream<*>>()
+) : StreamBuilder<Input, State>(
+    input = snapshot.input,
+    state = snapshot.state,
+) {
+    internal val boundedStreams = mutableListOf<BoundStream<*>>()
 
     override fun <Event> events(
         stream: Stream<Event>,
@@ -40,11 +40,11 @@ internal class StreamBuilderImpl<out Input, State> internal constructor(
     }
 
     private fun add(connection: BoundStream<*>) {
-        if (updates.contains(connection)) {
+        if (boundedStreams.contains(connection)) {
             throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
         }
 
-        updates.add(connection)
+        boundedStreams.add(connection)
     }
 
     private fun <Event> toBoundStream(
