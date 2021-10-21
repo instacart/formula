@@ -266,16 +266,16 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#formula-retains-callbacks" class="md-nav__link">
-    Formula retains callbacks
+  <a href="#formula-retains-listeners" class="md-nav__link">
+    Formula retains listeners
   </a>
   
-    <nav class="md-nav" aria-label="Formula retains callbacks">
+    <nav class="md-nav" aria-label="Formula retains listeners">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#case-1-declaring-callbacks-within-a-loop" class="md-nav__link">
-    Case 1: Declaring callbacks within a loop
+  <a href="#case-1-declaring-listeners-within-a-loop" class="md-nav__link">
+    Case 1: Declaring listeners within a loop
   </a>
   
 </li>
@@ -480,16 +480,16 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#formula-retains-callbacks" class="md-nav__link">
-    Formula retains callbacks
+  <a href="#formula-retains-listeners" class="md-nav__link">
+    Formula retains listeners
   </a>
   
-    <nav class="md-nav" aria-label="Formula retains callbacks">
+    <nav class="md-nav" aria-label="Formula retains listeners">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#case-1-declaring-callbacks-within-a-loop" class="md-nav__link">
-    Case 1: Declaring callbacks within a loop
+  <a href="#case-1-declaring-listeners-within-a-loop" class="md-nav__link">
+    Case 1: Declaring listeners within a loop
   </a>
   
 </li>
@@ -525,27 +525,29 @@
                 
                   <h1>Event Handling</h1>
                 
-                <p>Event handling in Formula is based on simple callback functions. Callbacks can have zero or 
-one parameter to pass data as part of the event.</p>
+                <p>Event handling in Formula is based on event listeners. A listener is just a function
+that is called when an event happens and could be described by a simple <code>(Event) -&gt; Unit</code> 
+function type. We pass listeners to other parts of the codebase such as the view layer by
+adding the listener to the <code>Render Model</code>.</p>
 <h3 id="ui-events">UI Events</h3>
-<p>To handle UI events, declare a function on the <code>Render Model</code> for each type of UI event you care about.
+<p>To handle UI events, declare a <code>Listener</code> on the <code>Render Model</code> for each type of UI event you care about.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">FormRenderModel</span><span class="p">(</span>
-  <span class="c1">// A callback with no parameters</span>
-  <span class="kd">val</span> <span class="nv">onSaveSelected</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
+  <span class="c1">// A listener where event contains no information (We use kotlin.Unit type).  </span>
+  <span class="kd">val</span> <span class="nv">onSaveSelected</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="o">&gt;</span><span class="p">,</span>
 
-  <span class="c1">// A callback where data is passed as part of the event.</span>
-  <span class="kd">val</span> <span class="nv">onNameChanged</span><span class="p">:</span> <span class="p">(</span><span class="n">newName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+  <span class="c1">// A listener where name string is passed as part of the event.</span>
+  <span class="kd">val</span> <span class="nv">onNameChanged</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div></p>
-<p>To create a callback use <code>FormulaContext.onEvent</code>. Note: All callbacks should be created within <code>Formula.evaluate</code> block.
-<div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">):</span> <span class="p">...</span> <span class="p">{</span>
+<p>To create a listener use <code>FormulaContext.onEvent</code>. Note: All listeners should be created within <code>Formula.evaluate</code> block.
+<div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span> <span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">FormRenderModel</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">FormRenderModel</span><span class="p">(</span>
       <span class="n">onNameChanged</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span> <span class="p">{</span> <span class="n">newName</span> <span class="o">-&gt;</span>
         <span class="c1">// Use &quot;newName&quot; to perform a transition</span>
         <span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">newName</span><span class="p">))</span>
       <span class="p">},</span>
-      <span class="n">onSaveSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span>
+      <span class="n">onSaveSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="o">&gt;</span> <span class="p">{</span>
         <span class="c1">// No state change, performing side-effects.</span>
         <span class="n">transition</span> <span class="p">{</span>
           <span class="n">userService</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">)</span>  
@@ -557,10 +559,10 @@ one parameter to pass data as part of the event.</p>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>This example is dense, but it shows almost every kind of scenario. Let's go over it.</p>
-<p>To create a callback, we pass a function that returns a <code>Transition&lt;State&gt;</code>. Formula
+<p>To create a listener, we pass a function that returns a <code>Transition&lt;State&gt;</code>. Formula
 uses transitions to update internal state and/or perform side-effects to other components. 
-Callbacks are scoped to the current state. Any time we transition to a new state, evaluate
-is called again and the callbacks are recreated.</p>
+Listeners are scoped to the current state. Any time we transition to a new state, evaluate
+is called again and the listeners are recreated.</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Updating state</span>
 <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span> <span class="n">newName</span><span class="p">:</span> <span class="kt">String</span> <span class="o">-&gt;</span>
   <span class="c1">// We use kotlin data class copy function</span>
@@ -587,9 +589,9 @@ is called again and the callbacks are recreated.</p>
 <p>To ensure safe execution, all side-effects should be performed within <code>transition {}</code> block which
 will be executed after the state change is performed.</p>
 <h3 id="sending-messages-to-the-parent">Sending messages to the parent</h3>
-<p>To pass events to the parent, first define the callbacks on the <code>Formula.Input</code> class.
+<p>To pass events to the parent, first define the listener on the <code>Formula.Input</code> class.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">ItemListInput</span><span class="p">(</span>
-  <span class="kd">val</span> <span class="nv">onItemSelected</span><span class="p">:</span> <span class="p">(</span><span class="n">itemId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+  <span class="kd">val</span> <span class="nv">onItemSelected</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="n">ItemId</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div></p>
 <p>Also, lets make sure that <code>Input</code> type is declared at the top of our <code>formula</code>.
@@ -620,32 +622,33 @@ will be executed after the state change is performed.</p>
   <span class="n">output</span> <span class="o">=</span> <span class="p">...,</span>
   <span class="n">updates</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">updates</span> <span class="p">{</span>
     <span class="c1">// Performs a side effect when formula is initialized</span>
-    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="na">onInit</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">Stream</span><span class="p">.</span><span class="na">onInit</span><span class="p">().</span><span class="na">onEvent</span> <span class="p">{</span>
       <span class="n">transition</span> <span class="p">{</span> <span class="n">analytics</span><span class="p">.</span><span class="na">trackScreenOpen</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="c1">// Performs a side effect when formula is terminated</span>
-    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="na">onTerminate</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">Stream</span><span class="p">.</span><span class="na">onTerminate</span><span class="p">().</span><span class="na">onEvent</span> <span class="p">{</span>
       <span class="n">transition</span> <span class="p">{</span> <span class="n">analytics</span><span class="p">.</span><span class="na">trackClose</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="c1">// Performs a side-effect when data changes</span>
-    <span class="n">events</span><span class="p">(</span><span class="n">Stream</span><span class="p">.</span><span class="na">onData</span><span class="p">(),</span> <span class="n">state</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Stream</span><span class="p">.</span><span class="na">onData</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">itemId</span><span class="p">).</span><span class="na">onEvent</span> <span class="p">{</span>
       <span class="c1">// This will call api.fetchItem for each unique itemId</span>
       <span class="n">transition</span> <span class="p">{</span> <span class="n">api</span><span class="p">.</span><span class="na">fetchItem</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span> <span class="p">}</span>
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-<h3 id="formula-retains-callbacks">Formula retains callbacks</h3>
-<p>Callbacks retain equality across re-evaluation (such as state changes). The first time formula
-requests a callback, we create it and persist it in the map. Subsequent calls will re-use this
+<h3 id="formula-retains-listeners">Formula retains listeners</h3>
+<p>Listeners retain equality across re-evaluation (such as state changes). The first time formula
+requests a listener, we create it and persist it in the map. Subsequent calls will re-use this
 instance. The instance is disabled and removed when your formula is removed or if you don't
-request this callback within Formula.evaluate block.</p>
-<p>By default, we generate a key for each callback based on the position in code where it is called.
-There are a couple of cases when this is not sufficient and you need to explicitly provide a unique <code>key</code>.</p>
-<h4 id="case-1-declaring-callbacks-within-a-loop">Case 1: Declaring callbacks within a loop</h4>
-<p>For example, if you are mapping list of items and creating a callback within the <code>map</code> function.
+request this listener within Formula.evaluate block.</p>
+<p>By default, we generate a key for each listener based on the listener type. Usually, this
+is an anonymous class which is associated with the position in code where it is called. There are
+a couple of cases when this is not sufficient and you need to explicitly provide a unique <code>key</code>.</p>
+<h4 id="case-1-declaring-listeners-within-a-loop">Case 1: Declaring listeners within a loop</h4>
+<p>For example, if you are mapping list of items and creating a listener within the <code>map</code> function.
 <div class="highlight"><pre><span></span><code><span class="c1">// This will not work unless your list of items never changes (removal of item or position change).</span>
 <span class="n">ItemListRenderModel</span><span class="p">(</span>
   <span class="n">items</span> <span class="o">=</span> <span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">.</span><span class="na">map</span> <span class="p">{</span> <span class="n">item</span> <span class="o">-&gt;</span>
@@ -669,7 +672,7 @@ There are a couple of cases when this is not sufficient and you need to explicit
 <span class="p">}</span>
 </code></pre></div></p>
 <h4 id="case-2-delegating-to-another-function">Case 2: Delegating to another function</h4>
-<p>There is an issue with callbacks when passing <code>FormulaContext</code> to another function.
+<p>There is an issue with listeners when passing <code>FormulaContext</code> to another function.
 Let's say you have a function that takes FormulaContext and creates a ChildRenderModel.
 <div class="highlight"><pre><span></span><code><span class="kd">fun</span> <span class="nf">createChildRenderModel</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">):</span> <span class="n">ChildRenderModel</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">ChildRenderModel</span><span class="p">(</span>

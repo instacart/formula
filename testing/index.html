@@ -531,14 +531,14 @@
 </code></pre></div></p>
 <h3 id="basic-example">Basic example</h3>
 <p>Use <code>test</code> extension to start testing your formula. Then, you can use <code>output</code> 
-function to make assertions on the output or invoke callbacks.</p>
+function to make assertions on the output or invoke event listeners.</p>
 <p><div class="highlight"><pre><span></span><code><span class="n">CounterFormula</span><span class="p">()</span>
     <span class="p">.</span><span class="na">test</span><span class="p">()</span>
     <span class="c1">// Making assertion on the initial output</span>
     <span class="p">.</span><span class="na">output</span> <span class="p">{</span>
         <span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 0&quot;</span><span class="p">)</span>
     <span class="p">}</span>
-    <span class="c1">// Invoking the callbacks that live on the output.</span>
+    <span class="c1">// Invoking an event listener that live on the output.</span>
     <span class="p">.</span><span class="na">output</span> <span class="p">{</span> <span class="n">onIncrement</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">.</span><span class="na">output</span> <span class="p">{</span> <span class="n">onIncrement</span><span class="p">()</span> <span class="p">}</span>
     <span class="c1">// Making assertion on final output</span>
@@ -581,7 +581,7 @@ can emit an output, check data passed by the parent or pass events back to the p
     <span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="c1">// Trigger a callback</span>
+<span class="c1">// Trigger an event </span>
 <span class="n">testFormula</span><span class="p">.</span><span class="na">input</span> <span class="p">{</span>
     <span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
 <span class="p">}</span>

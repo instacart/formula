@@ -578,11 +578,11 @@ has two buttons to increment and decrement it.</p>
 actions the user will be able to take. This concept is called a <code>RenderModel</code> and is represented by a Kotlin data class.</p>
 <h4 id="render-model">Render Model</h4>
 <p>Render Model is an immutable representation of your view. It will be used to update Android views. Typically,
-it will also contain callbacks that will be invoked when user interacts with the UI.
+it will also contain event listeners that will be invoked when user interacts with the UI.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">CounterRenderModel</span><span class="p">(</span>
   <span class="kd">val</span> <span class="nv">count</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-  <span class="kd">val</span> <span class="nv">onDecrement</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
-  <span class="kd">val</span> <span class="nv">onIncrement</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span> 
+  <span class="kd">val</span> <span class="nv">onDecrement</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="nv">onIncrement</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div></p>
 <p>Once we define a Render Model, we can create a <code>RenderView</code> which is responsible for taking a <code>RenderModel</code>
@@ -625,7 +625,7 @@ example, we need to keep track of the current count.
 various events by transitioning to a new state. </p>
 <div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">CounterFormula</span> <span class="p">:</span> <span class="n">Formula</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span> <span class="n">CounterState</span><span class="p">,</span> <span class="n">CounterRenderModel</span><span class="o">&gt;</span> <span class="p">{</span>
 
-  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="kt">Unit</span><span class="p">):</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">CounterState</span><span class="p">(</span><span class="n">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span>
+  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="kt">Unit</span><span class="p">):</span> <span class="n">CounterState</span> <span class="o">=</span> <span class="n">CounterState</span><span class="p">(</span><span class="n">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span>
 
   <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span>
     <span class="n">input</span><span class="p">:</span> <span class="kt">Unit</span><span class="p">,</span>
@@ -647,7 +647,7 @@ various events by transitioning to a new state. </p>
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The most import part is the <code>Formula.evaluate</code> function. It gives us the current <code>State</code> and expects an
+<p>The most important part is the <code>Formula.evaluate</code> function. It gives us the current <code>State</code> and expects an
 <code>Evaluation&lt;RenderModel&gt;</code> back. Any time we transition to a new state, evaluate is called again and new Render Model 
 is created.</p>
 <p>There is also a special object called <code>FormulaContext</code> being passed. Formula Context allows us to respond to events by
@@ -669,7 +669,7 @@ prevent this.
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<p>The callback block uses a DSL to provide access to <code>Transition.Factory</code> which has the <code>transition</code> and <code>none</code>
+<p>The listener block uses a DSL to provide access to <code>Transition.Factory</code> which has the <code>transition</code> and <code>none</code>
 utility functions (take a look at that class for other utility functions).</p>
 <p>Now that we defined our state management, let's connect it to our <code>RenderView</code>.</p>
 <h4 id="using-formula">Using Formula</h4>

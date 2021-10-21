@@ -283,8 +283,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#maintaining-callback-equality" class="md-nav__link">
-    Maintaining callback equality
+  <a href="#maintaining-listener-equality" class="md-nav__link">
+    Maintaining listener equality
   </a>
   
 </li>
@@ -446,8 +446,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#maintaining-callback-equality" class="md-nav__link">
-    Maintaining callback equality
+  <a href="#maintaining-listener-equality" class="md-nav__link">
+    Maintaining listener equality
   </a>
   
 </li>
@@ -483,7 +483,7 @@
                 
                   <h1>Using Input</h1>
                 
-                <p>Input is a Kotlin data class used to pass data and event callbacks to the Formula instance. Let's say we need to 
+                <p>Input is a Kotlin data class used to pass data and event listeners to the Formula instance. Let's say we need to 
 pass an item id to <code>ItemDetailFormula</code>. 
 <div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">ItemDetailFormula</span><span class="p">()</span> <span class="p">:</span> <span class="n">Formula</span><span class="o">&lt;</span><span class="n">ItemDetailFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span> <span class="p">...,</span> <span class="p">...</span><span class="o">&gt;</span> <span class="p">{</span>
 
@@ -530,7 +530,7 @@ pass an item id to <code>ItemDetailFormula</code>.
 <h2 id="equality">Equality</h2>
 <p>Formula uses input equality to determine if it should re-evaluate. A parent can cause 
 a child formula to re-evaluate by changing the input it passes. This will also trigger
-<code>Formula.onInputChanged</code> callback on the child formula.</p>
+<code>Formula.onInputChanged</code> on the child formula.</p>
 <p>This is a desired behavior as we do want the child to react when the data that we pass changes.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">ItemInput</span><span class="p">(</span>
     <span class="kd">val</span> <span class="nv">itemId</span><span class="p">:</span> <span class="kt">String</span>
@@ -538,18 +538,15 @@ a child formula to re-evaluate by changing the input it passes. This will also t
 </code></pre></div></p>
 <p>Making <code>Input</code> a data class and passing data as part of its properties makes it easy to reason
 about its equality. In some cases though, we want to pass objects that don't have property based
-equality such as callback functions or observables. </p>
-<h3 id="maintaining-callback-equality">Maintaining callback equality</h3>
-<p>In many cases we want to pass callbacks to listen to formula events. </p>
+equality such as listeners or observables. </p>
+<h3 id="maintaining-listener-equality">Maintaining listener equality</h3>
+<p>In many cases we want to pass listeners to listen to formula events. </p>
 <div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">ItemListInput</span><span class="p">(</span>
-    <span class="kd">val</span> <span class="nv">onItemSelected</span><span class="p">:</span> <span class="p">(</span><span class="n">Item</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+    <span class="kd">val</span> <span class="nv">onItemSelected</span><span class="p">:</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>Formula provides an easy way to maintain callback equality. Within your parent formula, 
-you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
-<ul>
-<li><code>FormulaContext.onEvent</code></li>
-</ul>
+<p>Formula provides an easy way to maintain listener equality. Within your parent formula, 
+you can use <code>FormulaContext.onEvent</code> to instantiate listeners.</p>
 <p><strong>Don't:</strong> Don't instantiate functions within <code>Formula.evaluate</code>.
 <div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
     <span class="kd">val</span> <span class="nv">itemListInput</span> <span class="o">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
@@ -559,7 +556,7 @@ you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
     <span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<p><strong>Do:</strong> Use <code>eventCallback</code>
+<p><strong>Do:</strong> Use <code>onEvent</code>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(...)</span> <span class="p">{</span>
     <span class="kd">val</span> <span class="nv">itemListInput</span> <span class="o">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
         <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span> <span class="n">_</span> <span class="o">-&gt;</span>
@@ -568,13 +565,15 @@ you can use <code>FormulaContext</code> to instantiate callbacks by using:</p>
     <span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<p><strong>Do:</strong> Use already constructed callbacks
-<div class="highlight"><pre><span></span><code><span class="c1">// Router is constructed outside of the &quot;evaluate&quot; function block</span>
-<span class="kd">val</span> <span class="nv">router</span><span class="p">:</span> <span class="n">ItemRouter</span> <span class="o">=</span> <span class="p">...</span>
+<p><strong>Do:</strong> Use already constructed listeners 
+<div class="highlight"><pre><span></span><code><span class="c1">// Listener is constructed outside of the &quot;evaluate&quot; function block</span>
+<span class="kd">val</span> <span class="nv">onItemSelectedListener</span> <span class="o">=</span> <span class="n">Listener</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="p">{</span>
+
+<span class="p">}</span>
 
 <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(...):</span> <span class="p">...</span> <span class="p">{</span>
     <span class="kd">val</span> <span class="nv">itemListInput</span> <span class="o">=</span> <span class="n">ItemListInput</span><span class="p">(</span>
-        <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">router</span><span class="o">::</span><span class="n">onItemSelected</span>
+        <span class="n">onItemSelected</span> <span class="o">=</span> <span class="n">onItemSelectedListener</span>
     <span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div></p>

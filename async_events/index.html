@@ -465,7 +465,7 @@ a task repository that exposes an RxJava <code>Observable&lt;List&lt;Task&gt;&gt
 <span class="p">}</span>
 </code></pre></div></p>
 <p>All asynchronous events have to be declared within <code>Formula.evaluate</code> function.
-<div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">):</span> <span class="p">...</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="kd">override</span> <span class="kd">fun</span> <span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span> <span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">createRenderModel</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">taskList</span><span class="p">),</span>
     <span class="c1">// All async events need to be declared within &quot;context.updates&quot; block.</span>
@@ -482,8 +482,8 @@ a task repository that exposes an RxJava <code>Observable&lt;List&lt;Task&gt;&gt
 <span class="p">}</span>
 </code></pre></div></p>
 <p>Formula uses a <code>Stream</code> interface to define an asynchronous event producers/sources.
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span> <span class="nc">Stream</span><span class="o">&lt;</span><span class="n">Message</span><span class="o">&gt;</span> <span class="p">{</span>
-  <span class="kd">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">):</span> <span class="n">Cancelable?</span>
+<div class="highlight"><pre><span></span><code><span class="kd">interface</span> <span class="nc">Stream</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="kd">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">):</span> <span class="n">Cancelable?</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>In this example we used an <code>RxStream.fromObservable</code> to convert from an <code>Observable</code> to a <code>Stream</code> instance.</p>
@@ -518,11 +518,7 @@ anymore and the runtime will unsubscribe.</p>
     <span class="kd">val</span> <span class="nv">task</span><span class="p">:</span> <span class="n">Task? </span><span class="o">=</span> <span class="kc">null</span>
   <span class="p">)</span>
 
-  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span>
-    <span class="n">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
-    <span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span>
-    <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="o">&lt;</span><span class="p">..</span><span class="o">&gt;</span>
-  <span class="p">):</span> <span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span> <span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
       <span class="n">updates</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">updates</span> <span class="p">{</span>
         <span class="kd">val</span> <span class="nv">fetchTask</span> <span class="o">=</span> <span class="n">RxStream</span><span class="p">.</span><span class="na">fromObservable</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="n">input</span><span class="p">.</span><span class="na">taskId</span><span class="p">)</span> <span class="p">{</span> <span class="n">taskRepo</span><span class="p">.</span><span class="na">fetchTask</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="na">taskId</span><span class="p">)</span> <span class="p">}</span>
@@ -541,8 +537,8 @@ of emitting them through onError.
 </code></pre></div>
 <h3 id="extending-stream-interface">Extending Stream Interface</h3>
 <p>If you need to use a different mechanism for asynchronous events, you can extend <code>Stream</code> interface.
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span> <span class="nc">Stream</span><span class="o">&lt;</span><span class="n">Message</span><span class="o">&gt;</span> <span class="p">{</span>
-  <span class="kd">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">):</span> <span class="n">Cancelable?</span>
+<div class="highlight"><pre><span></span><code><span class="kd">interface</span> <span class="nc">Stream</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="kd">fun</span> <span class="nf">start</span><span class="p">(</span><span class="n">send</span><span class="p">:</span> <span class="p">(</span><span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">):</span> <span class="n">Cancelable?</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>For example, let's say we want to track network status (I'm going to use mock network status APIs).
@@ -563,9 +559,9 @@ of emitting them through onError.
 <span class="p">}</span>
 </code></pre></div></p>
 <p>We can now hook this up within our Formula:
-<div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">MyFormula</span><span class="p">(</span><span class="kd">val</span> <span class="nv">networkStatus</span><span class="p">:</span> <span class="n">NetworkStatusStream</span><span class="p">):</span> <span class="n">Formula</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">MyFormula</span><span class="p">(</span><span class="kd">val</span> <span class="nv">networkStatus</span><span class="p">:</span> <span class="n">NetworkStatusStream</span><span class="p">):</span> <span class="n">Formula</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="p">,</span> <span class="n">Output</span><span class="o">&gt;</span> <span class="p">{</span>
 
-  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="p">..,</span> <span class="n">state</span><span class="p">:</span> <span class="p">..,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FormulaContext</span><span class="p">):</span> <span class="p">..</span> <span class="p">{</span>
+  <span class="kd">override</span> <span class="kd">fun</span> <span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span> <span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span> <span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">Evaluation</span><span class="p">(</span>
       <span class="n">updates</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="na">updates</span> <span class="p">{</span>
         <span class="n">events</span><span class="p">(</span><span class="n">networkStatus</span><span class="p">)</span> <span class="p">{</span> <span class="n">status</span> <span class="o">-&gt;</span>

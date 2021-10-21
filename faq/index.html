@@ -379,8 +379,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-is-already-defined" class="md-nav__link">
-    Callback is already defined.
+  <a href="#listener-is-already-defined" class="md-nav__link">
+    Listener is already defined.
   </a>
   
 </li>
@@ -453,8 +453,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-is-already-defined" class="md-nav__link">
-    Callback is already defined.
+  <a href="#listener-is-already-defined" class="md-nav__link">
+    Listener is already defined.
   </a>
   
 </li>
@@ -493,20 +493,19 @@ will get the following exception if that is not the case.
 <h3 id="transition-already-happened">Transition already happened.</h3>
 <p>After each transition, formula is re-evaluated and new event listeners are created. If you use an old listener
 you will see the following exception.
-<div class="highlight"><pre><span></span><code>Caused by: java.lang.IllegalStateException: Transition already happened. This is using old transition callback: $it.
+<div class="highlight"><pre><span></span><code>Caused by: java.lang.IllegalStateException: Transition already happened. This is using old event listener: $it.
 </code></pre></div></p>
-<h3 id="callback-is-already-defined">Callback is already defined.</h3>
+<h3 id="listener-is-already-defined">Listener is already defined.</h3>
 <p>TODO..</p>
 <h3 id="after-evaluation-finished">After evaluation finished</h3>
-<p>If a <code>callback</code> or <code>eventCallback</code> is called after the Formula evaluation is finished, you will see
-this exception.
+<p>If a <code>onEvent</code> is called after the Formula evaluation is finished, you will see this exception.
 <div class="highlight"><pre><span></span><code>Caused by: java.lang.IllegalStateException: Cannot call this after evaluation finished.
 </code></pre></div>
-This can happen for a number of reasons. Likely, you are creating a <code>callback</code> or <code>eventCallback</code>
-within the <code>onEvent</code> or <code>events</code> method of your <code>updates</code> lambda for the given Formula. This can
-cause your callbacks to be scoped to a stale state instance. Instead, you should create your callbacks
-within the <code>evaluate</code> function itself, passing the data you might be using from the <code>onEvent</code> into
-the <code>State</code> defined for that Formula. For example, instead of:
+This means that you called <code>onEvent</code> after <code>Formula.evalute</code> already returned <code>Evaluation</code>
+object. This can happen when you are calling <code>onEvent</code> within <code>transition</code> block. This is not 
+allowed because your listener would be scoped to a stale state instance. Instead, you should 
+create your listeners within the <code>evaluate</code> function itself, passing the data you might be 
+using from the <code>onEvent</code> into the <code>State</code> defined for that Formula. For example, instead of:
 <div class="highlight"><pre><span></span><code>class TaskDetailFormula @Inject constructor(
     private val repo: TasksRepo,
 ) : Formula&lt;TaskDetailFormula.Input, TaskDetailFormula.State, TaskDetailRenderModel&gt; {
@@ -521,11 +520,7 @@ the <code>State</code> defined for that Formula. For example, instead of:
 
     override fun initialState(input: Input) = State()
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext&lt;State&gt;
-    ): Evaluation&lt;TaskDetailRenderModel?&gt; {
+    override fun Snapshot&lt;Input, State&gt;.evaluate(): Evaluation&lt;TaskDetailRenderModel?&gt; {
         return Evaluation(
             output = state.task,
             updates = context.updates {
@@ -560,12 +555,8 @@ the state and then construct the render model in the <code>evaluation</code> fun
 
     override fun initialState(input: Input) = State()
 
-    override fun evaluate(
-        input: Input,
-        state: State,
-        context: FormulaContext&lt;State&gt;
-    ): Evaluation&lt;TaskDetailRenderModel?&gt; {
-        // Note that this is correct because the render model and therefore callback is constructed
+    override fun Snapshot&lt;Input, State&gt;.evaluate(): Evaluation&lt;TaskDetailRenderModel?&gt; {
+        // Note that this is correct because the render model and therefore listener is constructed
         // within `evaluate` instead of within `onEvent`
         val renderModel = state.task?.let {
             TaskDetailRenderModel(
@@ -587,7 +578,7 @@ the state and then construct the render model in the <code>evaluation</code> fun
 }
 </code></pre></div>
 Notice that the render model is no longer stored in the state, but instead constructed on each
-call to <code>evaluate</code> so that the callbacks are never stale.</p>
+call to <code>evaluate</code> so that the listeners are never stale.</p>
                 
               
               

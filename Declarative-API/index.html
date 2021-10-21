@@ -389,7 +389,7 @@ explicitly managing subscription lifecycle.
 <span class="p">}</span>
 </code></pre></div></p>
 <p>Formula does things a bit differently. It manages the lifecycle of the asynchronous actions for you. Instead of manually subscribing and unsubscribing,
-you define the conditions for which the asynchronous action should run and the callback which handles events produced by the action.
+you define the conditions for which the asynchronous action should run and the listener which handles events produced by the action.
 <div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">fetchUserStream</span> <span class="o">=</span> <span class="n">RxStream</span><span class="p">.</span><span class="na">fromObservable</span> <span class="p">{</span> <span class="n">repository</span><span class="p">.</span><span class="na">fetchUser</span><span class="p">()</span> <span class="p">}</span>
 <span class="n">fetchUserStream</span><span class="p">.</span><span class="na">onEvent</span> <span class="p">{</span> <span class="n">userResult</span> <span class="o">-&gt;</span>
   <span class="c1">// Do something</span>
