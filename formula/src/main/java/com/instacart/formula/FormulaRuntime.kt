@@ -32,7 +32,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var isExecuting: Boolean = false
 
     fun isKeyValid(input: Input): Boolean {
-        return this.input == null || key == implementation.key(input)
+        return this.input == null || key == formula.key(input)
     }
 
     fun onInput(input: Input) {
