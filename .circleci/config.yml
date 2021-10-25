@@ -74,6 +74,10 @@ commands:
           command: |
             ./gradlew :formula-android-tests:testRelease --no-daemon
       - run:
+          name: Run Formula Lint Tests
+          command: |
+            ./gradlew :formula-lint:test --no-daemon
+      - run:
           name: Generate Jacoco Report
           command: |
             ./gradlew jacocoTestReportMerged --no-daemon
