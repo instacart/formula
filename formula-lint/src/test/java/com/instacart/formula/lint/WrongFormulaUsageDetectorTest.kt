@@ -1,7 +1,6 @@
 package com.instacart.formula.lint
 
 import com.android.tools.lint.checks.infrastructure.TestFile
-import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintResult
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
@@ -17,7 +16,6 @@ class WrongFormulaUsageDetectorTest {
             val state: State
         }
     """.trimIndent()
-
 
     private val TRANSITION_STUB = """
         package com.instacart.formula
@@ -38,7 +36,6 @@ class WrongFormulaUsageDetectorTest {
             val context: FormulaContext<Input, State>
         }
     """.trimIndent()
-
 
     private val FORMULA_CONTEXT_STUB = """
         package com.instacart.formula
@@ -85,9 +82,7 @@ class WrongFormulaUsageDetectorTest {
         }
     """.trimIndent()
 
-
     private fun run(vararg exampleCode: TestFile): TestLintResult {
-        val examples = exampleCode
         val array = arrayOf(
             kotlin(TRANSITION_CONTEXT_STUB),
             kotlin(TRANSITION_STUB),
@@ -96,7 +91,7 @@ class WrongFormulaUsageDetectorTest {
             kotlin(FORMULA_CONTEXT_STUB),
             kotlin(SNAPSHOT_STUB),
             kotlin(STATELESS_FORMULA_STUB)
-        ).plus(examples)
+        ).plus(exampleCode)
         return lint()
             .files(*array)
             .issues(*issues)

@@ -22,8 +22,6 @@ import org.jetbrains.uast.UMethod
 import java.util.EnumSet
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
-    private val FORMULA_CONTEXT_CLASS = "com.instacart.formula.FormulaContext"
-    private val SNAPSHOT_CLASS = "com.instacart.formula.Snapshot"
 
     override fun getApplicableUastTypes(): List<Class<out UElement>>? {
         return listOf(
@@ -160,6 +158,9 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     }
 
     companion object {
+        private const val FORMULA_CONTEXT_CLASS = "com.instacart.formula.FormulaContext"
+        private const val SNAPSHOT_CLASS = "com.instacart.formula.Snapshot"
+
         val ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT = Issue.create(
             id = "InvalidFormulaContextUsage",
             briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
