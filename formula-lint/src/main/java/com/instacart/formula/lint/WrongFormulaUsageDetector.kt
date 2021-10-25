@@ -22,6 +22,27 @@ import org.jetbrains.uast.UMethod
 import java.util.EnumSet
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
+    companion object {
+        private const val FORMULA_CONTEXT_CLASS = "com.instacart.formula.FormulaContext"
+        private const val SNAPSHOT_CLASS = "com.instacart.formula.Snapshot"
+
+        val ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT = Issue.create(
+            id = "InvalidFormulaContextUsage",
+            briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
+            explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
+            category = MESSAGES,
+            priority = 5,
+            severity = ERROR,
+            implementation = Implementation(
+                WrongFormulaUsageDetector::class.java,
+                EnumSet.of(Scope.ALL_JAVA_FILES)
+            )
+        )
+
+        val issues = arrayOf(
+            ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT,
+        )
+    }
 
     override fun getApplicableUastTypes(): List<Class<out UElement>>? {
         return listOf(
@@ -88,13 +109,9 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     }
 
     private fun getMethodOwner(context: JavaContext, method: PsiMethod?): FormulaReference? {
-        val referenceType = method?.containingClass?.let {
+        return method?.containingClass?.let {
             getFormulaReference(context, context.evaluator.getClassType(it))
         }
-        if (referenceType != null) {
-            return referenceType
-        }
-        return null
     }
 
     private fun findFormulaParameter(
@@ -155,27 +172,5 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             val typeClass = context.evaluator.getTypeClass(type)
             typeClass?.qualifiedName == "com.instacart.formula.TransitionContext"
         }
-    }
-
-    companion object {
-        private const val FORMULA_CONTEXT_CLASS = "com.instacart.formula.FormulaContext"
-        private const val SNAPSHOT_CLASS = "com.instacart.formula.Snapshot"
-
-        val ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT = Issue.create(
-            id = "InvalidFormulaContextUsage",
-            briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
-            explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
-            category = MESSAGES,
-            priority = 5,
-            severity = ERROR,
-            implementation = Implementation(
-                WrongFormulaUsageDetector::class.java,
-                EnumSet.of(Scope.ALL_JAVA_FILES)
-            )
-        )
-
-        val issues = arrayOf(
-            ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT,
-        )
     }
 }
