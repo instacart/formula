@@ -8,28 +8,32 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".test.TestFragmentActivity">
+        <activity android:name=".test.TestFragmentActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.instacart.formula.ActivityUpdateTest$TestActivity">
+        <activity android:name="com.instacart.formula.ActivityUpdateTest$TestActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.instacart.formula.ActivityLifecycleEventTest$TestActivity">
+        <activity android:name="com.instacart.formula.ActivityLifecycleEventTest$TestActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.instacart.formula.ActivityUpdateTimingTest$TestActivity">
+        <activity android:name="com.instacart.formula.ActivityUpdateTimingTest$TestActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

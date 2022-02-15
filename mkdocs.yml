@@ -27,4 +27,4 @@ nav:
   - 'Formula Android': Formula-Android.md
   - 'Using Android View Model': using_android_view_model.md
   - 'FAQ': faq.md
-  - 'Contributing': ../CONTRIBUTING.md
+  - 'Contributing': https://github.com/instacart/formula/blob/master/CONTRIBUTING.md
