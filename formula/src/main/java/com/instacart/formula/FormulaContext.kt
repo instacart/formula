@@ -72,6 +72,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
      *
      * It uses [transition] type as key.
      */
+    @Deprecated("Use context.onEvent {} instead.", replaceWith = ReplaceWith("onEvent(transition)"))
     fun <Event> eventCallback(
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
@@ -83,6 +84,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
      *
      * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
      */
+    @Deprecated("Use context.onEvent(key) {} instead.", replaceWith = ReplaceWith("onEvent(key, transition)"))
     fun <Event> eventCallback(
         key: Any,
         transition: Transition<Input, State, Event>,
