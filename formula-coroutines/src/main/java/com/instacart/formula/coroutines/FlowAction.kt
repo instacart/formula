@@ -1,7 +1,7 @@
 package com.instacart.formula.coroutines
 
+import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import com.instacart.formula.Stream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
@@ -9,16 +9,17 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 /**
- * Formula [Stream] adapter to enable coroutine's Flow use.
+ * Adapter which allows creating Formula [Action] from Kotlin coroutine's. Take a
+ * look at [FlowAction.fromFlow] to create an [Action] from [Flow] type.
  */
-interface FlowStream<Event> : Stream<Event> {
+interface FlowAction<Event> : Action<Event> {
 
     companion object {
         /**
-         * Creates a [Stream] from a [Flow] factory [create].
+         * Creates an [Action] which will launch a [Flow] created by factory function [create].
          *
          * ```
-         * events(FlowStream.fromFlow { locationManager.updates() }) { event ->
+         * FlowAction.fromFlow { locationManager.updates() }.onEvent { event ->
          *   transition()
          * }
          * ```
@@ -26,8 +27,8 @@ interface FlowStream<Event> : Stream<Event> {
         inline fun <Event> fromFlow(
             scope: CoroutineScope = MainScope(),
             crossinline create: () -> Flow<Event>
-        ): Stream<Event> {
-            return object : FlowStream<Event> {
+        ): Action<Event> {
+            return object : FlowAction<Event> {
 
                 override val scope: CoroutineScope = scope
 
@@ -40,22 +41,22 @@ interface FlowStream<Event> : Stream<Event> {
         }
 
         /**
-         * Creates a [Stream] from a [Flow] factory [create].
+         * Creates an [Action] which will launch a [Flow] created by factory function [create].
          *
          * ```
-         * events(FlowStream.fromFlow(itemId) { repo.fetchItem(itemId) }) { event ->
+         * FlowAction.fromFlow(itemId) { repo.fetchItem(itemId) }.onEvent { event ->
          *   transition()
          * }
          * ```
          *
-         * @param key Used to distinguish this [Stream] from other streams.
+         * @param key Used to distinguish this [Action] from other actions.
          */
         inline fun <Event> fromFlow(
             scope: CoroutineScope = MainScope(),
             key: Any?,
             crossinline create: () -> Flow<Event>
-        ): Stream<Event> {
-            return object : FlowStream<Event> {
+        ): Action<Event> {
+            return object : FlowAction<Event> {
                 override val scope: CoroutineScope = scope
 
                 override fun flow(): Flow<Event> {

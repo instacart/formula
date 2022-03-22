@@ -27,7 +27,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         transitionListener: TransitionListener
     ): this(formula, input, ScopedListeners(formula), transitionListener)
 
-    private val updateManager = UpdateManager()
+    private val actionManager = ActionManager()
 
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var frame: Frame<Input, State, Output>? = null
@@ -85,7 +85,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
         val result = snapshot.run { formula.run { evaluate() } }
         val frame = Frame(input, state, result, transitionDispatcher)
-        updateManager.updateEventListeners(frame.evaluation.updates)
+        actionManager.updateEventListeners(frame.evaluation.actions)
         this.frame = frame
 
         listeners.evaluationFinished()
@@ -115,7 +115,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun terminateOldUpdates(transitionId: TransitionId): Boolean {
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
-        if (updateManager.terminateOld(newFrame.evaluation.updates, transitionId)) {
+        if (actionManager.terminateOld(newFrame.evaluation.actions, transitionId)) {
             return true
         }
 
@@ -133,7 +133,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
 
         // Update parent workers so they are ready to handle events
-        if (updateManager.startNew(newFrame.evaluation.updates, transitionId)) {
+        if (actionManager.startNew(newFrame.evaluation.actions, transitionId)) {
             return true
         }
 
@@ -181,7 +181,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun performTerminationSideEffects() {
         children?.forEachValue { it.performTerminationSideEffects() }
-        updateManager.terminate()
+        actionManager.terminate()
         listeners.disableAll()
     }
 

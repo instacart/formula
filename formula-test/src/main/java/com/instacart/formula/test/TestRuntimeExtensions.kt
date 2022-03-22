@@ -1,7 +1,7 @@
 package com.instacart.formula.test
 
+import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Stream
 
 /**
  * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
@@ -25,5 +25,5 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     }
 }
 
-fun <Event> Stream<Event>.test() = TestStreamObserver(this)
+fun <Event> Action<Event>.test() = TestActionObserver(this)
 

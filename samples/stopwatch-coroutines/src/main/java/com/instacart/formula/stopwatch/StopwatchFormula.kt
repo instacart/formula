@@ -3,7 +3,7 @@ package com.instacart.formula.stopwatch
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.coroutines.FlowStream
+import com.instacart.formula.coroutines.FlowAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
@@ -27,7 +27,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
             ),
             updates = context.updates {
                 if (state.isRunning) {
-                    val incrementTimePassed = FlowStream.fromFlow {
+                    val incrementTimePassed = FlowAction.fromFlow {
                         ticker()
                     }
 

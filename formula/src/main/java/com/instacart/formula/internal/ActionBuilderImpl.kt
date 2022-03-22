@@ -1,61 +1,61 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.BoundStream
+import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
+import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
-import com.instacart.formula.Stream
-import com.instacart.formula.StreamBuilder
 import com.instacart.formula.Transition
 
 /**
- * Implements [StreamBuilder] interface.
+ * Implements [ActionBuilder] interface.
  */
-internal class StreamBuilderImpl<out Input, State> internal constructor(
+internal class ActionBuilderImpl<out Input, State> internal constructor(
     private val snapshot: Snapshot<Input, State>,
-) : StreamBuilder<Input, State>(
+) : ActionBuilder<Input, State>(
     input = snapshot.input,
     state = snapshot.state,
 ) {
-    internal val boundedStreams = mutableListOf<BoundStream<*>>()
+    internal val boundedActions = mutableListOf<DeferredAction<*>>()
 
     override fun <Event> events(
-        stream: Stream<Event>,
+        action: Action<Event>,
         transition: Transition<Input, State, Event>,
     ) {
-        add(toBoundStream(stream, transition))
+        add(toBoundStream(action, transition))
     }
 
     override fun <Event> onEvent(
-        stream: Stream<Event>,
+        action: Action<Event>,
         avoidParameterClash: Any,
         transition: Transition<Input, State, Event>,
     ) {
-        add(toBoundStream(stream, transition))
+        add(toBoundStream(action, transition))
     }
 
-    override fun <Event> Stream<Event>.onEvent(
+    override fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     ) {
         val stream = this
-        this@StreamBuilderImpl.events(stream, transition)
+        this@ActionBuilderImpl.events(stream, transition)
     }
 
-    private fun add(connection: BoundStream<*>) {
-        if (boundedStreams.contains(connection)) {
+    private fun add(connection: DeferredAction<*>) {
+        if (boundedActions.contains(connection)) {
             throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
         }
 
-        boundedStreams.add(connection)
+        boundedActions.add(connection)
     }
 
     private fun <Event> toBoundStream(
-        stream: Stream<Event>,
+        stream: Action<Event>,
         transition: Transition<Input, State, Event>,
-    ): BoundStream<Event> {
+    ): DeferredAction<Event> {
         val key = JoinedKey(stream.key(), transition.type())
         val listener = snapshot.context.eventListener(key, transition)
-        return BoundStream(
+        return DeferredAction(
             key = key,
-            stream = stream,
+            action = stream,
             initial = listener
         )
     }

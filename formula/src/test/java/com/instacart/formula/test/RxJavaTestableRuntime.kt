@@ -26,13 +26,13 @@ object RxJavaTestableRuntime : TestableRuntime {
         return ObservableStreamFormulaSubject()
     }
 
-    override fun <T> emitEvents(events: List<T>): Stream<T> {
+    override fun <T : Any> emitEvents(events: List<T>): Stream<T> {
         return RxStream.fromObservable {
             Observable.fromIterable(events)
         }
     }
 
-    override fun <T> emitEvents(key: Any?, events: List<T>): Stream<T> {
+    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Stream<T> {
         return RxStream.fromObservable(key) {
             Observable.fromIterable(events)
         }

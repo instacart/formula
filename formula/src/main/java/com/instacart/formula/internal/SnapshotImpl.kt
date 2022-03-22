@@ -1,8 +1,9 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
-import com.instacart.formula.BoundStream
+import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
@@ -26,11 +27,15 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         ): ChildOutput
     }
 
-    override fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<BoundStream<*>> {
+    override fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
+        return actions(init)
+    }
+
+    override fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
         ensureNotRunning()
-        val builder = StreamBuilderImpl(this)
+        val builder = ActionBuilderImpl(this)
         builder.init()
-        return builder.boundedStreams
+        return builder.boundedActions
     }
 
     override fun <ChildInput, ChildOutput> child(

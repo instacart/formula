@@ -4,7 +4,7 @@ To show how Formula handles asynchronous events, we'll use a task app example. L
 a task repository that exposes an RxJava `Observable<List<Task>>`.
 ```kotlin
 interface TaskRepo {
-  fun tasks(): Observable<List<Task>>
+  fun getTaskList(): Observable<List<Task>>
 }
 ```
 
@@ -13,14 +13,14 @@ All asynchronous events have to be declared within `Formula.evaluate` function.
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
   return Evaluation(
     output = createRenderModel(state.taskList),
-    // All async events need to be declared within "context.updates" block.
-    updates = context.updates {
-      // Convert RxJava observable to a Formula Stream.
-      val taskStream = RxStream.fromObservable(taskRepo::tasks)
+    // All async events need to be declared within "context.actions" block.
+    actions = context.actions {
+      // Convert RxJava observable to a Formula Action.
+      val taskAction = RxAction.fromObservable { taskRepo.getTaskList() }
       // Tell Formula that you want to listen to these events
-      events(taskStream) { newTaskList ->
-        // update our state
-        transition(state.copy(taskList = newTaskList))
+      taskAction.onEvent { newTaskList ->
+          // update our state
+          transition(state.copy(taskList = newTaskList)) 
       }
     }
   )
@@ -28,30 +28,30 @@ override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
 
 ```
 
-Formula uses a `Stream` interface to define an asynchronous event producers/sources.
+Formula uses a `Action` interface to define an asynchronous event producers/sources.
 ```kotlin
-interface Stream<Event> {
+interface Action<Event> {
   fun start(send: (Event) -> Unit): Cancelable?
 }
 ```
 
-In this example we used an `RxStream.fromObservable` to convert from an `Observable` to a `Stream` instance.
+In this example we used an `RxAction.fromObservable` to convert from an `Observable` to a `Action` instance.
 
-Instead of us subscribing to the observable/stream directly, the runtime manages the subscriptions for us.
-It will subscribe the first time `events` is called and unsubscribe when our Formula is removed or
-if we don't return it anymore. For example, it is okay to have conditional logic.
+Instead of us subscribing to the observable directly, the runtime manages the subscriptions for us.
+It will subscribe the first time the action is returned as part of evaluation output and unsubscribe 
+when our Formula is removed or if we don't return it anymore. For example, it is okay to have conditional logic.
 ```kotlin
-context.updates {
+context.actions {
   if (state.locationTrackingEnabled) {
-    val locationStream = RxStream.fromObservable { locationManager.updates() }
-    events(locationStream) { event ->
+    val locationAction = RxAction.fromObservable { locationManager.updates() }
+    events(locationAction) { event ->
       transition(state.copy(location = event.location))
     }
   }
 }
 ```
 
-If `state.locationTrackingEnabled` changes from `true` to `false`, we won't return this `Stream`
+If `state.locationTrackingEnabled` changes from `true` to `false`, we won't return this `Action`
 anymore and the runtime will unsubscribe.
 
 ### Fetching data
@@ -76,8 +76,8 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
 
   override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
     return Evaluation(
-      updates = context.updates {
-        val fetchTask = RxStream.fromObservable(key = input.taskId) { taskRepo.fetchTask(input.taskId) }
+      actions = context.actions {
+        val fetchTask = RxAction.fromObservable(key = input.taskId) { taskRepo.fetchTask(input.taskId) }
         events(fetchTask) { taskResponse ->
           transition(state.copy(task = taskResponse))
         }
@@ -87,18 +87,18 @@ class TaskFormula(val taskRepo: TaskRepo): Formula {
 }
 ```
 
-The `key` parameter enables us to distinguish between different streams. If `input.taskId` changes, we will
-cancel the currently running `Stream` and start a new one.
+The `key` parameter enables us to distinguish between different actions. If `input.taskId` changes, we will
+cancel the currently running `Action` and start a new one.
 
 ```
 Note: we are not handling errors in this example. The best practice is to emit errors as data using the onNext instead
 of emitting them through onError.
 ```
 
-### Extending Stream Interface
-If you need to use a different mechanism for asynchronous events, you can extend `Stream` interface.
+### Extending Action Interface
+If you need to use a different mechanism for asynchronous events, you can extend `Action` interface.
 ```kotlin
-interface Stream<Event> {
+interface Action<Event> {
   fun start(send: (Event) -> Unit): Cancelable?
 }
 ```
@@ -106,9 +106,9 @@ interface Stream<Event> {
 
 For example, let's say we want to track network status (I'm going to use mock network status APIs).
 ```kotlin
-class NetworkStatusStream(
+class GetNetworkStatusAction(
   val manager: NetworkStatusManager
-) : Stream<NetworkStatus> {
+) : Action<NetworkStatus> {
 
   override fun start(send: (NetworkStatus) -> Unit): Cancelable? {
     val listener = object: NetworkStatusListener {
@@ -125,12 +125,12 @@ class NetworkStatusStream(
 
 We can now hook this up within our Formula:
 ```kotlin
-class MyFormula(val networkStatus: NetworkStatusStream): Formula<Input, State, Output> {
+class MyFormula(val getNetworkStatusAction: GetNetworkStatusAction): Formula<Input, State, Output> {
 
   override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
     return Evaluation(
-      updates = context.updates {
-        events(networkStatus) { status ->
+      actions = context.actions {
+        getNetworkStatusAction.onEvent { status ->
           val updated = status.copy(isOnline = status.isOnline)
           transition(updated)
         }

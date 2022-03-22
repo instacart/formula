@@ -6,7 +6,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 
-class EventFormula<EventT>(
+class EventFormula<EventT : Any>(
     runtime: TestableRuntime,
     private val events: List<EventT>,
 ) : Formula<Unit, Int, Int>() {

@@ -1,7 +1,7 @@
 package com.instacart.formula
 
 /**
- * Used within [Stream] to receive a cancel event. Use this to perform clean up.
+ * Used within [Action] to receive a cancel event and perform clean up.
  */
 interface Cancelable {
     companion object {
