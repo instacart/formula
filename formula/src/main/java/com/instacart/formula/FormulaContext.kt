@@ -94,13 +94,13 @@ abstract class FormulaContext<out Input, State> internal constructor(
 
     /**
      * A convenience method to run a formula that takes no input. Returns the latest output
-     * of the [child] formula. Formula runtime ensures the [child] is running, manages
+     * of the [formula] formula. Formula runtime ensures the [formula] is running, manages
      * its internal state and will trigger `evaluate` if needed.
      */
     fun <ChildOutput> child(
-        child: IFormula<Unit, ChildOutput>
+        formula: IFormula<Unit, ChildOutput>
     ): ChildOutput {
-        return child(child, Unit)
+        return child(formula, Unit)
     }
 
     /**
