@@ -1,8 +1,11 @@
 package com.instacart.formula
 
-class BoundStream<Event>(
+/**
+ * An action combined with event listener.
+ */
+class DeferredAction<Event>(
     val key: Any,
-    val stream: Stream<Event>,
+    val action: Action<Event>,
     initial: (Event) -> Unit
 ) {
 
@@ -10,7 +13,7 @@ class BoundStream<Event>(
     internal var cancelable: Cancelable? = null
 
     internal fun start() {
-        cancelable = stream.start() { message ->
+        cancelable = action.start() { message ->
             listener.invoke(message)
         }
     }
@@ -24,7 +27,7 @@ class BoundStream<Event>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as BoundStream<*>
+        other as DeferredAction<*>
 
         if (key != other.key) return false
 

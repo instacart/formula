@@ -10,10 +10,11 @@ disposables += fetchUserObservable.subscribe { userResult ->
 
 Formula does things a bit differently. It manages the lifecycle of the asynchronous actions for you. Instead of manually subscribing and unsubscribing,
 you define the conditions for which the asynchronous action should run and the listener which handles events produced by the action.
+
 ```kotlin
-val fetchUserStream = RxStream.fromObservable { repository.fetchUser() }
-fetchUserStream.onEvent { userResult ->
-  // Do something
+val fetchUserAction = RxAction.fromObservable { repository.fetchUser() }
+fetchUserAction.onEvent { userResult ->
+    // Do something
 }
 ```
 
@@ -22,8 +23,8 @@ is deferred. It might not be clear why this is useful just from this example, bu
 For example, we can add conditional logic to only fetch user when user id is set.
 ```kotlin
 if (state.userId != null) {
-    val fetchUserStream = RxStream.fromObservable { repository.fetchUser(state.userId) }
-    fetchUserStream.onEvent { userResult ->
+    val fetchUserAction = RxAction.fromObservable { repository.fetchUser(state.userId) }
+    fetchUserAction.onEvent { userResult ->
         // Do something with the result
     }
 }
@@ -43,8 +44,8 @@ What if for some unusual reason the userId could change and we would want to ref
 define this behavior using `key` parameter
 ```kotlin
 if (state.isUserFetchEnabled && state.userId != null) {
-    val fetchUserStream = RxStream.fromObservable(key = state.userId) { repository.fetchUser(state.userId) }
-    fetchUserStream.onEvent { userResult ->
+    val fetchUserAction = RxAction.fromObservable(key = state.userId) { repository.fetchUser(state.userId) }
+    fetchUserAction.onEvent { userResult ->
         // Do something with the result
     }
 }
@@ -96,8 +97,8 @@ to `State`:
 This means that similarly to `State`, we can also use `Input` to define action conditions.
 ```kotlin
 if (input.userId != null) {
-    val fetchUserStream = RxStream.fromObservable { repository.fetchUser(input.userId) }
-    fetchUserStream.onEvent { userResult ->
+    val fetchUserAction = RxAction.fromObservable { repository.fetchUser(input.userId) }
+    fetchUserAction.onEvent { userResult ->
         // Do something with the result
     } 
 }

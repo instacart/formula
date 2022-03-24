@@ -6,9 +6,26 @@ package com.instacart.formula
  * @param Output Usually a data class returned by formula that contains data and event
  * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  *
- * @param updates A list of asynchronous events that formula wants to listen and respond to.
+ * @param actions A list of deferred actions which Formula runtime will execute.
+ * See [Action] and [FormulaContext.actions].
  */
 data class Evaluation<out Output>(
     val output: Output,
-    val updates: List<BoundStream<*>> = emptyList()
-)
+    val actions: List<DeferredAction<*>> = emptyList(),
+) {
+    companion object {
+        @Deprecated(
+            message = "Replace `updates` with `actions`.",
+            replaceWith = ReplaceWith(
+                "Evaluation(output = output, actions = updates)",
+                "com.instacart.formula.Evaluation"
+            )
+        )
+        operator fun <Output> invoke(output: Output, updates: List<DeferredAction<*>>): Evaluation<Output> {
+            return Evaluation(
+                output = output,
+                actions = updates
+            )
+        }
+    }
+}

@@ -1,23 +1,23 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.BoundStream
+import com.instacart.formula.DeferredAction
 
 /**
- * Handles [BoundStream] changes.
+ * Handles [DeferredAction] changes.
  */
-internal class UpdateManager {
+internal class ActionManager {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
 
-    private var running: LinkedHashSet<BoundStream<*>>? = null
+    private var running: LinkedHashSet<DeferredAction<*>>? = null
 
     /**
      * Ensures that all updates will point to the correct listener. Also, disables listeners for
      * terminated streams.
      */
     @Suppress("UNCHECKED_CAST")
-    fun updateEventListeners(new: List<BoundStream<*>>) {
+    fun updateEventListeners(new: List<DeferredAction<*>>) {
         running?.forEach { existing ->
             val update = new.firstOrNull { it == existing }
             if (update != null) {
@@ -31,7 +31,7 @@ internal class UpdateManager {
     /**
      * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(requested: List<BoundStream<*>>, transitionId: TransitionId): Boolean {
+    fun terminateOld(requested: List<DeferredAction<*>>, transitionId: TransitionId): Boolean {
         val iterator = running?.iterator() ?: return false
         while (iterator.hasNext()) {
             val running = iterator.next()
@@ -48,7 +48,7 @@ internal class UpdateManager {
         return false
     }
 
-    fun startNew(requested: List<BoundStream<*>>, transitionId: TransitionId): Boolean {
+    fun startNew(requested: List<DeferredAction<*>>, transitionId: TransitionId): Boolean {
         for (update in requested) {
             val running = getOrInitRunningStreamList()
             if (!isRunning(update)) {
@@ -72,22 +72,22 @@ internal class UpdateManager {
         }
     }
 
-    private fun shouldKeepRunning(updates: List<BoundStream<*>>, update: BoundStream<*>): Boolean {
+    private fun shouldKeepRunning(updates: List<DeferredAction<*>>, update: DeferredAction<*>): Boolean {
         return updates.contains(update)
     }
 
-    private fun isRunning(update: BoundStream<*>): Boolean {
+    private fun isRunning(update: DeferredAction<*>): Boolean {
         return running?.contains(update) ?: false
     }
 
-    private fun tearDownStream(stream: BoundStream<*>) {
+    private fun tearDownStream(stream: DeferredAction<*>) {
         stream.tearDown()
         stream.listener = NO_OP
     }
 
-    private fun getOrInitRunningStreamList(): LinkedHashSet<BoundStream<*>> {
+    private fun getOrInitRunningStreamList(): LinkedHashSet<DeferredAction<*>> {
         return running ?: run {
-            val initialized: LinkedHashSet<BoundStream<*>> = LinkedHashSet()
+            val initialized: LinkedHashSet<DeferredAction<*>> = LinkedHashSet()
             this.running = initialized
             initialized
         }

@@ -113,17 +113,17 @@ Evaluation(
   output = ...,
   updates = context.updates {
     // Performs a side effect when formula is initialized
-    Stream.onInit().onEvent {
+    Action.onInit().onEvent {
       transition { analytics.trackScreenOpen() }
     }
 
     // Performs a side effect when formula is terminated
-    Stream.onTerminate().onEvent {
+    Action.onTerminate().onEvent {
       transition { analytics.trackClose() }
     }
 
     // Performs a side-effect when data changes
-    Stream.onData(state.itemId).onEvent {
+    Action.onData(state.itemId).onEvent {
       // This will call api.fetchItem for each unique itemId
       transition { api.fetchItem(state.itemId) }
     }

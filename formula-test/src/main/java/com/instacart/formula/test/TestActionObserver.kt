@@ -1,12 +1,12 @@
 package com.instacart.formula.test
 
+import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import com.instacart.formula.Stream
 import java.lang.AssertionError
 
-class TestStreamObserver<Event>(private val stream: Stream<Event>) {
+class TestActionObserver<Event>(private val action: Action<Event>) {
     private val values = mutableListOf<Event>()
-    private val cancelation = stream.start { values.add(it) }
+    private val cancelation = action.start { values.add(it) }
 
     fun values(): List<Event> = values
 
@@ -23,7 +23,7 @@ class TestStreamObserver<Event>(private val stream: Stream<Event>) {
     }
 
     /**
-     * Attempts to cancel the [stream]. Will throw an exception if [stream] did not
+     * Attempts to cancel the [action]. Will throw an exception if [action] did not
      * provide a [Cancelable].
      */
     fun cancel() {

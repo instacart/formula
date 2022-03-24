@@ -45,7 +45,7 @@ class TaskDetailFormula @Inject constructor(
         return Evaluation(
             output = state.task,
             updates = context.updates {
-                RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
+                RxAction.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
                   val renderModel = TaskDetailRenderModel(
                       title = task.title,
                       // Don't do: calling context.onEvent within "onEvent" will cause a crash described above
@@ -60,7 +60,7 @@ class TaskDetailFormula @Inject constructor(
     }
 }
 ```
-which the render model and then stores it in the `State`, we would store the fetched task from the RxStream in
+which the render model and then stores it in the `State`, we would store the fetched task from the RxAction in
 the state and then construct the render model in the `evaluation` function itself:
 ```
 class TaskDetailFormula @Inject constructor(
@@ -91,7 +91,7 @@ class TaskDetailFormula @Inject constructor(
         return Evaluation(
             output = renderModel,
             updates = context.updates {
-                RxStream.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
+                RxAction.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
                    transition(state.copy(task = renderModel))
                 }
             }
