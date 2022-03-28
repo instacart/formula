@@ -11,6 +11,7 @@
 - **Breaking**: Make `Formula` abstract class instead of an interface.
 - **Breaking**: Introducing `Snapshot` type and changing `evaluate` signature.
 - Renaming `Stream` to `Action` (non-breaking change for now)
+- Adding `Action.runAgain` extension function
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.
