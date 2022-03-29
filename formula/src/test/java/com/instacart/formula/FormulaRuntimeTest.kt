@@ -35,6 +35,7 @@ import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
+import com.instacart.formula.subjects.RunAgainActionFormula
 import com.instacart.formula.subjects.StartStopFormula
 import com.instacart.formula.subjects.StateTransitionTimingFormula
 import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
@@ -51,6 +52,7 @@ import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -525,6 +527,39 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .stopListening()
             .incrementBy(4)
             .assertCurrentValue(2)
+    }
+
+    @Test
+    fun `action runAgain`() {
+        runtime
+            .test(RunAgainActionFormula(), Unit)
+            .output {
+                assertThat(actionExecuted).isEqualTo(1)
+                assertThat(nullableActionExecuted).isEqualTo(0)
+                assertThat(customActionExecuted).isEqualTo(0)
+            }
+            .output {
+                runActionAgain.invoke()
+                runNullableActionAgain.invoke()
+                runCustomAction.invoke()
+            }
+            .output {
+                assertThat(actionExecuted).isEqualTo(2)
+                assertThat(nullableActionExecuted).isEqualTo(1)
+                assertThat(customActionExecuted).isEqualTo(1)
+            }
+            .output {
+                runActionAgain.invoke()
+                runNullableActionAgain.invoke()
+                runCustomAction.invoke()
+            }
+            .output {
+                assertThat(actionExecuted).isEqualTo(3)
+                assertThat(nullableActionExecuted).isEqualTo(2)
+                assertThat(customActionExecuted).isEqualTo(2)
+            }
+
+        RunAgainActionFormula().test()
     }
 
     @Test
