@@ -6,6 +6,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
+import com.instacart.formula.cancelPrevious
 import com.instacart.formula.runAgain
 import com.instacart.formula.subjects.RunAgainActionFormula.Output
 import com.instacart.formula.subjects.RunAgainActionFormula.State
@@ -46,7 +47,9 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
                 customActionExecuted = state.customActionExecuted,
                 runNullableActionAgain = context.onEvent {
                     val newState = state.copy(
-                        nullableAction = state.nullableAction.runAgain { Action.onData(Unit) }
+                        nullableAction = Action
+                            .onData(Unit)
+                            .cancelPrevious(state.nullableAction)
                     )
                     transition(newState)
                 },
@@ -60,7 +63,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
                     val newState = state.copy(
                         customAction = CustomAction(
                             actionNumber = state.customActionExecuted.inc(),
-                            action = state.customAction.runAgain { Action.onData(Unit) }
+                            action = Action.onData(Unit).cancelPrevious(state.customAction),
                         )
                     )
                     transition(newState)

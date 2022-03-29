@@ -77,24 +77,6 @@ interface Action<Event> {
         fun onTerminate(): Action<Unit> {
             return TerminateEventAction
         }
-
-        /**
-         * Creates a deferred action with an updated key which will force it to run again.
-         */
-        fun <Event> runAgain(action: Action<Event>): Action<Event> {
-            return action.runAgain()
-        }
-
-        /**
-         * Creates a deferred action with an updated key which will force it to run again. It
-         * uses [factory] to instantiate the action instead of relying on [previous].
-         */
-        inline fun <Event> runAgain(
-            previous: Action<Event>?,
-            factory: () -> Action<Event>
-        ): Action<Event> {
-            return previous.runAgain(factory)
-        }
     }
 
     /**

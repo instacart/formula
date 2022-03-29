@@ -1,35 +1,39 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.ActionWithId
-
+import com.instacart.formula.internal.ActionKey
+import com.instacart.formula.internal.OverrideKeyAction
 
 /**
- * Creates a deferred action with a new key which will force it to run again.
+ * Wraps this action with a new key to force it to run again.
  */
 fun <Event> Action<Event>.runAgain(): Action<Event> {
-    val previous = findActionWithId()
-    return ActionWithId.create(
-        previous = previous,
-        delegateAction = previous?.delegateAction ?: this
-    )
+    return overrideKey(key = newActionKey(this, this))
 }
 
 /**
- * Creates a deferred action with an updated key which will force it to run again. It
- * uses [factory] to instantiate the action instead of relying on the receiver [action][this].
+ * Wraps the action with a unique key to ensure that [previousAction] is cancelled and
+ * this action runs.
  */
-inline fun <Event> Action<Event>?.runAgain(
-    factory: () -> Action<Event>
-): Action<Event> {
-    val previous = findActionWithId()
-    return ActionWithId.create(previous, factory())
+fun <Event> Action<Event>.cancelPrevious(previousAction: Action<Event>?): Action<Event> {
+    return overrideKey(key = newActionKey(previousAction, this))
 }
 
-@PublishedApi
-internal fun <Event> Action<Event>?.findActionWithId(): ActionWithId<Event>? {
-    return if (this is DelegateAction) {
-        this.action.findActionWithId()
+private fun <Event> Action<Event>.overrideKey(key: Any): Action<Event> {
+    val unwrappedAction = if (this is OverrideKeyAction) {
+        this.action
     } else {
-        this as? ActionWithId
+        this
     }
+
+    return OverrideKeyAction(key, unwrappedAction)
+}
+
+private fun newActionKey(previous: Action<*>?, new: Action<*>): ActionKey {
+    val previousKey = previous?.key() as? ActionKey
+    val id = if (previousKey != null) {
+        previousKey.id + 1
+    } else {
+        0
+    }
+    return ActionKey(id, new.key())
 }
