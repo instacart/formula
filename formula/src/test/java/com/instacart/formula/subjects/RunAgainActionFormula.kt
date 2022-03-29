@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.DelegateAction
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
@@ -15,14 +16,23 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
         val actionExecuted: Int = 0,
         val nullableAction: Action<Unit>? = null,
         val nullableActionExecuted: Int = 0,
+        val customAction: CustomAction? = null,
+        val customActionExecuted: Int = 0,
     )
 
     data class Output(
         val actionExecuted: Int,
         val nullableActionExecuted: Int,
+        val customActionExecuted: Int,
         val runNullableActionAgain: Listener<Unit>,
         val runActionAgain: Listener<Unit>,
+        val runCustomAction: Listener<Unit>,
     )
+
+    class CustomAction(
+        val actionNumber: Int,
+        action: Action<Unit>,
+    ): DelegateAction<Unit>(action)
 
     override fun initialState(input: Unit): State {
         return State()
@@ -33,6 +43,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
             output = Output(
                 actionExecuted = state.actionExecuted,
                 nullableActionExecuted = state.nullableActionExecuted,
+                customActionExecuted = state.customActionExecuted,
                 runNullableActionAgain = context.onEvent {
                     val newState = state.copy(
                         nullableAction = state.nullableAction.runAgain { Action.onData(Unit) }
@@ -44,16 +55,37 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
                         action = state.action.runAgain()
                     )
                     transition(newState)
-                }
+                },
+                runCustomAction = context.onEvent {
+                    val newState = state.copy(
+                        customAction = CustomAction(
+                            actionNumber = state.customActionExecuted.inc(),
+                            action = state.customAction.runAgain { Action.onData(Unit) }
+                        )
+                    )
+                    transition(newState)
+                },
             ),
             actions = context.actions {
                 state.action.onEvent {
-                    val newState = state.copy(actionExecuted = state.actionExecuted + 1)
+                    val newState = state.copy(
+                        actionExecuted = state.actionExecuted.inc()
+                    )
                     transition(newState)
                 }
 
                 state.nullableAction?.onEvent {
-                    val newState = state.copy(nullableActionExecuted = state.nullableActionExecuted + 1)
+                    val newState = state.copy(
+                        nullableActionExecuted = state.nullableActionExecuted.inc()
+                    )
+                    transition(newState)
+                }
+
+                val customAction = state.customAction
+                customAction?.onEvent {
+                    val newState = state.copy(
+                        customActionExecuted = customAction.actionNumber,
+                    )
                     transition(newState)
                 }
             }

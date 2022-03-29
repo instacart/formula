@@ -536,22 +536,27 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output {
                 assertThat(actionExecuted).isEqualTo(1)
                 assertThat(nullableActionExecuted).isEqualTo(0)
+                assertThat(customActionExecuted).isEqualTo(0)
             }
             .output {
                 runActionAgain.invoke()
                 runNullableActionAgain.invoke()
+                runCustomAction.invoke()
             }
             .output {
                 assertThat(actionExecuted).isEqualTo(2)
                 assertThat(nullableActionExecuted).isEqualTo(1)
+                assertThat(customActionExecuted).isEqualTo(1)
             }
             .output {
                 runActionAgain.invoke()
                 runNullableActionAgain.invoke()
+                runCustomAction.invoke()
             }
             .output {
                 assertThat(actionExecuted).isEqualTo(3)
                 assertThat(nullableActionExecuted).isEqualTo(2)
+                assertThat(customActionExecuted).isEqualTo(2)
             }
 
         RunAgainActionFormula().test()
