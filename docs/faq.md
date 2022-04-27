@@ -44,7 +44,7 @@ class TaskDetailFormula @Inject constructor(
     override fun Snapshot<Input, State>.evaluate(): Evaluation<TaskDetailRenderModel?> {
         return Evaluation(
             output = state.task,
-            updates = context.updates {
+            actions = context.actions {
                 RxAction.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
                   val renderModel = TaskDetailRenderModel(
                       title = task.title,
@@ -90,7 +90,7 @@ class TaskDetailFormula @Inject constructor(
         }
         return Evaluation(
             output = renderModel,
-            updates = context.updates {
+            actions = context.actions {
                 RxAction.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
                    transition(state.copy(task = renderModel))
                 }

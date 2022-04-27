@@ -5,7 +5,6 @@ import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
-import com.instacart.formula.StreamBuilder
 import java.lang.IllegalStateException
 
 internal class SnapshotImpl<out Input, State> internal constructor(
@@ -27,7 +26,8 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         ): ChildOutput
     }
 
-    override fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
+    @Deprecated("see parent", replaceWith = ReplaceWith("actions"))
+    override fun updates(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
         return actions(init)
     }
 

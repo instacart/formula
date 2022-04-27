@@ -29,7 +29,7 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>(
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
         return Evaluation(
-            updates = context.updates {
+            actions = context.actions {
                 if (state.listenForEvents) {
                     events(incrementEvents.stream()) {
                         transition(state.copy(count = state.count + 1))

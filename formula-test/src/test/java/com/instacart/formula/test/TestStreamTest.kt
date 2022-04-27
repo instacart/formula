@@ -1,8 +1,8 @@
 package com.instacart.formula.test
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import com.instacart.formula.Stream
 import org.junit.Test
 import java.lang.IllegalStateException
 
@@ -32,7 +32,7 @@ class TestStreamTest {
         throw IllegalStateException("Action succeeded.")
     }
 
-    fun multipleValueStream() = object : Stream<Int> {
+    fun multipleValueStream() = object : Action<Int> {
         override fun start(send: (Int) -> Unit): Cancelable? {
             send(1)
             send(2)

@@ -2,12 +2,10 @@ package com.examples.todoapp.tasks
 
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
-import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxStream
+import com.instacart.formula.rxjava3.RxAction
 
 class TaskListFormula(
     private val repo: TaskRepo
@@ -47,8 +45,8 @@ class TaskListFormula(
         }
 
         return Evaluation(
-            updates = context.updates {
-                RxStream.fromObservable(repo::tasks).onEvent {
+            actions = context.actions {
+                RxAction.fromObservable(repo::tasks).onEvent {
                     transition(state.copy(taskState = it))
                 }
             },

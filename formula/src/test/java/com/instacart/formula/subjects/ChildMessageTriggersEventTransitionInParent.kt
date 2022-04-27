@@ -3,7 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxStream
+import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 
@@ -39,8 +39,8 @@ object ChildMessageTriggersEventTransitionInParent {
                     count = state,
                     child = context.child(childFormula)
                 ),
-                updates = context.updates {
-                    RxStream
+                actions = context.actions {
+                    RxAction
                         .fromObservable { service.serviceEvents() }
                         .onEvent {
                             transition(state + 1)

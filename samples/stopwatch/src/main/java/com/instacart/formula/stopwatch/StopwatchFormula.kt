@@ -3,7 +3,7 @@ package com.instacart.formula.stopwatch
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxStream
+import com.instacart.formula.rxjava3.RxAction
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import java.util.concurrent.TimeUnit
@@ -29,9 +29,9 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                 startStopButton = startStopButton(),
                 resetButton = resetButton()
             ),
-            updates = context.updates {
+            actions = context.actions {
                 if (state.isRunning) {
-                    val incrementTimePassed = RxStream.fromObservable {
+                    val incrementTimePassed = RxAction.fromObservable {
                         Observable.interval(1, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
                     }
 

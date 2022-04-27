@@ -1,10 +1,10 @@
 package com.instacart.formula.android.internal
 
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Snapshot
-import com.instacart.formula.Stream
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FeatureEvent
@@ -26,11 +26,11 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
         override fun Snapshot<Input<Component>, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(
                 output = state,
-                updates = context.updates {
+                actions = context.actions {
                     input.activeFragments.forEachIndices { fragmentId ->
                         val key = fragmentId.key
                         if (binds(key)) {
-                            Stream.onData(fragmentId).onEvent {
+                            Action.onData(fragmentId).onEvent {
                                 transition {
                                     try {
                                         val dependencies = toDependencies(input.component)

@@ -1,7 +1,7 @@
 package com.instacart.formula.test
 
+import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Stream
 import org.junit.rules.TestRule
 
 /**
@@ -31,13 +31,13 @@ interface TestableRuntime {
 
     fun streamFormula(): StreamFormulaSubject
 
-    fun <T : Any> emitEvents(events: List<T>): Stream<T>
+    fun <T : Any> emitEvents(events: List<T>): Action<T>
 
-    fun <T : Any> emitEvents(key: Any?, events: List<T>): Stream<T>
+    fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T>
 }
 
 interface Relay {
-    fun stream(): Stream<Unit>
+    fun action(): Action<Unit>
     fun triggerEvent()
 }
 
