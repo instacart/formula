@@ -10,11 +10,11 @@ class CounterFormulaTest {
 
         CounterFormula()
             .test(Unit)
-            .output { onIncrement() }
-            .output { onIncrement() }
-            .output { onIncrement() }
-            .output { onIncrement() }
-            .output { onIncrement() }
+            .output { onIncrement(Unit) }
+            .output { onIncrement(Unit) }
+            .output { onIncrement(Unit) }
+            .output { onIncrement(Unit) }
+            .output { onIncrement(Unit) }
             .output {
                assertThat(count).isEqualTo("Count: 5")
             }
