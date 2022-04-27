@@ -31,7 +31,7 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>(
         return Evaluation(
             actions = context.actions {
                 if (state.listenForEvents) {
-                    events(incrementEvents.stream()) {
+                    events(incrementEvents.action()) {
                         transition(state.copy(count = state.count + 1))
                     }
                 }

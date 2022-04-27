@@ -56,7 +56,7 @@ private class ObservableStreamFormulaSubject : ObservableFormula<String, Int>(),
 private class RxRelay : Relay {
     private val relay = PublishRelay.create<Unit>()
 
-    override fun stream() = RxAction.fromObservable { relay }
+    override fun action() = RxAction.fromObservable { relay }
 
     override fun triggerEvent() = relay.accept(Unit)
 }

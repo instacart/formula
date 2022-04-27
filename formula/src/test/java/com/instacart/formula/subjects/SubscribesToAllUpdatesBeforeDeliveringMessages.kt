@@ -25,7 +25,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
                         transition { incrementRelay.triggerEvent() }
                     }
 
-                    incrementRelay.stream().onEvent {
+                    incrementRelay.action().onEvent {
                         transition(state + 1)
                     }
                 }
