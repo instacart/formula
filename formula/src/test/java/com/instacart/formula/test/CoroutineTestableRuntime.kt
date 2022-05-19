@@ -1,7 +1,7 @@
 package com.instacart.formula.test
 
+import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Stream
 import com.instacart.formula.coroutines.FlowAction
 import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow
@@ -44,13 +44,13 @@ object CoroutinesTestableRuntime : TestableRuntime {
         return FlowStreamFormulaSubject()
     }
 
-    override fun <T : Any> emitEvents(events: List<T>): Stream<T> {
+    override fun <T : Any> emitEvents(events: List<T>): Action<T> {
         return FlowAction.fromFlow {
             toFlow(events)
         }
     }
 
-    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Stream<T> {
+    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
         return FlowAction.fromFlow(key = key) {
             toFlow(events)
         }
@@ -64,7 +64,7 @@ object CoroutinesTestableRuntime : TestableRuntime {
 private class FlowRelay : Relay {
     private val sharedFlow = MutableSharedFlow<Unit>(0, 1)
 
-    override fun stream(): Stream<Unit> = FlowAction.fromFlow { sharedFlow }
+    override fun action(): Action<Unit> = FlowAction.fromFlow { sharedFlow }
 
     override fun triggerEvent() {
         sharedFlow.tryEmit(Unit)

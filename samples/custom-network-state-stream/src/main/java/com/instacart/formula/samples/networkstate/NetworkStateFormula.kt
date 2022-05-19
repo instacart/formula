@@ -18,7 +18,7 @@ class NetworkStateFormula(
             output = NetworkStateRenderModel(
                 status = "Network state: $isConnected"
             ),
-            updates = context.updates {
+            actions = context.actions {
                 events(networkStateStream) {
                     transition(state.copy(isOnline = it.isOnline))
                 }

@@ -2,9 +2,9 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.internal.Try
-import com.instacart.formula.rxjava3.RxStream
-import com.instacart.formula.streams.EmptyStream
+import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
 import com.instacart.formula.subjects.ChildMessageTriggersEventTransitionInParent
 import com.instacart.formula.subjects.ChildMessageWithParentStateChange
@@ -670,11 +670,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same stream declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(EmptyStream.init()) {
+            events(EmptyAction.init()) {
                 transition(Unit)
             }
 
-            events(EmptyStream.init()) {
+            events(EmptyAction.init()) {
                 transition(Unit)
             }
         }
@@ -686,11 +686,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same observable declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(RxStream.fromObservable("same") { Observable.just(1) }) {
+            events(RxAction.fromObservable("same") { Observable.just(1) }) {
                 none()
             }
 
-            events(RxStream.fromObservable("same") { Observable.just(1) }) {
+            events(RxAction.fromObservable("same") { Observable.just(1) }) {
                 none()
             }
         }
@@ -703,7 +703,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyStream.init()) {
+                events(EmptyAction.init()) {
                     none()
                 }
             }
@@ -718,7 +718,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyStream.init(it)) {
+                events(EmptyAction.init(it)) {
                     none()
                 }
             }

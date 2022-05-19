@@ -3,9 +3,9 @@ package com.instacart.formula.android
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxStream
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -42,9 +42,9 @@ class FragmentFlowStore @PublishedApi internal constructor(
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
     private val hiddenContractEvents = PublishRelay.create<FragmentId>()
 
-    private val lifecycleEventStream = RxStream.fromObservable { lifecycleEvents }
-    private val visibleContractEventStream = RxStream.fromObservable { visibleContractEvents }
-    private val hiddenContractEventStream = RxStream.fromObservable { hiddenContractEvents }
+    private val lifecycleEventStream = RxAction.fromObservable { lifecycleEvents }
+    private val visibleContractEventStream = RxAction.fromObservable { visibleContractEvents }
+    private val hiddenContractEventStream = RxAction.fromObservable { hiddenContractEvents }
 
     internal fun onLifecycleEffect(event: FragmentLifecycleEvent) {
         lifecycleEvents.accept(event)
@@ -74,7 +74,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
 
         return Evaluation(
             output = state,
-            updates = context.updates {
+            actions = context.actions {
                 events(lifecycleEventStream) { event ->
                     val fragmentId = event.fragmentId
                     when (event) {
@@ -122,7 +122,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
                     val fragmentId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
-                        RxStream.fromObservable(feature) {
+                        RxAction.fromObservable(feature) {
                             feature.state.onErrorResumeNext {
                                 input.onScreenError(fragmentId.key, it)
                                 Observable.empty()

@@ -26,7 +26,7 @@ class TaskListFormulaTest {
                 assertThat(items).hasSize(2)
             }
             .output {
-                filterOptions.first { it.title == "COMPLETED_TASKS" }.onSelected()
+                filterOptions.first { it.title == "COMPLETED_TASKS" }.onSelected(Unit)
             }
             .output {
                 assertThat(items).isEmpty()

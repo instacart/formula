@@ -25,7 +25,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.timePassedInMillis),
             ),
-            updates = context.updates {
+            actions = context.actions {
                 if (state.isRunning) {
                     val incrementTimePassed = FlowAction.fromFlow {
                         ticker()

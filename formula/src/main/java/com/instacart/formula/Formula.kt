@@ -38,7 +38,7 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      * [formula context][FormulaContext] is passed to evaluation and should be used to build
      * the [Output]. Within this method, we can use Formula context to
      * [compose][FormulaContext.child] child formulas, create event listeners using
-     * [FormulaContext.onEvent], and [respond][FormulaContext.updates] to arbitrary asynchronous
+     * [FormulaContext.onEvent], and [respond][FormulaContext.actions] to arbitrary asynchronous
      * events.
      *
      * Whenever [input][Input], [internal state][State] or child output changes, a new [Snapshot]
@@ -46,7 +46,7 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      *
      * ### Warning
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
-     * All side-effects should happen as part of event listeners or [updates][Evaluation.updates].
+     * All side-effects should happen as part of event listeners or [actions][Evaluation.actions].
      */
     abstract fun Snapshot<Input, State>.evaluate(): Evaluation<Output>
 

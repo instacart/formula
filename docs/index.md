@@ -132,7 +132,7 @@ Now that we defined our state management, let's connect it to our `RenderView`.
 
 #### Using Formula
 Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
-convert `Formula` to an RxJava2 `Observable` by using `start` extension function.
+convert `Formula` to an RxJava 3 `Observable` by using `start` extension function.
 ```kotlin
 val formula = CounterFormula()
 val state: Observable<CounterRenderModel> = formula.toObservable(input = Unit)
@@ -209,7 +209,7 @@ Formula would not have been possible without ideas from other projects such as
 ```
 The Clear BSD License
 
-Copyright (c) 2021 Maplebear Inc. dba Instacart
+Copyright (c) 2022 Maplebear Inc. dba Instacart
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted 

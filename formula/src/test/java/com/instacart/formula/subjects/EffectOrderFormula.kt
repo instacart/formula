@@ -1,10 +1,10 @@
 package com.instacart.formula.subjects
 
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
-import com.instacart.formula.Stream
 
 class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.State, EffectOrderFormula.Output>() {
 
@@ -40,11 +40,11 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
                     }
                 }
             ),
-            updates = context.updates {
+            actions = context.actions {
                 // Formula will run `Stream.onData()` before `input.onEvent` is called above.
                 val pending = state.pending
                 if (pending) {
-                    Stream.onData(pending).onEvent {
+                    Action.onData(pending).onEvent {
                         val (updated, eventId) = state.nextId()
                         transition(updated.copy(pending = false)) {
                             input.onEvent(Event(eventId))

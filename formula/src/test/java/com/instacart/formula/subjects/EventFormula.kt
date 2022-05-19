@@ -28,7 +28,7 @@ class EventFormula<EventT : Any>(
 
         return Evaluation(
             output = state,
-            updates = context.updates {
+            actions = context.actions {
                 events(stream) {
                     val newState = state + 1
                     transition(newState) {

@@ -7,7 +7,7 @@ import com.instacart.formula.internal.UnitListener
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
- * child formulas, handle events [FormulaContext.onEvent], and [respond][FormulaContext.updates]
+ * child formulas, handle events [FormulaContext.onEvent], and [respond][FormulaContext.actions]
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<out Input, State> internal constructor(

@@ -111,7 +111,7 @@ There are a few events that every formula can listen to and respond.
 ```kotlin
 Evaluation(
   output = ...,
-  updates = context.updates {
+  actions = context.actions {
     // Performs a side effect when formula is initialized
     Action.onInit().onEvent {
       transition { analytics.trackScreenOpen() }

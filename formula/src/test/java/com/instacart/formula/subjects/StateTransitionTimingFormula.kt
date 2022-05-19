@@ -34,8 +34,8 @@ class StateTransitionTimingFormula(
                     }
                 }
             ),
-            updates = context.updates {
-                relay.stream().onEvent {
+            actions = context.actions {
+                relay.action().onEvent {
                     transition(state.plus(State.EXTERNAL))
                 }
             }

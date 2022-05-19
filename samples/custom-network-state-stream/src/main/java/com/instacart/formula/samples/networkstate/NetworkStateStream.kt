@@ -1,10 +1,10 @@
 package com.instacart.formula.samples.networkstate
 
-import com.instacart.formula.Stream
+import com.instacart.formula.Action
 
 data class NetworkState(val isOnline: Boolean)
 
-interface NetworkStateStream : Stream<NetworkState> {
+interface NetworkStateStream : Action<NetworkState> {
     /**
      * Using type as a key. There should not be more
      * than one subscription to this stream

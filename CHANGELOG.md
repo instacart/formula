@@ -1,7 +1,7 @@
 # Changelog
 ## [0.7.1] - TBD
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
-- **Breaking**: Removed old `com.instacart.formula.RxStream`. Note: you should use `com.instacart.formula.rxjava3.RxStream`.
+- **Breaking**: Removed old `com.instacart.formula.RxStream`. Note: you should use `com.instacart.formula.rxjava3.RxAction`.
 - **Breaking**: Removed `Formula.start()` extension, use `Formula.toObservable()` extension instead.
 - Add `FormulaContext.onEvent` to replace `FormulaContext.callback` and `FormulaContext.eventCallback`
 - Add Kotlin coroutine support! New `formula-coroutines` module to provide `toFlow()` extension function and `FlowStream`.

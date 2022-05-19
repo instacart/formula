@@ -1,9 +1,9 @@
 package com.instacart.formula.test
 
+import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Stream
 import com.instacart.formula.rxjava3.ObservableFormula
-import com.instacart.formula.rxjava3.RxStream
+import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import org.junit.rules.RuleChain
@@ -26,14 +26,14 @@ object RxJavaTestableRuntime : TestableRuntime {
         return ObservableStreamFormulaSubject()
     }
 
-    override fun <T : Any> emitEvents(events: List<T>): Stream<T> {
-        return RxStream.fromObservable {
+    override fun <T : Any> emitEvents(events: List<T>): Action<T> {
+        return RxAction.fromObservable {
             Observable.fromIterable(events)
         }
     }
 
-    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Stream<T> {
-        return RxStream.fromObservable(key) {
+    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
+        return RxAction.fromObservable(key) {
             Observable.fromIterable(events)
         }
     }
@@ -56,7 +56,7 @@ private class ObservableStreamFormulaSubject : ObservableFormula<String, Int>(),
 private class RxRelay : Relay {
     private val relay = PublishRelay.create<Unit>()
 
-    override fun stream() = RxStream.fromObservable { relay }
+    override fun action() = RxAction.fromObservable { relay }
 
     override fun triggerEvent() = relay.accept(Unit)
 }

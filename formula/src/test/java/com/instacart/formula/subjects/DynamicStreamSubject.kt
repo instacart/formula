@@ -1,11 +1,11 @@
 package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
-import com.instacart.formula.Stream
 import com.instacart.formula.test.TestableRuntime
 
 class DynamicStreamSubject(runtime: TestableRuntime) {
@@ -34,9 +34,9 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
         override fun Snapshot<List<String>, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(
                 output = Unit,
-                updates = context.updates {
+                actions = context.actions {
                     input.forEach { key ->
-                        events(stream(key)) {
+                        events(action(key)) {
                             none()
                         }
                     }
@@ -44,8 +44,8 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
             )
         }
 
-        private fun stream(key: String): Stream<Unit> {
-            return object : Stream<Unit> {
+        private fun action(key: String): Action<Unit> {
+            return object : Action<Unit> {
                 override fun start(send: (Unit) -> Unit): Cancelable? {
                     running.add(key)
                     return Cancelable {
