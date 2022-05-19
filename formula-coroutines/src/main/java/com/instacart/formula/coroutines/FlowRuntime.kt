@@ -19,7 +19,7 @@ object FlowRuntime {
         input: Flow<Input>,
         formula: IFormula<Input, Output>
     ): Flow<Output> {
-        val threadChecker = ThreadChecker()
+        val threadChecker = ThreadChecker(formula)
         return callbackFlow<Output> {
             threadChecker.check("Need to subscribe on main thread.")
 
