@@ -12,7 +12,7 @@ object RxJavaRuntime {
         input: Observable<Input>,
         formula: IFormula<Input, Output>
     ): Observable<Output> {
-        val threadChecker = ThreadChecker()
+        val threadChecker = ThreadChecker(formula)
         return Observable.create<Output> { emitter ->
             threadChecker.check("Need to subscribe on main thread.")
 
