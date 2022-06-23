@@ -39,7 +39,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): ChildOutput {
         ensureNotRunning()
 
-        val key = ensureKeyIsScoped(
+        val key = createScopedKey(
             type = formula.type(),
             key = formula.key(input)
         )
@@ -59,7 +59,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         scopeKey = lastKey
     }
 
-    override fun ensureKeyIsScoped(type: KClass<*>, key: Any?): Any {
+    override fun createScopedKey(type: KClass<*>, key: Any?): Any {
         return FormulaKey(
             scopeKey = scopeKey,
             type = type,

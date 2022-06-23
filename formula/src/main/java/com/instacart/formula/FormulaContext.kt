@@ -24,7 +24,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = ensureKeyIsScoped(transition.type()),
+            key = createScopedKey(transition.type()),
             transition = transition
         )
     }
@@ -39,7 +39,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = ensureKeyIsScoped(transition.type(), key),
+            key = createScopedKey(transition.type(), key),
             transition = transition
         )
     }
@@ -151,7 +151,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     // Internal key scope management
     @PublishedApi internal abstract fun enterScope(key: Any)
     @PublishedApi internal abstract fun endScope()
-    @PublishedApi internal abstract fun ensureKeyIsScoped(type: KClass<*>, key: Any? = null): Any
+    @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any? = null): Any
 
     // Internal validation
     @PublishedApi internal abstract fun ensureNotRunning()
