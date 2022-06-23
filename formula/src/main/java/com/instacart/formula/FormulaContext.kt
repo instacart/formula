@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.Listeners
-import com.instacart.formula.internal.TransitionDispatcher
 import com.instacart.formula.internal.UnitListener
 import kotlin.reflect.KClass
 
@@ -12,7 +11,6 @@ import kotlin.reflect.KClass
  */
 abstract class FormulaContext<out Input, State> internal constructor(
     @PublishedApi internal val listeners: Listeners,
-    internal val transitionDispatcher: TransitionDispatcher<Input, State>,
 ) {
 
     /**
@@ -129,30 +127,20 @@ abstract class FormulaContext<out Input, State> internal constructor(
      * @param key Unique identifier that will be used for this block.
      */
     inline fun <Value> key(key: Any, create: () -> Value): Value {
-        ensureNotRunning()
-
         enterScope(key)
         val value = create()
         endScope()
         return value
     }
 
-    internal fun <Event> eventListener(
+    // Internal listener management
+    internal abstract fun <Event> eventListener(
         key: Any,
         transition: Transition<Input, State, Event>
-    ): Listener<Event> {
-        ensureNotRunning()
-        val listener = listeners.initOrFindListener<Input, State, Event>(key)
-        listener.transitionDispatcher = transitionDispatcher
-        listener.transition = transition
-        return listener
-    }
+    ): Listener<Event>
 
     // Internal key scope management
     @PublishedApi internal abstract fun enterScope(key: Any)
     @PublishedApi internal abstract fun endScope()
     @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any? = null): Any
-
-    // Internal validation
-    @PublishedApi internal abstract fun ensureNotRunning()
 }
