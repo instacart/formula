@@ -6,11 +6,12 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
 import java.lang.IllegalStateException
+import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State> internal constructor(
     private val transitionId: TransitionId,
-    listeners: ScopedListeners,
-    private val delegate: Delegate,
+    listeners: Listeners,
+    private val delegate: FormulaManagerImpl<Input, State, *>,
     transitionDispatcher: TransitionDispatcher<Input, State>
 ) : FormulaContext<Input, State>(listeners, transitionDispatcher), Snapshot<Input, State> {
 
@@ -18,13 +19,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     override val state: State = transitionDispatcher.state
     override val context: FormulaContext<Input, State> = this
 
-    interface Delegate {
-        fun <ChildInput, ChildOutput> child(
-            formula: IFormula<ChildInput, ChildOutput>,
-            input: ChildInput,
-            transitionId: TransitionId
-        ): ChildOutput
-    }
+    private var scopeKey: Any? = null
 
     @Deprecated("see parent", replaceWith = ReplaceWith("actions"))
     override fun updates(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
@@ -43,10 +38,36 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         input: ChildInput
     ): ChildOutput {
         ensureNotRunning()
-        return delegate.child(formula, input, transitionId)
+
+        val key = ensureKeyIsScoped(
+            type = formula.type(),
+            key = formula.key(input)
+        )
+        return delegate.child(key, formula, input, transitionId)
     }
 
-    private fun ensureNotRunning() {
+    override fun enterScope(key: Any) {
+        scopeKey = scopeKey?.let { JoinedKey(it, key) } ?: key
+    }
+
+    override fun endScope() {
+        if (scopeKey == null) {
+            throw IllegalStateException("Cannot end root scope.")
+        }
+
+        val lastKey = (scopeKey as? JoinedKey)?.left
+        scopeKey = lastKey
+    }
+
+    override fun ensureKeyIsScoped(type: KClass<*>, key: Any?): Any {
+        return FormulaKey(
+            scopeKey = scopeKey,
+            type = type,
+            key = key,
+        )
+    }
+
+    override fun ensureNotRunning() {
         if (transitionDispatcher.running) {
             throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }

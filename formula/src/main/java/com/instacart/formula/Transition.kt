@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import kotlin.reflect.KClass
+
 /**
  * Transition is a function that is called when an [Event] happens and produces a [Result] which
  * indicates what [Formula] should do in response to this event. It can contain a new [state][State]
@@ -67,7 +69,7 @@ fun interface Transition<in Input, State, in Event> {
     /**
      * Transition type is used as part of the key to distinguish different transitions.
      */
-    fun type(): Any {
+    fun type(): KClass<*> {
         return this::class
     }
 }

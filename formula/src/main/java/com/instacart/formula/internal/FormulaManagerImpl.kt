@@ -17,15 +17,15 @@ import com.instacart.formula.Transition
 internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val listeners: ScopedListeners,
+    private val listeners: Listeners,
     private val transitionListener: TransitionListener
-) : SnapshotImpl.Delegate, FormulaManager<Input, Output> {
+) : FormulaManager<Input, Output> {
 
     constructor(
         formula: Formula<Input, State, Output>,
         input: Input,
         transitionListener: TransitionListener
-    ): this(formula, input, ScopedListeners(formula), transitionListener)
+    ): this(formula, input, Listeners(), transitionListener)
 
     private val actionManager = ActionManager()
 
@@ -80,7 +80,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
             state = formula.onInputChanged(prevInput, input, state)
         }
 
-        listeners.evaluationStarted()
         val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
         val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
         val result = snapshot.run { formula.run { evaluate() } }
@@ -147,27 +146,27 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return false
     }
 
-    override fun <ChildInput, ChildOutput> child(
+    fun <ChildInput, ChildOutput> child(
+        key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
         transitionId: TransitionId
     ): ChildOutput {
         @Suppress("UNCHECKED_CAST")
         val children = children ?: run {
-            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = mutableMapOf()
+            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
             this.children = initialized
             initialized
         }
 
-        val compositeKey = constructKey(formula, input)
         val manager = children
-            .findOrInit(compositeKey) {
+            .findOrInit(key) {
                 val childTransitionListener = getOrInitChildTransitionListener()
                 val implementation = formula.implementation()
                 FormulaManagerImpl(implementation, input, childTransitionListener)
             }
             .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $compositeKey. Override [Formula.key] function.")
+                throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")
             } as FormulaManager<ChildInput, ChildOutput>
 
         return manager.evaluate(input, transitionId).output
@@ -183,16 +182,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         children?.forEachValue { it.performTerminationSideEffects() }
         actionManager.terminate()
         listeners.disableAll()
-    }
-
-    private fun <ChildInput, ChildOutput> constructKey(
-        formula: IFormula<ChildInput, ChildOutput>,
-        input: ChildInput
-    ): Any {
-        return FormulaKey(
-            type = formula.type(),
-            key = formula.key(input)
-        )
     }
 
     private fun getOrInitChildTransitionListener(): TransitionListener {

@@ -12,7 +12,7 @@ internal class Listeners {
         return "Listener $key is already defined. Are you calling it in a loop or reusing a method? You can wrap the call with FormulaContext.key"
     }
 
-    fun <Input, State, Event> initOrFindCallback(key: Any): ListenerImpl<Input, State, Event> {
+    fun <Input, State, Event> initOrFindListener(key: Any): ListenerImpl<Input, State, Event> {
         val listeners = listeners ?: run {
             val initialized: SingleRequestMap<Any, ListenerImpl<*, *, *>> = mutableMapOf()
             this.listeners = initialized
