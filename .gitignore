@@ -14,3 +14,6 @@
 
 # Site
 /site
+
+# Jenv
+.java-version

@@ -47,6 +47,7 @@ import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.UseInputFormula
 import com.instacart.formula.subjects.UsingCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
+import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
@@ -996,13 +997,20 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit).assertOutputCount(1)
     }
 
-    // TODO: maybe worth adding support eventually.
     @Test
-    fun `nested keys are not allowed`() {
-        val error = Try { runtime.test(NestedKeyFormula(), Unit) }.errorOrNull()?.cause
-        assertThat(error)
-            .apply { isInstanceOf(IllegalStateException::class.java)  }
-            .hasMessageThat().startsWith("Nested scopes are not supported currently.")
+    fun `nested keys are allowed`() {
+        val subject = runtime.test(NestedKeyFormula(), Unit)
+        subject.assertNoErrors()
+    }
+
+    @Test
+    fun `use key to scope child formula`() {
+        val subject = runtime.test(UsingKeyToScopeChildFormula(), Unit)
+        subject.output {
+            assertThat(children).containsExactly(
+                "value 1", "value 2"
+            ).inOrder()
+        }
     }
 
     @Test
