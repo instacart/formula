@@ -24,7 +24,6 @@ jobs:
       - name: Generate Jacoco Report
         run: ./gradlew jacocoTestReportMerged
       - name: Save Jacoco Report
-        if: always()
         run: |
           mkdir -p ~/jacoco/
           find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
