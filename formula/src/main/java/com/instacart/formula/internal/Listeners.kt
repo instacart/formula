@@ -1,5 +1,7 @@
 package com.instacart.formula.internal
 
+import java.lang.IllegalStateException
+
 internal class Listeners {
     private var listeners: SingleRequestMap<Any, ListenerImpl<*, *, *>>? = null
     private var indexes: MutableMap<Any, Int>? = null
@@ -11,6 +13,11 @@ internal class Listeners {
     fun <Input, State, Event> initOrFindListener(key: Any): ListenerImpl<Input, State, Event> {
         val currentHolder = listenerHolder<Input, State, Event>(key)
         return if (currentHolder.requested) {
+            if (key is IndexedKey) {
+                // This should never happen, but added as safety
+                throw IllegalStateException("Key already indexed (and still duplicate).")
+            }
+
             val index = nextIndex(key)
             val indexedKey = IndexedKey(key, index)
             initOrFindListener(indexedKey)
