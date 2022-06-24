@@ -13,6 +13,7 @@ import com.instacart.formula.subjects.ChildStateResetAfterToggle
 import com.instacart.formula.subjects.ChildStreamEvents
 import com.instacart.formula.subjects.ChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.DelegateFormula
+import com.instacart.formula.subjects.DuplicateListenerKeysHandledByIndexing
 import com.instacart.formula.subjects.DynamicParentFormula
 import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EffectOrderFormula
@@ -45,7 +46,8 @@ import com.instacart.formula.subjects.TerminateFormula
 import com.instacart.formula.subjects.TestKey
 import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.UseInputFormula
-import com.instacart.formula.subjects.UsingCallbacksWithinAnotherFunction
+import com.instacart.formula.subjects.ReusableFunctionCreatesUniqueListeners
+import com.instacart.formula.subjects.UniqueListenersWithinLoop
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
@@ -429,9 +431,21 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `using listeners within another function crashes`() {
-        val result = Try { UsingCallbacksWithinAnotherFunction.test(runtime) }
-        assertThat(result.errorOrNull()?.cause).isInstanceOf(IllegalStateException::class.java)
+    fun `reusable function returns unique listeners`() {
+        val subject = ReusableFunctionCreatesUniqueListeners.test(runtime)
+        subject.output { assertThat(firstListener).isNotEqualTo(secondListener) }
+    }
+
+    @Test
+    fun `creating listener within a loop returns a unique listener`() {
+        val subject = UniqueListenersWithinLoop.test(runtime)
+        subject.output { assertThat(listeners).containsNoDuplicates() }
+    }
+
+    @Test
+    fun `duplicate listener keys are handled by indexing`() {
+        val subject = DuplicateListenerKeysHandledByIndexing.test(runtime)
+        subject.output { assertThat(listeners).containsNoDuplicates() }
     }
 
     @Test
