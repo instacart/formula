@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
+import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 
 /**
@@ -17,26 +18,16 @@ import com.instacart.formula.Transition
 internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val listeners: Listeners,
-    private val transitionListener: TransitionListener
+    private val transitionListener: TransitionListener,
+    private val listeners: Listeners = Listeners(),
+    private val actionManager: ActionManager = ActionManager(),
 ) : FormulaManager<Input, Output> {
 
-    constructor(
-        formula: Formula<Input, State, Output>,
-        input: Input,
-        transitionListener: TransitionListener
-    ): this(formula, input, Listeners(), transitionListener)
-
-    private val actionManager = ActionManager()
-
-    private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
-    private var frame: Frame<Input, State, Output>? = null
-    var terminated = false
-
     private var state: State = formula.initialState(initialInput)
-    private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
+    private var frame: Frame<Input, State, Output>? = null
+    private var childrenManager: ChildrenManager? = null
 
-    private var childTransitionListener: TransitionListener? = null
+    var terminated = false
 
     private fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
@@ -58,7 +49,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
         lastFrame.transitionDispatcher.transitionId = transitionId
 
-        children?.forEachValue { it.updateTransitionId(transitionId) }
+        childrenManager?.updateTransitionId(transitionId)
     }
 
     /**
@@ -82,32 +73,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
         val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
-        val result = snapshot.run { formula.run { evaluate() } }
+        val result = formula.evaluate(snapshot)
         val frame = Frame(input, state, result, transitionDispatcher)
         actionManager.updateEventListeners(frame.evaluation.actions)
         this.frame = frame
 
         listeners.evaluationFinished()
-
-        children?.clearUnrequested {
-            pendingRemoval = pendingRemoval ?: mutableListOf()
-            it.markAsTerminated()
-            pendingRemoval?.add(it)
-        }
+        childrenManager?.evaluationFinished()
 
         transitionDispatcher.running = true
         return result
     }
 
     override fun terminateDetachedChildren(transitionId: TransitionId): Boolean {
-        val local = pendingRemoval
-        pendingRemoval = null
-        local?.forEach { it.performTerminationSideEffects() }
-        if (transitionId.hasTransitioned()) {
-            return true
-        }
-
-        return children?.any { it.value.value.terminateDetachedChildren(transitionId) } ?: false
+        return childrenManager?.terminateDetachedChildren(transitionId) == true
     }
 
     // TODO: should probably terminate children streams, then self.
@@ -119,10 +98,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         // Step through children frames
-        children?.forEachValue {
-            if (it.terminateOldUpdates(transitionId)) {
-                return true
-            }
+        if (childrenManager?.terminateOldUpdates(transitionId) == true) {
+            return true
         }
 
         return false
@@ -137,10 +114,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         // Step through children frames
-        children?.forEachValue {
-            if (it.startNewUpdates(transitionId)) {
-                return true
-            }
+        if (childrenManager?.startNewUpdates(transitionId) == true) {
+            return true
         }
 
         return false
@@ -152,50 +127,43 @@ internal class FormulaManagerImpl<Input, State, Output>(
         input: ChildInput,
         transitionId: TransitionId
     ): ChildOutput {
-        @Suppress("UNCHECKED_CAST")
-        val children = children ?: run {
-            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
-            this.children = initialized
-            initialized
-        }
-
-        val manager = children
-            .findOrInit(key) {
-                val childTransitionListener = getOrInitChildTransitionListener()
-                val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener)
-            }
-            .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")
-            } as FormulaManager<ChildInput, ChildOutput>
-
+        val childrenManager = getOrInitChildrenManager()
+        val manager = childrenManager.findOrInitChild(key, formula, input)
         return manager.evaluate(input, transitionId).output
     }
 
     override fun markAsTerminated() {
         terminated = true
         frame?.transitionDispatcher?.terminated = true
-        children?.forEachValue { it.markAsTerminated() }
+        childrenManager?.markAsTerminated()
     }
 
     override fun performTerminationSideEffects() {
-        children?.forEachValue { it.performTerminationSideEffects() }
+        childrenManager?.performTerminationSideEffects()
         actionManager.terminate()
         listeners.disableAll()
     }
 
-    private fun getOrInitChildTransitionListener(): TransitionListener {
-        return childTransitionListener ?: run {
-            TransitionListener { result, isChildValid ->
+    private fun getOrInitChildrenManager(): ChildrenManager {
+        return childrenManager ?: run {
+            val listener = TransitionListener { result, isChildValid ->
                 val frame = this.frame
                 if (!isChildValid) {
                     frame?.childInvalidated()
                 }
                 val isValid = frame != null && frame.isValid()
                 transitionListener.onTransitionResult(result, isValid)
-            }.apply {
-                childTransitionListener = this
             }
+
+            val value = ChildrenManager(listener)
+            childrenManager = value
+            value
         }
+    }
+
+    private fun Formula<Input, State, Output>.evaluate(
+        snapshot: Snapshot<Input, State>
+    ): Evaluation<Output> {
+        return snapshot.run { evaluate() }
     }
 }
