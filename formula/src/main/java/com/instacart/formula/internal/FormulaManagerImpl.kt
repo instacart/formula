@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
+import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 
 /**
@@ -22,11 +23,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val actionManager: ActionManager = ActionManager(),
 ) : FormulaManager<Input, Output> {
 
-    private var frame: Frame<Input, State, Output>? = null
-    var terminated = false
-
     private var state: State = formula.initialState(initialInput)
+    private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
+
+    var terminated = false
 
     private fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
@@ -72,7 +73,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
         val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
-        val result = snapshot.run { formula.run { evaluate() } }
+        val result = formula.evaluate(snapshot)
         val frame = Frame(input, state, result, transitionDispatcher)
         actionManager.updateEventListeners(frame.evaluation.actions)
         this.frame = frame
@@ -158,5 +159,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
             childrenManager = value
             value
         }
+    }
+
+    private fun Formula<Input, State, Output>.evaluate(
+        snapshot: Snapshot<Input, State>
+    ): Evaluation<Output> {
+        return snapshot.run { evaluate() }
     }
 }

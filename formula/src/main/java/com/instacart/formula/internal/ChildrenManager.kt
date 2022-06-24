@@ -67,7 +67,7 @@ internal class ChildrenManager(
     ): FormulaManager<ChildInput, ChildOutput> {
         @Suppress("UNCHECKED_CAST")
         val children = children ?: run {
-            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = SingleRequestMap()
+            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
             this.children = initialized
             initialized
         }
