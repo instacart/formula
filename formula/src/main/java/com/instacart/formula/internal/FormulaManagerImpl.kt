@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import java.util.concurrent.Executor
 
 /**
  * Handles formula and its children state processing.
@@ -21,6 +22,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val transitionListener: TransitionListener,
     private val listeners: Listeners = Listeners(),
     private val actionManager: ActionManager = ActionManager(),
+    private val executor: Executor,
 ) : FormulaManager<Input, Output> {
 
     private var state: State = formula.initialState(initialInput)
@@ -72,7 +74,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
-        val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
+        val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher, executor)
         val result = formula.evaluate(snapshot)
         val frame = Frame(input, state, result, transitionDispatcher)
         actionManager.updateEventListeners(frame.evaluation.actions)
@@ -155,7 +157,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 transitionListener.onTransitionResult(result, isValid)
             }
 
-            val value = ChildrenManager(listener)
+            val value = ChildrenManager(listener, executor)
             childrenManager = value
             value
         }

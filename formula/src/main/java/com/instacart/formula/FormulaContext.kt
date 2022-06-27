@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.instacart.formula.internal.Listeners
 import com.instacart.formula.internal.TransitionDispatcher
 import com.instacart.formula.internal.UnitListener
+import java.util.concurrent.Executor
 import kotlin.reflect.KClass
 
 /**
@@ -13,6 +14,7 @@ import kotlin.reflect.KClass
 abstract class FormulaContext<out Input, State> internal constructor(
     @PublishedApi internal val listeners: Listeners,
     internal val transitionDispatcher: TransitionDispatcher<Input, State>,
+    internal val executor: Executor,
 ) {
 
     /**
@@ -143,6 +145,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key)
+        listener.executor = executor
         listener.transitionDispatcher = transitionDispatcher
         listener.transition = transition
         return listener

@@ -24,6 +24,9 @@ import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 
 object CoroutinesTestableRuntime : TestableRuntime {
@@ -92,22 +95,27 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
+    private val executor = Executors.newSingleThreadExecutor()
     private val inputFlow = MutableSharedFlow<Input>(1)
-    private val formulaFlow = formula.toFlow(inputFlow)
+    private val formulaFlow = formula.toFlow(inputFlow, executor)
         .onEach { values.add(it) }
         .catch { errors.add(it) }
 
     private val job = formulaFlow.launchIn(scope)
 
     override fun values(): List<Output> {
+        ensureFormulaIsIdle()
         return values
     }
 
     override fun input(input: Input) {
+        ensureFormulaIsIdle()
         inputFlow.tryEmit(input)
+//        ensureFormulaIsIdle()
     }
 
     override fun assertNoErrors() {
+        ensureFormulaIsIdle()
         if (errors.isNotEmpty()) {
             throw AssertionError("There are ${errors.size} errors", errors.last())
         }
@@ -115,6 +123,13 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
 
     override fun dispose() {
         job.cancel()
+        ensureFormulaIsIdle()
+    }
+
+    private fun ensureFormulaIsIdle() {
+        val latch = CountDownLatch(1)
+        executor.execute { latch.countDown() }
+        latch.await(100, TimeUnit.MILLISECONDS)
     }
 }
 

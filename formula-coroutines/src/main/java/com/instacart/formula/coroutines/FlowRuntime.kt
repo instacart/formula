@@ -11,28 +11,32 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.util.concurrent.Executor
 
 object FlowRuntime {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun <Input : Any, Output : Any> start(
         input: Flow<Input>,
-        formula: IFormula<Input, Output>
+        formula: IFormula<Input, Output>,
+        executor: Executor,
     ): Flow<Output> {
         val threadChecker = ThreadChecker(formula)
         return callbackFlow<Output> {
             threadChecker.check("Need to subscribe on main thread.")
 
-            var runtime = FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close)
+            var runtime = FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close, executor)
 
             input.onEach { input ->
-                threadChecker.check("Input arrived on a wrong thread.")
-                if (!runtime.isKeyValid(input)) {
-                    runtime.terminate()
-                    runtime =
-                        FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close)
+                executor.execute {
+                    threadChecker.check("Input arrived on a wrong thread.")
+                    if (!runtime.isKeyValid(input)) {
+                        runtime.terminate()
+                        runtime =
+                            FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close, executor)
+                    }
+                    runtime.onInput(input)
                 }
-                runtime.onInput(input)
             }.launchIn(this)
 
             awaitClose {

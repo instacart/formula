@@ -6,14 +6,16 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
 import java.lang.IllegalStateException
+import java.util.concurrent.Executor
 import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State> internal constructor(
     private val transitionId: TransitionId,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
-    transitionDispatcher: TransitionDispatcher<Input, State>
-) : FormulaContext<Input, State>(listeners, transitionDispatcher), Snapshot<Input, State> {
+    transitionDispatcher: TransitionDispatcher<Input, State>,
+    executor: Executor,
+) : FormulaContext<Input, State>(listeners, transitionDispatcher, executor), Snapshot<Input, State> {
 
     override val input: Input = transitionDispatcher.input
     override val state: State = transitionDispatcher.state

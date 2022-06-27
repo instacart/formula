@@ -7,6 +7,8 @@ import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionIdManager
 import com.instacart.formula.internal.TransitionListener
 import java.util.LinkedList
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
@@ -15,7 +17,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
-    private val onError: (Throwable) -> Unit
+    private val onError: (Throwable) -> Unit,
+    private val executor: Executor = Executors.newSingleThreadExecutor(),
 ) {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -51,7 +54,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 run(shouldEvaluate = !isValid)
             }
 
-            manager = FormulaManagerImpl(implementation, input, transitionListener)
+            manager = FormulaManagerImpl(implementation, input, transitionListener, executor = executor)
             forceRun()
             hasInitialFinished = true
 

@@ -2,6 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
 import com.instacart.formula.Transition
+import java.util.concurrent.Executor
 
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
@@ -9,14 +10,16 @@ import com.instacart.formula.Transition
 @PublishedApi
 internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listener<Event> {
 
+    internal var executor: Executor? = null
     internal var transitionDispatcher: TransitionDispatcher<Input, State>? = null
     internal var transition: Transition<Input, State, Event>? = null
 
     override fun invoke(event: Event) {
-        transitionDispatcher?.let { dispatcher ->
-            transition?.let { transition ->
-                dispatcher.dispatch(transition, event)
-                return
+        executor?.execute {
+            transitionDispatcher?.let { dispatcher ->
+                transition?.let { transition ->
+                    dispatcher.dispatch(transition, event)
+                }
             }
         }
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)

@@ -13,7 +13,7 @@ class ThreadChecker(private val formula: IFormula<*, *>) {
     fun check(errorMessage: String) {
         val thread = Thread.currentThread()
         if (thread.id != id) {
-            throw IllegalStateException("$formulaType - $errorMessage Expected: $threadName, Was: ${thread.name}")
+//            throw IllegalStateException("$formulaType - $errorMessage Expected: $threadName, Was: ${thread.name}")
         }
     }
 }
