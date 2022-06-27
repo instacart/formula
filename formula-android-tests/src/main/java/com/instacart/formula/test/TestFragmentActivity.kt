@@ -5,13 +5,12 @@ import androidx.annotation.VisibleForTesting
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.R
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
-    @VisibleForTesting lateinit var initialContract: FragmentContract<*>
-    @VisibleForTesting val renderCalls = mutableListOf<Pair<FragmentContract<*>, *>>()
+    @VisibleForTesting lateinit var initialContract: FragmentKey
+    @VisibleForTesting val renderCalls = mutableListOf<Pair<FragmentKey, *>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

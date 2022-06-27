@@ -20,6 +20,7 @@ import android.view.View
  * }
  * ```
  */
+@Deprecated("Use FragmentKey instead.")
 abstract class FragmentContract<in RenderModel> : FragmentKey {
     /**
      * Layout id that defines the view

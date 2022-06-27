@@ -4,6 +4,8 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.Feature
+import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleContract
@@ -27,11 +29,17 @@ class FragmentAndroidEventTest {
                             initialContract = TestLifecycleContract()
                         },
                         contracts =  {
-                            bind(TestLifecycleContract::class) { _ ->
-                                activityResults().flatMap {
-                                    activityResults.add(it)
-                                    Observable.empty<Any>()
-                                }
+
+                            bind<TestLifecycleContract> { _, _ ->
+                                Feature(
+                                    state = activityResults().flatMap {
+                                        activityResults.add(it)
+                                        Observable.empty()
+                                    },
+                                    viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
+                                        featureView { }
+                                    }
+                                )
                             }
                         }
                     )

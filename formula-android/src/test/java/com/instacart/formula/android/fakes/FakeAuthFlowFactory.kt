@@ -2,13 +2,15 @@ package com.instacart.formula.android.fakes
 
 import com.instacart.formula.android.Flow
 import com.instacart.formula.android.FlowFactory
-import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.DisposableScope
+import com.instacart.formula.android.Feature
+import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentKey
 import io.reactivex.rxjava3.core.Observable
 
 class FakeAuthFlowFactory : FlowFactory<FakeComponent, FakeAuthFlowFactory.Component> {
     class Component(
-        val onInitialized: (Component, FragmentContract<*>) -> Unit
+        val onInitialized: (Component, FragmentKey) -> Unit
     )
 
     override fun createComponent(dependencies: FakeComponent): DisposableScope<Component> {
@@ -17,15 +19,18 @@ class FakeAuthFlowFactory : FlowFactory<FakeComponent, FakeAuthFlowFactory.Compo
 
     override fun createFlow(): Flow<Component> {
         return Flow.build {
-            bind { component, key: TestLoginFragmentContract ->
-                component.onInitialized(component, key)
-                Observable.empty<String>()
-            }
+            bind(TestFeatureFactory<TestLoginFragmentKey>())
+            bind(TestFeatureFactory<TestSignUpFragmentKey>())
+        }
+    }
 
-            bind { component, key: TestSignUpFragmentContract ->
-                component.onInitialized(component, key)
-                Observable.empty<String>()
-            }
+    class TestFeatureFactory<FragmentKeyT : FragmentKey> : FeatureFactory<Component, FragmentKeyT> {
+        override fun initialize(dependencies: Component, key: FragmentKeyT): Feature<Any> {
+            dependencies.onInitialized(dependencies, key)
+            return Feature(
+                state = Observable.empty(),
+                viewFactory = NoOpViewFactory()
+            )
         }
     }
 }

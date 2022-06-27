@@ -6,7 +6,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
@@ -28,7 +27,7 @@ class FragmentFlowRenderViewTest {
     class HeadlessFragment : Fragment()
 
     private var lastState: FragmentFlowState? = null
-    private val stateChangeRelay = PublishRelay.create<Pair<FragmentContract<*>, Any>>()
+    private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
     private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
@@ -43,13 +42,8 @@ class FragmentFlowRenderViewTest {
                             lastState = state
                         },
                         contracts =  {
-                            bind { key: TestContract ->
-                                stateChanges(key)
-                            }
-
-                            bind { key: TestContractWithId ->
-                                stateChanges(key)
-                            }
+                            bind(TestFeatureFactory<TestContract> { stateChanges(it) })
+                            bind(TestFeatureFactory<TestContractWithId> { stateChanges(it) })
                         }
                     )
                 }
@@ -232,21 +226,21 @@ class FragmentFlowRenderViewTest {
         }
     }
 
-    private fun assertVisibleContract(contract: FragmentContract<*>) {
+    private fun assertVisibleContract(contract: FragmentKey) {
         assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
         assertThat(scenario.get { lastState?.visibleIds?.lastOrNull()?.key }).isEqualTo(contract)
     }
 
-    private fun assertNoDuplicates(contract: FragmentContract<*>) {
+    private fun assertNoDuplicates(contract: FragmentKey) {
         assertThat(lastState?.visibleIds?.count { it.key == contract }).isEqualTo(1)
     }
 
-    private fun <T : Any> sendStateUpdate(contract: FragmentContract<T>, update: T) {
+    private fun sendStateUpdate(contract: FragmentKey, update: Any) {
         stateChangeRelay.accept(Pair(contract, update))
     }
 
-    private fun stateChanges(contract: FragmentContract<*>): Observable<Any> {
+    private fun stateChanges(contract: FragmentKey): Observable<Any> {
         return stateChangeRelay
             .filter { event ->
                 event.first == contract

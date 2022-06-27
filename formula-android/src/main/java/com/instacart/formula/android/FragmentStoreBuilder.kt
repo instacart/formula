@@ -71,6 +71,22 @@ class FragmentStoreBuilder<Component> {
      * A convenience inline function that binds a feature factory for a specific [key][Key].
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
+     */
+    inline fun <reified Key: FragmentKey> bind(
+        crossinline initFeature: (Component, Key) -> Feature<*>,
+    ) = apply {
+        val factory = object : FeatureFactory<Component, Key> {
+            override fun initialize(dependencies: Component, key: Key): Feature<*> {
+                return initFeature(dependencies, key)
+            }
+        }
+        bind(Key::class, factory)
+    }
+
+    /**
+     * A convenience inline function that binds a feature factory for a specific [key][Key].
+     *
+     * @param featureFactory Feature factory that provides state observable and view rendering logic.
      * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
      */
     inline fun <Dependencies, reified Key: FragmentKey> bind(
@@ -102,74 +118,15 @@ class FragmentStoreBuilder<Component> {
     }
 
     /**
-     * Binds a contract to specified state management.
-     *
-     * @param contract A type of contract to bind
-     * @param init A function that initializes contracts state management.
-     */
-    fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
-        contract: KClass<Contract>,
-        init: (Component, Contract) -> Observable<RenderModel>
-    ) = apply {
-        val integration = object : Integration<Component, Contract, RenderModel>() {
-            override fun create(component: Component, key: Contract): Observable<RenderModel> {
-                return init(component, key)
-            }
-        }
-        bind(contract, integration)
-    }
-
-    /**
-     * Binds a contract to specified state management.
-     *
-     * @param contract A type of contract to bind
-     * @param init A function that initializes contracts state management.
-     */
-    fun <RenderModel : Any, Contract : FragmentContract<RenderModel>> bind(
-        contract: KClass<Contract>,
-        init: (Contract) -> Observable<RenderModel>
-    ) = apply {
-        val integration = object : Integration<Component, Contract, RenderModel>() {
-            override fun create(component: Component, key: Contract): Observable<RenderModel> {
-                return init(key)
-            }
-        }
-        bind(contract, integration)
-    }
-
-    /**
      * A convenience inline function that binds integration to a [T] contract.
      *
      * @param integration An integration that initializes contracts state management.
      */
+    @Deprecated("Use FeatureFactory and FragmentKey instead.")
     inline fun <reified T: FragmentContract<RenderModel>, RenderModel : Any> bind(
         integration: Integration<Component, T, RenderModel>
     ) = apply {
         bind(T::class, integration)
-    }
-
-    /**
-     * A convenience inline function that uses reified type [Contract] as the type of contract
-     * and binds state managements provided by the [init] function.
-     *
-     * @param init A function that initializes contracts state management.
-     */
-    inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
-        noinline init: (Component, Contract) -> Observable<State>
-    )= apply {
-        bind(Contract::class, init)
-    }
-
-    /**
-     * A convenience inline function that uses reified type [Contract] as the type of contract
-     * and binds state managements provided by the [init] function.
-     *
-     * @param init A function that initializes contracts state management.
-     */
-    inline fun <State : Any, reified Contract : FragmentContract<State>> bind(
-        noinline init: (Contract) -> Observable<State>
-    )= apply {
-        bind(Contract::class, init)
     }
 
     /**

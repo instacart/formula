@@ -5,7 +5,7 @@ package com.instacart.formula.android
  *
  * @param activeKeys Fragment contracts that are running their state management.
  * @param visibleKeys Fragment contracts that are currently visible to the user.
- * @param states Last emitted state of each active [FragmentContract].
+ * @param states Last emitted state of each active [FragmentKey].
  */
 data class FragmentFlowState(
     val activeIds: List<FragmentId> = emptyList(),
