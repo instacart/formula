@@ -6,12 +6,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ActivityStoreContext
-import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.ViewFactory
-import com.instacart.formula.test.TestContract
-import com.instacart.formula.test.TestContractWithId
+import com.instacart.formula.test.TestKey
+import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
@@ -36,11 +34,11 @@ class FragmentLifecycleStateTest {
 
                     store(
                         configureActivity = {
-                            initialContract = TestContract()
+                            initialContract = TestKey()
                         },
                         contracts =  {
-                            bind(featureFactory<TestContract>(this@activity))
-                            bind(featureFactory<TestContractWithId>(this@activity))
+                            bind(featureFactory<TestKey>(this@activity))
+                            bind(featureFactory<TestKeyWithId>(this@activity))
                         }
                     )
                 }
@@ -60,12 +58,12 @@ class FragmentLifecycleStateTest {
     }
 
     @Test fun `is fragment started`() {
-        val events = selectStartedEvents(TestContract())
+        val events = selectStartedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
     @Test fun `is fragment resumed`() {
-        val events = selectResumedEvents(TestContract())
+        val events = selectResumedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
@@ -73,8 +71,8 @@ class FragmentLifecycleStateTest {
     @Test fun `navigate forward`() {
         navigateToTaskDetail()
 
-        val contract = TestContract()
-        val detail = TestContractWithId(1)
+        val contract = TestKey()
+        val detail = TestKeyWithId(1)
 
         assertThat(selectStartedEvents(contract)).containsExactly(false, true, false).inOrder()
         assertThat(selectResumedEvents(contract)).containsExactly(false, true, false).inOrder()
@@ -92,10 +90,10 @@ class FragmentLifecycleStateTest {
     }
 
     private fun navigateToTaskDetail() {
-        val detail = TestContractWithId(1)
+        val detail = TestKeyWithId(1)
         scenario.onActivity {
             it.supportFragmentManager.beginTransaction()
-                .remove(it.supportFragmentManager.findFragmentByTag(TestContract().tag)!!)
+                .remove(it.supportFragmentManager.findFragmentByTag(TestKey().tag)!!)
                 .add(R.id.activity_content, FormulaFragment.newInstance(detail), detail.tag)
                 .addToBackStack(null)
                 .commit()

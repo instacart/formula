@@ -9,8 +9,8 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
-import com.instacart.formula.test.TestContract
-import com.instacart.formula.test.TestContractWithId
+import com.instacart.formula.test.TestKey
+import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -35,15 +35,15 @@ class FragmentFlowRenderViewTest {
                 activity<TestFragmentActivity> {
                     store(
                         configureActivity = {
-                            initialContract = TestContract()
+                            initialContract = TestKey()
                             onPreCreated(this)
                         },
                         onRenderFragmentState = { a, state ->
                             lastState = state
                         },
                         contracts =  {
-                            bind(TestFeatureFactory<TestContract> { stateChanges(it) })
-                            bind(TestFeatureFactory<TestContractWithId> { stateChanges(it) })
+                            bind(TestFeatureFactory<TestKey> { stateChanges(it) })
+                            bind(TestFeatureFactory<TestKeyWithId> { stateChanges(it) })
                         }
                     )
                 }
@@ -64,22 +64,22 @@ class FragmentFlowRenderViewTest {
     }
 
     @Test fun `add fragment lifecycle event`() {
-        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
+        assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
     }
 
     @Test fun `pop backstack lifecycle event`() {
         navigateToTaskDetail()
         navigateBack()
 
-        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
+        assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
     }
 
     @Test fun `navigating forward should have both keys in backstack`() {
         navigateToTaskDetail()
 
         assertThat(activeContracts()).containsExactly(
-            TestContract(),
-            TestContractWithId(1)
+            TestKey(),
+            TestKeyWithId(1)
         ).inOrder()
     }
 
@@ -92,28 +92,28 @@ class FragmentFlowRenderViewTest {
                 .commitNow()
         }
 
-        assertVisibleContract(TestContract())
-        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
+        assertVisibleContract(TestKey())
+        assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
     }
 
     @Test fun `render model is passed to visible fragment`() {
         val activity = activity()
-        sendStateUpdate(TestContract(), "update")
-        assertThat(activity.renderCalls).containsExactly(TestContract() to "update").inOrder()
+        sendStateUpdate(TestKey(), "update")
+        assertThat(activity.renderCalls).containsExactly(TestKey() to "update").inOrder()
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
         navigateToTaskDetail()
 
         val activity = activity()
-        sendStateUpdate(TestContract(), "update")
+        sendStateUpdate(TestKey(), "update")
         assertThat(activity.renderCalls).isEqualTo(emptyList<Any>())
     }
 
     @Test fun `visible fragments are updated when navigating`() {
         navigateToTaskDetail()
 
-        val contract = TestContractWithId(1)
+        val contract = TestKeyWithId(1)
 
         val activity = activity()
         sendStateUpdate(contract, "update")
@@ -131,7 +131,7 @@ class FragmentFlowRenderViewTest {
 
         var backPressed = 0
 
-        val contract = TestContractWithId(1)
+        val contract = TestKeyWithId(1)
         sendStateUpdate(contract, BackCallback {
             backPressed += 1
             true
@@ -154,9 +154,9 @@ class FragmentFlowRenderViewTest {
         val new = activity()
         assertThat(previous).isNotEqualTo(new)
 
-        assertVisibleContract(TestContractWithId(1))
+        assertVisibleContract(TestKeyWithId(1))
         // Both contracts should be active.
-        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1)).inOrder()
+        assertThat(activeContracts()).containsExactly(TestKey(), TestKeyWithId(1)).inOrder()
     }
 
     @Test fun `process death imitation`() {
@@ -173,13 +173,13 @@ class FragmentFlowRenderViewTest {
 
         // When activity is recreated, it first triggers current fragment and
         // then loads ones from backstack
-        assertVisibleContract(TestContractWithId(1))
-        assertThat(activeContracts()).containsExactly(TestContractWithId(1), TestContract()).inOrder()
+        assertVisibleContract(TestKeyWithId(1))
+        assertThat(activeContracts()).containsExactly(TestKeyWithId(1), TestKey()).inOrder()
 
         navigateBack()
 
-        assertVisibleContract(TestContract())
-        assertThat(activeContracts()).containsExactly(TestContract()).inOrder()
+        assertVisibleContract(TestKey())
+        assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
     }
 
     @Test fun `add multiple fragments with same fragment key`() {
@@ -189,14 +189,14 @@ class FragmentFlowRenderViewTest {
         navigateToTaskDetail(id = 2)
         navigateToTaskDetail(id = 1)
 
-        assertFragmentViewIsCreated(TestContractWithId(1))
-        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1), TestContractWithId(2), TestContractWithId(1)).inOrder()
+        assertFragmentViewIsCreated(TestKeyWithId(1))
+        assertThat(activeContracts()).containsExactly(TestKey(), TestKeyWithId(1), TestKeyWithId(2), TestKeyWithId(1)).inOrder()
 
         navigateBack()
         navigateBack()
 
-        assertFragmentViewIsCreated(TestContractWithId(1))
-        assertThat(activeContracts()).containsExactly(TestContract(), TestContractWithId(1)).inOrder()
+        assertFragmentViewIsCreated(TestKeyWithId(1))
+        assertThat(activeContracts()).containsExactly(TestKey(), TestKeyWithId(1)).inOrder()
     }
 
     private fun navigateBack() {
@@ -205,7 +205,7 @@ class FragmentFlowRenderViewTest {
 
     private fun navigateToTaskDetail(id: Int = 1, allowStateLoss: Boolean = false) {
         scenario.onActivity {
-            it.navigateTo(TestContractWithId(id), allowStateLoss = allowStateLoss)
+            it.navigateTo(TestKeyWithId(id), allowStateLoss = allowStateLoss)
         }
     }
 

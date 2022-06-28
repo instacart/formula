@@ -8,7 +8,7 @@ import com.instacart.formula.android.Feature
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.test.TestFragmentActivity
-import com.instacart.formula.test.TestLifecycleContract
+import com.instacart.formula.test.TestLifecycleKey
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -26,11 +26,11 @@ class FragmentAndroidEventTest {
                 activity<TestFragmentActivity> {
                     store(
                         configureActivity = {
-                            initialContract = TestLifecycleContract()
+                            initialContract = TestLifecycleKey()
                         },
                         contracts =  {
 
-                            bind<TestLifecycleContract> { _, _ ->
+                            bind<TestLifecycleKey> { _, _ ->
                                 Feature(
                                     state = activityResults().flatMap {
                                         activityResults.add(it)

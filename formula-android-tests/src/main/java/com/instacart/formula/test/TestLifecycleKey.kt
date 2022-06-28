@@ -4,6 +4,6 @@ import com.instacart.formula.android.FragmentKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class TestContract(
-    override val tag: String = "test contract",
+data class TestLifecycleKey(
+    override val tag: String = "task list",
 ) : FragmentKey

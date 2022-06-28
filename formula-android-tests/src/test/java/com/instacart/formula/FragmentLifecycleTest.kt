@@ -11,7 +11,7 @@ import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestFragmentLifecycleCallback
-import com.instacart.formula.test.TestLifecycleContract
+import com.instacart.formula.test.TestLifecycleKey
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -25,7 +25,7 @@ class FragmentLifecycleTest {
 
     private lateinit var activityController: ActivityController<TestFragmentActivity>
     private lateinit var lifecycleCallback: TestFragmentLifecycleCallback
-    private lateinit var contract: TestLifecycleContract
+    private lateinit var contract: TestLifecycleKey
 
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
@@ -33,12 +33,12 @@ class FragmentLifecycleTest {
                 store(
                     configureActivity = {
                         lifecycleCallback = TestFragmentLifecycleCallback()
-                        contract = TestLifecycleContract()
+                        contract = TestLifecycleKey()
                         initialContract = contract
                     },
                     contracts =  {
-                        val featureFactory = object : FeatureFactory<Unit, TestLifecycleContract> {
-                            override fun initialize(dependencies: Unit, key: TestLifecycleContract): Feature<*> {
+                        val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
+                            override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature<*> {
                                 return Feature(
                                     state = Observable.empty(),
                                     viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
