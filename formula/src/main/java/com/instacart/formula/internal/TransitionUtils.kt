@@ -61,3 +61,10 @@ internal fun <State> TransitionContext<*, State>.combine(
         }
     }
 }
+
+internal fun <Input, State, Event> Transition<Input, State, Event>.toResult(
+    context: TransitionContext<Input, State>,
+    event: Event
+): Transition.Result<State> {
+    return context.run { toResult(event) }
+}

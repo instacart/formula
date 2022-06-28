@@ -7,11 +7,12 @@ import com.instacart.formula.Evaluation
  * we need to look at what children and updates exist and do a diff.
  */
 internal class Frame<Input, State, Output>(
-    val input: Input,
-    val state: State,
+    val snapshot: SnapshotImpl<Input, State>,
     val evaluation: Evaluation<Output>,
-    val transitionDispatcher: TransitionDispatcher<Input, State>
 ) {
+    val input: Input = snapshot.input
+    val state: State = snapshot.state
+
     private var stateValid: Boolean = true
     private var childrenValid: Boolean = true
 

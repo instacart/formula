@@ -29,7 +29,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     var terminated = false
 
-    private fun handleTransitionResult(result: Transition.Result<State>) {
+    fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
             transitionListener.onTransitionResult(result, true)
@@ -47,7 +47,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun updateTransitionId(transitionId: TransitionId) {
         val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.transitionDispatcher.transitionId = transitionId
+        lastFrame.snapshot.transitionId = transitionId
 
         childrenManager?.updateTransitionId(transitionId)
     }
@@ -71,17 +71,16 @@ internal class FormulaManagerImpl<Input, State, Output>(
             state = formula.onInputChanged(prevInput, input, state)
         }
 
-        val transitionDispatcher = TransitionDispatcher(input, state, this::handleTransitionResult, transitionId)
-        val snapshot = SnapshotImpl(transitionId, listeners, this, transitionDispatcher)
+        val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
         val result = formula.evaluate(snapshot)
-        val frame = Frame(input, state, result, transitionDispatcher)
+        val frame = Frame(snapshot, result)
         actionManager.updateEventListeners(frame.evaluation.actions)
         this.frame = frame
 
         listeners.evaluationFinished()
         childrenManager?.evaluationFinished()
 
-        transitionDispatcher.running = true
+        snapshot.running = true
         return result
     }
 
@@ -134,7 +133,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun markAsTerminated() {
         terminated = true
-        frame?.transitionDispatcher?.terminated = true
+        frame?.snapshot?.terminated = true
         childrenManager?.markAsTerminated()
     }
 

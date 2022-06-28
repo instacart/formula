@@ -4,22 +4,26 @@ import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.DeferredAction
+import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
+import com.instacart.formula.Transition
+import com.instacart.formula.TransitionContext
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State> internal constructor(
-    private val transitionId: TransitionId,
+    override val input: Input,
+    override val state: State,
+    var transitionId: TransitionId,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
-    transitionDispatcher: TransitionDispatcher<Input, State>
-) : FormulaContext<Input, State>(listeners, transitionDispatcher), Snapshot<Input, State> {
-
-    override val input: Input = transitionDispatcher.input
-    override val state: State = transitionDispatcher.state
-    override val context: FormulaContext<Input, State> = this
+) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
+    var running = false
+    var terminated = false
+
+    override val context: FormulaContext<Input, State> = this
 
     @Deprecated("see parent", replaceWith = ReplaceWith("actions"))
     override fun updates(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
@@ -46,11 +50,27 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         return delegate.child(key, formula, input, transitionId)
     }
 
+
+    override fun <Event> eventListener(
+        key: Any,
+        transition: Transition<Input, State, Event>
+    ): Listener<Event> {
+        ensureNotRunning()
+        val listener = listeners.initOrFindListener<Input, State, Event>(key)
+        listener.snapshotImpl = this
+        listener.transition = transition
+        return listener
+    }
+
     override fun enterScope(key: Any) {
+        ensureNotRunning()
+
         scopeKey = scopeKey?.let { JoinedKey(it, key) } ?: key
     }
 
     override fun endScope() {
+        ensureNotRunning()
+
         if (scopeKey == null) {
             throw IllegalStateException("Cannot end root scope.")
         }
@@ -72,8 +92,25 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         )
     }
 
-    override fun ensureNotRunning() {
-        if (transitionDispatcher.running) {
+    fun dispatch(transition: Transition.Result<State>) {
+        if (!running) {
+            throw IllegalStateException("Transitions are not allowed during evaluation")
+        }
+
+        if (TransitionUtils.isEmpty(transition)) {
+            return
+        }
+
+        if (!terminated && transitionId.hasTransitioned()) {
+            // We have already transitioned, this should not happen.
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition.")
+        }
+
+        delegate.handleTransitionResult(transition)
+    }
+
+    private fun ensureNotRunning() {
+        if (running) {
             throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }
