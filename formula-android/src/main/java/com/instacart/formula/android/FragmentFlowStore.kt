@@ -11,7 +11,7 @@ import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 
 /**
- * A FragmentFlowStore is responsible for managing the state of multiple [FragmentContract] instances.
+ * A FragmentFlowStore is responsible for managing the state of multiple [FragmentKey] instances.
  */
 class FragmentFlowStore @PublishedApi internal constructor(
     private val root: Binding<Unit>

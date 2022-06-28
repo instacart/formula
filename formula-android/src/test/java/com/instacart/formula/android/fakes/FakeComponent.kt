@@ -1,13 +1,12 @@
 package com.instacart.formula.android.fakes
 
-import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.DisposableScope
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 
 class FakeComponent {
-    val initialized = mutableListOf<Pair<FakeAuthFlowFactory.Component, FragmentContract<*>>>()
+    val initialized = mutableListOf<Pair<FakeAuthFlowFactory.Component, FragmentKey>>()
     val updateRelay: PublishRelay<Pair<FragmentKey, String>> = PublishRelay.create()
 
     fun state(key: FragmentKey): Observable<String> {

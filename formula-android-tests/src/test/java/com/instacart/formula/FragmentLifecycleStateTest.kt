@@ -5,10 +5,11 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentContract
 import com.instacart.formula.android.ActivityStoreContext
-import com.instacart.formula.test.TestContract
-import com.instacart.formula.test.TestContractWithId
+import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.test.TestKey
+import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
@@ -21,8 +22,8 @@ import org.robolectric.annotation.LooperMode
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {
 
-    private lateinit var started: MutableList<Pair<FragmentContract<*>, Boolean>>
-    private lateinit var resumed: MutableList<Pair<FragmentContract<*>, Boolean>>
+    private lateinit var started: MutableList<Pair<FragmentKey, Boolean>>
+    private lateinit var resumed: MutableList<Pair<FragmentKey, Boolean>>
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
@@ -33,16 +34,11 @@ class FragmentLifecycleStateTest {
 
                     store(
                         configureActivity = {
-                            initialContract = TestContract()
+                            initialContract = TestKey()
                         },
                         contracts =  {
-                            bind { key: TestContract ->
-                                stateChanges(key)
-                            }
-
-                            bind { key: TestContractWithId ->
-                                stateChanges(key)
-                            }
+                            bind(featureFactory<TestKey>(this@activity))
+                            bind(featureFactory<TestKeyWithId>(this@activity))
                         }
                     )
                 }
@@ -62,12 +58,12 @@ class FragmentLifecycleStateTest {
     }
 
     @Test fun `is fragment started`() {
-        val events = selectStartedEvents(TestContract())
+        val events = selectStartedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
     @Test fun `is fragment resumed`() {
-        val events = selectResumedEvents(TestContract())
+        val events = selectResumedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
@@ -75,8 +71,8 @@ class FragmentLifecycleStateTest {
     @Test fun `navigate forward`() {
         navigateToTaskDetail()
 
-        val contract = TestContract()
-        val detail = TestContractWithId(1)
+        val contract = TestKey()
+        val detail = TestKeyWithId(1)
 
         assertThat(selectStartedEvents(contract)).containsExactly(false, true, false).inOrder()
         assertThat(selectResumedEvents(contract)).containsExactly(false, true, false).inOrder()
@@ -85,26 +81,26 @@ class FragmentLifecycleStateTest {
         assertThat(selectResumedEvents(detail)).containsExactly(false, true).inOrder()
     }
 
-    private fun selectStartedEvents(contract: FragmentContract<*>): List<Boolean> {
+    private fun selectStartedEvents(contract: FragmentKey): List<Boolean> {
         return started.filter { it.first == contract }.map { it.second }
     }
 
-    private fun selectResumedEvents(contract: FragmentContract<*>): List<Boolean> {
+    private fun selectResumedEvents(contract: FragmentKey): List<Boolean> {
         return resumed.filter { it.first == contract }.map { it.second }
     }
 
     private fun navigateToTaskDetail() {
-        val detail = TestContractWithId(1)
+        val detail = TestKeyWithId(1)
         scenario.onActivity {
             it.supportFragmentManager.beginTransaction()
-                .remove(it.supportFragmentManager.findFragmentByTag(TestContract().tag)!!)
+                .remove(it.supportFragmentManager.findFragmentByTag(TestKey().tag)!!)
                 .add(R.id.activity_content, FormulaFragment.newInstance(detail), detail.tag)
                 .addToBackStack(null)
                 .commit()
         }
     }
 
-    private fun ActivityStoreContext<*>.stateChanges(contract: FragmentContract<*>): Observable<Any> {
+    private fun ActivityStoreContext<*>.stateChanges(contract: FragmentKey): Observable<Any> {
         val started = isFragmentStarted(contract).flatMap {
             started.add(contract to it)
             Observable.empty<Any>()
@@ -116,5 +112,13 @@ class FragmentLifecycleStateTest {
         }
 
         return started.mergeWith(resumed)
+    }
+
+    private fun <Key : FragmentKey> featureFactory(
+        storeContext: ActivityStoreContext<*>
+    ): FeatureFactory<Unit, Key> {
+        return TestFeatureFactory {
+            storeContext.stateChanges(it)
+        }
     }
 }
