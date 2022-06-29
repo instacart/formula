@@ -190,8 +190,8 @@ Add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.instacart.formula:formula-rxjava3:0.7.0'
-    implementation 'com.instacart.formula:formula-android:0.7.0'
+    implementation 'com.instacart.formula:formula-rxjava3:0.7.1'
+    implementation 'com.instacart.formula:formula-android:0.7.1'
 }
 ```
 
