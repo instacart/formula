@@ -1,7 +1,7 @@
 package com.instacart.formula.lint
 
 import com.android.tools.lint.client.api.UElementHandler
-import com.android.tools.lint.detector.api.Category.Companion.MESSAGES
+import com.android.tools.lint.detector.api.Category.Companion.CORRECTNESS
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
@@ -18,7 +18,10 @@ import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
+import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.asRecursiveLogString
+import org.jetbrains.uast.resolveToUElement
 import java.util.EnumSet
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
@@ -30,8 +33,21 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             id = "InvalidFormulaContextUsage",
             briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
             explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
-            category = MESSAGES,
+            category = CORRECTNESS,
             priority = 5,
+            severity = ERROR,
+            implementation = Implementation(
+                WrongFormulaUsageDetector::class.java,
+                EnumSet.of(Scope.ALL_JAVA_FILES)
+            )
+        )
+
+        val ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP = Issue.create(
+            id = "KeylessCallbackWithinLoop",
+            briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
+            explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
+            category = CORRECTNESS,
+            priority = 9,
             severity = ERROR,
             implementation = Implementation(
                 WrongFormulaUsageDetector::class.java,
@@ -41,25 +57,41 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
 
         val issues = arrayOf(
             ISSUE_ILLEGAL_CALL_WITHIN_TRANSITION_CONTEXT,
+            ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP,
         )
     }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>>? {
+    override fun getApplicableUastTypes(): List<Class<out UElement>> {
         return listOf(
             UExpression::class.java,
         )
     }
+
     sealed class FormulaReference(val name: String) {
         object Snapshot : FormulaReference("Snapshot")
         object FormulaContext : FormulaReference("FormulaContext")
     }
 
-    override fun createUastHandler(context: JavaContext): UElementHandler? {
-        return object: UElementHandler() {
+    override fun createUastHandler(context: JavaContext): UElementHandler {
+        return object : UElementHandler() {
             override fun visitExpression(node: UExpression) {
                 if (node is UCallExpression) {
                     val resolved = node.resolve()
                     val methodOwner = getMethodOwner(context, resolved)
+
+                    if (methodOwner != null && isKeylessFormulaCallback(context, node) && isWithinLoop(node)) {
+                        val call = node.sourcePsi
+                        context.report(
+                            Incident(
+                                issue = ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP,
+                                scope = call,
+                                location = context.getLocation(call),
+                                message = "Key-less context.callback() call within a loop. This will result in a runtime crash for a loop with more than 1 iteration.",
+                            )
+                        )
+                        return
+                    }
+
                     if (methodOwner != null && isWithinTransitionContext(context, node)) {
                         // Illegal reference happened within TransitionContext
                         val call = node.sourcePsi
@@ -79,7 +111,8 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
                     if (parameter != null && isWithinTransitionContext(context, node)) {
                         // Illegal function call happened within TransitionContext
                         val name = parameter.name
-                        val message = "Using $name within transition context is not allowed. Since ${node.methodName} takes $name as a parameter, you cannot use this function with transition context."
+                        val message =
+                            "Using $name within transition context is not allowed. Since ${node.methodName} takes $name as a parameter, you cannot use this function with transition context."
                         val call = node.sourcePsi
                         context.report(
                             Incident(
@@ -98,7 +131,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
 
     private fun getFormulaReference(
         context: JavaContext,
-        type: PsiType?
+        type: PsiType?,
     ): FormulaReference? {
         val referenceClass = context.evaluator.getTypeClass(type)
         return when (referenceClass?.qualifiedName) {
@@ -172,5 +205,30 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             val typeClass = context.evaluator.getTypeClass(type)
             typeClass?.qualifiedName == "com.instacart.formula.TransitionContext"
         }
+    }
+
+    private fun isKeylessFormulaCallback(
+        context: JavaContext,
+        node: UCallExpression,
+    ): Boolean {
+        val methodName = node.methodName
+        val argsCount = node.valueArgumentCount
+        val methodReceiverType = node.receiverType
+        val typeClass = context.evaluator.getTypeClass(methodReceiverType)
+        val isReceiverFormulaContext = typeClass?.qualifiedName == "com.instacart.formula.FormulaContext"
+        val isCallbackFunction = methodName == "callback"
+        val isKeylessCall = argsCount < 2
+        return isCallbackFunction && isReceiverFormulaContext && isKeylessCall
+    }
+
+    private fun isWithinLoop(node: UExpression): Boolean {
+        var parent = node.uastParent
+        while (parent != null) {
+            if (parent is ULoopExpression) {
+                return true
+            }
+            parent = parent.uastParent
+        }
+        return false
     }
 }

@@ -268,4 +268,30 @@ class WrongFormulaUsageDetectorTest {
             """.trimMargin()
         )
     }
+
+    @Test
+    fun eventListenerWithinForLoopHasToHaveUniqueKey() {
+        val example = """
+            package com.instacart.formula
+            
+            class ExampleFormula {
+                fun Snapshot<Unit, Unit>.callbackInLoop() {
+                    for (i in 0 until 10) {
+                        context.callback {
+                            none()
+                        }
+                    }
+                }
+            }
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within a loop. This will result in a runtime crash for a loop with more than 1 iteration. [KeylessCallbackWithinLoop]
+                |                        context.callback {
+                |                                ^
+                |1 errors, 0 warnings
+            """.trimMargin()
+        )
+    }
 }
