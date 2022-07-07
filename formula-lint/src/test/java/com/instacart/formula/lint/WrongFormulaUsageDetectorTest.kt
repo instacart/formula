@@ -296,6 +296,62 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
+    fun `event listener within while loop has to have unique key`() {
+        val example = """
+            |package com.instacart.formula
+            |
+            |class ExampleFormula {
+            |    fun Snapshot<Unit, Unit>.callbackInLoop() {
+            |        var i = 0
+            |        while (i < 10) {
+            |            context.callback {
+            |                none()
+            |            }
+            |            i++            
+            |        }
+            |    }
+            |}
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |            context.callback {
+                |                    ^
+                |1 errors, 0 warnings
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun `event listener within do-while loop has to have unique key`() {
+        val example = """
+            |package com.instacart.formula
+            |
+            |class ExampleFormula {
+            |    fun Snapshot<Unit, Unit>.callbackInLoop() {
+            |        var i = 0
+            |        do {
+            |            context.callback {
+            |                none()
+            |            }
+            |            i++            
+            |        } while (i < 10)
+            |    }
+            |}
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |            context.callback {
+                |                    ^
+                |1 errors, 0 warnings
+            """.trimMargin()
+        )
+    }
+
+    @Test
     fun `event listener within foreach loop has to have unique key`() {
         val example = """
             |package com.instacart.formula
@@ -376,6 +432,32 @@ class WrongFormulaUsageDetectorTest {
             |class ExampleFormula {
             |    fun Snapshot<Unit, Unit>.callbackInLoop() {
             |        val callbacks = (0..10).map {
+            |            context.callback {
+            |                none()
+            |            }
+            |        }
+            |    }
+            |}
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |            context.callback {
+                |                    ^
+                |1 errors, 0 warnings
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun `event listener within Iterable mapIndexed function has to have unique key`() {
+        val example = """
+            |package com.instacart.formula
+            |
+            |class ExampleFormula {
+            |    fun Snapshot<Unit, Unit>.callbackInLoop() {
+            |        val callbacks = (0..10).mapIndexed { index, element ->
             |            context.callback {
             |                none()
             |            }
