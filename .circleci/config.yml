@@ -155,7 +155,9 @@ jobs:
     executor: android
     steps:
       - prepare
-      - run: bundle exec danger --verbose
+# Disabled because the token for posting Danger comments has been revoked
+# Will fix this issue a bit later
+#      - run: bundle exec danger --verbose
 
 workflows:
   version: 2

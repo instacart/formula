@@ -9,6 +9,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.parcelize.Parcelize
 import org.junit.Before
 import org.junit.Test
 
@@ -94,10 +95,8 @@ class ActivityStoreContextTest {
             .assertValues(false, true)
     }
 
-    private fun createContract(): FragmentContract<*> {
-        val contract = mock<FragmentContract<*>>()
-        whenever(contract.tag).thenReturn("fake tag")
-        return contract
+    private fun createContract(): FragmentKey {
+        return TestFragmentKey()
     }
 
     private fun createFakeActivity(): FakeActivity {
@@ -105,4 +104,9 @@ class ActivityStoreContextTest {
         whenever(activity.fakeEvents()).thenReturn(fakeEventRelay)
         return activity
     }
+
+    @Parcelize
+    private data class TestFragmentKey(
+        override val tag: String = "fake tag",
+    ): FragmentKey
 }

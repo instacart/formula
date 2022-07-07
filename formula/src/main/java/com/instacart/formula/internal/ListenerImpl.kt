@@ -9,13 +9,14 @@ import com.instacart.formula.Transition
 @PublishedApi
 internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listener<Event> {
 
-    internal var transitionDispatcher: TransitionDispatcher<Input, State>? = null
+    internal var snapshotImpl: SnapshotImpl<Input, State>? = null
     internal var transition: Transition<Input, State, Event>? = null
 
     override fun invoke(event: Event) {
-        transitionDispatcher?.let { dispatcher ->
+        snapshotImpl?.let { snapshot ->
             transition?.let { transition ->
-                dispatcher.dispatch(transition, event)
+                val result = transition.toResult(snapshot, event)
+                snapshot.dispatch(result)
                 return
             }
         }
@@ -23,7 +24,7 @@ internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listen
     }
 
     fun disable() {
-        transitionDispatcher = null
+        snapshotImpl = null
         transition = null
     }
 }

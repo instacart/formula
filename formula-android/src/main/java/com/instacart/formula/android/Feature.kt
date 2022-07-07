@@ -12,7 +12,7 @@ import io.reactivex.rxjava3.core.Observable
  *
  * Take a look at [FeatureFactory] for more information.
  */
-class Feature<RenderModel>(
+class Feature<RenderModel : Any>(
     val state: Observable<RenderModel>,
     val viewFactory: ViewFactory<RenderModel>
 )

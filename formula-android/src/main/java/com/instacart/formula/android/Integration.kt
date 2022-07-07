@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.core.Observable
  * }
  * ```
  */
+@Deprecated("Use FeatureFactory instead")
 abstract class Integration<in Component, in Key, RenderModel : Any> {
 
     abstract fun create(component: Component, key: Key): Observable<RenderModel>

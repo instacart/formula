@@ -6,9 +6,10 @@ import com.instacart.formula.android.fakes.FakeAuthFlowFactory
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
-import com.instacart.formula.android.fakes.TestAccountFragmentContract
-import com.instacart.formula.android.fakes.TestLoginFragmentContract
-import com.instacart.formula.android.fakes.TestSignUpFragmentContract
+import com.instacart.formula.android.fakes.NoOpViewFactory
+import com.instacart.formula.android.fakes.TestAccountFragmentKey
+import com.instacart.formula.android.fakes.TestLoginFragmentKey
+import com.instacart.formula.android.fakes.TestSignUpFragmentKey
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 
@@ -25,7 +26,7 @@ class FragmentFlowStoreTest {
             exception = t
         }
         assertThat(exception?.message).isEqualTo(
-            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentContract already exists"
+            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentKey already exists"
         )
     }
 
@@ -36,8 +37,8 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
             }
 
         val components = appComponent.initialized.map { it.first }
@@ -52,15 +53,15 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(2)
             }
             .apply {
-                store.onLifecycleEffect(TestSignUpFragmentContract().asRemovedEvent())
-                store.onLifecycleEffect(TestLoginFragmentContract().asRemovedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentKey().asRemovedEvent())
+                store.onLifecycleEffect(TestLoginFragmentKey().asRemovedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(0)
@@ -74,9 +75,9 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentContract().asAddedEvent())
-                store.onLifecycleEffect(TestAccountFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
+                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
+                store.onLifecycleEffect(TestAccountFragmentKey().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(2)
@@ -90,7 +91,7 @@ class FragmentFlowStoreTest {
             .state(FragmentEnvironment())
             .test()
             .apply {
-                store.onLifecycleEffect(TestLoginFragmentContract().asAddedEvent())
+                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
             }
             .apply {
                 assertThat(appComponent.initialized).hasSize(1)
@@ -180,11 +181,11 @@ class FragmentFlowStoreTest {
             .test()
     }
 
-    private fun expectedState(vararg states: Pair<FragmentContract<*>, *>): Map<FragmentKey, FragmentState> {
+    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentState> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentContract<*>, *>>): Map<FragmentKey, FragmentState> {
+    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentState> {
         val initial = mutableMapOf<FragmentKey, FragmentState>()
         return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
@@ -199,16 +200,20 @@ class FragmentFlowStoreTest {
         return FragmentFlowStore.init(component) {
             bind(FakeAuthFlowFactory())
 
-            bind(MainKey::class) { component, key ->
-                component.state(key)
-            }
-
-            bind(DetailKey::class) { component, key ->
-                component.state(key)
-            }
+            bind(TestFeatureFactory<MainKey>())
+            bind(TestFeatureFactory<DetailKey>())
         }
     }
 
     private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
     private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
+
+    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT> {
+        override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature<*> {
+            return Feature(
+                state = dependencies.state(key),
+                viewFactory = NoOpViewFactory()
+            )
+        }
+    }
 }

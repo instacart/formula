@@ -1,0 +1,59 @@
+name: Build
+on: [pull_request, push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.6.1'
+          bundler-cache: true
+      - name: Run Core Tests
+        run: ./gradlew :formula:test
+      - name: Run Kotlin Coroutine Runtime Tests
+        run: ./gradlew :formula-coroutines:test
+      - name: Run Formula Android Unit Tests
+        run: ./gradlew :formula-android:testRelease
+      - name: Run Formula Android Instrumentation Tests
+        run: ./gradlew :formula-android-tests:testRelease
+      - name: Run Formula Lint Tests
+        run: ./gradlew :formula-lint:test
+      - name: Generate Jacoco Report
+        run: ./gradlew jacocoTestReportMerged
+      - name: Save Jacoco Report
+        run: |
+          mkdir -p ~/jacoco/
+          find . -type f -regex ".*/build/reports/jacoco/jacoco.xml" -exec cp {} ~/jacoco/ \;
+      - name: Save test results
+        if: always()
+        run: |
+          ./gradlew mergeReports
+          mkdir -p ~/junit/
+          find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
+# Re-enable once DANGER_GITHUB_API_TOKEN or DANGER_GITHUB_BEARER_TOKEN is configured
+#      - name: Publish Coverage Results
+#        if: github.event_name == 'pull_request'
+#        run: bundle exec danger --verbose
+
+  assemble_samples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+      - name: Assemble Counter
+        run: ./gradlew :samples:counter:assembleDebug
+      - name: Assemble Stopwatch Sample
+        run: ./gradlew :samples:stopwatch:assembleDebug
+      - name: Assemble Todo App
+        run: ./gradlew :samples:todoapp:assembleDebug
+      - name: Assemble Custom Stream App
+        run: ./gradlew :samples:custom-network-state-stream:assembleDebug
+      - name: Assemble Composition Sample
+        run: ./gradlew :samples:composition:assembleDebug
+      - name: Assemble Stopwatch Compose Sample
+        run: ./gradlew :samples:stopwatch-compose:assembleDebug
+      - name: Assemble Stopwatch Kotlin Coroutine Sample
+        run: ./gradlew :samples:stopwatch-coroutines:assembleDebug

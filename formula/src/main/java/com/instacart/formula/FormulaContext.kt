@@ -1,9 +1,8 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.JoinedKey
-import com.instacart.formula.internal.ScopedListeners
-import com.instacart.formula.internal.TransitionDispatcher
+import com.instacart.formula.internal.Listeners
 import com.instacart.formula.internal.UnitListener
+import kotlin.reflect.KClass
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -11,8 +10,7 @@ import com.instacart.formula.internal.UnitListener
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<out Input, State> internal constructor(
-    @PublishedApi internal val listeners: ScopedListeners,
-    internal val transitionDispatcher: TransitionDispatcher<Input, State>,
+    @PublishedApi internal val listeners: Listeners,
 ) {
 
     /**
@@ -24,7 +22,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = transition.type(),
+            key = createScopedKey(transition.type()),
             transition = transition
         )
     }
@@ -39,7 +37,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
         return eventListener(
-            key = JoinedKey(key, transition.type()),
+            key = createScopedKey(transition.type(), key),
             transition = transition
         )
     }
@@ -129,19 +127,20 @@ abstract class FormulaContext<out Input, State> internal constructor(
      * @param key Unique identifier that will be used for this block.
      */
     inline fun <Value> key(key: Any, create: () -> Value): Value {
-        listeners.enterScope(key)
+        enterScope(key)
         val value = create()
-        listeners.endScope()
+        endScope()
         return value
     }
 
-    internal fun <Event> eventListener(
+    // Internal listener management
+    internal abstract fun <Event> eventListener(
         key: Any,
         transition: Transition<Input, State, Event>
-    ): Listener<Event> {
-        val listener = listeners.initOrFindListener<Input, State, Event>(key)
-        listener.transitionDispatcher = transitionDispatcher
-        listener.transition = transition
-        return listener
-    }
+    ): Listener<Event>
+
+    // Internal key scope management
+    @PublishedApi internal abstract fun enterScope(key: Any)
+    @PublishedApi internal abstract fun endScope()
+    @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any? = null): Any
 }

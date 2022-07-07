@@ -1,10 +1,10 @@
-package com.instacart.formula.android.fakes
+package com.instacart.formula.test
 
 import com.instacart.formula.android.FragmentKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class MainKey(
+data class TestKeyWithId(
     val id: Int,
-    override val tag: String = "main-$id",
+    override val tag: String = "test-key-$id",
 ) : FragmentKey

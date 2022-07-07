@@ -6,8 +6,12 @@ import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.Feature
+import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
-import com.instacart.formula.test.TestLifecycleContract
+import com.instacart.formula.test.TestFragmentLifecycleCallback
+import com.instacart.formula.test.TestLifecycleKey
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -20,20 +24,30 @@ import org.robolectric.android.controller.ActivityController
 class FragmentLifecycleTest {
 
     private lateinit var activityController: ActivityController<TestFragmentActivity>
-    private lateinit var contract: TestLifecycleContract
+    private lateinit var lifecycleCallback: TestFragmentLifecycleCallback
+    private lateinit var contract: TestLifecycleKey
 
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
             activity<TestFragmentActivity> {
                 store(
                     configureActivity = {
-                        contract = TestLifecycleContract()
+                        lifecycleCallback = TestFragmentLifecycleCallback()
+                        contract = TestLifecycleKey()
                         initialContract = contract
                     },
                     contracts =  {
-                        bind(TestLifecycleContract::class) { _ ->
-                            Observable.empty()
+                        val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
+                            override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature<*> {
+                                return Feature(
+                                    state = Observable.empty(),
+                                    viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
+                                        featureView(lifecycleCallback) {}
+                                    }
+                                )
+                            }
                         }
+                        bind(featureFactory)
                     }
                 )
             }
@@ -52,21 +66,21 @@ class FragmentLifecycleTest {
 
     @Test fun `creation callbacks`() {
         assertThat(contract).isNotNull()
-        assertThat(contract.hasOnViewCreated).isTrue()
-        assertThat(contract.hasOnActivityCreated).isTrue()
-        assertThat(contract.hasOnStart).isTrue()
-        assertThat(contract.hasOnResume).isTrue()
+        assertThat(lifecycleCallback.hasOnViewCreated).isTrue()
+        assertThat(lifecycleCallback.hasOnActivityCreated).isTrue()
+        assertThat(lifecycleCallback.hasOnStart).isTrue()
+        assertThat(lifecycleCallback.hasOnResume).isTrue()
     }
 
     @Test fun `destroy callbacks`() {
         activityController.destroy()
-        assertThat(contract.hasOnPauseEvent).isTrue()
-        assertThat(contract.hasOnStop).isTrue()
+        assertThat(lifecycleCallback.hasOnPauseEvent).isTrue()
+        assertThat(lifecycleCallback.hasOnStop).isTrue()
     }
 
     @Test fun `save instance state callback`() {
         activityController.saveInstanceState(Bundle())
-        assertThat(contract.hasOnSaveInstanceState).isTrue()
+        assertThat(lifecycleCallback.hasOnSaveInstanceState).isTrue()
     }
 
     // Unfortunately, we cannot test destroy view with Robolectric

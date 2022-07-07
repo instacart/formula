@@ -1,5 +1,7 @@
 # Changelog
-## [0.7.1] - TBD
+## [0.8.0] - TBD
+
+## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
 - **Breaking**: Removed old `com.instacart.formula.RxStream`. Note: you should use `com.instacart.formula.rxjava3.RxAction`.
 - **Breaking**: Removed `Formula.start()` extension, use `Formula.toObservable()` extension instead.
@@ -14,6 +16,9 @@
 - Add `action.runAgain()` extension function
 - Add `action.cancelPrevious(previousAction)` extension function
 - Add `DelegateAction` abstract class
+- Add child formula support for `context.key` scopes.
+- Add support for nested `context.key` calls.
+- Auto-index duplicate listener keys.
 
 ## [0.7.0] - June 30, 2021
 - **Breaking**: Remove `events(observable) { }` utility function.

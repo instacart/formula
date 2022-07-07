@@ -6,21 +6,21 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestableRuntime
 
-object UsingCallbacksWithinAnotherFunction {
+object ReusableFunctionCreatesUniqueListeners {
 
     fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
 
     class TestOutput(
-        val first: Listener<Unit>,
-        val second: Listener<Unit>,
+        val firstListener: Listener<Unit>,
+        val secondListener: Listener<Unit>,
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
             return Evaluation(
                 output = TestOutput(
-                    first = createDefaultCallback(),
-                    second = createDefaultCallback()
+                    firstListener = createDefaultCallback(),
+                    secondListener = createDefaultCallback()
                 )
             )
         }
