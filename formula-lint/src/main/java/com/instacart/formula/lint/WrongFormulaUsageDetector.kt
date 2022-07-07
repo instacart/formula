@@ -20,9 +20,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UMethod
-import org.jetbrains.uast.asRecursiveLogString
-import org.jetbrains.uast.resolveToUElement
-import java.util.EnumSet
+import java.util.*
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     companion object {
@@ -79,14 +77,18 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
                     val resolved = node.resolve()
                     val methodOwner = getMethodOwner(context, resolved)
 
-                    if (methodOwner != null && isKeylessFormulaCallback(context, node) && isWithinLoop(node)) {
+                    if (methodOwner != null && isKeylessFormulaCallback(context, node) && isWithinLoop(context, node)) {
                         val call = node.sourcePsi
                         context.report(
                             Incident(
                                 issue = ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP,
                                 scope = call,
                                 location = context.getLocation(call),
-                                message = "Key-less context.callback() call within a loop. This will result in a runtime crash for a loop with more than 1 iteration.",
+                                message = """
+                                    |Key-less context.callback() call within an Iterable. 
+                                    |This will result in a runtime crash for a loop with more than 1 iteration. 
+                                    |You should supply unique [key] to the context.callback() call.
+                                """.trimMargin().replace("\n", ""),
                             )
                         )
                         return
@@ -221,13 +223,35 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         return isCallbackFunction && isReceiverFormulaContext && isKeylessCall
     }
 
-    private fun isWithinLoop(node: UExpression): Boolean {
+    private fun isWithinLoop(
+        context: JavaContext,
+        node: UExpression,
+    ): Boolean {
         var parent = node.uastParent
         while (parent != null) {
             if (parent is ULoopExpression) {
                 return true
             }
+            if (parent is UCallExpression && hasIterableParent(context, parent)) {
+                return true
+            }
             parent = parent.uastParent
+        }
+        return false
+    }
+
+    private fun hasIterableParent(
+        context: JavaContext,
+        node: UCallExpression,
+    ): Boolean {
+        val receiverClass = context.evaluator.getTypeClass(node.receiverType)
+        val supers = receiverClass?.supers.orEmpty().toMutableList()
+        while (supers.isNotEmpty()) {
+            val superClass = supers.removeAt(0)
+            if (superClass.qualifiedName == "java.lang.Iterable") {
+                return true
+            }
+            supers += superClass.supers.toMutableList()
         }
         return false
     }
