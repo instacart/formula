@@ -247,7 +247,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             if (parent is ULoopExpression) {
                 return true
             }
-            if (parent is UCallExpression && hasIterableParent(context, parent)) {
+            if (parent is UCallExpression && hasIterableSuper(context, parent)) {
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
@@ -258,7 +258,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         return false
     }
 
-    private fun hasIterableParent(
+    private fun hasIterableSuper(
         context: JavaContext,
         node: UCallExpression,
     ): Boolean {
