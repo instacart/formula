@@ -77,7 +77,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
                     val resolved = node.resolve()
                     val methodOwner = getMethodOwner(context, resolved)
 
-                    if (methodOwner != null && isKeylessFormulaCallback(context, node) && isWithinLoop(context, node)) {
+                    if (methodOwner != null && isKeylessFormulaCallback(context, node) && isWithinKeylessLoop(context, node)) {
                         val call = node.sourcePsi
                         context.report(
                             Incident(
@@ -223,7 +223,22 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         return isCallbackFunction && isReceiverFormulaContext && isKeylessCall
     }
 
-    private fun isWithinLoop(
+    private fun isFormulaContextKeyCall(
+        context: JavaContext,
+        node: UCallExpression,
+    ): Boolean {
+        val methodName = node.methodName
+        val methodReceiverType = node.receiverType
+        val typeClass = context.evaluator.getTypeClass(methodReceiverType)
+        val isReceiverFormulaContext = typeClass?.qualifiedName == "com.instacart.formula.FormulaContext"
+        val isKeyFunction = methodName == "key"
+        return isKeyFunction && isReceiverFormulaContext
+    }
+
+    /**
+     * TODO add docs
+     */
+    private fun isWithinKeylessLoop(
         context: JavaContext,
         node: UExpression,
     ): Boolean {
@@ -234,6 +249,9 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             }
             if (parent is UCallExpression && hasIterableParent(context, parent)) {
                 return true
+            }
+            if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
+                return false
             }
             parent = parent.uastParent
         }
