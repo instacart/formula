@@ -11,16 +11,18 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity.ERROR
 import com.android.tools.lint.detector.api.TypeEvaluator
 import com.intellij.psi.PsiClassType
+import com.intellij.psi.PsiLambdaExpression
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiWildcardType
+import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UMethod
-import java.util.*
+import java.util.EnumSet
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     companion object {
@@ -247,7 +249,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             if (parent is ULoopExpression) {
                 return true
             }
-            if (parent is UCallExpression && hasIterableSuper(context, parent)) {
+            if (parent is UCallExpression && hasIterableSuper(context, parent) && hasLambdaArgument(parent)) {
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
@@ -272,5 +274,11 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             supers += superClass.supers.toMutableList()
         }
         return false
+    }
+
+    private fun hasLambdaArgument(node: UCallExpression): Boolean {
+        return node.valueArguments.any { argument ->
+            argument.sourcePsi is PsiLambdaExpression || argument.sourcePsi is KtLambdaExpression
+        }
     }
 }

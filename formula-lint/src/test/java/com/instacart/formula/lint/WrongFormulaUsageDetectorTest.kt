@@ -500,4 +500,34 @@ class WrongFormulaUsageDetectorTest {
             """.trimMargin()
         )
     }
+
+    @Test
+    fun `does not report KeylessCallbackWithinLoop when key-less context#callback is enclosed in List#add call`() {
+        val example = """
+            package com.instacart.formula
+            class ExampleFormula {
+                data class Callback(
+                    val action: () -> Unit,
+                )
+
+                fun Snapshot<Unit, Unit>.callbackInLoop() {
+                    val rows = mutableListOf<Any>()
+
+                    rows.add(
+                        Callback(
+                            action = context.callback {
+                                none()
+                            }
+                        )
+                    )
+                }
+            }
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |No warnings.
+            """.trimMargin()
+        )
+    }
 }
