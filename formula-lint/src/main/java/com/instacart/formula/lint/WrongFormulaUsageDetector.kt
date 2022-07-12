@@ -249,7 +249,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             if (parent is ULoopExpression) {
                 return true
             }
-            if (parent is UCallExpression && hasIterableSuper(context, parent) && hasLambdaArgument(parent)) {
+            if (parent is UCallExpression && hasIterableSuper(context, parent) && hasLambdaArgument(parent) && isIteratingFunction(parent)) {
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
@@ -280,5 +280,10 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         return node.valueArguments.any { argument ->
             argument.sourcePsi is PsiLambdaExpression || argument.sourcePsi is KtLambdaExpression
         }
+    }
+
+    private fun isIteratingFunction(node: UCallExpression): Boolean {
+        val methodName = node.methodName
+        return methodName in listOf("forEach", "map", "mapIndexed")
     }
 }
