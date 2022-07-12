@@ -287,7 +287,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -315,7 +315,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -343,7 +343,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -369,7 +369,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -378,7 +378,7 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
-    fun `does not report KeylessCallbackWithinLoop when key-less callback is not inside Iterable loop`() {
+    fun `does not report KeylessFormulaCallbackWithinLoop when key-less callback is not inside Iterable loop`() {
         val example = """
             |package com.instacart.formula
             |
@@ -402,7 +402,7 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
-    fun `does not report KeylessCallbackWithinLoop when callback is inside Iterable loop and has key`() {
+    fun `does not report KeylessFormulaCallbackWithinLoop when callback is inside Iterable loop and has key`() {
         val example = """
             |package com.instacart.formula
             |
@@ -442,7 +442,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -468,7 +468,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -477,7 +477,7 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
-    fun `does not report KeylessCallbackWithinLoop when key-less context#callback is enclosed in context#key call which in turn is enclosed in Iterable loop`() {
+    fun `does not report KeylessFormulaCallbackWithinLoop when key-less context#callback is enclosed in context#key call which in turn is enclosed in Iterable loop`() {
         val example = """
             |package com.instacart.formula
             |
@@ -502,26 +502,88 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
-    fun `does not report KeylessCallbackWithinLoop when key-less context#callback is enclosed in List#add call`() {
+    fun `does not report KeylessFormulaCallbackWithinLoop when key-less context#callback is enclosed in List#add call`() {
         val example = """
-            package com.instacart.formula
-            class ExampleFormula {
-                data class Callback(
-                    val action: () -> Unit,
-                )
+            |package com.instacart.formula
+            |class ExampleFormula {
+            |    data class Callback(
+            |        val action: () -> Unit,
+            |    )
+            |
+            |    fun Snapshot<Unit, Unit>.callbackNotInLoop() {
+            |        val rows = mutableListOf<Any>()
+            |        rows.add(
+            |            Callback(
+            |                action = context.callback {
+            |                    none()
+            |                }
+            |            )
+            |        )
+            |    }
+            |}
+        """.trimMargin()
 
-                fun Snapshot<Unit, Unit>.callbackInLoop() {
-                    val rows = mutableListOf<Any>()
+        run(kotlin(example)).expect(
+            """
+                |No warnings.
+            """.trimMargin()
+        )
+    }
 
-                    rows.add(
-                        Callback(
-                            action = context.callback {
-                                none()
-                            }
-                        )
-                    )
-                }
-            }
+    @Test
+    fun `does not report KeylessFormulaCallbackWithinLoop when key-less context#callback is enclosed in List#apply call`() {
+        val example = """
+            |package com.instacart.formula
+            |class ExampleFormula {
+            |    data class Callback(
+            |        val action: () -> Unit,
+            |    )
+            |
+            |    fun Snapshot<Unit, Unit>.callbackNotInLoop() {
+            |        mutableListOf<Any>().apply{
+            |            this += Callback(
+            |                action = context.callback {
+            |                    none()
+            |                }
+            |            )
+            |        }
+            |    }
+            |}
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |No warnings.
+            """.trimMargin()
+        )
+    }
+
+    /**
+     * This test denotes [KeylessFormulaCallbackWithinLoop] check deficiency, rather than making sure things work properly.
+     * We currently aren't able to detect [FormulaContext#callback] key-less usages that are enclosed in a loop that originates from another class.
+     */
+    @Test
+    fun `does not report KeylessFormulaCallbackWithinLoop when key-less context#callback is enclosed in iterable that originates from another class`() {
+        val example = """
+            |package com.instacart.formula
+            |class AnotherClass {
+            |    fun Snapshot<Unit, Unit>.loop() {
+            |        val exampleFormula = ExampleFormula()
+            |        (0..10).forEach {
+            |            with(exampleFormula) {
+            |                callback(it)
+            |            }
+            |        }
+            |    }
+            |}
+            |    
+            |class ExampleFormula {
+            |    fun Snapshot<Unit, Unit>.callback(index: Int) {
+            |        context.callback {
+            |            none()
+            |        }
+            |    }
+            |}
         """.trimMargin()
 
         run(kotlin(example)).expect(

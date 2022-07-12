@@ -22,7 +22,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UMethod
-import java.util.EnumSet
+import java.util.*
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     companion object {
@@ -43,7 +43,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         )
 
         val ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP = Issue.create(
-            id = "KeylessCallbackWithinLoop",
+            id = "KeylessFormulaCallbackWithinLoop",
             briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
             explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
             category = CORRECTNESS,
@@ -237,9 +237,6 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         return isKeyFunction && isReceiverFormulaContext
     }
 
-    /**
-     * TODO add docs
-     */
     private fun isWithinKeylessLoop(
         context: JavaContext,
         node: UExpression,
@@ -249,7 +246,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             if (parent is ULoopExpression) {
                 return true
             }
-            if (parent is UCallExpression && hasIterableSuper(context, parent) && hasLambdaArgument(parent) && isIteratingFunction(parent)) {
+            if (parent is UCallExpression && isIteratingFunction(parent) && hasIterableSuper(context, parent) && hasLambdaArgument(parent)) {
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
@@ -283,7 +280,6 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     }
 
     private fun isIteratingFunction(node: UCallExpression): Boolean {
-        val methodName = node.methodName
-        return methodName in listOf("forEach", "map", "mapIndexed")
+        return node.methodName in listOf("forEach", "map", "mapIndexed")
     }
 }
