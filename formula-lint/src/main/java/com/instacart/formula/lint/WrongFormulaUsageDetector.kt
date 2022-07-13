@@ -22,7 +22,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UMethod
-import java.util.*
+import java.util.EnumSet
 
 class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
     companion object {
