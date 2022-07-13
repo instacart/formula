@@ -244,12 +244,15 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         var parent = node.uastParent
         while (parent != null) {
             if (parent is ULoopExpression) {
+                // this covers 3 possible types of loop expressions: for/while/do-while
                 return true
             }
             if (parent is UCallExpression && isIteratingFunction(parent) && hasIterableSuper(context, parent) && hasLambdaArgument(parent)) {
+                // this check covers iterations on collections, such as .forEach{}, .map{} and .mapIndexed{}
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
+                // early return when there's and enclosing context.key() call
                 return false
             }
             parent = parent.uastParent
