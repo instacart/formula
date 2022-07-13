@@ -42,9 +42,7 @@ ext {
                     constraintlayout: "androidx.constraintlayout:constraintlayout:2.1.0",
                     lifecycle       : [
                             runtime   : "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion",
-                            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion",
-                            runtimektx   : "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion",
-                            extensionsktx: "androidx.lifecycle:lifecycle-extensions-ktx:$lifecycleVersion",
+                            runtimeKtx   : "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion",
                     ],
                     recyclerview    : "androidx.recyclerview:recyclerview:$androidXVersion",
                     fragment        : [

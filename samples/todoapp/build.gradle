@@ -49,7 +49,7 @@ dependencies {
     implementation libraries.kotlin
     implementation libraries.rxrelays
 
-    implementation libraries.androidx.lifecycle.extensions
+    implementation libraries.androidx.lifecycle.runtimeKtx
 
     testImplementation libraries.junit
     testImplementation "com.google.truth:truth:$truthVersion"
