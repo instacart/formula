@@ -44,8 +44,8 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
 
         val ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP = Issue.create(
             id = "KeylessFormulaCallbackWithinLoop",
-            briefDescription = "Cannot use Snapshot or FormulaContext within TransitionContext",
-            explanation = "It is an error to use Snapshot and FormulaContext within TransitionContext.",
+            briefDescription = "Missing key in Formula callback.",
+            explanation = "It is an error to not provide an unique [key] for a FormulaContext#callback call within a loop or Iterable function. This will result in a Formula runtime crash in most of the cases.",
             category = CORRECTNESS,
             priority = 9,
             severity = ERROR,
