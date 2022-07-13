@@ -43,7 +43,7 @@ dependencies {
 
     implementation libraries.kotlin
     implementation libraries.androidx.appcompat
-    implementation libraries.androidx.lifecycle.runtimektx
+    implementation libraries.androidx.lifecycle.runtimeKtx
     implementation libraries.androidx.activity.ktx
 
     testImplementation libraries.junit

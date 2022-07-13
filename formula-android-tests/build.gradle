@@ -5,7 +5,7 @@ apply plugin: "kotlin-parcelize"
 apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.instacart.formula.samples"
         minSdkVersion constants.minSdk
