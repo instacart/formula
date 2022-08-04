@@ -3,6 +3,8 @@ on: [pull_request, push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
@@ -33,10 +35,9 @@ jobs:
           ./gradlew mergeReports
           mkdir -p ~/junit/
           find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
-# Re-enable once DANGER_GITHUB_API_TOKEN or DANGER_GITHUB_BEARER_TOKEN is configured
-#      - name: Publish Coverage Results
-#        if: github.event_name == 'pull_request'
-#        run: bundle exec danger --verbose
+      - name: Publish Coverage Results
+        if: github.event_name == 'pull_request'
+        run: bundle exec danger --verbose
 
   assemble_samples:
     runs-on: ubuntu-latest
