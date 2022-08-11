@@ -35,5 +35,6 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
     }
     val observer = formula.toObservable(input).test()
     observer.assertNoErrors()
+    observer.dispose()
     return observer.values().last()
 }
