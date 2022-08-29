@@ -287,7 +287,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -315,7 +315,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -343,7 +343,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -369,7 +369,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -442,7 +442,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings
@@ -468,7 +468,7 @@ class WrongFormulaUsageDetectorTest {
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. This will result in a runtime crash for a loop with more than 1 iteration. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |src/com/instacart/formula/ExampleFormula.kt:6: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
                 |            context.callback {
                 |                    ^
                 |1 errors, 0 warnings

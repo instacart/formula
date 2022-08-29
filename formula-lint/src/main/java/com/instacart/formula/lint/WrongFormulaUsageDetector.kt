@@ -45,9 +45,9 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
         val ISSUE_KEYLESS_CALLBACKS_WITHIN_LOOP = Issue.create(
             id = "KeylessFormulaCallbackWithinLoop",
             briefDescription = "Missing key in Formula callback.",
-            explanation = "It is an error to not provide an unique [key] for a FormulaContext#callback call within a loop or Iterable function. This will result in a Formula runtime crash in most of the cases.",
+            explanation = "It is an error to not provide an unique [key] for a FormulaContext#callback call within a loop or Iterable function. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks.",
             category = CORRECTNESS,
-            priority = 9,
+            priority = 5,
             severity = ERROR,
             implementation = Implementation(
                 WrongFormulaUsageDetector::class.java,
@@ -88,7 +88,7 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
                                 location = context.getLocation(call),
                                 message = """
                                     |Key-less context.callback() call within an Iterable. 
-                                    |This will result in a runtime crash for a loop with more than 1 iteration. 
+                                    |Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. 
                                     |You should supply unique [key] to the context.callback() call.
                                 """.trimMargin().replace("\n", ""),
                             )
