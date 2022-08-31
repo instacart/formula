@@ -17,6 +17,7 @@ import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
+import com.instacart.formula.android.ViewFactory
 import java.util.LinkedList
 import java.util.UUID
 
@@ -96,11 +97,6 @@ internal class FragmentFlowRenderView(
             super.onFragmentAttached(fm, f, context)
             initializeFragmentInstanceIdIfNeeded(f)
 
-            if (f is FormulaFragment) {
-                f.fragmentEnvironment = fragmentEnvironment
-                f.viewFactory = FormulaFragmentViewFactory(f.getFormulaFragmentId(), featureProvider)
-            }
-
             if (FragmentLifecycle.shouldTrack(f)) {
                 onLifecycleEvent(FragmentLifecycle.createAddedEvent(f))
             } else {
@@ -142,6 +138,11 @@ internal class FragmentFlowRenderView(
      */
     fun dispose() {
         activity.supportFragmentManager.unregisterFragmentLifecycleCallbacks(callback)
+    }
+
+    fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
+        initializeFragmentInstanceIdIfNeeded(fragment)
+        return FormulaFragmentViewFactory(fragment.getFormulaFragmentId(), featureProvider)
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {

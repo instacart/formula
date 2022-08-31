@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.Cancelable
+import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.jakewharton.rxrelay3.BehaviorRelay
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
@@ -27,8 +28,6 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    internal lateinit var fragmentEnvironment: FragmentEnvironment
-    internal lateinit var viewFactory: ViewFactory<Any>
     private var featureView: FeatureView<Any>? = null
     private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
     private var cancelable: Cancelable? = null
@@ -36,7 +35,11 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     private var lifecycleCallback: FragmentLifecycleCallback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val featureView = this.viewFactory.create(inflater, container).apply {
+        val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
+            // No view factory, no view
+            return null
+        }
+        val featureView = viewFactory.create(inflater, container).apply {
             featureView = this
         }
         return featureView.view
@@ -44,16 +47,17 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val featureView = featureView!!
-        val state = FeatureView.State(
-            observable = stateRelay,
-            onError = {
-                fragmentEnvironment.onScreenError(key, it)
-            }
-        )
-        cancelable = featureView.bind(state)
-        this.lifecycleCallback = featureView.lifecycleCallbacks
-        lifecycleCallback?.onViewCreated(view, savedInstanceState)
+        featureView?.let { value ->
+            val state = FeatureView.State(
+                observable = stateRelay,
+                onError = {
+                    FormulaFragmentDelegate.logFragmentError(key, it)
+                }
+            )
+            cancelable = value.bind(state)
+            this.lifecycleCallback = value.lifecycleCallbacks
+            lifecycleCallback?.onViewCreated(view, savedInstanceState)
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

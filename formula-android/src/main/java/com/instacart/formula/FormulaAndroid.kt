@@ -11,6 +11,7 @@ import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.internal.AppManager
 import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import java.lang.IllegalStateException
 
 object FormulaAndroid {
@@ -42,6 +43,8 @@ object FormulaAndroid {
 
         this.application = application
         this.appManager = appManager
+        FormulaFragmentDelegate.appManager = appManager
+        FormulaFragmentDelegate.fragmentEnvironment = fragmentEnvironment
     }
 
     /**

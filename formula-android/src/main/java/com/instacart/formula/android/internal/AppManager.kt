@@ -115,7 +115,7 @@ internal class AppManager(
         return findStore(activity)?.onBackPressed() ?: false
     }
 
-    private fun findStore(activity: FragmentActivity): ActivityManager<FragmentActivity>? {
+    fun findStore(activity: FragmentActivity): ActivityManager<FragmentActivity>? {
         val key = activityToKeyMap[activity]
         return key?.let { componentMap[it] }
     }
