@@ -10,7 +10,7 @@ internal object FormulaFragmentDelegate {
     var fragmentEnvironment: FragmentEnvironment? = null
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
-        val appManager = appManager ?: throw IllegalStateException("FormulaAndroid.init() not called.")
+        val appManager = checkNotNull(appManager) { "FormulaAndroid.init() not called." }
 
         val activity = fragment.activity ?: run {
             fragmentEnvironment().logger("FormulaFragment has no activity attached: ${fragment.getFragmentKey()}")
@@ -20,7 +20,7 @@ internal object FormulaFragmentDelegate {
         val viewFactory = appManager.findStore(activity)?.viewFactory(fragment) ?: run {
             // Log view factory is missing
             if (activity.isDestroyed) {
-                fragmentEnvironment().logger("Missing formula fragment view factory because activity is destroyed")
+                fragmentEnvironment().logger("Missing view factory because activity is destroyed: ${fragment.getFragmentKey()}")
             } else {
                 val error = IllegalStateException("Formula with ${fragment.getFragmentKey()} is missing view factory.")
                 fragmentEnvironment().onScreenError(fragment.getFragmentKey(), error)
@@ -37,6 +37,6 @@ internal object FormulaFragmentDelegate {
     }
 
     private fun fragmentEnvironment(): FragmentEnvironment {
-        return fragmentEnvironment ?: throw IllegalStateException("FormulaAndroid.init() not called.")
+        return checkNotNull(fragmentEnvironment) { "FormulaAndroid.init() not called." }
     }
 }
