@@ -5,6 +5,8 @@ import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.ActivityStore
+import com.instacart.formula.android.FormulaFragment
+import com.instacart.formula.android.ViewFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 
@@ -105,6 +107,10 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     fun dispose() {
         stateSubscription.dispose()
+    }
+
+    fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
+        return fragmentRenderView?.viewFactory(fragment)
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
