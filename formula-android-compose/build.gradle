@@ -49,7 +49,6 @@ task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.sourceFiles
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     classpath += configurations.api
-    classpath += configurations.implementation
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -66,7 +65,7 @@ dependencies {
     api project(":formula-android")
     api libraries.androidx.compose.ui
 
-    implementation libraries.androidx.compose.rxjava3
+    api libraries.androidx.compose.rxjava3
 
     testImplementation libraries.androidx.test.rules
     testImplementation libraries.androidx.test.runner
