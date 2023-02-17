@@ -4,7 +4,7 @@ import com.instacart.formula.Action
 import com.instacart.formula.IFormula
 import com.instacart.formula.coroutines.FlowAction
 import com.instacart.formula.coroutines.FlowFormula
-import com.instacart.formula.coroutines.toFlow
+import com.instacart.formula.coroutines.FlowRuntime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,7 +93,7 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     private val errors = mutableListOf<Throwable>()
 
     private val inputFlow = MutableSharedFlow<Input>(1)
-    private val formulaFlow = formula.toFlow(inputFlow)
+    private val formulaFlow = FlowRuntime.start(formula, inputFlow, scope)
         .onEach { values.add(it) }
         .catch { errors.add(it) }
 
@@ -119,7 +119,7 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-private class CoroutineTestRule(
+internal class CoroutineTestRule(
     val testCoroutineScope: TestCoroutineScope = TestCoroutineScope(TestCoroutineDispatcher())
 ) : TestWatcher() {
 
@@ -129,17 +129,8 @@ private class CoroutineTestRule(
         super.starting(description)
     }
 
-    override fun apply(base: Statement, description: Description): Statement {
-        var result: Statement? = null
-        testCoroutineScope.runBlockingTest {
-            result = super.apply(base, description)
-        }
-        return result!!
-    }
-
     override fun finished(description: Description?) {
         super.finished(description)
         Dispatchers.resetMain()
-        testCoroutineScope.cleanupTestCoroutines()
     }
 }

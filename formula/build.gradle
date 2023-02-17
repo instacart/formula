@@ -20,6 +20,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
     implementation libraries.kotlin
+    api libraries.coroutines
 
     testImplementation project(":formula-test")
     testImplementation project(":formula-rxjava3")

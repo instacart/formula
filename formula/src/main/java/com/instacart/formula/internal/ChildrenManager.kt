@@ -1,11 +1,13 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.IFormula
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
+    private val mainScope: CoroutineScope,
     private val childTransitionListener: TransitionListener,
 ) {
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
@@ -75,7 +77,7 @@ internal class ChildrenManager(
         return children
             .findOrInit(key) {
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener)
+                FormulaManagerImpl(mainScope, implementation, input, childTransitionListener)
             }
             .requestAccess {
                 throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")

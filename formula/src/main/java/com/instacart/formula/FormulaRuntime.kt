@@ -6,16 +6,18 @@ import com.instacart.formula.internal.ThreadChecker
 import com.instacart.formula.internal.TransitionId
 import com.instacart.formula.internal.TransitionIdManager
 import com.instacart.formula.internal.TransitionListener
+import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
  */
 class FormulaRuntime<Input : Any, Output : Any>(
+    private val mainScope: CoroutineScope,
     private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
-    private val onError: (Throwable) -> Unit
+    private val onError: (Throwable) -> Unit,
 ) {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -51,7 +53,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 run(shouldEvaluate = !isValid)
             }
 
-            manager = FormulaManagerImpl(implementation, input, transitionListener)
+            manager = FormulaManagerImpl(mainScope, implementation, input, transitionListener)
             forceRun()
             hasInitialFinished = true
 

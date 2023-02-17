@@ -2,6 +2,8 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
 import com.instacart.formula.Transition
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Note: this class is not a data class because equality is based on instance and not [key].
@@ -9,6 +11,7 @@ import com.instacart.formula.Transition
 @PublishedApi
 internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listener<Event> {
 
+    internal lateinit var mainScope: CoroutineScope
     internal var snapshotImpl: SnapshotImpl<Input, State>? = null
     internal var transition: Transition<Input, State, Event>? = null
 
@@ -16,8 +19,9 @@ internal class ListenerImpl<Input, State, Event>(internal var key: Any) : Listen
         snapshotImpl?.let { snapshot ->
             transition?.let { transition ->
                 val result = transition.toResult(snapshot, event)
-                snapshot.dispatch(result)
-                return
+                mainScope.launch {
+                    snapshotImpl?.dispatch(result)
+                }
             }
         }
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)

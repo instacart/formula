@@ -972,7 +972,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(Stream.onInit()) {
+            Action.onInit().onEvent {
                 throw java.lang.IllegalStateException("crashed")
             }
         }

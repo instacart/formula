@@ -6,24 +6,27 @@ import com.instacart.formula.internal.ThreadChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 object RxJavaRuntime {
     fun <Input : Any, Output : Any> start(
+        formula: IFormula<Input, Output>,
         input: Observable<Input>,
-        formula: IFormula<Input, Output>
+        mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main.immediate),
     ): Observable<Output> {
         val threadChecker = ThreadChecker(formula)
         return Observable.create<Output> { emitter ->
             threadChecker.check("Need to subscribe on main thread.")
 
-            var runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
+            var runtime = FormulaRuntime(mainScope, threadChecker, formula, emitter::onNext, emitter::onError)
 
             val disposables = CompositeDisposable()
             disposables.add(input.subscribe({ input ->
                 threadChecker.check("Input arrived on a wrong thread.")
                 if (!runtime.isKeyValid(input)) {
                     runtime.terminate()
-                    runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
+                    runtime = FormulaRuntime(mainScope, threadChecker, formula, emitter::onNext, emitter::onError)
                 }
                 runtime.onInput(input)
             }, emitter::onError))

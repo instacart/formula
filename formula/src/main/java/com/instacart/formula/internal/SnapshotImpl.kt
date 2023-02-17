@@ -8,10 +8,12 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
+import kotlinx.coroutines.CoroutineScope
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State> internal constructor(
+    private val mainScope: CoroutineScope,
     override val input: Input,
     override val state: State,
     var transitionId: TransitionId,
@@ -57,6 +59,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key)
+        listener.mainScope = mainScope
         listener.snapshotImpl = this
         listener.transition = transition
         return listener

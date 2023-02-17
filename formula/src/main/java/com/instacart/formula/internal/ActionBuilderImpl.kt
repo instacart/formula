@@ -5,6 +5,7 @@ import com.instacart.formula.ActionBuilder
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Implements [ActionBuilder] interface.

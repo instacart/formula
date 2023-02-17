@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Handles formula and its children state processing.
@@ -16,6 +17,7 @@ import com.instacart.formula.Transition
  * 4. Prepare parent and alive children for updates.
  */
 internal class FormulaManagerImpl<Input, State, Output>(
+    private val mainScope: CoroutineScope,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val transitionListener: TransitionListener,
@@ -71,7 +73,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             state = formula.onInputChanged(prevInput, input, state)
         }
 
-        val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
+        val snapshot = SnapshotImpl(mainScope, input, state, transitionId, listeners, this)
         val result = formula.evaluate(snapshot)
         val frame = Frame(snapshot, result)
         actionManager.updateEventListeners(frame.evaluation.actions)
@@ -154,7 +156,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 transitionListener.onTransitionResult(result, isValid)
             }
 
-            val value = ChildrenManager(listener)
+            val value = ChildrenManager(mainScope, listener)
             childrenManager = value
             value
         }

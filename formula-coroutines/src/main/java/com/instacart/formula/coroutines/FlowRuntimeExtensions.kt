@@ -18,5 +18,5 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
     input: Flow<Input>
 ): Flow<Output> {
-    return FlowRuntime.start(input = input, formula = this)
+    return FlowRuntime.start(this, input)
 }

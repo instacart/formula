@@ -14,7 +14,7 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
-    input: Observable<Input>
+    input: Observable<Input>,
 ): Observable<Output> {
-    return RxJavaRuntime.start(input = input, formula = this)
+    return RxJavaRuntime.start(this, input)
 }
