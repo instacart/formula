@@ -3,9 +3,7 @@ package com.instacart.formula.android
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.internal.Bindings
 import com.instacart.formula.android.internal.FunctionUtils
-import com.instacart.formula.android.views.FragmentContractViewFactory
 import com.instacart.formula.android.internal.FeatureBinding
-import io.reactivex.rxjava3.core.Observable
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
@@ -94,39 +92,6 @@ class FragmentStoreBuilder<Component> {
         noinline toDependencies: (Component) -> Dependencies
     ) = apply {
         bind(Key::class, featureFactory, toDependencies)
-    }
-
-    /**
-     * Binds a contract to specified state management provided by the [Integration].
-     *
-     * @param type A type of contract to bind
-     * @param integration An integration that initializes contracts state management.
-     */
-    fun <T: FragmentContract<RenderModel>, RenderModel : Any> bind(
-        type : KClass<T>,
-        integration: Integration<Component, T, RenderModel>
-    ) = apply {
-        val featureFactory = object : FeatureFactory<Component, T> {
-            override fun initialize(dependencies: Component, key: T): Feature<*> {
-                return Feature(
-                    state = integration.create(dependencies, key),
-                    viewFactory = FragmentContractViewFactory(key)
-                )
-            }
-        }
-        bind(type, featureFactory)
-    }
-
-    /**
-     * A convenience inline function that binds integration to a [T] contract.
-     *
-     * @param integration An integration that initializes contracts state management.
-     */
-    @Deprecated("Use FeatureFactory and FragmentKey instead.")
-    inline fun <reified T: FragmentContract<RenderModel>, RenderModel : Any> bind(
-        integration: Integration<Component, T, RenderModel>
-    ) = apply {
-        bind(T::class, integration)
     }
 
     /**
