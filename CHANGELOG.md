@@ -1,5 +1,6 @@
 # Changelog
 ## [0.8.0] - TBD
+- **Breaking**: selectActivityEvents now explicitly requires a non-null type
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
