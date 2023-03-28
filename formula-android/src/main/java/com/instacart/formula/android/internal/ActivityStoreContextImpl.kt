@@ -55,7 +55,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         return isFragmentResumed(key.tag)
     }
 
-    override fun <Event> selectActivityEvents(
+    override fun <Event : Any> selectActivityEvents(
         select: Activity.() -> Observable<Event>
     ): Observable<Event> {
         // TODO: should probably use startedActivity
