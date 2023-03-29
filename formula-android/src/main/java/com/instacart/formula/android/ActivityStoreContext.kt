@@ -60,7 +60,7 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      *
      * @param Event Type of event
      */
-    abstract fun <Event> selectActivityEvents(
+    abstract fun <Event : Any> selectActivityEvents(
         select: Activity.() -> Observable<Event>
     ): Observable<Event>
 
