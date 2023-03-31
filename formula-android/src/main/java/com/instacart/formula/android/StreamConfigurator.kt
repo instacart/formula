@@ -16,7 +16,7 @@ interface StreamConfigurator<out Activity : FragmentActivity> {
      * @param state a state observable
      * @param update an update function
      */
-    fun <State> update(
+    fun <State : Any> update(
         state: Observable<State>,
         update: (Activity, State) -> Unit
     ): Disposable
