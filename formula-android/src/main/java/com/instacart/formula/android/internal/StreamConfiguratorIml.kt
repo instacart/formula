@@ -10,7 +10,7 @@ internal class StreamConfiguratorIml<out Activity : FragmentActivity>(
     private val context: ActivityStoreContextImpl<Activity>
 ) : StreamConfigurator<Activity> {
 
-    override fun <State> update(
+    override fun <State : Any> update(
         state: Observable<State>,
         update: (Activity, State) -> Unit
     ): Disposable {

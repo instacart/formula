@@ -1,6 +1,6 @@
 # Changelog
 ## [0.8.0] - TBD
-- **Breaking**: selectActivityEvents now explicitly requires a non-null type
+- **Breaking**: ActivityStoreContext.selectActivityEvents and StreamConfigurator.update now explicitly requires a non-null type. This allows Formula to be compatible with Kotlin 1.8
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
