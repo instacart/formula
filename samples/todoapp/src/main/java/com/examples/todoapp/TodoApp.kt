@@ -20,7 +20,7 @@ class TodoApp : Application() {
                     val component = TodoAppComponent(this)
 
                     store(
-                        contracts =  contracts(component) {
+                        contracts = contracts(component) {
                             bind(TaskListFeatureFactory())
                         }
                     )
