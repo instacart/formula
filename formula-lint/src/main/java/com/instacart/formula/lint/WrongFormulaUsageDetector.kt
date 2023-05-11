@@ -247,12 +247,16 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
                 // this covers 3 possible types of loop expressions: for/while/do-while
                 return true
             }
-            if (parent is UCallExpression && isIteratingFunction(parent) && hasIterableSuper(context, parent) && hasLambdaArgument(parent)) {
-                // this check covers iterations on collections, such as .forEach{}, .map{} and .mapIndexed{}
+            if (parent is UCallExpression &&
+                isIteratingFunction(parent) &&
+                (hasIterableSuper(context, parent) || isSequence(context, parent)) &&
+                hasLambdaArgument(parent)
+            ) {
+                // this check covers iterations on collections and sequences, such as .forEach{}, .map{} and .mapIndexed{}
                 return true
             }
             if (parent is UCallExpression && isFormulaContextKeyCall(context, parent)) {
-                // early return when there's and enclosing context.key() call
+                // early return when there's an enclosing context.key() call
                 return false
             }
             parent = parent.uastParent
@@ -274,6 +278,14 @@ class WrongFormulaUsageDetector : Detector(), Detector.UastScanner {
             supers += superClass.supers.toMutableList()
         }
         return false
+    }
+
+    private fun isSequence(
+        context: JavaContext,
+        node: UCallExpression,
+    ): Boolean {
+        val receiverClass = context.evaluator.getTypeClass(node.receiverType)
+        return receiverClass?.qualifiedName == "kotlin.sequences.Sequence"
     }
 
     private fun hasLambdaArgument(node: UCallExpression): Boolean {

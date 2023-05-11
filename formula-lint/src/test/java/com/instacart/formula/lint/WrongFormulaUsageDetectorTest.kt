@@ -451,6 +451,33 @@ class WrongFormulaUsageDetectorTest {
     }
 
     @Test
+    fun `event listener within Sequence map function has to have unique key`() {
+        val example = """
+            |package com.instacart.formula
+            |
+            |class ExampleFormula {
+            |    fun Snapshot<Unit, Unit>.callbackInLoop() {
+            |        val sequence = (0..10).asSequence()
+            |        val callbacks = sequence.map {
+            |            context.callback {
+            |                none()
+            |            }
+            |        }
+            |    }
+            |}
+        """.trimMargin()
+
+        run(kotlin(example)).expect(
+            """
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Key-less context.callback() call within an Iterable. Using a stable unique key allows Formula to re-use same callback across re-evaluation which enables proper equality checks. You should supply unique [key] to the context.callback() call. [KeylessFormulaCallbackWithinLoop]
+                |            context.callback {
+                |                    ^
+                |1 errors, 0 warnings
+            """.trimMargin()
+        )
+    }
+
+    @Test
     fun `event listener within Iterable mapIndexed function has to have unique key`() {
         val example = """
             |package com.instacart.formula
