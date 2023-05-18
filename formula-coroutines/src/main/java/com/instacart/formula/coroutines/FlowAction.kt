@@ -2,8 +2,8 @@ package com.instacart.formula.coroutines
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,12 +25,9 @@ interface FlowAction<Event> : Action<Event> {
          * ```
          */
         inline fun <Event> fromFlow(
-            scope: CoroutineScope = MainScope(),
             crossinline create: () -> Flow<Event>
         ): Action<Event> {
             return object : FlowAction<Event> {
-
-                override val scope: CoroutineScope = scope
 
                 override fun flow(): Flow<Event> {
                     return create()
@@ -52,12 +49,10 @@ interface FlowAction<Event> : Action<Event> {
          * @param key Used to distinguish this [Action] from other actions.
          */
         inline fun <Event> fromFlow(
-            scope: CoroutineScope = MainScope(),
             key: Any?,
             crossinline create: () -> Flow<Event>
         ): Action<Event> {
             return object : FlowAction<Event> {
-                override val scope: CoroutineScope = scope
 
                 override fun flow(): Flow<Event> {
                     return create()
@@ -70,12 +65,9 @@ interface FlowAction<Event> : Action<Event> {
 
     fun flow(): Flow<Event>
 
-    val scope: CoroutineScope
-
     override fun start(send: (Event) -> Unit): Cancelable? {
-        val job = flow()
-            .onEach { send(it) }
-            .launchIn(scope)
-        return Cancelable(job::cancel)
+        val scope = MainScope()
+        flow().onEach { send(it) }.launchIn(scope)
+        return Cancelable(scope::cancel)
     }
 }
