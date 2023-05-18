@@ -22,7 +22,9 @@ dependencies {
     implementation libraries.kotlin
 
     api project(":formula")
+    api project(":formula-coroutines")
     api libraries.rxjava
+    api libraries.coroutinesRx3
 
     testImplementation project(":formula-test")
     testImplementation libraries.truth

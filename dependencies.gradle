@@ -72,6 +72,7 @@ ext {
             junit                : "junit:junit:$junitVersion",
             kotlin               : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
             coroutines           : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion",
+            coroutinesRx3        : "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:$kotlinCoroutinesVersion",
             kotlinReflect        : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
             lint: [
                     core: "com.android.tools.lint:lint:${lintVersion}",
