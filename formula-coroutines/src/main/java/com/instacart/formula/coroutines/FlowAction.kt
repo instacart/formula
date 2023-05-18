@@ -3,10 +3,17 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * Adapter which allows creating Formula [Action] from Kotlin coroutine's. Take a
@@ -72,10 +79,16 @@ interface FlowAction<Event> : Action<Event> {
 
     val scope: CoroutineScope
 
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     override fun start(send: (Event) -> Unit): Cancelable? {
-        val job = flow()
-            .onEach { send(it) }
-            .launchIn(scope)
+        val job = GlobalScope.launch(Dispatchers.Unconfined, start = CoroutineStart.ATOMIC) {
+            flow().collect { value ->
+                send(value)
+            }
+        }
+//        val job = flow()
+//            .onEach { send(it) }
+//            .launchIn(scope)
         return Cancelable(job::cancel)
     }
 }
