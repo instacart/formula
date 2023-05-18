@@ -6,11 +6,15 @@ import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 object RxJavaTestableRuntime : TestableRuntime {
-    override val rule: TestRule = RuleChain.emptyRuleChain()
+    override val rule: TestRule = RxJavaTestRule()
 
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F
@@ -37,6 +41,12 @@ object RxJavaTestableRuntime : TestableRuntime {
             Observable.fromIterable(events)
         }
     }
+
+    override fun <T : Any> errorAction(error: Throwable): Action<T> {
+        return RxAction.fromObservable {
+            Observable.error(error)
+        }
+    }
 }
 
 private class ObservableStreamFormulaSubject : ObservableFormula<String, Int>(), StreamFormulaSubject {
@@ -59,5 +69,33 @@ private class RxRelay : Relay {
     override fun action() = RxAction.fromObservable { relay }
 
     override fun triggerEvent() = relay.accept(Unit)
+}
+
+ class RxJavaTestRule : TestWatcher() {
+    private var errors = mutableListOf<Throwable>()
+    override fun starting(description: Description) {
+        errors.clear()
+        RxJavaPlugins.reset()
+        RxJavaPlugins.setErrorHandler { errors.add(it) }
+        super.starting(description)
+    }
+
+    override fun apply(base: Statement, description: Description): Statement {
+        val statement = super.apply(base, description)
+        return object : Statement() {
+            override fun evaluate() {
+                statement.evaluate()
+
+                if (errors.isNotEmpty()) {
+                    throw AssertionError("RxJava should not have any uncaught exceptions: $errors")
+                }
+            }
+        }
+    }
+
+    override fun finished(description: Description) {
+        RxJavaPlugins.reset()
+        super.finished(description)
+    }
 }
 

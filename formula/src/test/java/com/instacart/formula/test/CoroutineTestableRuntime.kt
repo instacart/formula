@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
+import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -29,7 +30,7 @@ import org.junit.runners.model.Statement
 object CoroutinesTestableRuntime : TestableRuntime {
     private val coroutineTestRule = CoroutineTestRule()
 
-    override val rule: TestRule = coroutineTestRule
+    override val rule: TestRule = RuleChain.outerRule(coroutineTestRule).around(RxJavaTestRule())
 
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(formula: F): TestFormulaObserver<Input, Output, F> {
         val delegate = CoroutineTestDelegate(coroutineTestRule.testCoroutineScope, formula)
@@ -53,6 +54,12 @@ object CoroutinesTestableRuntime : TestableRuntime {
     override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
         return FlowAction.fromFlow(key = key) {
             toFlow(events)
+        }
+    }
+
+    override fun <T : Any> errorAction(error: Throwable): Action<T> {
+        return FlowAction.fromFlow {
+            flow { throw error }
         }
     }
 
@@ -130,16 +137,27 @@ private class CoroutineTestRule(
     }
 
     override fun apply(base: Statement, description: Description): Statement {
-        var result: Statement? = null
-        testCoroutineScope.runBlockingTest {
-            result = super.apply(base, description)
+        val statement = super.apply(base, description)
+        return object : Statement() {
+            override fun evaluate() {
+                testCoroutineScope.runBlockingTest {
+                    statement.evaluate()
+                    val uncaughtExceptions = testCoroutineScope.uncaughtExceptions
+                    if (uncaughtExceptions.isNotEmpty()) {
+                        throw AssertionError("Coroutines should not have any uncaught exceptions: $uncaughtExceptions")
+                    }
+                }
+            }
         }
-        return result!!
     }
 
     override fun finished(description: Description?) {
         super.finished(description)
         Dispatchers.resetMain()
-        testCoroutineScope.cleanupTestCoroutines()
+        try {
+            testCoroutineScope.cleanupTestCoroutines()
+        } catch (e: Throwable) {
+
+        }
     }
 }

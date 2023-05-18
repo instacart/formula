@@ -31,6 +31,8 @@ interface TestableRuntime {
 
     fun streamFormula(): StreamFormulaSubject
 
+    fun <T : Any> errorAction(error: Throwable): Action<T>
+
     fun <T : Any> emitEvents(events: List<T>): Action<T>
 
     fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T>

@@ -981,6 +981,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
+    fun `action error`() {
+        val exception = IllegalStateException("crashed")
+        val formula = OnlyUpdateFormula<Unit> {
+            runtime.errorAction<Any>(exception).onEvent {
+                none()
+            }
+        }
+
+        val test = runtime.test(formula, Unit)
+        test.assertNoErrors()
+    }
+
+    @Test
     fun `initialize 100 levels nested formula`() {
         val formula = ExtremelyNestedFormula.nested(100)
         runtime.test(formula, Unit).output {
