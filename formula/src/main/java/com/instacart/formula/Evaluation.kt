@@ -12,20 +12,4 @@ package com.instacart.formula
 data class Evaluation<out Output>(
     val output: Output,
     val actions: List<DeferredAction<*>> = emptyList(),
-) {
-    companion object {
-        @Deprecated(
-            message = "Replace `updates` with `actions`.",
-            replaceWith = ReplaceWith(
-                "Evaluation(output = output, actions = updates)",
-                "com.instacart.formula.Evaluation"
-            )
-        )
-        operator fun <Output> invoke(output: Output, updates: List<DeferredAction<*>>): Evaluation<Output> {
-            return Evaluation(
-                output = output,
-                actions = updates
-            )
-        }
-    }
-}
+)

@@ -746,13 +746,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple event streams without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
-            events(Stream.onInit()) {
+            events(Action.onInit()) {
                 transition {
                     executed += 1
                 }
             }
 
-            events(Stream.onInit()) {
+            events(Action.onInit()) {
                 transition {
                     executed += 1
                 }
@@ -768,11 +768,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Stream.onData(it)) {
+            events(Action.onData(it)) {
                 transition { executed += 1 }
             }
 
-            events(Stream.onData(it)) {
+            events(Action.onData(it)) {
                 transition { executed += 1 }
             }
         }
@@ -787,7 +787,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(0, 1, 2)
             list.forEach {
-                events(Stream.onInit()) {
+                events(Action.onInit()) {
                     none()
                 }
             }
@@ -828,7 +828,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         var emissions = 0
         var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            events(Stream.onTerminate()) {
+            events(Action.onTerminate()) {
                 transition {
                     emissions += 1
                     terminateCallback = input
@@ -972,7 +972,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(Stream.onInit()) {
+            events(Action.onInit()) {
                 throw java.lang.IllegalStateException("crashed")
             }
         }
