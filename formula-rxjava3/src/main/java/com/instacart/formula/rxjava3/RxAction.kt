@@ -2,6 +2,7 @@ package com.instacart.formula.rxjava3
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
+import com.instacart.formula.FormulaPlugins
 import io.reactivex.rxjava3.core.Observable
 
 /**
@@ -63,7 +64,9 @@ interface RxAction<Event : Any> : Action<Event> {
     fun observable(): Observable<Event>
 
     override fun start(send: (Event) -> Unit): Cancelable? {
-        val disposable = observable().subscribe(send)
+        val disposable = observable().subscribe { event ->
+            FormulaPlugins.callOnMain(send, event)
+        }
         return Cancelable(disposable::dispose)
     }
 }
