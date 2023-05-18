@@ -111,12 +111,6 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): ChildOutput
 
     /**
-     * Provides an [ActionBuilder] that enables [Formula] to declare various events and effects.
-     */
-    @Deprecated("Stream was renamed to Action, context.actions replaces action.updates")
-    abstract fun updates(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>>
-
-    /**
      * Builds a list of deferred actions that will be executed by Formula runtime.
      */
     abstract fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>>

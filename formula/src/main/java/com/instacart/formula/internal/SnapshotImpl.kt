@@ -25,11 +25,6 @@ internal class SnapshotImpl<out Input, State> internal constructor(
 
     override val context: FormulaContext<Input, State> = this
 
-    @Deprecated("see parent", replaceWith = ReplaceWith("actions"))
-    override fun updates(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
-        return actions(init)
-    }
-
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
         ensureNotRunning()
         val builder = ActionBuilderImpl(this)

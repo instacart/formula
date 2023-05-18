@@ -49,7 +49,7 @@ class WrongFormulaUsageDetectorTest {
             open fun <Event> eventCallback(key: Any, transition: Transition<Input, State, Event>): (Event) -> Unit 
             open fun <ChildOutput> child(child: IFormula<Unit, ChildOutput>): ChildOutput
             open fun <ChildInput, ChildOutput> child(formula: IFormula<ChildInput, ChildOutput>, input: ChildInput): ChildOutput
-            open fun updates(init: StreamBuilder<Input, State>.() -> Unit): List<BoundStream<*>>
+            open fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<BoundStream<*>>
             open fun <Value> key(key: Any, create: () -> Value): Value
         }
     """.trimIndent()
@@ -57,7 +57,7 @@ class WrongFormulaUsageDetectorTest {
     private val STREAM_BUILDER_STUB = """
         package com.instacart.formula
         
-        class StreamBuilder<Input, State>() {
+        class ActionBuilder<Input, State>() {
             open fun <Event> events(stream: Stream<Event>, transition: Transition<Input, State, Event>)
             open fun <Event> Stream<Event>.onEvent(transition: Transition<Input, State, Event>)
         }
@@ -161,7 +161,7 @@ class WrongFormulaUsageDetectorTest {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             |        return Evaluation(
             |            output = Unit,
-            |            updates = context.updates {
+            |            actions = context.actions {
             |                Stream.onInit().onEvent {
             |                    val callback = context.callback {
             |                        transition {}
@@ -203,7 +203,7 @@ class WrongFormulaUsageDetectorTest {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             |        return Evaluation(
             |            output = Unit,
-            |            updates = context.updates {
+            |            actions = context.actions {
             |                Stream.onInit().onEvent {
             |                    DelegatedCall().illegalBehavior(context)   
             |                    none()
