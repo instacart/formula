@@ -9,7 +9,7 @@ class SideEffectFormula(
     private val onSideEffect: () -> Unit
 ) : Formula<Unit, Int, SideEffectFormula.Output>() {
 
-    class Output(
+    data class Output(
         val triggerSideEffect: Listener<Unit>
     )
 

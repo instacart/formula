@@ -175,7 +175,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .apply { formula.incrementEvents.triggerEvent() }
             .apply { formula.incrementEvents.triggerEvent() }
             .apply {
-                val expected = listOf(0, 0, 1, 2, 3)
+                val expected = listOf(0, 1, 2, 3)
                 assertThat(values().map { it.state }).isEqualTo(expected)
             }
     }
@@ -189,7 +189,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .apply { formula.incrementEvents.triggerEvent() }
             .apply { formula.incrementEvents.triggerEvent() }
             .apply {
-                val expected = listOf(0, 0, 1, 1)
+                val expected = listOf(0, 1)
                 assertThat(values().map { it.state }).isEqualTo(expected)
             }
     }

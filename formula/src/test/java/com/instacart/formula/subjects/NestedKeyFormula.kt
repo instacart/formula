@@ -7,7 +7,7 @@ import com.instacart.formula.Snapshot
 
 class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output>() {
 
-    class Output(val callback: Listener<Unit>)
+    data class Output(val callback: Listener<Unit>)
 
     override fun initialState(input: Unit) = Unit
 

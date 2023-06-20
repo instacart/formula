@@ -10,7 +10,7 @@ object UniqueListenersWithinLoop {
 
     fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
 
-    class TestOutput(
+    data class TestOutput(
         val listeners: List<Listener<Unit>>,
     )
 

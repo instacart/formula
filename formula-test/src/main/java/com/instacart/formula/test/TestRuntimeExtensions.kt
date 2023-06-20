@@ -8,8 +8,10 @@ import com.instacart.formula.IFormula
  *
  * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
  */
-fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(): TestFormulaObserver<Input, Output, F> {
-    return TestFormulaObserver(RxJavaFormulaTestDelegate(this))
+fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
+    isValidationEnabled: Boolean = true,
+): TestFormulaObserver<Input, Output, F> {
+    return TestFormulaObserver(RxJavaFormulaTestDelegate(this, isValidationEnabled))
 }
 
 /**

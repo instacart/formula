@@ -8,11 +8,12 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
  * Binds [formula] to RxJava3 runtime.
  */
 class RxJavaFormulaTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
-    override val formula: FormulaT
+    override val formula: FormulaT,
+    private val isValidationEnabled: Boolean = true,
 ) : FormulaTestDelegate<Input, Output, FormulaT> {
     private val inputRelay = BehaviorSubject.create<Input>()
     private val observer = formula
-        .toObservable(inputRelay)
+        .toObservable(inputRelay, isValidationEnabled = isValidationEnabled)
         .test()
 
     override fun values(): List<Output> {

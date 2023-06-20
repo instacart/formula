@@ -15,7 +15,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
-    private val onError: (Throwable) -> Unit
+    private val onError: (Throwable) -> Unit,
+    private val isValidationEnabled: Boolean = false,
 ) {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -111,6 +112,19 @@ class FormulaRuntime<Input : Any, Output : Any>(
         val result = manager.evaluate(currentInput, transitionIdManager.transitionId)
         lastOutput = result.output
         emitOutput = true
+
+        if (isValidationEnabled) {
+            try {
+                manager.setValidationRun(true)
+
+                // We run evaluation again in validation mode which ensures validates
+                // that inputs and outputs are stable and do not break equality across
+                // identical runs.
+                manager.evaluate(currentInput, transitionIdManager.transitionId)
+            } finally {
+                manager.setValidationRun(false)
+            }
+        }
     }
 
     /**
