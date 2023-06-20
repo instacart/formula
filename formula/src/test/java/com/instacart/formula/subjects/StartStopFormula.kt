@@ -19,7 +19,7 @@ class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>(
         val count: Int = 0
     )
 
-    class Output(
+    data class Output(
         val state: Int,
         val startListening: Listener<Unit>,
         val stopListening: Listener<Unit>,

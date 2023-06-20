@@ -21,7 +21,7 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
         val showChild: Boolean = true
     )
 
-    class Output<ChildOutput>(
+    data class Output<ChildOutput>(
         val child: ChildOutput?,
         val toggleChild: Listener<Unit>,
     )

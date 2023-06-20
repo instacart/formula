@@ -8,11 +8,11 @@ import com.instacart.formula.StatelessFormula
 
 object UsingKeyToScopeCallbacksWithinAnotherFunction {
 
-    class ChildOutput(
+    data class ChildOutput(
         val callback: Listener<Unit>,
     )
 
-    class TestOutput(
+    data class TestOutput(
         val first: ChildOutput,
         val second: ChildOutput
     )

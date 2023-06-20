@@ -26,7 +26,7 @@ object ChildMessageTriggersEventTransitionInParent {
         private val service = Service()
         private val childFormula = SideEffectFormula(service::trigger)
 
-        class RenderModel(
+        data class RenderModel(
             val count: Int,
             val child: SideEffectFormula.Output
         )

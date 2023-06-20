@@ -9,7 +9,7 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>
 
     data class Input(val messageHandler: (Int) -> Unit)
 
-    class Output(
+    data class Output(
         val state: Int,
         val triggerMessage: Listener<Unit>,
         val incrementAndMessage: Listener<Unit>,

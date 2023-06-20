@@ -7,7 +7,7 @@ import com.instacart.formula.Snapshot
 
 class MixingCallbackUseWithKeyUse {
 
-    class ParentOutput(
+    data class ParentOutput(
         val firstCallback: Listener<Unit>,
         val secondCallback: Listener<Unit>,
         val thirdCallback: Listener<Unit>,

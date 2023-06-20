@@ -10,20 +10,25 @@ import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
 object RxJavaRuntime {
     fun <Input : Any, Output : Any> start(
         input: Observable<Input>,
-        formula: IFormula<Input, Output>
+        formula: IFormula<Input, Output>,
+        isValidationEnabled: Boolean = false,
     ): Observable<Output> {
         val threadChecker = ThreadChecker(formula)
         return Observable.create<Output> { emitter ->
+            val runtimeFactory = {
+                FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError, isValidationEnabled)
+            }
+
             threadChecker.check("Need to subscribe on main thread.")
 
-            var runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
+            var runtime = runtimeFactory()
 
             val disposables = CompositeDisposable()
             disposables.add(input.subscribe({ input ->
                 threadChecker.check("Input arrived on a wrong thread.")
                 if (!runtime.isKeyValid(input)) {
                     runtime.terminate()
-                    runtime = FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError)
+                    runtime = runtimeFactory()
                 }
                 runtime.onInput(input)
             }, emitter::onError))

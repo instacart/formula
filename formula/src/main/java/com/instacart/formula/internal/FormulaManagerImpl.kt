@@ -26,8 +26,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
+    private var isValidationEnabled: Boolean = false
 
     var terminated = false
+
 
     fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
@@ -43,6 +45,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         frame?.updateStateValidity(state)
         val isValid = frame != null && frame.isValid()
         transitionListener.onTransitionResult(result, isValid)
+    }
+
+    override fun setValidationRun(isValidationEnabled: Boolean) {
+        this.isValidationEnabled = isValidationEnabled
     }
 
     override fun updateTransitionId(transitionId: TransitionId) {
@@ -61,18 +67,40 @@ internal class FormulaManagerImpl<Input, State, Output>(
     ): Evaluation<Output> {
         // TODO: assert main thread.
         val lastFrame = frame
-        if (lastFrame != null && lastFrame.isValid(input)) {
+
+        if (lastFrame == null && isValidationEnabled) {
+            throw ValidationException("Formula should already have run at least once before the validation mode.")
+        }
+
+        if (!isValidationEnabled && lastFrame != null && lastFrame.isValid(input)) {
             updateTransitionId(transitionId)
             return lastFrame.evaluation
         }
 
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
+            if (isValidationEnabled) {
+                throw ValidationException("${formula.type()} - input changed during identical re-evaluation - old: $prevInput, new: $input")
+            }
             state = formula.onInputChanged(prevInput, input, state)
         }
 
         val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
         val result = formula.evaluate(snapshot)
+
+        if (isValidationEnabled) {
+            val oldOutput = lastFrame?.evaluation?.output
+            if (oldOutput != result.output) {
+                throw ValidationException("${formula.type()} - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+            }
+
+            val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
+            val currentActionKeys = result.actions.map { it.key }
+            if (lastActionKeys != currentActionKeys) {
+                throw ValidationException("${formula.type()} - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
+            }
+        }
+
         val frame = Frame(snapshot, result)
         actionManager.updateEventListeners(frame.evaluation.actions)
         this.frame = frame
@@ -128,6 +156,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     ): ChildOutput {
         val childrenManager = getOrInitChildrenManager()
         val manager = childrenManager.findOrInitChild(key, formula, input)
+        manager.setValidationRun(isValidationEnabled)
         return manager.evaluate(input, transitionId).output
     }
 

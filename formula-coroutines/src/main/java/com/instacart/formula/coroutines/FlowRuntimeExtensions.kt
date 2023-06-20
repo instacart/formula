@@ -16,7 +16,8 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
-    input: Flow<Input>
+    input: Flow<Input>,
+    isValidationEnabled: Boolean = false,
 ): Flow<Output> {
-    return FlowRuntime.start(input = input, formula = this)
+    return FlowRuntime.start(input = input, formula = this, isValidationEnabled = isValidationEnabled)
 }
