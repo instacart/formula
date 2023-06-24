@@ -2,6 +2,7 @@ package com.instacart.formula.coroutines
 
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import com.instacart.formula.internal.ThreadChecker
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -18,6 +19,7 @@ object FlowRuntime {
     fun <Input : Any, Output : Any> start(
         input: Flow<Input>,
         formula: IFormula<Input, Output>,
+        inspector: Inspector? = null,
         isValidationEnabled: Boolean = false,
     ): Flow<Output> {
         val threadChecker = ThreadChecker(formula)
@@ -25,7 +27,14 @@ object FlowRuntime {
             threadChecker.check("Need to subscribe on main thread.")
 
             val runtimeFactory = {
-                FormulaRuntime(threadChecker, formula, this::trySendBlocking, this::close, isValidationEnabled)
+                FormulaRuntime(
+                    threadChecker = threadChecker,
+                    formula = formula,
+                    onOutput = this::trySendBlocking,
+                    onError = this::close,
+                    inspector = inspector,
+                    isValidationEnabled = isValidationEnabled,
+                )
             }
 
             var runtime = runtimeFactory()

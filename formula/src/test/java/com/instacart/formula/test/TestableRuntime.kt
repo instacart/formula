@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import org.junit.rules.TestRule
 
 /**
@@ -14,7 +15,8 @@ interface TestableRuntime {
      * Creates a [TestFormulaObserver]
      */
     fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
-        formula: F
+        formula: F,
+        inspector: Inspector? = null,
     ): TestFormulaObserver<Input, Output, F>
 
     /**
@@ -23,8 +25,9 @@ interface TestableRuntime {
     fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F,
         input: Input,
+        inspector: Inspector? = null,
     ): TestFormulaObserver<Input, Output, F> {
-        return test(formula).input(input)
+        return test(formula, inspector).input(input)
     }
 
     fun newRelay(): Relay

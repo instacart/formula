@@ -1,11 +1,16 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.DeferredAction
+import com.instacart.formula.Inspector
+import kotlin.reflect.KClass
 
 /**
  * Handles [DeferredAction] changes.
  */
-internal class ActionManager {
+internal class ActionManager(
+    private val formulaType: KClass<*>,
+    private val inspector: Inspector?,
+) {
     companion object {
         val NO_OP: (Any?) -> Unit = {}
     }
@@ -38,7 +43,7 @@ internal class ActionManager {
 
             if (!shouldKeepRunning(requested, running)) {
                 iterator.remove()
-                tearDownStream(running)
+                finishAction(running)
 
                 if (transitionId.hasTransitioned()) {
                     return true
@@ -49,11 +54,13 @@ internal class ActionManager {
     }
 
     fun startNew(requested: List<DeferredAction<*>>, transitionId: TransitionId): Boolean {
-        for (update in requested) {
+        for (action in requested) {
             val running = getOrInitRunningStreamList()
-            if (!isRunning(update)) {
-                running.add(update)
-                update.start()
+            if (!isRunning(action)) {
+                inspector?.onActionStarted(formulaType, action)
+
+                running.add(action)
+                action.start()
 
                 if (transitionId.hasTransitioned()) {
                     return true
@@ -68,7 +75,7 @@ internal class ActionManager {
         val running = running ?: return
         this.running = null
         for (update in running) {
-            tearDownStream(update)
+            finishAction(update)
         }
     }
 
@@ -80,9 +87,10 @@ internal class ActionManager {
         return running?.contains(update) ?: false
     }
 
-    private fun tearDownStream(stream: DeferredAction<*>) {
-        stream.tearDown()
-        stream.listener = NO_OP
+    private fun finishAction(action: DeferredAction<*>) {
+        inspector?.onActionFinished(formulaType, action)
+        action.tearDown()
+        action.listener = NO_OP
     }
 
     private fun getOrInitRunningStreamList(): LinkedHashSet<DeferredAction<*>> {

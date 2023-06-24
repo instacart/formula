@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 
 /**
  * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
@@ -10,8 +11,10 @@ import com.instacart.formula.IFormula
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     isValidationEnabled: Boolean = true,
+    inspector: Inspector? = null,
 ): TestFormulaObserver<Input, Output, F> {
-    return TestFormulaObserver(RxJavaFormulaTestDelegate(this, isValidationEnabled))
+    val delegate = RxJavaFormulaTestDelegate(this, isValidationEnabled, inspector)
+    return TestFormulaObserver(delegate)
 }
 
 /**
@@ -20,9 +23,11 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
  * @param initialInput Input passed to [IFormula].
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
-    initialInput: Input
+    initialInput: Input,
+    isValidationEnabled: Boolean = true,
+    inspector: Inspector? = null,
 ): TestFormulaObserver<Input, Output, F> {
-    return test().apply {
+    return test(isValidationEnabled, inspector).apply {
         input(initialInput)
     }
 }
