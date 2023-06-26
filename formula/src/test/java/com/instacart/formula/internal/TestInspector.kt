@@ -12,11 +12,11 @@ class TestInspector : Inspector {
         events.add("formula-started: ${formulaType.qualifiedName}")
     }
 
-    override fun onEvaluateStarted(formulaType: KClass<*>) {
+    override fun onEvaluateStarted(formulaType: KClass<*>, state: Any?) {
         events.add("evaluate-started: ${formulaType.qualifiedName}")
     }
 
-    override fun onEvaluateFinished(formulaType: KClass<*>) {
+    override fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) {
         events.add("evaluate-finished: ${formulaType.qualifiedName}")
     }
 

@@ -26,14 +26,24 @@ interface Inspector {
      *
      * @param formulaType Formula type used to filter for specific events.
      */
-    fun onEvaluateStarted(formulaType: KClass<*>) = Unit
+    fun onEvaluateStarted(formulaType: KClass<*>, state: Any?) = Unit
+
+    /**
+     * Called when Formula input has changed.
+     *
+     * @param formulaType Formula type used to filter for specific events.
+     * @param prevInput Previous input used
+     * @param newInput New input value
+     */
+    fun onInputChanged(formulaType: KClass<*>, prevInput: Any?, newInput: Any?) = Unit
 
     /**
      * Called when Formula evaluation is finished.
      *
      * @param formulaType Formula type used to filter for specific events.
+     * @param evaluated Indicates if evaluate had to run. If false, this means that we re-used previous output.
      */
-    fun onEvaluateFinished(formulaType: KClass<*>) = Unit
+    fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) = Unit
 
     /**
      * Execution phase performs various side-effects such as:

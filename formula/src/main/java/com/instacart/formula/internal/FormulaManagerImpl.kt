@@ -77,13 +77,19 @@ internal class FormulaManagerImpl<Input, State, Output>(
             throw ValidationException("Formula should already have run at least once before the validation mode.")
         }
 
-        if (!isValidationEnabled && lastFrame != null && lastFrame.isValid(input)) {
-            updateTransitionId(transitionId)
-            return lastFrame.evaluation
-        }
-
         if (lastFrame == null) {
             inspector?.onFormulaStarted(type)
+        }
+
+        if (!isValidationEnabled) {
+            inspector?.onEvaluateStarted(type, state)
+        }
+
+        if (!isValidationEnabled && lastFrame != null && lastFrame.isValid(input)) {
+            updateTransitionId(transitionId)
+            val evaluation = lastFrame.evaluation
+            inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
+            return evaluation
         }
 
         val prevInput = frame?.input
@@ -92,10 +98,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 throw ValidationException("$type - input changed during identical re-evaluation - old: $prevInput, new: $input")
             }
             state = formula.onInputChanged(prevInput, input, state)
-        }
 
-        if (!isValidationEnabled) {
-            inspector?.onEvaluateStarted(type)
+            inspector?.onInputChanged(type, prevInput, input)
         }
 
         val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
@@ -123,7 +127,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         snapshot.running = true
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(type)
+            inspector?.onEvaluateFinished(type, frame.evaluation.output, evaluated = true)
         }
         return result
     }
