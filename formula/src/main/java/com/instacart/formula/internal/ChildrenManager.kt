@@ -1,12 +1,14 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 
 /**
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
     private val childTransitionListener: TransitionListener,
+    private val inspector: Inspector?,
 ) {
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
@@ -75,7 +77,7 @@ internal class ChildrenManager(
         return children
             .findOrInit(key) {
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener)
+                FormulaManagerImpl(implementation, input, childTransitionListener, inspector = inspector)
             }
             .requestAccess {
                 throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")

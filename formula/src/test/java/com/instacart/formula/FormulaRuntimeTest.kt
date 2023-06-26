@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
+import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
@@ -64,6 +65,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
 class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
@@ -1036,5 +1038,37 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .assertValue(2)
             .resetKey()
             .assertValue(0)
+    }
+
+    @Test
+    fun `inspector events`() {
+
+        val formula = StartStopFormula(runtime)
+        val inspector = TestInspector()
+        val subject = runtime.test(formula, Unit, inspector)
+        subject.output { startListening() }
+        subject.output { stopListening() }
+        subject.dispose()
+
+        assertThat(inspector.events).containsExactly(
+            "formula-started: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+            "execution-started",
+            "execution-finished",
+            "transition: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+            "execution-started",
+            "action-started: com.instacart.formula.subjects.StartStopFormula",
+            "execution-finished",
+            "transition: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+            "execution-started",
+            "action-finished: com.instacart.formula.subjects.StartStopFormula",
+            "execution-finished",
+            "formula-finished: com.instacart.formula.subjects.StartStopFormula"
+        ).inOrder()
     }
 }

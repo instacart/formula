@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
@@ -13,9 +14,10 @@ object RxJavaTestableRuntime : TestableRuntime {
     override val rule: TestRule = RuleChain.emptyRuleChain()
 
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
-        formula: F
+        formula: F,
+        inspector: Inspector?,
     ): TestFormulaObserver<Input, Output, F> {
-        return TestFormulaObserver(RxJavaFormulaTestDelegate(formula))
+        return TestFormulaObserver(RxJavaFormulaTestDelegate(formula, inspector = inspector))
     }
 
     override fun newRelay(): Relay {

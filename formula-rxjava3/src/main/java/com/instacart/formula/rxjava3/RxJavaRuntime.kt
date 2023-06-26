@@ -2,6 +2,7 @@ package com.instacart.formula.rxjava3
 
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import com.instacart.formula.internal.ThreadChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -11,12 +12,20 @@ object RxJavaRuntime {
     fun <Input : Any, Output : Any> start(
         input: Observable<Input>,
         formula: IFormula<Input, Output>,
+        inspector: Inspector? = null,
         isValidationEnabled: Boolean = false,
     ): Observable<Output> {
         val threadChecker = ThreadChecker(formula)
         return Observable.create<Output> { emitter ->
             val runtimeFactory = {
-                FormulaRuntime(threadChecker, formula, emitter::onNext, emitter::onError, isValidationEnabled)
+                FormulaRuntime(
+                    threadChecker = threadChecker,
+                    formula = formula,
+                    onOutput = emitter::onNext,
+                    onError = emitter::onError,
+                    inspector = inspector,
+                    isValidationEnabled = isValidationEnabled,
+                )
             }
 
             threadChecker.check("Need to subscribe on main thread.")

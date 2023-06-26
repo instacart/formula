@@ -17,6 +17,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val isValidationEnabled: Boolean = false,
+    private val inspector: Inspector? = null,
 ) {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -42,17 +43,20 @@ class FormulaRuntime<Input : Any, Output : Any>(
         this.key = formula.key(input)
 
         if (initialization) {
-            val transitionListener = TransitionListener { result, isValid ->
+            val transitionListener = TransitionListener { type, result, isValid ->
                 threadChecker.check("Only thread that created it can trigger transitions.")
+
+                val shouldEvaluate = !isValid
+                inspector?.onTransition(type, result, requiresEvaluation = shouldEvaluate)
 
                 result.effects?.let {
                     effectQueue.addLast(it)
                 }
 
-                run(shouldEvaluate = !isValid)
+                run(shouldEvaluate = shouldEvaluate)
             }
 
-            manager = FormulaManagerImpl(implementation, input, transitionListener)
+            manager = FormulaManagerImpl(implementation, input, transitionListener, inspector = inspector)
             forceRun()
             hasInitialFinished = true
 
@@ -132,6 +136,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
         isExecuting = true
+        inspector?.onExecutionStarted()
         while (executionRequested) {
             executionRequested = false
 
@@ -155,6 +160,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 continue
             }
         }
+        inspector?.onExecutionFinished()
         isExecuting = false
     }
 

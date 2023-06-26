@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 
@@ -20,21 +21,26 @@ internal class FormulaManagerImpl<Input, State, Output>(
     initialInput: Input,
     private val transitionListener: TransitionListener,
     private val listeners: Listeners = Listeners(),
-    private val actionManager: ActionManager = ActionManager(),
+    private val inspector: Inspector?,
 ) : FormulaManager<Input, Output> {
 
+    private val type = formula.type()
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
     private var isValidationEnabled: Boolean = false
 
-    var terminated = false
+    private val actionManager: ActionManager = ActionManager(
+        formulaType = type,
+        inspector = inspector,
+    )
 
+    var terminated = false
 
     fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            transitionListener.onTransitionResult(result, true)
+            transitionListener.onTransitionResult(type, result, true)
             return
         }
 
@@ -44,7 +50,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val frame = this.frame
         frame?.updateStateValidity(state)
         val isValid = frame != null && frame.isValid()
-        transitionListener.onTransitionResult(result, isValid)
+        transitionListener.onTransitionResult(type, result, isValid)
     }
 
     override fun setValidationRun(isValidationEnabled: Boolean) {
@@ -67,7 +73,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
     ): Evaluation<Output> {
         // TODO: assert main thread.
         val lastFrame = frame
-
         if (lastFrame == null && isValidationEnabled) {
             throw ValidationException("Formula should already have run at least once before the validation mode.")
         }
@@ -77,12 +82,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return lastFrame.evaluation
         }
 
+        if (lastFrame == null) {
+            inspector?.onFormulaStarted(type)
+        }
+
         val prevInput = frame?.input
         if (prevInput != null && prevInput != input) {
             if (isValidationEnabled) {
-                throw ValidationException("${formula.type()} - input changed during identical re-evaluation - old: $prevInput, new: $input")
+                throw ValidationException("$type - input changed during identical re-evaluation - old: $prevInput, new: $input")
             }
             state = formula.onInputChanged(prevInput, input, state)
+        }
+
+        if (!isValidationEnabled) {
+            inspector?.onEvaluateStarted(type)
         }
 
         val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
@@ -91,13 +104,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isValidationEnabled) {
             val oldOutput = lastFrame?.evaluation?.output
             if (oldOutput != result.output) {
-                throw ValidationException("${formula.type()} - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+                throw ValidationException("$type - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
             }
 
             val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
             val currentActionKeys = result.actions.map { it.key }
             if (lastActionKeys != currentActionKeys) {
-                throw ValidationException("${formula.type()} - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
+                throw ValidationException("$type - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
             }
         }
 
@@ -109,6 +122,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         childrenManager?.evaluationFinished()
 
         snapshot.running = true
+        if (!isValidationEnabled) {
+            inspector?.onEvaluateFinished(type)
+        }
         return result
     }
 
@@ -170,20 +186,22 @@ internal class FormulaManagerImpl<Input, State, Output>(
         childrenManager?.performTerminationSideEffects()
         actionManager.terminate()
         listeners.disableAll()
+
+        inspector?.onFormulaFinished(type)
     }
 
     private fun getOrInitChildrenManager(): ChildrenManager {
         return childrenManager ?: run {
-            val listener = TransitionListener { result, isChildValid ->
+            val listener = TransitionListener { type, result, isChildValid ->
                 val frame = this.frame
                 if (!isChildValid) {
                     frame?.childInvalidated()
                 }
                 val isValid = frame != null && frame.isValid()
-                transitionListener.onTransitionResult(result, isValid)
+                transitionListener.onTransitionResult(type, result, isValid)
             }
 
-            val value = ChildrenManager(listener)
+            val value = ChildrenManager(listener, inspector)
             childrenManager = value
             value
         }

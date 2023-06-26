@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
+import com.instacart.formula.Inspector
 import com.instacart.formula.coroutines.FlowAction
 import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow
@@ -31,8 +32,12 @@ object CoroutinesTestableRuntime : TestableRuntime {
 
     override val rule: TestRule = coroutineTestRule
 
-    override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(formula: F): TestFormulaObserver<Input, Output, F> {
-        val delegate = CoroutineTestDelegate(coroutineTestRule.testCoroutineScope, formula)
+    override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
+        formula: F,
+        inspector: Inspector?,
+    ): TestFormulaObserver<Input, Output, F> {
+        val scope = coroutineTestRule.testCoroutineScope
+        val delegate = CoroutineTestDelegate(scope, formula, inspector)
         return TestFormulaObserver(delegate)
     }
 
@@ -88,12 +93,13 @@ private class FlowStreamFormulaSubject : FlowFormula<String, Int>(), StreamFormu
 private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     private val scope: CoroutineScope,
     override val formula: FormulaT,
+    private val inspector: Inspector?,
 ): FormulaTestDelegate<Input, Output, FormulaT> {
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
     private val inputFlow = MutableSharedFlow<Input>(1)
-    private val formulaFlow = formula.toFlow(inputFlow, isValidationEnabled = true)
+    private val formulaFlow = formula.toFlow(inputFlow, isValidationEnabled = true, inspector = inspector)
         .onEach { values.add(it) }
         .catch { errors.add(it) }
 
