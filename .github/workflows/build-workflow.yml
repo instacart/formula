@@ -47,6 +47,11 @@ jobs:
   assemble_samples:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Assemble Counter
