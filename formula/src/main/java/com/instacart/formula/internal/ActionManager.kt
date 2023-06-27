@@ -16,7 +16,7 @@ internal class ActionManager(
     }
 
     private var running: LinkedHashSet<DeferredAction<*>>? = null
-    private var actions: Collection<DeferredAction<*>>? = null
+    private var actions: Set<DeferredAction<*>>? = null
 
     private var startListInvalidated: Boolean = false
     private var scheduledToStart: MutableList<DeferredAction<*>>? = null
@@ -24,8 +24,9 @@ internal class ActionManager(
     private var removeListInvalidated: Boolean = false
     private var scheduledForRemoval: MutableList<DeferredAction<*>>? = null
 
-    fun onNewFrame(new: Collection<DeferredAction<*>>) {
+    fun onNewFrame(new: Set<DeferredAction<*>>) {
         actions = new
+
         startListInvalidated = true
         removeListInvalidated = true
     }
@@ -36,17 +37,23 @@ internal class ActionManager(
     fun terminateOld(transitionId: TransitionId): Boolean {
         prepareStoppedActionList()
 
-        val scheduled = scheduledForRemoval ?: return false
-        val iterator = scheduled.iterator()
-        while (iterator.hasNext()) {
+        if (scheduledForRemoval.isNullOrEmpty()) {
+            return false
+        }
+
+        val actions = actions ?: emptyList()
+        val iterator = scheduledForRemoval?.iterator()
+        while (iterator?.hasNext() == true) {
             val action = iterator.next()
             iterator.remove()
 
-            running?.remove(action)
-            finishAction(action)
+            if (!actions.contains(action)) {
+                running?.remove(action)
+                finishAction(action)
 
-            if (transitionId.hasTransitioned()) {
-                return true
+                if (transitionId.hasTransitioned()) {
+                    return true
+                }
             }
         }
         return false
@@ -56,18 +63,24 @@ internal class ActionManager(
         prepareNewActionList()
 
         val scheduled = scheduledToStart ?: return false
+        if (scheduled.isEmpty()) {
+            return false
+        }
+
         val iterator = scheduled.iterator()
         while (iterator.hasNext()) {
             val action = iterator.next()
             iterator.remove()
 
-            inspector?.onActionStarted(formulaType, action)
+            if (!isRunning(action)) {
+                inspector?.onActionStarted(formulaType, action)
 
-            getOrInitRunningActions().add(action)
-            action.start()
+                getOrInitRunningActions().add(action)
+                action.start()
 
-            if (transitionId.hasTransitioned()) {
-                return true
+                if (transitionId.hasTransitioned()) {
+                    return true
+                }
             }
         }
 
@@ -90,8 +103,12 @@ internal class ActionManager(
         startListInvalidated = false
         scheduledToStart?.clear()
 
-        val actionList = actions
-        if (!actionList.isNullOrEmpty()) {
+        val actionList = actions ?: emptyList()
+        if (!actionList.isEmpty()) {
+            if (scheduledToStart == null) {
+                scheduledToStart = mutableListOf()
+            }
+            scheduledToStart?.addAll(actionList)
             for (action in actionList) {
                 if (!isRunning(action)) {
                     val list = scheduledToStart ?: mutableListOf<DeferredAction<*>>().apply {
@@ -108,20 +125,25 @@ internal class ActionManager(
             return
         }
         removeListInvalidated = false
-        scheduledForRemoval?.clear()
 
-        val running = running
-        if (running != null) {
-            for (action in running) {
-                val actions = actions ?: emptyList()
-                if (!actions.contains(action)) {
-                    val list = scheduledForRemoval ?: mutableListOf<DeferredAction<*>>().apply {
-                        scheduledForRemoval = this
-                    }
-                    list.add(action)
-                }
+        scheduledForRemoval?.clear()
+        if (!running.isNullOrEmpty()) {
+            if (scheduledForRemoval == null) {
+                scheduledForRemoval = mutableListOf()
             }
+
+            scheduledForRemoval?.addAll(running ?: emptyList())
         }
+    }
+
+    fun hasNewActions(): Boolean {
+        prepareNewActionList()
+        return !scheduledToStart.isNullOrEmpty()
+    }
+
+    fun hasDetachedActions(): Boolean {
+        prepareStoppedActionList()
+        return !scheduledForRemoval.isNullOrEmpty()
     }
 
     private fun isRunning(update: DeferredAction<*>): Boolean {
