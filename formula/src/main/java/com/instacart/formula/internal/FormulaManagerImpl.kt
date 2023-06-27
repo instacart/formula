@@ -85,21 +85,24 @@ internal class FormulaManagerImpl<Input, State, Output>(
             inspector?.onEvaluateStarted(type, state)
         }
 
-        if (!isValidationEnabled && lastFrame != null && lastFrame.isValid(input)) {
-            updateTransitionId(transitionId)
-            val evaluation = lastFrame.evaluation
-            inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
-            return evaluation
-        }
-
-        val prevInput = frame?.input
-        if (prevInput != null && prevInput != input) {
-            if (isValidationEnabled) {
-                throw ValidationException("$type - input changed during identical re-evaluation - old: $prevInput, new: $input")
+        if (lastFrame != null) {
+            val prevInput = lastFrame.input
+            val hasInputChanged = prevInput != input
+            if (!isValidationEnabled && lastFrame.isValid() && !hasInputChanged) {
+                updateTransitionId(transitionId)
+                val evaluation = lastFrame.evaluation
+                inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
+                return evaluation
             }
-            state = formula.onInputChanged(prevInput, input, state)
 
-            inspector?.onInputChanged(type, prevInput, input)
+            if (hasInputChanged) {
+                if (isValidationEnabled) {
+                    throw ValidationException("$type - input changed during identical re-evaluation - old: $prevInput, new: $input")
+                }
+                state = formula.onInputChanged(prevInput, input, state)
+
+                inspector?.onInputChanged(type, prevInput, input)
+            }
         }
 
         val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
