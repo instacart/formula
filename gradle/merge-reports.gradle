@@ -24,7 +24,7 @@ afterEvaluate {
     }
 
     task mergeReports(type: Copy) {
-        from { testTasks*.reports.junitXml.destination } {
+        from { file("$buildDir/test-results") } {
             exclude("**/binary/*")
         }
         into { file("$buildDir/reports/allTests") }
