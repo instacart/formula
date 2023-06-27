@@ -15,7 +15,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
     input = snapshot.input,
     state = snapshot.state,
 ) {
-    internal val boundedActions = mutableListOf<DeferredAction<*>>()
+    internal val actions = LinkedHashSet<DeferredAction<*>>()
 
     override fun <Event> events(
         action: Action<Event>,
@@ -39,12 +39,12 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         this@ActionBuilderImpl.events(stream, transition)
     }
 
-    private fun add(connection: DeferredAction<*>) {
-        if (boundedActions.contains(connection)) {
-            throw IllegalStateException("duplicate stream with key: ${connection.keyAsString()}")
+    private fun add(action: DeferredAction<*>) {
+        if (actions.contains(action)) {
+            throw IllegalStateException("duplicate stream with key: ${action.keyAsString()}")
         }
 
-        boundedActions.add(connection)
+        actions.add(action)
     }
 
     private fun <Event> toBoundStream(
@@ -52,7 +52,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): DeferredAction<Event> {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())
-        val listener = snapshot.context.eventListener(key, transition)
+        val listener = snapshot.context.eventListener(key, useIndex = false, transition)
         return DeferredAction(
             key = key,
             action = stream,

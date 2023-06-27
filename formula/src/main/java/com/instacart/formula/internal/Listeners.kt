@@ -10,9 +10,9 @@ internal class Listeners {
         return "Listener $key is already defined. Unexpected issue."
     }
 
-    fun <Input, State, Event> initOrFindListener(key: Any): ListenerImpl<Input, State, Event> {
+    fun <Input, State, Event> initOrFindListener(key: Any, useIndex: Boolean): ListenerImpl<Input, State, Event> {
         val currentHolder = listenerHolder<Input, State, Event>(key)
-        return if (currentHolder.requested) {
+        return if (currentHolder.requested && useIndex) {
             if (key is IndexedKey) {
                 // This should never happen, but added as safety
                 throw IllegalStateException("Key already indexed (and still duplicate).")
@@ -20,7 +20,7 @@ internal class Listeners {
 
             val index = nextIndex(key)
             val indexedKey = IndexedKey(key, index)
-            initOrFindListener(indexedKey)
+            initOrFindListener(indexedKey, useIndex)
         } else {
             currentHolder
                 .requestAccess {

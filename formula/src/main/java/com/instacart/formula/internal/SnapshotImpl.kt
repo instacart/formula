@@ -25,11 +25,11 @@ internal class SnapshotImpl<out Input, State> internal constructor(
 
     override val context: FormulaContext<Input, State> = this
 
-    override fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>> {
+    override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
         ensureNotRunning()
         val builder = ActionBuilderImpl(this)
         builder.init()
-        return builder.boundedActions
+        return builder.actions
     }
 
     override fun <ChildInput, ChildOutput> child(
@@ -48,10 +48,11 @@ internal class SnapshotImpl<out Input, State> internal constructor(
 
     override fun <Event> eventListener(
         key: Any,
+        useIndex: Boolean,
         transition: Transition<Input, State, Event>
     ): Listener<Event> {
         ensureNotRunning()
-        val listener = listeners.initOrFindListener<Input, State, Event>(key)
+        val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
         listener.snapshotImpl = this
         listener.transition = transition
         return listener
@@ -77,12 +78,12 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     override fun createScopedKey(type: KClass<*>, key: Any?): Any {
         if (scopeKey == null && key == null) {
             // No need to allocate a new object, just use type as key.
-            return type
+            return type.java
         }
 
         return FormulaKey(
             scopeKey = scopeKey,
-            type = type,
+            type = type.java,
             key = key,
         )
     }

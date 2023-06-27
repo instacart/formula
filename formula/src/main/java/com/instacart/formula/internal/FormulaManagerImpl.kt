@@ -119,7 +119,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         val frame = Frame(snapshot, result)
-        actionManager.updateEventListeners(frame.evaluation.actions)
+        actionManager.onNewFrame(frame.evaluation.actions)
         this.frame = frame
 
         listeners.evaluationFinished()
@@ -138,9 +138,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     // TODO: should probably terminate children streams, then self.
     override fun terminateOldUpdates(transitionId: TransitionId): Boolean {
-        val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
-
-        if (actionManager.terminateOld(newFrame.evaluation.actions, transitionId)) {
+        if (actionManager.terminateOld(transitionId)) {
             return true
         }
 
@@ -153,10 +151,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun startNewUpdates(transitionId: TransitionId): Boolean {
-        val newFrame = frame ?: throw IllegalStateException("call evaluate before calling nextFrame()")
-
         // Update parent workers so they are ready to handle events
-        if (actionManager.startNew(newFrame.evaluation.actions, transitionId)) {
+        if (actionManager.startNew(transitionId)) {
             return true
         }
 

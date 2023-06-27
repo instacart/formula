@@ -11,5 +11,5 @@ package com.instacart.formula
  */
 data class Evaluation<out Output>(
     val output: Output,
-    val actions: List<DeferredAction<*>> = emptyList(),
+    val actions: Set<DeferredAction<*>> = emptySet(),
 )

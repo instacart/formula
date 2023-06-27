@@ -16,55 +16,58 @@ internal class ActionManager(
     }
 
     private var running: LinkedHashSet<DeferredAction<*>>? = null
+    private var actions: Collection<DeferredAction<*>>? = null
 
-    /**
-     * Ensures that all updates will point to the correct listener. Also, disables listeners for
-     * terminated streams.
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun updateEventListeners(new: List<DeferredAction<*>>) {
-        running?.forEach { existing ->
-            val update = new.firstOrNull { it == existing }
-            if (update != null) {
-                existing.listener = update.listener as (Any?) -> Unit
-            } else {
-                existing.listener = NO_OP
-            }
-        }
+    private var startListInvalidated: Boolean = false
+    private var scheduledToStart: MutableList<DeferredAction<*>>? = null
+
+    private var removeListInvalidated: Boolean = false
+    private var scheduledForRemoval: MutableList<DeferredAction<*>>? = null
+
+    fun onNewFrame(new: Collection<DeferredAction<*>>) {
+        actions = new
+        startListInvalidated = true
+        removeListInvalidated = true
     }
 
     /**
      * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(requested: List<DeferredAction<*>>, transitionId: TransitionId): Boolean {
-        val iterator = running?.iterator() ?: return false
+    fun terminateOld(transitionId: TransitionId): Boolean {
+        prepareStoppedActionList()
+
+        val scheduled = scheduledForRemoval ?: return false
+        val iterator = scheduled.iterator()
         while (iterator.hasNext()) {
-            val running = iterator.next()
+            val action = iterator.next()
+            iterator.remove()
 
-            if (!shouldKeepRunning(requested, running)) {
-                iterator.remove()
-                finishAction(running)
+            running?.remove(action)
+            finishAction(action)
 
-                if (transitionId.hasTransitioned()) {
-                    return true
-                }
+            if (transitionId.hasTransitioned()) {
+                return true
             }
         }
         return false
     }
 
-    fun startNew(requested: List<DeferredAction<*>>, transitionId: TransitionId): Boolean {
-        for (action in requested) {
-            val running = getOrInitRunningStreamList()
-            if (!isRunning(action)) {
-                inspector?.onActionStarted(formulaType, action)
+    fun startNew(transitionId: TransitionId): Boolean {
+        prepareNewActionList()
 
-                running.add(action)
-                action.start()
+        val scheduled = scheduledToStart ?: return false
+        val iterator = scheduled.iterator()
+        while (iterator.hasNext()) {
+            val action = iterator.next()
+            iterator.remove()
 
-                if (transitionId.hasTransitioned()) {
-                    return true
-                }
+            inspector?.onActionStarted(formulaType, action)
+
+            getOrInitRunningActions().add(action)
+            action.start()
+
+            if (transitionId.hasTransitioned()) {
+                return true
             }
         }
 
@@ -74,13 +77,51 @@ internal class ActionManager(
     fun terminate() {
         val running = running ?: return
         this.running = null
-        for (update in running) {
-            finishAction(update)
+        for (action in running) {
+            finishAction(action)
         }
     }
 
-    private fun shouldKeepRunning(updates: List<DeferredAction<*>>, update: DeferredAction<*>): Boolean {
-        return updates.contains(update)
+    private fun prepareNewActionList() {
+        if (!startListInvalidated) {
+            return
+        }
+
+        startListInvalidated = false
+        scheduledToStart?.clear()
+
+        val actionList = actions
+        if (!actionList.isNullOrEmpty()) {
+            for (action in actionList) {
+                if (!isRunning(action)) {
+                    val list = scheduledToStart ?: mutableListOf<DeferredAction<*>>().apply {
+                        scheduledToStart = this
+                    }
+                    list.add(action)
+                }
+            }
+        }
+    }
+
+    private fun prepareStoppedActionList() {
+        if (!removeListInvalidated) {
+            return
+        }
+        removeListInvalidated = false
+        scheduledForRemoval?.clear()
+
+        val running = running
+        if (running != null) {
+            for (action in running) {
+                val actions = actions ?: emptyList()
+                if (!actions.contains(action)) {
+                    val list = scheduledForRemoval ?: mutableListOf<DeferredAction<*>>().apply {
+                        scheduledForRemoval = this
+                    }
+                    list.add(action)
+                }
+            }
+        }
     }
 
     private fun isRunning(update: DeferredAction<*>): Boolean {
@@ -93,7 +134,7 @@ internal class ActionManager(
         action.listener = NO_OP
     }
 
-    private fun getOrInitRunningStreamList(): LinkedHashSet<DeferredAction<*>> {
+    private fun getOrInitRunningActions(): LinkedHashSet<DeferredAction<*>> {
         return running ?: run {
             val initialized: LinkedHashSet<DeferredAction<*>> = LinkedHashSet()
             this.running = initialized

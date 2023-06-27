@@ -80,7 +80,7 @@ internal class ChildrenManager(
                 FormulaManagerImpl(implementation, input, childTransitionListener, inspector = inspector)
             }
             .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")
+                "There already is a child with same key: $key. Override [Formula.key] function."
             } as FormulaManager<ChildInput, ChildOutput>
     }
 }
