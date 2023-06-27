@@ -80,7 +80,7 @@ ext {
                     tests: "com.android.tools.lint:lint-tests:${lintVersion}",
             ],
             robolectric          : "org.robolectric:robolectric:$robolectricVersion",
-            rxjava               : "io.reactivex.rxjava3:rxjava:3.1.1",
+            rxjava               : "io.reactivex.rxjava3:rxjava:3.1.6",
             rxandroid            : "io.reactivex.rxjava3:rxandroid:3.0.0",
             rxrelays             : "com.jakewharton.rxrelay3:rxrelay:3.0.1",
             truth                : "com.google.truth:truth:$truthVersion",

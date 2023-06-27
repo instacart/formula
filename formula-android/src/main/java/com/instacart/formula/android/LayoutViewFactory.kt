@@ -28,7 +28,7 @@ import com.instacart.formula.android.views.InflatedViewInstance
  * }
  * ```
  */
-abstract class LayoutViewFactory<RenderModel>(@LayoutRes val layoutId: Int): ViewFactory<RenderModel> {
+abstract class LayoutViewFactory<RenderModel : Any>(@LayoutRes val layoutId: Int): ViewFactory<RenderModel> {
 
     abstract fun ViewInstance.create(): FeatureView<RenderModel>
 

@@ -8,7 +8,7 @@ import com.instacart.formula.android.ViewInstance
 /**
  * An implementation of [LayoutViewFactory] which delegates [FeatureView] creation to [createView].
  */
-internal class DelegateLayoutViewFactory<RenderModel>(
+internal class DelegateLayoutViewFactory<RenderModel : Any>(
     @LayoutRes layoutId: Int,
     private val createView: ViewInstance.() -> FeatureView<RenderModel>
 ) : LayoutViewFactory<RenderModel>(layoutId) {

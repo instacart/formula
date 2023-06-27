@@ -6,8 +6,8 @@ apply plugin: 'org.jetbrains.dokka'
 
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
 
-targetCompatibility = JavaVersion.VERSION_1_8
-sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
   compileOnly libraries.lint.api

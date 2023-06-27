@@ -39,7 +39,7 @@ def disableHtmlTestReport(Project project) {
     project.android {
         testOptions {
             unitTests.all {
-                reports.html.enabled = false
+                reports.html.required = false
             }
         }
     }

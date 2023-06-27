@@ -8,7 +8,7 @@ import java.lang.Exception
 /**
  * Binds [FeatureView.State] to a [render] function.
  */
-internal class FeatureViewBindFunction<RenderModel>(
+internal class FeatureViewBindFunction<RenderModel : Any>(
     private val render: Renderer<RenderModel>
 ) : (FeatureView.State<RenderModel>) -> Cancelable? {
     override fun invoke(state: FeatureView.State<RenderModel>): Cancelable {

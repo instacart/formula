@@ -12,7 +12,7 @@ import com.instacart.formula.android.views.DelegateLayoutViewFactory
  *
  * To create a view factory, use static constructor [fromLayout] or extend [LayoutViewFactory].
  */
-fun interface ViewFactory<RenderModel> {
+fun interface ViewFactory<RenderModel : Any> {
 
     companion object {
         /**
@@ -37,7 +37,7 @@ fun interface ViewFactory<RenderModel> {
          * @param layoutId Layout resource to be inflated.
          * @param createView Called with a [ViewInstance] to finish [FeatureView] creation
          */
-        fun <RenderModel> fromLayout(
+        fun <RenderModel : Any> fromLayout(
             @LayoutRes layoutId: Int,
             createView: ViewInstance.() -> FeatureView<RenderModel>
         ): ViewFactory<RenderModel> {

@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: "kotlin-parcelize"
 
 android {
+    namespace "com.instacart.formula.compose.stopwatch"
     compileSdkVersion constants.compileSdk
 
     defaultConfig {
@@ -18,15 +19,13 @@ android {
          compose true
     }
 
-    // Set both the Java and Kotlin compilers to target Java 8.
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
-        useIR = true
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     composeOptions {

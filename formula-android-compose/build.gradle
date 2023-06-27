@@ -5,6 +5,7 @@ apply from: rootProject.file('.buildscript/configure-signing.gradle')
 apply from: rootProject.file('.buildscript/jacoco-workaround.gradle')
 
 android {
+    namespace "com.instacart.formula.android.compose"
     compileSdkVersion constants.compileSdk
 
     defaultConfig {
@@ -17,13 +18,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
-        useIR = true
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     composeOptions {
@@ -35,7 +35,7 @@ android {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 

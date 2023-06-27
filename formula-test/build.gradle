@@ -3,8 +3,8 @@ apply plugin: 'org.jetbrains.dokka'
 
 apply from: rootProject.file('.buildscript/configure-signing.gradle')
 
-sourceCompatibility = 1.8 // java 8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
@@ -12,7 +12,7 @@ repositories {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 

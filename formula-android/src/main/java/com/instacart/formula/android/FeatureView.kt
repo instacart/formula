@@ -16,12 +16,12 @@ import io.reactivex.rxjava3.core.Observable
  * @param bind A bind function connects state observable to the view rendering.
  * @param lifecycleCallbacks Optional lifecycle callbacks if you need to know the Fragment state.
  */
-class FeatureView<RenderModel>(
+class FeatureView<RenderModel : Any>(
     val view: View,
     val bind: (State<RenderModel>) -> Cancelable?,
     val lifecycleCallbacks: FragmentLifecycleCallback? = null,
 ) {
-    class State<RenderModel>(
+    class State<RenderModel : Any>(
         val observable: Observable<RenderModel>,
         val onError: (Throwable) -> Unit,
     )
