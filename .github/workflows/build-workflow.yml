@@ -6,6 +6,11 @@ jobs:
     env:
       DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
     steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Install Ruby
