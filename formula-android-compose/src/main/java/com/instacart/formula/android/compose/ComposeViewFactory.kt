@@ -9,7 +9,7 @@ import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.ViewFactory
 
 
-abstract class ComposeViewFactory<RenderModel> : ViewFactory<RenderModel> {
+abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> {
 
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel> {
         val view = ComposeView(inflater.context)
