@@ -6,7 +6,8 @@ package com.instacart.formula
 class DeferredAction<Event>(
     val key: Any,
     val action: Action<Event>,
-    initial: (Event) -> Unit
+    // We use event listener for equality because it provides better equality performance
+    val initial: (Event) -> Unit
 ) {
 
     internal var listener: (Event) -> Unit = initial
@@ -29,13 +30,13 @@ class DeferredAction<Event>(
 
         other as DeferredAction<*>
 
-        if (key != other.key) return false
+        if (initial != other.initial) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return key.hashCode()
+        return initial.hashCode()
     }
 
     fun keyAsString(): String {

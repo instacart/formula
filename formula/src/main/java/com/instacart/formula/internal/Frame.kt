@@ -27,8 +27,4 @@ internal class Frame<Input, State, Output>(
     }
 
     fun isValid() = stateValid && childrenValid
-
-    fun isValid(input: Input): Boolean {
-        return stateValid && childrenValid && this.input == input
-    }
 }

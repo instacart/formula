@@ -113,7 +113,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     /**
      * Builds a list of deferred actions that will be executed by Formula runtime.
      */
-    abstract fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<DeferredAction<*>>
+    abstract fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>>
 
     /**
      * Scopes [create] block with a [key].
@@ -130,6 +130,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     // Internal listener management
     internal abstract fun <Event> eventListener(
         key: Any,
+        useIndex: Boolean = true,
         transition: Transition<Input, State, Event>
     ): Listener<Event>
 

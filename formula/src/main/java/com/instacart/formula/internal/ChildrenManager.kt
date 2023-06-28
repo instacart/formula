@@ -13,6 +13,17 @@ internal class ChildrenManager(
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
+    private val actionsToStart = PendingFormulaManagerList { manager, id ->
+        manager.startNewUpdates(id)
+    }
+    private val actionsToRemove = PendingFormulaManagerList { manager, id ->
+        manager.terminateOldUpdates(id)
+    }
+
+    private val hasDetachedChildren = PendingFormulaManagerList { manager, id ->
+        manager.terminateDetachedChildren(id)
+    }
+
     fun updateTransitionId(transitionId: TransitionId) {
         children?.forEachValue { it.updateTransitionId(transitionId) }
     }
@@ -23,6 +34,10 @@ internal class ChildrenManager(
             it.markAsTerminated()
             pendingRemoval?.add(it)
         }
+
+        actionsToStart.evaluationFinished()
+        actionsToRemove.evaluationFinished()
+        hasDetachedChildren.evaluationFinished()
     }
 
     fun terminateDetachedChildren(transitionId: TransitionId): Boolean {
@@ -33,25 +48,15 @@ internal class ChildrenManager(
             return true
         }
 
-        return children?.any { it.value.value.terminateDetachedChildren(transitionId) } ?: false
+        return hasDetachedChildren.iterate(children, transitionId)
     }
 
     fun terminateOldUpdates(transitionId: TransitionId): Boolean {
-        children?.forEachValue {
-            if (it.terminateOldUpdates(transitionId)) {
-                return true
-            }
-        }
-        return false
+        return actionsToRemove.iterate(children, transitionId)
     }
 
     fun startNewUpdates(transitionId: TransitionId): Boolean {
-        children?.forEachValue {
-            if (it.startNewUpdates(transitionId)) {
-                return true
-            }
-        }
-        return false
+        return actionsToStart.iterate(children, transitionId)
     }
 
     fun markAsTerminated() {
@@ -80,7 +85,7 @@ internal class ChildrenManager(
                 FormulaManagerImpl(implementation, input, childTransitionListener, inspector = inspector)
             }
             .requestAccess {
-                throw IllegalStateException("There already is a child with same key: $key. Override [Formula.key] function.")
+                "There already is a child with same key: $key. Override [Formula.key] function."
             } as FormulaManager<ChildInput, ChildOutput>
     }
 }
