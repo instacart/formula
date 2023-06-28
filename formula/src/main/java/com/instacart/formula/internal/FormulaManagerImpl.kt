@@ -6,6 +6,7 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import java.util.LinkedList
 import kotlin.reflect.KClass
 
 /**
@@ -39,12 +40,30 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     var transitionID: Long = 0
     var terminated = false
+    private var isEvaluating: Boolean = false
+
+    private val eventQueue = LinkedList<Event>()
+
+    fun onEvent(event: Event) {
+        if (terminated) {
+            event.dispatch()
+        } else if (isEvaluating) {
+            eventQueue.addLast(event)
+        } else {
+            delegate.onPostponedTransition(event)
+        }
+    }
+
+    fun hasPendingTransitions(): Boolean {
+        return eventQueue.isNotEmpty()
+    }
 
     fun hasTransitioned(id: Long): Boolean {
         return transitionID != id
     }
 
     fun handleTransitionResult(result: Transition.Result<State>) {
+        val effects = result.effects
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
             delegate.onTransition(loggingType, result, evaluate = false)
@@ -60,8 +79,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val evaluate = frame == null || frame.transitionID != transitionID
-        if (evaluate || result.effects != null) {
+        val evaluate = !isEvaluating && frame?.transitionID != transitionID
+        if (evaluate || effects != null) {
             delegate.onTransition(loggingType, result, evaluate)
         }
     }
@@ -75,7 +94,39 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     override fun evaluate(input: Input): Evaluation<Output> {
         // TODO: assert main thread.
-        val transitionID = transitionID
+
+        var result: Evaluation<Output>? = null
+        isEvaluating = true
+        while (result == null) {
+            val lastFrame = frame
+            if (lastFrame != null && executeTransitions(lastFrame.transitionID)) {
+                continue
+            }
+
+            val transitionID = transitionID
+
+            val evaluation = evaluation(input, transitionID)
+            if (executeTransitions(transitionID)) {
+                continue
+            }
+
+            if (executeUpdates(transitionID)) {
+                continue
+            }
+
+            result = evaluation
+        }
+        isEvaluating = false
+
+        return result
+    }
+
+    /**
+     * Creates the current [Output] and prepares the next frame that will need to be processed.
+     */
+    private fun evaluation(input: Input, transitionID: Long): Evaluation<Output> {
+        // TODO: assert main thread.
+
         val lastFrame = frame
         if (lastFrame == null && isValidationEnabled) {
             throw ValidationException("Formula should already have run at least once before the validation mode.")
@@ -103,7 +154,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
                     throw ValidationException("$loggingType - input changed during identical re-evaluation - old: $prevInput, new: $input")
                 }
                 state = formula.onInputChanged(prevInput, input, state)
-
                 inspector?.onInputChanged(loggingType, prevInput, input)
             }
         }
@@ -125,9 +175,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         val frame = Frame(snapshot, result, transitionID)
-        actionManager.onNewFrame(frame.evaluation.actions)
         this.frame = frame
 
+        actionManager.onNewFrame(frame.evaluation.actions)
         listeners.evaluationFinished()
         childrenManager?.evaluationFinished()
 
@@ -135,15 +185,29 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (!isValidationEnabled) {
             inspector?.onEvaluateFinished(loggingType, frame.evaluation.output, evaluated = true)
         }
-        return result
+
+        return frame.evaluation
     }
 
-    override fun executeUpdates(): Boolean {
-        val transitionID = transitionID
-        if (childrenManager?.executeChildUpdates(transitionID) == true) {
-            return true
+    private fun executeTransitions(transitionID: Long): Boolean {
+        if (!hasTransitioned(transitionID)) {
+            while (eventQueue.isNotEmpty()) {
+                val event = eventQueue.pollFirst()
+                event.dispatch()
+                if (hasTransitioned(transitionID)) {
+                    return true
+                }
+            }
         }
 
+        return false
+    }
+
+    /**
+     * Called after [evaluate] to remove detached children, stop detached actions and start
+     * new ones. It will start with child formulas first and then perform execution it self.
+     */
+    private fun executeUpdates(transitionID: Long): Boolean {
         if (childrenManager?.terminateChildren(transitionID) == true) {
             return true
         }
@@ -184,7 +248,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (evaluate) {
             transitionID += 1
         }
-        delegate.onTransition(formulaType, result, evaluate)
+        delegate.onTransition(formulaType, result, !isEvaluating && evaluate)
+    }
+
+    override fun onPostponedTransition(event: Event) {
+        if (isEvaluating) {
+            eventQueue.addLast(event)
+        } else {
+            delegate.onPostponedTransition(event)
+        }
     }
 
     private fun getOrInitChildrenManager(): ChildrenManager {

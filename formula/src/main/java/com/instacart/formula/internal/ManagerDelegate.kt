@@ -9,4 +9,8 @@ interface ManagerDelegate {
         result: Transition.Result<*>,
         evaluate: Boolean,
     )
+
+    fun onPostponedTransition(
+        event: Event
+    )
 }

@@ -13,31 +13,19 @@ internal class ChildrenManager(
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    private val childrenToUpdate = PendingFormulaManagerList(delegate) { manager ->
-        manager.executeUpdates()
-    }
     fun evaluationFinished() {
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
             it.markAsTerminated()
             pendingRemoval?.add(it)
         }
-
-        childrenToUpdate.evaluationFinished()
-    }
-
-    fun executeChildUpdates(transitionID: Long): Boolean {
-        return childrenToUpdate.iterate(children, transitionID)
     }
 
     fun terminateChildren(transitionID: Long): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
-        if (delegate.hasTransitioned(transitionID)) {
-            return true
-        }
-        return false
+        return delegate.hasTransitioned(transitionID) || delegate.hasPendingTransitions()
     }
 
     fun markAsTerminated() {

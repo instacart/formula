@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 internal class SnapshotImpl<out Input, State> internal constructor(
     override val input: Input,
     override val state: State,
-    val transitionID: Long,
+    private val transitionID: Long,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
 ) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
@@ -45,7 +45,6 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         return delegate.child(key, formula, input)
     }
 
-
     override fun <Event> eventListener(
         key: Any,
         useIndex: Boolean,
@@ -53,6 +52,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
+        listener.manager = delegate
         listener.snapshotImpl = this
         listener.transition = transition
         return listener
@@ -99,7 +99,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
 
         if (!terminated && delegate.hasTransitioned(transitionID)) {
             // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old event listener: $transition.")
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition. Transition: $transitionID != ${delegate.transitionID}")
         }
 
         delegate.handleTransitionResult(transition)

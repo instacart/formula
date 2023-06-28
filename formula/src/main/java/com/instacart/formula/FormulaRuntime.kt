@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.Event
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
@@ -29,6 +30,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private var input: Input? = null
     private var key: Any? = null
+    private var isEvaluating: Boolean = false
     private var isExecuting: Boolean = false
 
     fun isKeyValid(input: Input): Boolean {
@@ -70,6 +72,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         run(evaluate = evaluate)
     }
 
+    override fun onPostponedTransition(event: Event) {
+        event.dispatch()
+    }
+
     private fun forceRun() = run(evaluate = true)
 
     /**
@@ -78,12 +84,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * @param evaluate Determines if evaluation needs to be run.
      */
     private fun run(evaluate: Boolean) {
+        if (isEvaluating) return
+
         try {
             runFormula(evaluate)
-            if (!isExecuting) {
-                emitOutputIfNeeded(isInitialRun = false)
-            }
+            emitOutputIfNeeded(isInitialRun = false)
         } catch (e: Throwable) {
+            isEvaluating = false
+
             manager?.markAsTerminated()
             onError(e)
             manager?.performTerminationSideEffects()
@@ -100,13 +108,18 @@ class FormulaRuntime<Input : Any, Output : Any>(
         val currentInput = checkNotNull(input)
 
         if (evaluate && !manager.terminated) {
+            isEvaluating = true
             evaluationPhase(manager, currentInput)
+            isEvaluating = false
         }
 
-        executionRequested = true
+        if (evaluate || effectQueue.isNotEmpty()) {
+            executionRequested = true
+        }
+
         if (isExecuting) return
 
-        executionPhase(manager)
+        executeEffects()
 
         if (freshRun) {
             inspector?.onRunFinished()
@@ -136,43 +149,19 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     /**
-     * Executes operations containing side-effects such as starting/terminating streams.
-     */
-    private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
-        isExecuting = true
-        while (executionRequested) {
-            executionRequested = false
-
-            val transitionId = manager.transitionID
-            if (!manager.terminated) {
-                if (manager.executeUpdates()) {
-                    continue
-                }
-            }
-
-            // We execute pending side-effects even after termination
-            if (executeEffects(manager, transitionId)) {
-                continue
-            }
-        }
-        isExecuting = false
-    }
-
-    /**
      * Executes effects from the [effectQueue].
      */
-    private fun executeEffects(manager: FormulaManagerImpl<*, *, *>, transitionId: Long): Boolean {
+    private fun executeEffects() {
+        isExecuting = true
+        // Walk through the effect queue and execute them
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
                 effects.execute()
-
-                if (manager.hasTransitioned(transitionId)) {
-                    return true
-                }
+                inspector?.onEffectExecuted()
             }
         }
-        return false
+        isExecuting = false
     }
 
     /**
