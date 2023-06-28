@@ -48,6 +48,7 @@ interface Inspector {
     /**
      * Called when an action is started.
      *
+     *
      * @param formulaType Formula type used to filter for specific events.
      * @param action Action that was started.
      */
@@ -60,6 +61,11 @@ interface Inspector {
      * @param action Action that was finished.
      */
     fun onActionFinished(formulaType: KClass<*>, action: DeferredAction<*>) = Unit
+
+    /**
+     * Called when transition [Effects] are executed
+     */
+    fun onEffectExecuted() = Unit
 
     /**
      * Called when a transition happens

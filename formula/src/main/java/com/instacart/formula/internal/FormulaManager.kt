@@ -15,12 +15,6 @@ interface FormulaManager<Input, Output> {
      */
     fun evaluate(input: Input): Evaluation<Output>
 
-    /**
-     * Called after [evaluate] to update child formulas and actions.
-     *
-     * @return True if transition happened while performing this.
-     */
-    fun executeUpdates(): Boolean
 
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,
