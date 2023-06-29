@@ -6,6 +6,7 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import kotlin.reflect.KClass
 
 /**
  * Handles formula and its children state processing.
@@ -17,12 +18,12 @@ import com.instacart.formula.Transition
  * 4. Prepare parent and alive children for updates.
  */
 internal class FormulaManagerImpl<Input, State, Output>(
+    private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val transitionListener: TransitionListener,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
-) : FormulaManager<Input, Output> {
+) : FormulaManager<Input, Output>, ManagerDelegate {
 
     private val type = formula.type()
     private var state: State = formula.initialState(initialInput)
@@ -40,7 +41,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            transitionListener.onTransitionResult(type, result, true)
+            delegate.onTransition(type, result, false)
             return
         }
 
@@ -49,8 +50,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
         val frame = this.frame
         frame?.updateStateValidity(state)
-        val isValid = frame != null && frame.isValid()
-        transitionListener.onTransitionResult(type, result, isValid)
+        val evaluate = frame == null || !frame.isValid()
+        if (evaluate || result.effects != null) {
+            delegate.onTransition(type, result, evaluate)
+        }
     }
 
     override fun setValidationRun(isValidationEnabled: Boolean) {
@@ -193,18 +196,17 @@ internal class FormulaManagerImpl<Input, State, Output>(
         inspector?.onFormulaFinished(type)
     }
 
+    override fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) {
+        val frame = this.frame
+        if (evaluate) {
+            frame?.childInvalidated()
+        }
+        delegate.onTransition(formulaType, result, evaluate)
+    }
+
     private fun getOrInitChildrenManager(): ChildrenManager {
         return childrenManager ?: run {
-            val listener = TransitionListener { type, result, isChildValid ->
-                val frame = this.frame
-                if (!isChildValid) {
-                    frame?.childInvalidated()
-                }
-                val isValid = frame != null && frame.isValid()
-                transitionListener.onTransitionResult(type, result, isValid)
-            }
-
-            val value = ChildrenManager(listener, inspector)
+            val value = ChildrenManager(this, inspector)
             childrenManager = value
             value
         }

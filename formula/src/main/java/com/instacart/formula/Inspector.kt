@@ -88,8 +88,8 @@ interface Inspector {
      *
      * @param formulaType Formula type used to filter for specific events.
      * @param result Transition result used to check what kind of transition.
-     * @param requiresEvaluation Indicates if transition requires a new evaluation.
+     * @param evaluate Indicates if transition requires a new evaluation.
      */
-    fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, requiresEvaluation: Boolean) = Unit
+    fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) = Unit
 
 }

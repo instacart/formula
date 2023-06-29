@@ -31,7 +31,7 @@ class TestInspector : Inspector {
     override fun onTransition(
         formulaType: KClass<*>,
         result: Transition.Result<*>,
-        requiresEvaluation: Boolean
+        evaluate: Boolean
     ) {
         events.add("transition: ${formulaType.qualifiedName}")
     }

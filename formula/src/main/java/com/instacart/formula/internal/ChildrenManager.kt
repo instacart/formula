@@ -7,7 +7,7 @@ import com.instacart.formula.Inspector
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
-    private val childTransitionListener: TransitionListener,
+    private val delegate: ManagerDelegate,
     private val inspector: Inspector?,
 ) {
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
@@ -82,7 +82,7 @@ internal class ChildrenManager(
         return children
             .findOrInit(key) {
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener, inspector = inspector)
+                FormulaManagerImpl(delegate, implementation, input, inspector = inspector)
             }
             .requestAccess {
                 "There already is a child with same key: $key. Override [Formula.key] function."
