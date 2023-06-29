@@ -8,6 +8,7 @@ import kotlin.reflect.KClass
  * Handles [DeferredAction] changes.
  */
 internal class ActionManager(
+    private val manager: FormulaManagerImpl<*, *, *>,
     private val formulaType: KClass<*>,
     private val inspector: Inspector?,
 ) {
@@ -34,7 +35,7 @@ internal class ActionManager(
     /**
      * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(transitionId: TransitionId): Boolean {
+    fun terminateOld(transitionID: Long): Boolean {
         prepareStoppedActionList()
 
         if (scheduledForRemoval.isNullOrEmpty()) {
@@ -51,7 +52,7 @@ internal class ActionManager(
                 running?.remove(action)
                 finishAction(action)
 
-                if (transitionId.hasTransitioned()) {
+                if (manager.hasTransitioned(transitionID)) {
                     return true
                 }
             }
@@ -59,7 +60,7 @@ internal class ActionManager(
         return false
     }
 
-    fun startNew(transitionId: TransitionId): Boolean {
+    fun startNew(transitionID: Long): Boolean {
         prepareNewActionList()
 
         val scheduled = scheduledToStart ?: return false
@@ -78,7 +79,7 @@ internal class ActionManager(
                 getOrInitRunningActions().add(action)
                 action.start()
 
-                if (transitionId.hasTransitioned()) {
+                if (manager.hasTransitioned(transitionID)) {
                     return true
                 }
             }
@@ -134,16 +135,6 @@ internal class ActionManager(
 
             scheduledForRemoval?.addAll(running ?: emptyList())
         }
-    }
-
-    fun hasNewActions(): Boolean {
-        prepareNewActionList()
-        return !scheduledToStart.isNullOrEmpty()
-    }
-
-    fun hasDetachedActions(): Boolean {
-        prepareStoppedActionList()
-        return !scheduledForRemoval.isNullOrEmpty()
     }
 
     private fun isRunning(update: DeferredAction<*>): Boolean {

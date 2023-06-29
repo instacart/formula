@@ -9,22 +9,8 @@ import com.instacart.formula.Evaluation
 internal class Frame<Input, State, Output>(
     val snapshot: SnapshotImpl<Input, State>,
     val evaluation: Evaluation<Output>,
+    val transitionID: Long,
 ) {
     val input: Input = snapshot.input
     val state: State = snapshot.state
-
-    private var stateValid: Boolean = true
-    private var childrenValid: Boolean = true
-
-    fun updateStateValidity(state: State) {
-        if (stateValid && this.state != state) {
-            stateValid = false
-        }
-    }
-
-    fun childInvalidated() {
-        childrenValid = false
-    }
-
-    fun isValid() = stateValid && childrenValid
 }

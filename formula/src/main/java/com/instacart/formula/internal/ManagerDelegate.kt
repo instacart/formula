@@ -3,10 +3,10 @@ package com.instacart.formula.internal
 import com.instacart.formula.Transition
 import kotlin.reflect.KClass
 
-internal fun interface TransitionListener {
-    fun onTransitionResult(
+interface ManagerDelegate {
+    fun onTransition(
         formulaType: KClass<*>,
         result: Transition.Result<*>,
-        isValid: Boolean,
+        evaluate: Boolean,
     )
 }

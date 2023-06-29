@@ -13,34 +13,24 @@ interface FormulaManager<Input, Output> {
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
-    fun evaluate(
-        input: Input,
-        transitionId: TransitionId
-    ): Evaluation<Output>
-
-    /**
-     * Method updates the transition id of the existing evaluation. This
-     * method is called when there were no changes and evaluation does
-     * not need to run in this part of the formula tree.
-     */
-    fun updateTransitionId(transitionId: TransitionId)
+    fun evaluate(input: Input): Evaluation<Output>
 
     /**
      * Called after [evaluate] to terminate children that were removed.
      *
      * @return True if transition happened while performing this.
      */
-    fun terminateDetachedChildren(transitionId: TransitionId): Boolean
+    fun terminateDetachedChildren(): Boolean
 
     /**
      * Called after [evaluate] to terminate old streams.
      */
-    fun terminateOldUpdates(transitionId: TransitionId): Boolean
+    fun terminateOldUpdates(): Boolean
 
     /**
      * Called after [evaluate] to start new streams.
      */
-    fun startNewUpdates(transitionId: TransitionId): Boolean
+    fun startNewUpdates(): Boolean
 
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,

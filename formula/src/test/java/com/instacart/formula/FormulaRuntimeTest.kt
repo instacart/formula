@@ -322,7 +322,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             override fun onTransition(
                 formulaType: KClass<*>,
                 result: Transition.Result<*>,
-                requiresEvaluation: Boolean
+                evaluate: Boolean
             ) {
                 transitions.add(formulaType)
             }

@@ -7,25 +7,21 @@ import com.instacart.formula.Inspector
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
-    private val childTransitionListener: TransitionListener,
+    private val delegate: FormulaManagerImpl<*, *, *>,
     private val inspector: Inspector?,
 ) {
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    private val actionsToStart = PendingFormulaManagerList { manager, id ->
-        manager.startNewUpdates(id)
+    private val actionsToStart = PendingFormulaManagerList(delegate) { manager ->
+        manager.startNewUpdates()
     }
-    private val actionsToRemove = PendingFormulaManagerList { manager, id ->
-        manager.terminateOldUpdates(id)
-    }
-
-    private val hasDetachedChildren = PendingFormulaManagerList { manager, id ->
-        manager.terminateDetachedChildren(id)
+    private val actionsToRemove = PendingFormulaManagerList(delegate) { manager ->
+        manager.terminateOldUpdates()
     }
 
-    fun updateTransitionId(transitionId: TransitionId) {
-        children?.forEachValue { it.updateTransitionId(transitionId) }
+    private val hasDetachedChildren = PendingFormulaManagerList(delegate) { manager ->
+        manager.terminateDetachedChildren()
     }
 
     fun evaluationFinished() {
@@ -40,23 +36,23 @@ internal class ChildrenManager(
         hasDetachedChildren.evaluationFinished()
     }
 
-    fun terminateDetachedChildren(transitionId: TransitionId): Boolean {
+    fun terminateDetachedChildren(transitionID: Long): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
-        if (transitionId.hasTransitioned()) {
+        if (delegate.hasTransitioned(transitionID)) {
             return true
         }
 
-        return hasDetachedChildren.iterate(children, transitionId)
+        return hasDetachedChildren.iterate(children, transitionID)
     }
 
-    fun terminateOldUpdates(transitionId: TransitionId): Boolean {
-        return actionsToRemove.iterate(children, transitionId)
+    fun terminateOldUpdates(transitionID: Long): Boolean {
+        return actionsToRemove.iterate(children, transitionID)
     }
 
-    fun startNewUpdates(transitionId: TransitionId): Boolean {
-        return actionsToStart.iterate(children, transitionId)
+    fun startNewUpdates(transitionID: Long): Boolean {
+        return actionsToStart.iterate(children, transitionID)
     }
 
     fun markAsTerminated() {
@@ -82,7 +78,7 @@ internal class ChildrenManager(
         return children
             .findOrInit(key) {
                 val implementation = formula.implementation()
-                FormulaManagerImpl(implementation, input, childTransitionListener, inspector = inspector)
+                FormulaManagerImpl(delegate, implementation, input, inspector = inspector)
             }
             .requestAccess {
                 "There already is a child with same key: $key. Override [Formula.key] function."
