@@ -32,25 +32,35 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var isValidationEnabled: Boolean = false
 
     private val actionManager: ActionManager = ActionManager(
+        manager = this,
         formulaType = type,
         inspector = inspector,
     )
 
+    var transitionID: Long = 0
     var terminated = false
+
+    fun hasTransitioned(id: Long): Boolean {
+        return transitionID != id
+    }
 
     fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            delegate.onTransition(type, result, false)
+            delegate.onTransition(type, result, evaluate = false)
             return
         }
 
-        if (result is Transition.Result.Stateful) {
-            state = result.state
-        }
         val frame = this.frame
-        frame?.updateStateValidity(state)
-        val evaluate = frame == null || !frame.isValid()
+        if (result is Transition.Result.Stateful) {
+            if (state != result.state) {
+                state = result.state
+
+                transitionID += 1
+            }
+        }
+
+        val evaluate = frame == null || frame.transitionID != transitionID
         if (evaluate || result.effects != null) {
             delegate.onTransition(type, result, evaluate)
         }
@@ -60,21 +70,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
         this.isValidationEnabled = isValidationEnabled
     }
 
-    override fun updateTransitionId(transitionId: TransitionId) {
-        val lastFrame = checkNotNull(frame) { "missing frame means this is called before initial evaluate" }
-        lastFrame.snapshot.transitionId = transitionId
-
-        childrenManager?.updateTransitionId(transitionId)
-    }
-
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
-    override fun evaluate(
-        input: Input,
-        transitionId: TransitionId
-    ): Evaluation<Output> {
+    override fun evaluate(input: Input): Evaluation<Output> {
         // TODO: assert main thread.
+        val transitionID = transitionID
         val lastFrame = frame
         if (lastFrame == null && isValidationEnabled) {
             throw ValidationException("Formula should already have run at least once before the validation mode.")
@@ -91,8 +92,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (lastFrame != null) {
             val prevInput = lastFrame.input
             val hasInputChanged = prevInput != input
-            if (!isValidationEnabled && lastFrame.isValid() && !hasInputChanged) {
-                updateTransitionId(transitionId)
+            if (!isValidationEnabled && lastFrame.transitionID == transitionID && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
                 inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
                 return evaluation
@@ -108,7 +108,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val snapshot = SnapshotImpl(input, state, transitionId, listeners, this)
+        val snapshot = SnapshotImpl(input, state, transitionID, listeners, this)
         val result = formula.evaluate(snapshot)
 
         if (isValidationEnabled) {
@@ -124,7 +124,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val frame = Frame(snapshot, result)
+        val frame = Frame(snapshot, result, transitionID)
         actionManager.onNewFrame(frame.evaluation.actions)
         this.frame = frame
 
@@ -138,32 +138,34 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return result
     }
 
-    override fun terminateDetachedChildren(transitionId: TransitionId): Boolean {
-        return childrenManager?.terminateDetachedChildren(transitionId) == true
+    override fun terminateDetachedChildren(): Boolean {
+        return childrenManager?.terminateDetachedChildren(transitionID) == true
     }
 
     // TODO: should probably terminate children streams, then self.
-    override fun terminateOldUpdates(transitionId: TransitionId): Boolean {
-        if (actionManager.terminateOld(transitionId)) {
+    override fun terminateOldUpdates(): Boolean {
+        val transitionID = transitionID
+        if (actionManager.terminateOld(transitionID)) {
             return true
         }
 
         // Step through children frames
-        if (childrenManager?.terminateOldUpdates(transitionId) == true) {
+        if (childrenManager?.terminateOldUpdates(transitionID) == true) {
             return true
         }
 
         return false
     }
 
-    override fun startNewUpdates(transitionId: TransitionId): Boolean {
+    override fun startNewUpdates(): Boolean {
+        val transitionID = transitionID
         // Update parent workers so they are ready to handle events
-        if (actionManager.startNew(transitionId)) {
+        if (actionManager.startNew(transitionID)) {
             return true
         }
 
         // Step through children frames
-        if (childrenManager?.startNewUpdates(transitionId) == true) {
+        if (childrenManager?.startNewUpdates(transitionID) == true) {
             return true
         }
 
@@ -174,12 +176,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
         key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        transitionId: TransitionId
     ): ChildOutput {
         val childrenManager = getOrInitChildrenManager()
         val manager = childrenManager.findOrInitChild(key, formula, input)
         manager.setValidationRun(isValidationEnabled)
-        return manager.evaluate(input, transitionId).output
+        return manager.evaluate(input).output
     }
 
     override fun markAsTerminated() {
@@ -197,9 +198,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) {
-        val frame = this.frame
         if (evaluate) {
-            frame?.childInvalidated()
+            transitionID += 1
         }
         delegate.onTransition(formulaType, result, evaluate)
     }

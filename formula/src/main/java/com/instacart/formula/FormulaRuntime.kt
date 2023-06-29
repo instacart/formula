@@ -4,8 +4,6 @@ import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.ThreadChecker
-import com.instacart.formula.internal.TransitionId
-import com.instacart.formula.internal.TransitionIdManager
 import java.util.LinkedList
 import kotlin.reflect.KClass
 
@@ -22,7 +20,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
 ) : ManagerDelegate {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
-    private val transitionIdManager = TransitionIdManager()
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
@@ -111,9 +108,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Runs formula evaluation.
      */
     private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        transitionIdManager.invalidated()
-
-        val result = manager.evaluate(currentInput, transitionIdManager.transitionId)
+        val result = manager.evaluate(currentInput)
         lastOutput = result.output
         emitOutput = true
 
@@ -124,7 +119,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 // We run evaluation again in validation mode which ensures validates
                 // that inputs and outputs are stable and do not break equality across
                 // identical runs.
-                manager.evaluate(currentInput, transitionIdManager.transitionId)
+                manager.evaluate(currentInput)
             } finally {
                 manager.setValidationRun(false)
             }
@@ -139,23 +134,23 @@ class FormulaRuntime<Input : Any, Output : Any>(
         while (executionRequested) {
             executionRequested = false
 
-            val transitionId = transitionIdManager.transitionId
+            val transitionId = manager.transitionID
             if (!manager.terminated) {
-                if (manager.terminateDetachedChildren(transitionId)) {
+                if (manager.terminateDetachedChildren()) {
                     continue
                 }
 
-                if (manager.terminateOldUpdates(transitionId)) {
+                if (manager.terminateOldUpdates()) {
                     continue
                 }
 
-                if (manager.startNewUpdates(transitionId)) {
+                if (manager.startNewUpdates()) {
                     continue
                 }
             }
 
             // We execute pending side-effects even after termination
-            if (executeEffects(transitionId)) {
+            if (executeEffects(manager, transitionId)) {
                 continue
             }
         }
@@ -165,13 +160,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Executes effects from the [effectQueue].
      */
-    private fun executeEffects(transitionId: TransitionId): Boolean {
+    private fun executeEffects(manager: FormulaManagerImpl<*, *, *>, transitionId: Long): Boolean {
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
                 effects.execute()
 
-                if (transitionId.hasTransitioned()) {
+                if (manager.hasTransitioned(transitionId)) {
                     return true
                 }
             }

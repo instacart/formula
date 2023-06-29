@@ -1,7 +1,8 @@
 package com.instacart.formula.internal
 
 internal class PendingFormulaManagerList(
-    private val action: (FormulaManager<*, *>, TransitionId) -> Boolean,
+    private val manager: FormulaManagerImpl<*, *, *>,
+    private val action: (FormulaManager<*, *>) -> Boolean,
 ) {
     var invalidated = false
     var pending: MutableList<FormulaManager<*, *>>? = null
@@ -14,7 +15,7 @@ internal class PendingFormulaManagerList(
 
     fun iterate(
         children: SingleRequestMap<Any, FormulaManager<*, *>>?,
-        transitionId: TransitionId,
+        transitionID: Long,
     ): Boolean {
         prepareList(children)
 
@@ -25,7 +26,7 @@ internal class PendingFormulaManagerList(
         val iterator = pending?.iterator()
         while (iterator?.hasNext() == true) {
             val childFormulaManager = iterator.next()
-            if (action(childFormulaManager, transitionId)) {
+            if (action(childFormulaManager) || manager.hasTransitioned(transitionID)) {
                 return true
             }
 
