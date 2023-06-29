@@ -136,7 +136,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
         isExecuting = true
-        inspector?.onExecutionStarted()
         while (executionRequested) {
             executionRequested = false
 
@@ -160,7 +159,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 continue
             }
         }
-        inspector?.onExecutionFinished()
         isExecuting = false
     }
 

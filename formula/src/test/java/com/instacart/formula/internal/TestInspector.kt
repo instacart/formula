@@ -20,14 +20,6 @@ class TestInspector : Inspector {
         events.add("evaluate-finished: ${formulaType.qualifiedName}")
     }
 
-    override fun onExecutionStarted() {
-        events.add("execution-started")
-    }
-
-    override fun onExecutionFinished() {
-        events.add("execution-finished")
-    }
-
     override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
         events.add("action-started: ${formulaType.qualifiedName}")
     }

@@ -6,6 +6,7 @@ import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxAction
+import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
 import com.instacart.formula.subjects.ChildMessageTriggersEventTransitionInParent
 import com.instacart.formula.subjects.ChildMessageWithParentStateChange
@@ -35,6 +36,7 @@ import com.instacart.formula.subjects.OnlyUpdateFormula
 import com.instacart.formula.subjects.OptionalCallbackFormula
 import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
+import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -278,6 +280,59 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { child.triggerMessage() }
             .assertOutputCount(2)
             .output { assertThat(state).isEqualTo(1) }
+    }
+
+    @Test
+    fun `child action triggers parent event on start`() {
+        val increments = listOf(1, 1, 1, 1, 1, 1)
+        runtime.test(
+            formula = ChildActionFiresParentEventOnStart.formula(runChildOnStart = true, increments),
+            input = Unit,
+        )
+            .output { assertThat(value).isEqualTo(6) }
+            .apply {
+                // Efficiently we emit only emit 2 values
+                assertThat(values()).hasSize(1)
+            }
+
+        runtime.test(
+            formula = ChildActionFiresParentEventOnStart.formula(runChildOnStart = false, increments),
+            input = Unit,
+        )
+            .output { assertThat(value).isEqualTo(0) }
+            .output { showChild(true) }
+            .output { assertThat(value).isEqualTo(6) }
+            .apply {
+                // Efficiently we emit only emit 2 values
+                assertThat(values()).hasSize(2)
+            }
+    }
+
+    @Test
+    fun `on action start child triggers action in a parallel child`() {
+        val events = listOf(Unit, Unit, Unit, Unit)
+        val formula = ParallelChildFormulaFiresEventOnStart.formula(events)
+        var actionsStarted = 0
+        val transitions = mutableListOf<KClass<*>>()
+        val inspector = object : Inspector {
+            override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
+                actionsStarted += 1
+            }
+
+            override fun onTransition(
+                formulaType: KClass<*>,
+                result: Transition.Result<*>,
+                requiresEvaluation: Boolean
+            ) {
+                transitions.add(formulaType)
+            }
+        }
+        runtime.test(formula, Unit, inspector)
+            .apply {
+                assertThat(actionsStarted).isEqualTo(1)
+                assertThat(transitions).hasSize(4)
+            }
+            .output { assertThat(this).isEqualTo(4) }
     }
 
     @Test
@@ -1054,20 +1109,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             "formula-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "execution-started",
-            "execution-finished",
             "transition: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "execution-started",
             "action-started: com.instacart.formula.subjects.StartStopFormula",
-            "execution-finished",
             "transition: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "execution-started",
             "action-finished: com.instacart.formula.subjects.StartStopFormula",
-            "execution-finished",
             "formula-finished: com.instacart.formula.subjects.StartStopFormula"
         ).inOrder()
     }
