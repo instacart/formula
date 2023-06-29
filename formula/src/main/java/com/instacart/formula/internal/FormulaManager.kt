@@ -16,21 +16,11 @@ interface FormulaManager<Input, Output> {
     fun evaluate(input: Input): Evaluation<Output>
 
     /**
-     * Called after [evaluate] to terminate children that were removed.
+     * Called after [evaluate] to update child formulas and actions.
      *
      * @return True if transition happened while performing this.
      */
-    fun terminateDetachedChildren(): Boolean
-
-    /**
-     * Called after [evaluate] to terminate old streams.
-     */
-    fun terminateOldUpdates(): Boolean
-
-    /**
-     * Called after [evaluate] to start new streams.
-     */
-    fun startNewUpdates(): Boolean
+    fun executeUpdates(): Boolean
 
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,

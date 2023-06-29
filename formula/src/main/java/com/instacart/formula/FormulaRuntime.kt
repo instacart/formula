@@ -136,15 +136,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
             val transitionId = manager.transitionID
             if (!manager.terminated) {
-                if (manager.terminateDetachedChildren()) {
-                    continue
-                }
-
-                if (manager.terminateOldUpdates()) {
-                    continue
-                }
-
-                if (manager.startNewUpdates()) {
+                if (manager.executeUpdates()) {
                     continue
                 }
             }
