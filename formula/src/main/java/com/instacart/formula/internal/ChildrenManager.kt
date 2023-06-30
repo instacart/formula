@@ -13,17 +13,9 @@ internal class ChildrenManager(
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    private val actionsToStart = PendingFormulaManagerList(delegate) { manager ->
-        manager.startNewUpdates()
+    private val childrenToUpdate = PendingFormulaManagerList(delegate) { manager ->
+        manager.executeUpdates()
     }
-    private val actionsToRemove = PendingFormulaManagerList(delegate) { manager ->
-        manager.terminateOldUpdates()
-    }
-
-    private val hasDetachedChildren = PendingFormulaManagerList(delegate) { manager ->
-        manager.terminateDetachedChildren()
-    }
-
     fun evaluationFinished() {
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
@@ -31,28 +23,21 @@ internal class ChildrenManager(
             pendingRemoval?.add(it)
         }
 
-        actionsToStart.evaluationFinished()
-        actionsToRemove.evaluationFinished()
-        hasDetachedChildren.evaluationFinished()
+        childrenToUpdate.evaluationFinished()
     }
 
-    fun terminateDetachedChildren(transitionID: Long): Boolean {
+    fun executeChildUpdates(transitionID: Long): Boolean {
+        return childrenToUpdate.iterate(children, transitionID)
+    }
+
+    fun terminateChildren(transitionID: Long): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
         if (delegate.hasTransitioned(transitionID)) {
             return true
         }
-
-        return hasDetachedChildren.iterate(children, transitionID)
-    }
-
-    fun terminateOldUpdates(transitionID: Long): Boolean {
-        return actionsToRemove.iterate(children, transitionID)
-    }
-
-    fun startNewUpdates(transitionID: Long): Boolean {
-        return actionsToStart.iterate(children, transitionID)
+        return false
     }
 
     fun markAsTerminated() {

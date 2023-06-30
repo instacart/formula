@@ -138,38 +138,21 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return result
     }
 
-    override fun terminateDetachedChildren(): Boolean {
-        return childrenManager?.terminateDetachedChildren(transitionID) == true
-    }
-
-    // TODO: should probably terminate children streams, then self.
-    override fun terminateOldUpdates(): Boolean {
+    override fun executeUpdates(): Boolean {
         val transitionID = transitionID
+        if (childrenManager?.executeChildUpdates(transitionID) == true) {
+            return true
+        }
+
+        if (childrenManager?.terminateChildren(transitionID) == true) {
+            return true
+        }
+
         if (actionManager.terminateOld(transitionID)) {
             return true
         }
 
-        // Step through children frames
-        if (childrenManager?.terminateOldUpdates(transitionID) == true) {
-            return true
-        }
-
-        return false
-    }
-
-    override fun startNewUpdates(): Boolean {
-        val transitionID = transitionID
-        // Update parent workers so they are ready to handle events
-        if (actionManager.startNew(transitionID)) {
-            return true
-        }
-
-        // Step through children frames
-        if (childrenManager?.startNewUpdates(transitionID) == true) {
-            return true
-        }
-
-        return false
+        return actionManager.startNew(transitionID)
     }
 
     fun <ChildInput, ChildOutput> child(
