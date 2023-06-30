@@ -8,6 +8,14 @@ import kotlin.reflect.KClass
 class TestInspector : Inspector {
     val events = mutableListOf<String>()
 
+    override fun onRunStarted(evaluate: Boolean) {
+        events.add("formula-run-started")
+    }
+
+    override fun onRunFinished() {
+        events.add("formula-run-finished")
+    }
+
     override fun onFormulaStarted(formulaType: KClass<*>) {
         events.add("formula-started: ${formulaType.qualifiedName}")
     }

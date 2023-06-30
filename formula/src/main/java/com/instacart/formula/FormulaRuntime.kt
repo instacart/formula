@@ -81,6 +81,11 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private fun run(shouldEvaluate: Boolean) {
         try {
+            val freshRun = !isExecuting
+            if (freshRun) {
+                inspector?.onRunStarted(shouldEvaluate)
+            }
+
             val manager = checkNotNull(manager)
             val currentInput = checkNotNull(input)
 
@@ -92,6 +97,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
             if (isExecuting) return
 
             executionPhase(manager)
+
+            if (freshRun) {
+                inspector?.onRunFinished()
+            }
 
             if (hasInitialFinished && emitOutput) {
                 emitOutput = false
