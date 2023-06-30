@@ -47,9 +47,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             forceRun()
             hasInitialFinished = true
 
-            lastOutput?.let {
-                onOutput(it)
-            }
+            emitOutputIfNeeded(isInitialRun = true)
         } else {
             forceRun()
         }
@@ -71,59 +69,60 @@ class FormulaRuntime<Input : Any, Output : Any>(
             effectQueue.addLast(it)
         }
 
-        run(shouldEvaluate = evaluate)
+        run(evaluate = evaluate)
     }
 
     override fun onPostponedTransition(event: Event) {
         event.dispatch()
     }
 
-    private fun forceRun() = run(shouldEvaluate = true)
+    private fun forceRun() = run(evaluate = true)
 
     /**
      * Performs the evaluation and execution phases.
      *
-     * @param shouldEvaluate Determines if evaluation needs to be run.
+     * @param evaluate Determines if evaluation needs to be run.
      */
-    private fun run(shouldEvaluate: Boolean) {
+    private fun run(evaluate: Boolean) {
         if (isEvaluating) return
 
         try {
-            val freshRun = !isExecuting
-            if (freshRun) {
-                inspector?.onRunStarted(shouldEvaluate)
-            }
-
-            val manager = checkNotNull(manager)
-            val currentInput = checkNotNull(input)
-
-            isEvaluating = true
-            if (shouldEvaluate && !manager.terminated) {
-                evaluationPhase(manager, currentInput)
-            }
-            isEvaluating = false
-
-            if (shouldEvaluate || effectQueue.isNotEmpty()) {
-                executionRequested = true
-            }
-            if (isExecuting) return
-
-            effectPhase(manager)
-
-            if (freshRun) {
-                inspector?.onRunFinished()
-            }
-
-            if (hasInitialFinished && emitOutput) {
-                emitOutput = false
-                onOutput(checkNotNull(lastOutput))
-            }
+            runFormula(evaluate)
+            emitOutputIfNeeded(isInitialRun = false)
         } catch (e: Throwable) {
             isEvaluating = false
 
             manager?.markAsTerminated()
             onError(e)
             manager?.performTerminationSideEffects()
+        }
+    }
+
+    private fun runFormula(evaluate: Boolean) {
+        val freshRun = !isExecuting
+        if (freshRun) {
+            inspector?.onRunStarted(evaluate)
+        }
+
+        val manager = checkNotNull(manager)
+        val currentInput = checkNotNull(input)
+
+        if (evaluate && !manager.terminated) {
+            isEvaluating = true
+            evaluationPhase(manager, currentInput)
+            isEvaluating = false
+        }
+
+        if (evaluate || effectQueue.isNotEmpty()) {
+            executionRequested = true
+        }
+
+        if (isExecuting) return
+
+        executeEffects()
+
+        if (freshRun) {
+            inspector?.onRunFinished()
         }
     }
 
@@ -150,37 +149,27 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     /**
-     * Executes operations containing side-effects such as starting/terminating streams.
-     */
-    private fun effectPhase(manager: FormulaManagerImpl<Input, *, Output>) {
-        isExecuting = true
-        while (executionRequested) {
-            executionRequested = false
-
-            val transitionId = manager.transitionID
-            // We execute pending side-effects even after termination
-            if (executeEffects(manager, transitionId)) {
-                continue
-            }
-        }
-        isExecuting = false
-    }
-
-    /**
      * Executes effects from the [effectQueue].
      */
-    private fun executeEffects(manager: FormulaManagerImpl<*, *, *>, transitionId: Long): Boolean {
+    private fun executeEffects() {
+        isExecuting = true
+        // Walk through the effect queue and execute them
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
             if (effects != null) {
                 effects.execute()
                 inspector?.onEffectExecuted()
-
-                if (manager.hasTransitioned(transitionId)) {
-                    return true
-                }
             }
         }
-        return false
+        isExecuting = false
+    }
+
+    private fun emitOutputIfNeeded(isInitialRun: Boolean,) {
+        if (isInitialRun) {
+            lastOutput?.let(onOutput)
+        } else if (hasInitialFinished && emitOutput) {
+            emitOutput = false
+            onOutput(checkNotNull(lastOutput))
+        }
     }
 }
