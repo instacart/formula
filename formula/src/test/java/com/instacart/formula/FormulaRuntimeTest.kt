@@ -1106,17 +1106,23 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         subject.dispose()
 
         assertThat(inspector.events).containsExactly(
+            "formula-run-started",
             "formula-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+            "formula-run-finished",
             "transition: com.instacart.formula.subjects.StartStopFormula",
+            "formula-run-started",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
             "action-started: com.instacart.formula.subjects.StartStopFormula",
+            "formula-run-finished",
             "transition: com.instacart.formula.subjects.StartStopFormula",
+            "formula-run-started",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
             "action-finished: com.instacart.formula.subjects.StartStopFormula",
+            "formula-run-finished",
             "formula-finished: com.instacart.formula.subjects.StartStopFormula"
         ).inOrder()
     }

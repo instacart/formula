@@ -46,28 +46,6 @@ interface Inspector {
     fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) = Unit
 
     /**
-     * Execution phase performs various side-effects such as:
-     * - starting an action
-     * - stopping an action
-     * - terminating detached child formulas
-     * - executing transition side-effects
-     *
-     * This function is called when we start the execution phase.
-     */
-    fun onExecutionStarted() = Unit
-
-    /**
-     * Execution phase performs various side-effects such as:
-     * - starting an action
-     * - stopping an action
-     * - terminating detached child formulas
-     * - executing transition side-effects
-     *
-     * This function is called when execution phase finished.
-     */
-    fun onExecutionFinished() = Unit
-
-    /**
      * Called when an action is started.
      *
      * @param formulaType Formula type used to filter for specific events.
@@ -92,4 +70,15 @@ interface Inspector {
      */
     fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) = Unit
 
+    /**
+     * Called when [FormulaRuntime.run] is called. This method in combination with [onRunFinished]
+     * is a good way to measure overall formula performance.
+     */
+    fun onRunStarted(evaluate: Boolean) = Unit
+
+    /**
+     * Called when [FormulaRuntime.run] has finished evaluating and
+     * executing actions.
+     */
+    fun onRunFinished() = Unit
 }
