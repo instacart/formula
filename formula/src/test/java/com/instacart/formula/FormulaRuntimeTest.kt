@@ -37,6 +37,7 @@ import com.instacart.formula.subjects.OptionalCallbackFormula
 import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
+import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -54,6 +55,7 @@ import com.instacart.formula.subjects.UniqueListenersWithinLoop
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
+import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
@@ -276,10 +278,26 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child message with parent state change`() {
-        runtime.test(ChildMessageWithParentStateChange.formula(), Unit)
+        val inspector = CountingInspector()
+        runtime.test(ChildMessageWithParentStateChange.formula(), Unit, inspector)
             .output { child.triggerMessage() }
             .assertOutputCount(2)
             .output { assertThat(state).isEqualTo(1) }
+
+        inspector.assertRunCount(2)
+        inspector.assertEvaluationCount(3)
+    }
+
+    @Test
+    fun `immediate child transition triggers parent state change`() {
+        val formula = ParentTransitionOnChildActionStart.formula()
+        val inspector = CountingInspector()
+        runtime.test(formula, Unit, inspector)
+            .output { assertThat(this).isEqualTo(3) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Parent::class, 4)
+        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Child::class, 1)
     }
 
     @Test
@@ -730,13 +748,32 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `stream event listeners can handle at least 100k events`() {
+        val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
         val formula = EventFormula(runtime, events)
-        runtime.test(formula, Unit)
+        runtime.test(formula, Unit, inspector)
             .apply {
                 assertThat(values()).containsExactly(eventCount).inOrder()
             }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(100001)
+    }
+
+    @Test fun `child formula within multiple events on start`() {
+        val inspector = CountingInspector()
+        val eventCount = 100000
+        val events = (1..eventCount).toList()
+        val eventsFormula = EventFormula(runtime, events)
+        val parent = HasChildFormula(eventsFormula)
+
+        runtime.test(parent, Unit, inspector)
+            .output { assertThat(child).isEqualTo(100000) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(EventFormula::class, 100001)
+        inspector.assertEvaluationCount(HasChildFormula::class, 100001)
     }
 
     @Test
