@@ -61,6 +61,8 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.test.test
+import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.OnInitActionFormula
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -290,29 +292,28 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `immediate child transition triggers parent state change`() {
-        val formula = ParentTransitionOnChildActionStart.formula()
+        val formula = ParentTransitionOnChildActionStart.formula(eventNumber = 3)
         val inspector = CountingInspector()
         runtime.test(formula, Unit, inspector)
-            .output { assertThat(this).isEqualTo(3) }
+            .output { assertThat(state).isEqualTo(3) }
 
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Parent::class, 4)
-        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Child::class, 1)
+        inspector.assertEvaluationCount(HasChildFormula::class, 4)
+        inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
 
     @Test
     fun `immediate child transition triggers parent state change in nested situation`() {
-        val parentTransitionFormula = ParentTransitionOnChildActionStart.formula()
+        val parentTransitionFormula = ParentTransitionOnChildActionStart.formula(eventNumber = 3)
         // Nest it within HasChildFormula
         val formula = HasChildFormula(parentTransitionFormula)
         val inspector = CountingInspector()
         runtime.test(formula, Unit, inspector)
-            .output { assertThat(this.child).isEqualTo(3) }
+            .output { assertThat(child.state).isEqualTo(3) }
 
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(HasChildFormula::class, 4)
-        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Parent::class, 4)
-        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Child::class, 1)
+        inspector.assertEvaluationCount(HasChildFormula::class, 8)
+        inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
 
     @Test
@@ -343,13 +344,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `on action start child triggers state change in a parallel child`() {
-        val events = listOf(Unit, Unit, Unit, Unit)
-        val formula = ParallelChildFormulaFiresEventOnStart.formula(events)
+        val eventNumber = 4
+        val formula = ParallelChildFormulaFiresEventOnStart.formula(eventNumber)
         val inspector = CountingInspector()
         runtime.test(formula, Unit, inspector)
             .apply {
                 inspector.assertActionsStarted(1)
-                inspector.assertStateTransitions(ParallelChildFormulaFiresEventOnStart.FirstChild::class, 4)
+                inspector.assertStateTransitions(IncrementFormula::class, 4)
             }
             .output { assertThat(this).isEqualTo(4) }
     }
