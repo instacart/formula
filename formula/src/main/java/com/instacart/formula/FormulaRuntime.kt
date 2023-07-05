@@ -43,11 +43,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
         if (initialization) {
             manager = FormulaManagerImpl(this, implementation, input, inspector = inspector)
             forceRun()
-            hasInitialFinished = true
 
-            lastOutput?.let {
-                onOutput(it)
-            }
+            hasInitialFinished = true
+            emitOutputIfNeeded(isInitialRun = true)
         } else {
             forceRun()
         }
@@ -69,47 +67,49 @@ class FormulaRuntime<Input : Any, Output : Any>(
             effectQueue.addLast(it)
         }
 
-        run(shouldEvaluate = evaluate)
+        run(evaluate = evaluate)
     }
 
-    private fun forceRun() = run(shouldEvaluate = true)
+    private fun forceRun() = run(evaluate = true)
 
     /**
      * Performs the evaluation and execution phases.
      *
-     * @param shouldEvaluate Determines if evaluation needs to be run.
+     * @param evaluate Determines if evaluation needs to be run.
      */
-    private fun run(shouldEvaluate: Boolean) {
+    private fun run(evaluate: Boolean) {
         try {
-            val freshRun = !isExecuting
-            if (freshRun) {
-                inspector?.onRunStarted(shouldEvaluate)
-            }
-
-            val manager = checkNotNull(manager)
-            val currentInput = checkNotNull(input)
-
-            if (shouldEvaluate && !manager.terminated) {
-                evaluationPhase(manager, currentInput)
-            }
-
-            executionRequested = true
-            if (isExecuting) return
-
-            executionPhase(manager)
-
-            if (freshRun) {
-                inspector?.onRunFinished()
-            }
-
-            if (hasInitialFinished && emitOutput) {
-                emitOutput = false
-                onOutput(checkNotNull(lastOutput))
+            runFormula(evaluate)
+            if (!isExecuting) {
+                emitOutputIfNeeded(isInitialRun = false)
             }
         } catch (e: Throwable) {
             manager?.markAsTerminated()
             onError(e)
             manager?.performTerminationSideEffects()
+        }
+    }
+
+    private fun runFormula(evaluate: Boolean) {
+        val freshRun = !isExecuting
+        if (freshRun) {
+            inspector?.onRunStarted(evaluate)
+        }
+
+        val manager = checkNotNull(manager)
+        val currentInput = checkNotNull(input)
+
+        if (evaluate && !manager.terminated) {
+            evaluationPhase(manager, currentInput)
+        }
+
+        executionRequested = true
+        if (isExecuting) return
+
+        executionPhase(manager)
+
+        if (freshRun) {
+            inspector?.onRunFinished()
         }
     }
 
@@ -173,5 +173,17 @@ class FormulaRuntime<Input : Any, Output : Any>(
             }
         }
         return false
+    }
+
+    /**
+     * Emits output to the formula subscriber.
+     */
+    private fun emitOutputIfNeeded(isInitialRun: Boolean) {
+        if (isInitialRun) {
+            lastOutput?.let(onOutput)
+        } else if (hasInitialFinished && emitOutput) {
+            emitOutput = false
+            onOutput(checkNotNull(lastOutput))
+        }
     }
 }
