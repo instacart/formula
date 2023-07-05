@@ -43,7 +43,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         this.key = formula.key(input)
 
         if (initialization) {
-            manager = FormulaManagerImpl(this, implementation, input, inspector = inspector)
+            manager = FormulaManagerImpl(this, implementation, formula::class, input, inspector = inspector)
             forceRun()
             hasInitialFinished = true
 

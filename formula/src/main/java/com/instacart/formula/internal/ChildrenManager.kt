@@ -51,7 +51,7 @@ internal class ChildrenManager(
         return children
             .findOrInit(key) {
                 val implementation = formula.implementation()
-                FormulaManagerImpl(delegate, implementation, input, inspector = inspector)
+                FormulaManagerImpl(delegate, implementation, formula::class, input, inspector = inspector)
             }
             .requestAccess {
                 "There already is a child with same key: $key. Override [Formula.key] function."

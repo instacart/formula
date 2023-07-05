@@ -21,12 +21,12 @@ import kotlin.reflect.KClass
 internal class FormulaManagerImpl<Input, State, Output>(
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
+    private val type: KClass<*>,
     initialInput: Input,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
 ) : FormulaManager<Input, Output>, ManagerDelegate {
 
-    private val type = formula.type()
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -97,6 +97,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         var result: Evaluation<Output>? = null
         isEvaluating = true
+        var allEvaluationsSkipped = true
+        if (frame == null) {
+            inspector?.onFormulaStarted(type)
+        }
+
+        if (!isValidationEnabled) {
+            inspector?.onEvaluateStarted(type, state)
+        }
+
         while (result == null) {
             val lastFrame = frame
             if (lastFrame != null && executeTransitions(lastFrame.transitionID)) {
@@ -105,7 +114,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
             val transitionID = transitionID
 
-            val evaluation = evaluation(input, transitionID)
+            val (evaluation, skipped) = evaluation(input, transitionID)
+            allEvaluationsSkipped = allEvaluationsSkipped && skipped
             if (executeTransitions(transitionID)) {
                 continue
             }
@@ -115,16 +125,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
 
             result = evaluation
+            if (!isValidationEnabled) {
+                inspector?.onEvaluateFinished(type, evaluation.output, evaluated = !allEvaluationsSkipped)
+            }
         }
         isEvaluating = false
-
         return result
     }
+
+    private data class EvaluationResult<Output>(val evaluation: Evaluation<Output>, val skipped: Boolean)
 
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
-    private fun evaluation(input: Input, transitionID: Long): Evaluation<Output> {
+    private fun evaluation(input: Input, transitionID: Long): EvaluationResult<Output> {
         // TODO: assert main thread.
 
         val lastFrame = frame
@@ -132,21 +146,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
             throw ValidationException("Formula should already have run at least once before the validation mode.")
         }
 
-        if (lastFrame == null) {
-            inspector?.onFormulaStarted(type)
-        }
-
-        if (!isValidationEnabled) {
-            inspector?.onEvaluateStarted(type, state)
-        }
-
         if (lastFrame != null) {
             val prevInput = lastFrame.input
             val hasInputChanged = prevInput != input
             if (!isValidationEnabled && lastFrame.transitionID == transitionID && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
-                inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
-                return evaluation
+                return EvaluationResult(evaluation, skipped = true)
             }
 
             if (hasInputChanged) {
@@ -182,11 +187,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         childrenManager?.evaluationFinished()
 
         snapshot.running = true
-        if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(type, frame.evaluation.output, evaluated = true)
-        }
-
-        return frame.evaluation
+        return EvaluationResult(frame.evaluation, skipped = false)
     }
 
     private fun executeTransitions(transitionID: Long): Boolean {
