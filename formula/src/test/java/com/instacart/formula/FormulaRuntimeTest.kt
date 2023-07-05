@@ -37,6 +37,7 @@ import com.instacart.formula.subjects.OptionalCallbackFormula
 import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
+import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -54,11 +55,14 @@ import com.instacart.formula.subjects.UniqueListenersWithinLoop
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
+import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.test.test
+import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.OnInitActionFormula
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -276,10 +280,40 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child message with parent state change`() {
-        runtime.test(ChildMessageWithParentStateChange.formula(), Unit)
+        val inspector = CountingInspector()
+        runtime.test(ChildMessageWithParentStateChange.formula(), Unit, inspector)
             .output { child.triggerMessage() }
             .assertOutputCount(2)
             .output { assertThat(state).isEqualTo(1) }
+
+        inspector.assertRunCount(2)
+        inspector.assertEvaluationCount(3)
+    }
+
+    @Test
+    fun `immediate child transition triggers parent state change`() {
+        val formula = ParentTransitionOnChildActionStart.formula(eventNumber = 3)
+        val inspector = CountingInspector()
+        runtime.test(formula, Unit, inspector)
+            .output { assertThat(state).isEqualTo(3) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(HasChildFormula::class, 4)
+        inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
+    }
+
+    @Test
+    fun `immediate child transition triggers parent state change in nested situation`() {
+        val parentTransitionFormula = ParentTransitionOnChildActionStart.formula(eventNumber = 3)
+        // Nest it within HasChildFormula
+        val formula = HasChildFormula(parentTransitionFormula)
+        val inspector = CountingInspector()
+        runtime.test(formula, Unit, inspector)
+            .output { assertThat(child.state).isEqualTo(3) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(HasChildFormula::class, 8)
+        inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
 
     @Test
@@ -309,28 +343,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `on action start child triggers action in a parallel child`() {
-        val events = listOf(Unit, Unit, Unit, Unit)
-        val formula = ParallelChildFormulaFiresEventOnStart.formula(events)
-        var actionsStarted = 0
-        val transitions = mutableListOf<KClass<*>>()
-        val inspector = object : Inspector {
-            override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
-                actionsStarted += 1
-            }
-
-            override fun onTransition(
-                formulaType: KClass<*>,
-                result: Transition.Result<*>,
-                evaluate: Boolean
-            ) {
-                transitions.add(formulaType)
-            }
-        }
+    fun `on action start child triggers state change in a parallel child`() {
+        val eventNumber = 4
+        val formula = ParallelChildFormulaFiresEventOnStart.formula(eventNumber)
+        val inspector = CountingInspector()
         runtime.test(formula, Unit, inspector)
             .apply {
-                assertThat(actionsStarted).isEqualTo(1)
-                assertThat(transitions).hasSize(4)
+                inspector.assertActionsStarted(1)
+                inspector.assertStateTransitions(IncrementFormula::class, 4)
             }
             .output { assertThat(this).isEqualTo(4) }
     }
@@ -730,13 +750,32 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `stream event listeners can handle at least 100k events`() {
+        val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
         val formula = EventFormula(runtime, events)
-        runtime.test(formula, Unit)
+        runtime.test(formula, Unit, inspector)
             .apply {
                 assertThat(values()).containsExactly(eventCount).inOrder()
             }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(100001)
+    }
+
+    @Test fun `child formula within multiple events on start`() {
+        val inspector = CountingInspector()
+        val eventCount = 100000
+        val events = (1..eventCount).toList()
+        val eventsFormula = EventFormula(runtime, events)
+        val parent = HasChildFormula(eventsFormula)
+
+        runtime.test(parent, Unit, inspector)
+            .output { assertThat(child).isEqualTo(100000) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(EventFormula::class, 100001)
+        inspector.assertEvaluationCount(HasChildFormula::class, 100001)
     }
 
     @Test

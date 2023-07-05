@@ -21,11 +21,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
+    private val loggingType: KClass<*>,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
 ) : FormulaManager<Input, Output>, ManagerDelegate {
 
-    private val type = formula.type()
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -33,7 +33,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private val actionManager: ActionManager = ActionManager(
         manager = this,
-        formulaType = type,
+        loggingType = loggingType,
         inspector = inspector,
     )
 
@@ -47,7 +47,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     fun handleTransitionResult(result: Transition.Result<State>) {
         if (terminated) {
             // State transitions are ignored, only side effects are passed up to be executed.
-            delegate.onTransition(type, result, evaluate = false)
+            delegate.onTransition(loggingType, result, evaluate = false)
             return
         }
 
@@ -62,7 +62,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         val evaluate = frame == null || frame.transitionID != transitionID
         if (evaluate || result.effects != null) {
-            delegate.onTransition(type, result, evaluate)
+            delegate.onTransition(loggingType, result, evaluate)
         }
     }
 
@@ -82,11 +82,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         if (lastFrame == null) {
-            inspector?.onFormulaStarted(type)
+            inspector?.onFormulaStarted(loggingType)
         }
 
         if (!isValidationEnabled) {
-            inspector?.onEvaluateStarted(type, state)
+            inspector?.onEvaluateStarted(loggingType, state)
         }
 
         if (lastFrame != null) {
@@ -94,17 +94,17 @@ internal class FormulaManagerImpl<Input, State, Output>(
             val hasInputChanged = prevInput != input
             if (!isValidationEnabled && lastFrame.transitionID == transitionID && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
-                inspector?.onEvaluateFinished(type, evaluation.output, evaluated = false)
+                inspector?.onEvaluateFinished(loggingType, evaluation.output, evaluated = false)
                 return evaluation
             }
 
             if (hasInputChanged) {
                 if (isValidationEnabled) {
-                    throw ValidationException("$type - input changed during identical re-evaluation - old: $prevInput, new: $input")
+                    throw ValidationException("$loggingType - input changed during identical re-evaluation - old: $prevInput, new: $input")
                 }
                 state = formula.onInputChanged(prevInput, input, state)
 
-                inspector?.onInputChanged(type, prevInput, input)
+                inspector?.onInputChanged(loggingType, prevInput, input)
             }
         }
 
@@ -114,13 +114,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isValidationEnabled) {
             val oldOutput = lastFrame?.evaluation?.output
             if (oldOutput != result.output) {
-                throw ValidationException("$type - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+                throw ValidationException("$loggingType - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
             }
 
             val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
             val currentActionKeys = result.actions.map { it.key }
             if (lastActionKeys != currentActionKeys) {
-                throw ValidationException("$type - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
+                throw ValidationException("$loggingType - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
             }
         }
 
@@ -133,7 +133,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         snapshot.running = true
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(type, frame.evaluation.output, evaluated = true)
+            inspector?.onEvaluateFinished(loggingType, frame.evaluation.output, evaluated = true)
         }
         return result
     }
@@ -177,7 +177,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         actionManager.terminate()
         listeners.disableAll()
 
-        inspector?.onFormulaFinished(type)
+        inspector?.onFormulaFinished(loggingType)
     }
 
     override fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) {

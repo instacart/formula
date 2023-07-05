@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
  */
 internal class ActionManager(
     private val manager: FormulaManagerImpl<*, *, *>,
-    private val formulaType: KClass<*>,
+    private val loggingType: KClass<*>,
     private val inspector: Inspector?,
 ) {
     companion object {
@@ -74,7 +74,7 @@ internal class ActionManager(
             iterator.remove()
 
             if (!isRunning(action)) {
-                inspector?.onActionStarted(formulaType, action)
+                inspector?.onActionStarted(loggingType, action)
 
                 getOrInitRunningActions().add(action)
                 action.start()
@@ -142,7 +142,7 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        inspector?.onActionFinished(formulaType, action)
+        inspector?.onActionFinished(loggingType, action)
         action.tearDown()
         action.listener = NO_OP
     }
