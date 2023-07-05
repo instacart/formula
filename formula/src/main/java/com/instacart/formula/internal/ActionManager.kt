@@ -52,7 +52,7 @@ internal class ActionManager(
                 running?.remove(action)
                 finishAction(action)
 
-                if (manager.hasTransitioned(transitionID) || manager.hasPendingTransitions()) {
+                if (!manager.canUpdatesContinue(transitionID)) {
                     return true
                 }
             }
@@ -79,7 +79,7 @@ internal class ActionManager(
                 getOrInitRunningActions().add(action)
                 action.start()
 
-                if (manager.hasTransitioned(transitionID) || manager.hasPendingTransitions()) {
+                if (!manager.canUpdatesContinue(transitionID)) {
                     return true
                 }
             }

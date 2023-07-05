@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.Event
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
@@ -24,8 +23,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
-    private var executionRequested: Boolean = false
-
     private val effectQueue = LinkedList<Effects>()
 
     private var input: Input? = null
@@ -44,12 +41,12 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
         if (initialization) {
             manager = FormulaManagerImpl(this, implementation, input, loggingType = formula::class, inspector = inspector)
-            forceRun()
+            run()
 
             hasInitialFinished = true
             emitOutputIfNeeded(isInitialRun = true)
         } else {
-            forceRun()
+            run()
         }
     }
 
@@ -60,34 +57,35 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    override fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) {
+    override fun onUpdate(formulaType: KClass<*>, effects: Effects?, evaluate: Boolean) {
         threadChecker.check("Only thread that created it can trigger transitions.")
 
-        inspector?.onTransition(formulaType, result, evaluate)
-
-        result.effects?.let {
-            effectQueue.addLast(it)
+        if (evaluate) {
+            effects?.let {
+                effectQueue.addLast(it)
+            }
+            run()
+        } else {
+            if (isExecuting || isEvaluating) {
+                // Add to the queue, it will be picked up by the loop
+                effects?.let {
+                    effectQueue.addLast(it)
+                }
+            } else {
+                // We can just execute effects.
+                effects?.execute()
+            }
         }
-
-        run(evaluate = evaluate)
     }
-
-    override fun onPostponedTransition(event: Event) {
-        event.dispatch()
-    }
-
-    private fun forceRun() = run(evaluate = true)
 
     /**
      * Performs the evaluation and execution phases.
-     *
-     * @param evaluate Determines if evaluation needs to be run.
      */
-    private fun run(evaluate: Boolean) {
+    private fun run() {
         if (isEvaluating) return
 
         try {
-            runFormula(evaluate)
+            runFormula()
             emitOutputIfNeeded(isInitialRun = false)
         } catch (e: Throwable) {
             isEvaluating = false
@@ -98,27 +96,22 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    private fun runFormula(evaluate: Boolean) {
+    private fun runFormula() {
         val freshRun = !isExecuting
         if (freshRun) {
-            inspector?.onRunStarted(evaluate)
+            inspector?.onRunStarted(true)
         }
 
         val manager = checkNotNull(manager)
         val currentInput = checkNotNull(input)
 
-        if (evaluate && !manager.terminated) {
+        if (!manager.terminated) {
             isEvaluating = true
             evaluationPhase(manager, currentInput)
             isEvaluating = false
         }
 
-        if (evaluate || effectQueue.isNotEmpty()) {
-            executionRequested = true
-        }
-
         if (isExecuting) return
-
         executeEffects()
 
         if (freshRun) {
@@ -130,7 +123,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Runs formula evaluation.
      */
     private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        val result = manager.evaluate(currentInput)
+        val result = manager.run(currentInput)
         lastOutput = result.output
         emitOutput = true
 
@@ -141,7 +134,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 // We run evaluation again in validation mode which ensures validates
                 // that inputs and outputs are stable and do not break equality across
                 // identical runs.
-                manager.evaluate(currentInput)
+                manager.run(currentInput)
             } finally {
                 manager.setValidationRun(false)
             }
@@ -156,10 +149,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         // Walk through the effect queue and execute them
         while (effectQueue.isNotEmpty()) {
             val effects = effectQueue.pollFirst()
-            if (effects != null) {
-                effects.execute()
-                inspector?.onEffectExecuted()
-            }
+            effects.execute()
         }
         isExecuting = false
     }

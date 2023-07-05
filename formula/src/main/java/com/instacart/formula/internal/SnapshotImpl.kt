@@ -97,7 +97,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
             return
         }
 
-        if (!terminated && delegate.hasTransitioned(transitionID)) {
+        if (!terminated && delegate.isEvaluationNeeded(transitionID)) {
             // We have already transitioned, this should not happen.
             throw IllegalStateException("Transition already happened. This is using old event listener: $transition. Transition: $transitionID != ${delegate.transitionID}")
         }

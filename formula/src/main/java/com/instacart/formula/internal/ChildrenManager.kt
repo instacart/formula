@@ -25,7 +25,7 @@ internal class ChildrenManager(
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
-        return delegate.hasTransitioned(transitionID) || delegate.hasPendingTransitions()
+        return !delegate.canUpdatesContinue(transitionID)
     }
 
     fun markAsTerminated() {

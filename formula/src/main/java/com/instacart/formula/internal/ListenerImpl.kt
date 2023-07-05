@@ -1,5 +1,6 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.Effects
 import com.instacart.formula.Listener
 import com.instacart.formula.Transition
 
@@ -11,16 +12,15 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
 
     internal var manager: FormulaManagerImpl<Input, State, *>? = null
     internal var snapshotImpl: SnapshotImpl<Input, State>? = null
-    internal var transition: Transition<Input, State, EventT>? = null
+
+    internal lateinit var transition: Transition<Input, State, EventT>
 
     override fun invoke(event: EventT) {
         val manager = manager ?: return
-        val formulaEvent = Event {
+        val formulaEvent = Effects {
             snapshotImpl?.let { snapshot ->
-                transition?.let { transition ->
-                    val result = transition.toResult(snapshot, event)
-                    snapshot.dispatch(result)
-                }
+                val result = transition.toResult(snapshot, event)
+                snapshot.dispatch(result)
             }
         }
         manager.onEvent(formulaEvent)
@@ -30,7 +30,6 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
     fun disable() {
         manager = null
         snapshotImpl = null
-        transition = null
     }
 }
 

@@ -11,10 +11,13 @@ interface FormulaManager<Input, Output> {
     fun setValidationRun(isValidationEnabled: Boolean)
 
     /**
-     * Creates the current [Output] and prepares the next frame that will need to be processed.
+     * Calls [Formula.evaluate] and after evaluation, it will process the new state
+     * by cleaning up detached child formulas, terminating old actions, and then starting
+     * new ones. If at any given point there is a state change, it will run [Formula.evaluate].
+     *
+     * It will handle formula state changes internally and return the last [Output].
      */
-    fun evaluate(input: Input): Evaluation<Output>
-
+    fun run(input: Input): Evaluation<Output>
 
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,

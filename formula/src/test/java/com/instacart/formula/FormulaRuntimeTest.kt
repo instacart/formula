@@ -75,7 +75,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
 class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
@@ -316,7 +315,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { assertThat(child.state).isEqualTo(3) }
 
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(HasChildFormula::class, 8)
+        inspector.assertEvaluationCount(HasChildFormula::class, 5)
         inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
 
@@ -821,7 +820,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         inspector.assertRunCount(1)
         inspector.assertEvaluationCount(EventFormula::class, 100001)
-        inspector.assertEvaluationCount(HasChildFormula::class, 100001)
+        inspector.assertEvaluationCount(HasChildFormula::class, 1)
     }
 
     @Test
@@ -1130,7 +1129,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             assertThat(this).isEqualTo(100)
         }
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(5150)
+        inspector.assertEvaluationCount(200)
     }
 
     @Test
@@ -1141,7 +1140,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             assertThat(this).isEqualTo(250)
         }
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(31625)
+        inspector.assertEvaluationCount(500)
     }
 
     @Ignore("stack overflows when there are 500 nested child formulas")

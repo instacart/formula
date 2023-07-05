@@ -36,14 +36,8 @@ class TestInspector : Inspector {
         events.add("action-finished: ${formulaType.qualifiedName}")
     }
 
-    override fun onTransition(
-        formulaType: KClass<*>,
-        result: Transition.Result<*>,
-        evaluate: Boolean
-    ) {
-        if (result is Transition.Result.Stateful) {
-            events.add("state-changed: ${formulaType.qualifiedName}")
-        }
+    override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
+        events.add("state-changed: ${formulaType.qualifiedName}")
     }
 
     override fun onFormulaFinished(formulaType: KClass<*>) {
