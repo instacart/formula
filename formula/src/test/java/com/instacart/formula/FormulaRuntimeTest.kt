@@ -301,6 +301,21 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
+    fun `immediate child transition triggers parent state change in nested situation`() {
+        val parentTransitionFormula = ParentTransitionOnChildActionStart.formula()
+        // Nest it within HasChildFormula
+        val formula = HasChildFormula(parentTransitionFormula)
+        val inspector = CountingInspector()
+        runtime.test(formula, Unit, inspector)
+            .output { assertThat(this.child).isEqualTo(3) }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(HasChildFormula::class, 4)
+        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Parent::class, 4)
+        inspector.assertEvaluationCount(ParentTransitionOnChildActionStart.Child::class, 1)
+    }
+
+    @Test
     fun `child action triggers parent event on start`() {
         val increments = listOf(1, 1, 1, 1, 1, 1)
         runtime.test(
@@ -327,28 +342,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
-    fun `on action start child triggers action in a parallel child`() {
+    fun `on action start child triggers state change in a parallel child`() {
         val events = listOf(Unit, Unit, Unit, Unit)
         val formula = ParallelChildFormulaFiresEventOnStart.formula(events)
-        var actionsStarted = 0
-        val transitions = mutableListOf<KClass<*>>()
-        val inspector = object : Inspector {
-            override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
-                actionsStarted += 1
-            }
-
-            override fun onTransition(
-                formulaType: KClass<*>,
-                result: Transition.Result<*>,
-                evaluate: Boolean
-            ) {
-                transitions.add(formulaType)
-            }
-        }
+        val inspector = CountingInspector()
         runtime.test(formula, Unit, inspector)
             .apply {
-                assertThat(actionsStarted).isEqualTo(1)
-                assertThat(transitions).hasSize(4)
+                inspector.assertActionsStarted(1)
+                inspector.assertStateTransitions(ParallelChildFormulaFiresEventOnStart.FirstChild::class, 4)
             }
             .output { assertThat(this).isEqualTo(4) }
     }
