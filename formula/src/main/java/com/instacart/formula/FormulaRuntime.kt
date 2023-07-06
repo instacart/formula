@@ -55,7 +55,17 @@ class FormulaRuntime<Input : Any, Output : Any>(
     fun terminate() {
         manager?.apply {
             markAsTerminated()
-            performTerminationSideEffects()
+
+            /**
+             * The way termination side-effects are performed:
+             * - If we are not running, let's perform them here
+             * - If we are running, runFormula() will handle them
+             *
+             * This way, we let runFormula() exit out before we terminate everything.
+             */
+            if (!isRunning) {
+                performTerminationSideEffects()
+            }
         }
     }
 
@@ -66,7 +76,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     override fun requestEvaluation() {
         threadChecker.check("Only thread that created it can request evaluation.")
-
         run()
     }
 
@@ -77,8 +86,25 @@ class FormulaRuntime<Input : Any, Output : Any>(
         if (isRunning) return
 
         try {
-            runFormula()
-            emitOutputIfNeeded(isInitialRun = false)
+            val manager = checkNotNull(manager)
+            val currentInput = checkNotNull(input)
+            if (!manager.terminated) {
+                isRunning = true
+                inspector?.onRunStarted(true)
+                runFormula(manager, currentInput)
+                isRunning = false
+                inspector?.onRunFinished()
+
+                /**
+                 * If termination happened during runFormula() execution, let's perform
+                 * termination side-effects here.
+                 */
+                if (manager.terminated) {
+                    manager.performTerminationSideEffects()
+                }
+
+                emitOutputIfNeeded(isInitialRun = false)
+            }
         } catch (e: Throwable) {
             isRunning = false
 
@@ -88,30 +114,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    private fun runFormula() {
-        val freshRun = !isRunning
-        if (freshRun) {
-            inspector?.onRunStarted(true)
-        }
-
-        val manager = checkNotNull(manager)
-        val currentInput = checkNotNull(input)
-
-        if (!manager.terminated) {
-            isRunning = true
-            evaluationPhase(manager, currentInput)
-            isRunning = false
-        }
-
-        if (freshRun) {
-            inspector?.onRunFinished()
-        }
-    }
-
     /**
      * Runs formula evaluation.
      */
-    private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
+    private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
         val result = manager.run(currentInput)
         lastOutput = result.output
         emitOutput = true

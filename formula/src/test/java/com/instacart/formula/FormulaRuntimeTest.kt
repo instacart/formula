@@ -40,6 +40,7 @@ import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
 import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
+import com.instacart.formula.subjects.PendingActionFormulaTerminatedOnActionInit
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -936,6 +937,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
+    }
+
+    @Test
+    fun `terminate formula with multiple pending actions on first action init`() {
+        val robot = PendingActionFormulaTerminatedOnActionInit(runtime)
+        // Starts the formula
+        robot.test.input(Unit)
+
+        // Single output should be emitted
+        robot.assertActionsStarted(1)
+
+        // No output is emitted because we unsubscribe before doing so
+        robot.test.assertOutputCount(0)
     }
 
     @Test

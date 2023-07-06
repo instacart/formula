@@ -52,6 +52,10 @@ internal class ActionManager(
                 running?.remove(action)
                 finishAction(action)
 
+                if (manager.isTerminated()) {
+                    return false
+                }
+
                 if (!manager.canUpdatesContinue(transitionID)) {
                     return true
                 }
@@ -78,6 +82,10 @@ internal class ActionManager(
 
                 getOrInitRunningActions().add(action)
                 action.start()
+
+                if (manager.isTerminated()) {
+                    return false
+                }
 
                 if (!manager.canUpdatesContinue(transitionID)) {
                     return true

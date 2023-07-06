@@ -67,6 +67,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return transitionID != id
     }
 
+    fun isTerminated(): Boolean {
+        return terminated
+    }
+
     fun handleTransitionResult(result: Transition.Result<State>) {
         val frame = checkNotNull(frame) {
             "Transition cannot happen if frame is null"
@@ -218,6 +222,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
     ): ChildOutput {
         val childrenManager = getOrInitChildrenManager()
         val manager = childrenManager.findOrInitChild(key, formula, input)
+
+        // If termination happens while running, we might still be initializing child formulas. To
+        // ensure correct behavior, we mark each requested child manager as terminated to avoid
+        // starting new actions.
+        if (isTerminated()) {
+            manager.markAsTerminated()
+        }
         manager.setValidationRun(isValidationEnabled)
         return manager.run(input).output
     }
@@ -265,15 +276,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return true
         }
 
-        if (childrenManager?.terminateChildren(transitionID) == true) {
+        if (!terminated && childrenManager?.terminateChildren(transitionID) == true) {
             return true
         }
 
-        if (actionManager.terminateOld(transitionID)) {
+        if (!terminated && actionManager.terminateOld(transitionID)) {
             return true
         }
 
-        if (actionManager.startNew(transitionID)) {
+        if (!terminated && actionManager.startNew(transitionID)) {
             return true
         }
 
