@@ -39,21 +39,28 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     var transitionID: Long = 0
     var terminated = false
-    private var isRunning: Boolean = false
-    private val eventQueue = LinkedList<Effects>()
 
-    fun onEvent(event: Effects) {
-        if (terminated) {
-            event.execute()
-        } else if (isRunning) {
-            eventQueue.addLast(event)
-        } else {
-            delegate.onUpdate(loggingType, event, evaluate = false)
-        }
-    }
+    /**
+     * Determines if we are executing within [run] block. Enables optimizations
+     * such as performing [DeferredTransition] inline.
+     */
+    private var isRunning: Boolean = false
+
+    /**
+     * Pending transition queue which will be populated and executed within [run] function
+     * while [isRunning] is true. If [isRunning] is false, we will pass the transitions
+     * to [ManagerDelegate].
+     */
+    private val transitionQueue = LinkedList<DeferredTransition<*, *, *>>()
+
+    /**
+     * A queue for transition [Effects]. It will be executed within [run] block, after
+     * evaluation and action updates.
+     */
+    private val transitionEffectQueue = LinkedList<Effects>()
 
     fun canUpdatesContinue(id: Long): Boolean {
-        return !isEvaluationNeeded(id) && eventQueue.isEmpty()
+        return !isEvaluationNeeded(id) && transitionQueue.isEmpty()
     }
 
     fun isEvaluationNeeded(id: Long): Boolean {
@@ -61,14 +68,17 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     fun handleTransitionResult(result: Transition.Result<State>) {
+        val frame = checkNotNull(frame) {
+            "Transition cannot happen if frame is null"
+        }
+
         val effects = result.effects
         if (terminated) {
-            // State transitions are ignored, only side effects are passed up to be executed.
-            delegate.onUpdate(loggingType, effects, evaluate = false)
+            // State transitions are ignored, let's just execute side-effects.
+            effects?.execute()
             return
         }
 
-        val frame = this.frame
         if (result is Transition.Result.Stateful) {
             val old = state
             if (state != result.state) {
@@ -80,9 +90,19 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val evaluate = !isRunning && frame?.transitionID != transitionID
-        if (evaluate || effects != null) {
-            delegate.onUpdate(loggingType, effects, evaluate)
+        if (isRunning) {
+            if (effects != null) {
+                transitionEffectQueue.addLast(effects)
+            }
+        } else {
+            if (isEvaluationNeeded(frame.transitionID)) {
+                if (effects != null) {
+                    transitionEffectQueue.addLast(effects)
+                }
+                delegate.requestEvaluation()
+            } else {
+                effects?.execute()
+            }
         }
     }
 
@@ -91,7 +111,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     /**
-     * Creates the current [Output] and prepares the next frame that will need to be processed.
+     * Within [run], we run through formula [evaluation] and [postEvaluation] until we are idle
+     * and can emit the last produced [Output].
      */
     override fun run(input: Input): Evaluation<Output> {
         // TODO: assert main thread.
@@ -190,40 +211,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return frame.evaluation
     }
 
-    /**
-     * Called after [evaluate] to remove detached children, stop detached actions and start
-     * new ones. It will start with child formulas first and then perform execution it self.
-     *
-     * @return True if we need to re-evaluate.
-     */
-    private fun postEvaluation(transitionID: Long): Boolean {
-        if (handleEvents(transitionID)) {
-            return true
-        }
-
-        if (childrenManager?.terminateChildren(transitionID) == true) {
-            return true
-        }
-
-        if (actionManager.terminateOld(transitionID)) {
-            return true
-        }
-
-        return actionManager.startNew(transitionID)
-    }
-
-    private fun handleEvents(transitionID: Long): Boolean {
-        while (eventQueue.isNotEmpty()) {
-            val event = eventQueue.pollFirst()
-            event.execute()
-            if (isEvaluationNeeded(transitionID)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
     fun <ChildInput, ChildOutput> child(
         key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
@@ -249,17 +236,81 @@ internal class FormulaManagerImpl<Input, State, Output>(
         inspector?.onFormulaFinished(loggingType)
     }
 
-    override fun onUpdate(formulaType: KClass<*>, effects: Effects?, evaluate: Boolean) {
-        if (evaluate) {
-            transitionID += 1
-        }
-        if (isRunning) {
-            if (effects != null) {
-                eventQueue.addLast(effects)
-            }
+    override fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
+        if (terminated) {
+            transition.execute()
+        } else if (isRunning) {
+            transitionQueue.addLast(transition)
         } else {
-            delegate.onUpdate(formulaType, effects, evaluate)
+            delegate.onPendingTransition(transition)
         }
+    }
+
+    override fun requestEvaluation() {
+        transitionID += 1
+
+        if (!isRunning) {
+            delegate.requestEvaluation()
+        }
+    }
+
+    /**
+     * Called after [evaluate] to remove detached children, stop detached actions and start
+     * new ones. It will start with child formulas first and then perform execution it self.
+     *
+     * @return True if we need to re-evaluate.
+     */
+    private fun postEvaluation(transitionID: Long): Boolean {
+        if (handleTransitionQueue(transitionID)) {
+            return true
+        }
+
+        if (childrenManager?.terminateChildren(transitionID) == true) {
+            return true
+        }
+
+        if (actionManager.terminateOld(transitionID)) {
+            return true
+        }
+
+        if (actionManager.startNew(transitionID)) {
+            return true
+        }
+
+        return handleSideEffectQueue(transitionID)
+    }
+
+    /**
+     * Iterates through pending deferred transitions.
+     *
+     * @return True if formula evaluation needs to run again.
+     */
+    private fun handleTransitionQueue(transitionID: Long): Boolean {
+        while (transitionQueue.isNotEmpty()) {
+            val event = transitionQueue.pollFirst()
+            event.execute()
+            if (isEvaluationNeeded(transitionID)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Iterates through pending transition side-effects.
+     *
+     * @return True if formula evaluation needs to run again.
+     */
+    private fun handleSideEffectQueue(transitionID: Long): Boolean {
+        while (transitionEffectQueue.isNotEmpty()) {
+            val effect = transitionEffectQueue.pollFirst()
+            effect.execute()
+            if (!canUpdatesContinue(transitionID)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun getOrInitChildrenManager(): ChildrenManager {

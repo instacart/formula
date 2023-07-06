@@ -1,13 +1,20 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Effects
-import kotlin.reflect.KClass
-
-interface ManagerDelegate {
+/**
+ * Used by [FormulaManagerImpl] to delegate and request certain actions when it
+ * cannot handle them internally.
+ */
+internal interface ManagerDelegate {
 
     /**
-     * Called when there is a change within a formula such as re-evaluation and/or
-     * effects that need to be executed.
+     * When [FormulaManagerImpl] is not currently running and needs to be evaluated again, it
+     * will request the parent delegate to trigger a new evaluation run.
      */
-    fun onUpdate(formulaType: KClass<*>, effects: Effects?, evaluate: Boolean)
+    fun requestEvaluation()
+
+    /**
+     * When [FormulaManagerImpl] is not terminated nor running, it will pass the transition
+     * to the parent delegate to handle.
+     */
+    fun onPendingTransition(transition: DeferredTransition<*, *, *>)
 }

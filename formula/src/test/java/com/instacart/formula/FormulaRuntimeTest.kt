@@ -379,7 +379,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         inspector.assertRunCount(1)
         inspector.assertEvaluationCount(ActionDelegateFormula::class, 2)
-        inspector.assertEvaluationCount(HasChildFormula::class, 3)
+        inspector.assertEvaluationCount(HasChildFormula::class, 2)
     }
 
     @Test

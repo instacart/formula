@@ -88,21 +88,22 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         )
     }
 
-    fun dispatch(transition: Transition.Result<State>) {
+    fun <Event> dispatch(transition: Transition<Input, State, Event>, event: Event) {
         if (!running) {
             throw IllegalStateException("Transitions are not allowed during evaluation")
         }
 
-        if (TransitionUtils.isEmpty(transition)) {
+        if (!terminated && delegate.isEvaluationNeeded(transitionID)) {
+            // We have already transitioned, this should not happen.
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $transitionID != ${delegate.transitionID}")
+        }
+
+        val result = transition.toResult(this, event)
+        if (TransitionUtils.isEmpty(result)) {
             return
         }
 
-        if (!terminated && delegate.isEvaluationNeeded(transitionID)) {
-            // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old event listener: $transition. Transition: $transitionID != ${delegate.transitionID}")
-        }
-
-        delegate.handleTransitionResult(transition)
+        delegate.handleTransitionResult(result)
     }
 
     private fun ensureNotRunning() {

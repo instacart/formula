@@ -1,11 +1,10 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.DeferredTransition
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.ThreadChecker
-import java.util.LinkedList
-import kotlin.reflect.KClass
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
@@ -23,12 +22,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
-    private val effectQueue = LinkedList<Effects>()
 
     private var input: Input? = null
     private var key: Any? = null
-    private var isEvaluating: Boolean = false
-    private var isExecuting: Boolean = false
+
+    /**
+     * Determines if we are executing within [runFormula] block. It prevents to
+     * enter [runFormula] block when we are already within it.
+     */
+    private var isRunning: Boolean = false
 
     fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == formula.key(input)
@@ -57,38 +59,28 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    override fun onUpdate(formulaType: KClass<*>, effects: Effects?, evaluate: Boolean) {
+    override fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
         threadChecker.check("Only thread that created it can trigger transitions.")
+        transition.execute()
+    }
 
-        if (evaluate) {
-            effects?.let {
-                effectQueue.addLast(it)
-            }
-            run()
-        } else {
-            if (isExecuting || isEvaluating) {
-                // Add to the queue, it will be picked up by the loop
-                effects?.let {
-                    effectQueue.addLast(it)
-                }
-            } else {
-                // We can just execute effects.
-                effects?.execute()
-            }
-        }
+    override fun requestEvaluation() {
+        threadChecker.check("Only thread that created it can request evaluation.")
+
+        run()
     }
 
     /**
      * Performs the evaluation and execution phases.
      */
     private fun run() {
-        if (isEvaluating) return
+        if (isRunning) return
 
         try {
             runFormula()
             emitOutputIfNeeded(isInitialRun = false)
         } catch (e: Throwable) {
-            isEvaluating = false
+            isRunning = false
 
             manager?.markAsTerminated()
             onError(e)
@@ -97,7 +89,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     private fun runFormula() {
-        val freshRun = !isExecuting
+        val freshRun = !isRunning
         if (freshRun) {
             inspector?.onRunStarted(true)
         }
@@ -106,13 +98,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         val currentInput = checkNotNull(input)
 
         if (!manager.terminated) {
-            isEvaluating = true
+            isRunning = true
             evaluationPhase(manager, currentInput)
-            isEvaluating = false
+            isRunning = false
         }
-
-        if (isExecuting) return
-        executeEffects()
 
         if (freshRun) {
             inspector?.onRunFinished()
@@ -139,19 +128,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 manager.setValidationRun(false)
             }
         }
-    }
-
-    /**
-     * Executes effects from the [effectQueue].
-     */
-    private fun executeEffects() {
-        isExecuting = true
-        // Walk through the effect queue and execute them
-        while (effectQueue.isNotEmpty()) {
-            val effects = effectQueue.pollFirst()
-            effects.execute()
-        }
-        isExecuting = false
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Effects
 import com.instacart.formula.Listener
 import com.instacart.formula.Transition
 
@@ -16,15 +15,11 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
     internal lateinit var transition: Transition<Input, State, EventT>
 
     override fun invoke(event: EventT) {
-        val manager = manager ?: return
-        val formulaEvent = Effects {
-            snapshotImpl?.let { snapshot ->
-                val result = transition.toResult(snapshot, event)
-                snapshot.dispatch(result)
-            }
-        }
-        manager.onEvent(formulaEvent)
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
+        val manager = manager ?: return
+
+        val deferredTransition = DeferredTransition(this, transition, event)
+        manager.onPendingTransition(deferredTransition)
     }
 
     fun disable() {
