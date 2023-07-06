@@ -14,6 +14,8 @@ import com.instacart.formula.subjects.ChildRemovedOnMessage
 import com.instacart.formula.subjects.ChildStateResetAfterToggle
 import com.instacart.formula.subjects.ChildStreamEvents
 import com.instacart.formula.subjects.ChildTransitionAfterNoEvaluationPass
+import com.instacart.formula.subjects.CombinedParentAndChildStateChange
+import com.instacart.formula.subjects.CombinedParentAndChildStateChangeOnEvent
 import com.instacart.formula.subjects.DelegateFormula
 import com.instacart.formula.subjects.DuplicateListenerKeysHandledByIndexing
 import com.instacart.formula.subjects.DynamicParentFormula
@@ -61,7 +63,9 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.test.test
+import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
@@ -364,10 +368,42 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
+    @Test
+    fun `child start action triggers self and parent state changes`() {
+        val inspector = CountingInspector()
+        val formula = CombinedParentAndChildStateChange.formula()
+        runtime.test(formula, Unit, inspector)
+            .output {
+                assertThat(state).isEqualTo(1)
+                assertThat(child).isEqualTo(1)
+            }
+
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(ActionDelegateFormula::class, 2)
+        inspector.assertEvaluationCount(HasChildFormula::class, 3)
+    }
+
+    @Test
+    fun `child event triggers self and parent state changes`() {
+        val inspector = CountingInspector()
+        val formula = CombinedParentAndChildStateChangeOnEvent.formula()
+        runtime.test(formula, Unit, inspector)
+            .output { child.onEvent() }
+            .output {
+                assertThat(state).isEqualTo(1)
+                assertThat(child.state).isEqualTo(1)
+            }
+
+        inspector.assertRunCount(2)
+        inspector.assertEvaluationCount(OnEventFormula::class, 2)
+        inspector.assertEvaluationCount(HasChildFormula::class, 3)
+    }
+
     @Test fun `transition effect queue maintains FIFO order when starting a new stream during a transition`() {
+        val inspector = CountingInspector()
         val onEvent = TestEventCallback<EffectOrderFormula.Event>()
         val initialInput = EffectOrderFormula.Input(onEvent = onEvent)
-        runtime.test(EffectOrderFormula(), initialInput)
+        runtime.test(EffectOrderFormula(), initialInput, inspector)
             .output { triggerEvent() }
             .output { triggerEvent() }
 
@@ -378,6 +414,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             EffectOrderFormula.Event(4)
         )
         assertThat(onEvent.values()).isEqualTo(expected)
+
+        inspector.assertRunCount(3)
+        inspector.assertEvaluationCount(5)
     }
 
     @Test
@@ -623,8 +662,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `action runAgain`() {
+        val inspector = CountingInspector()
         runtime
-            .test(RunAgainActionFormula(), Unit)
+            .test(RunAgainActionFormula(), Unit, inspector)
             .output {
                 assertThat(actionExecuted).isEqualTo(1)
                 assertThat(nullableActionExecuted).isEqualTo(0)
@@ -651,7 +691,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(customActionExecuted).isEqualTo(2)
             }
 
-        RunAgainActionFormula().test()
+        inspector.assertEvaluationCount(14)
     }
 
     @Test
@@ -735,18 +775,24 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val events = listOf("a", "b")
         val formula = EventFormula(runtime, events)
 
+        val inspector = CountingInspector()
         val expectedStates = listOf(1, 2)
-        runtime.test(formula, Unit).apply {
+        runtime.test(formula, Unit, inspector).apply {
             assertThat(formula.capturedStates()).isEqualTo(expectedStates)
         }
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(3)
     }
 
     @Test fun `stream events are captured in order`() {
+        val inspector = CountingInspector()
         val events = listOf("first", "second", "third", "third")
         val formula = EventFormula(runtime, events)
-        runtime.test(formula, Unit).apply {
+        runtime.test(formula, Unit, inspector).apply {
             assertThat(formula.capturedEvents()).isEqualTo(events)
         }
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(5)
     }
 
     @Test fun `stream event listeners can handle at least 100k events`() {
@@ -1078,27 +1124,36 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `initialize 100 levels nested formula`() {
+        val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(100)
-        runtime.test(formula, Unit).output {
+        runtime.test(formula, Unit, inspector).output {
             assertThat(this).isEqualTo(100)
         }
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(5150)
     }
 
     @Test
     fun `initialize 250 levels nested formula`() {
+        val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(250)
-        runtime.test(formula, Unit).output {
+        runtime.test(formula, Unit, inspector).output {
             assertThat(this).isEqualTo(250)
         }
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(31625)
     }
 
     @Ignore("stack overflows when there are 500 nested child formulas")
     @Test
     fun `initialize 500 levels nested formula`() {
+        val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(500)
-        runtime.test(formula, Unit).output {
+        runtime.test(formula, Unit, inspector).output {
             assertThat(this).isEqualTo(500)
         }
+        inspector.assertRunCount(1)
+        inspector.assertEvaluationCount(1000)
     }
 
     @Test
@@ -1150,13 +1205,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
             "formula-run-finished",
-            "transition: com.instacart.formula.subjects.StartStopFormula",
+            "state-changed: com.instacart.formula.subjects.StartStopFormula",
             "formula-run-started",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
             "action-started: com.instacart.formula.subjects.StartStopFormula",
             "formula-run-finished",
-            "transition: com.instacart.formula.subjects.StartStopFormula",
+            "state-changed: com.instacart.formula.subjects.StartStopFormula",
             "formula-run-started",
             "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
             "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
