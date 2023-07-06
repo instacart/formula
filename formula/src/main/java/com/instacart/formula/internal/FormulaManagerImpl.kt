@@ -72,10 +72,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     fun handleTransitionResult(result: Transition.Result<State>) {
-        val frame = checkNotNull(frame) {
-            "Transition cannot happen if frame is null"
-        }
-
         val effects = result.effects
         if (terminated) {
             // State transitions are ignored, let's just execute side-effects.
@@ -99,7 +95,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 transitionEffectQueue.addLast(effects)
             }
         } else {
-            if (isEvaluationNeeded(frame.transitionID)) {
+            val lastFrame = checkNotNull(frame) { "Transition cannot happen if frame is null" }
+            if (isEvaluationNeeded(lastFrame.transitionID)) {
                 if (effects != null) {
                     transitionEffectQueue.addLast(effects)
                 }
@@ -200,19 +197,19 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val frame = Frame(snapshot, result, transitionID)
-        this.frame = frame
+        val newFrame = Frame(snapshot, result, transitionID)
+        this.frame = newFrame
 
-        actionManager.onNewFrame(frame.evaluation.actions)
+        actionManager.onNewFrame(newFrame.evaluation.actions)
         listeners.evaluationFinished()
         childrenManager?.evaluationFinished()
 
         snapshot.running = true
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(loggingType, frame.evaluation.output, evaluated = true)
+            inspector?.onEvaluateFinished(loggingType, newFrame.evaluation.output, evaluated = true)
         }
 
-        return frame.evaluation
+        return newFrame.evaluation
     }
 
     fun <ChildInput, ChildOutput> child(

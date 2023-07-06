@@ -32,6 +32,12 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private var isRunning: Boolean = false
 
+    /**
+     * When we are within the [run] block, inputId allows us to notice when input has changed
+     * and to re-run when that happens.
+     */
+    private var inputId: Int = 0
+
     fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == formula.key(input)
     }
@@ -48,6 +54,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             hasInitialFinished = true
             emitOutputIfNeeded(isInitialRun = true)
         } else {
+            inputId += 1
             run()
         }
     }
@@ -87,22 +94,36 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
         try {
             val manager = checkNotNull(manager)
-            val currentInput = checkNotNull(input)
-            if (!manager.terminated) {
-                isRunning = true
-                inspector?.onRunStarted(true)
-                runFormula(manager, currentInput)
-                isRunning = false
-                inspector?.onRunFinished()
 
-                /**
-                 * If termination happened during runFormula() execution, let's perform
-                 * termination side-effects here.
-                 */
-                if (manager.terminated) {
-                    manager.performTerminationSideEffects()
+            var run = true
+            while (run) {
+                val localInputId = inputId
+                if (!manager.terminated) {
+                    isRunning = true
+                    inspector?.onRunStarted(true)
+
+                    val currentInput = checkNotNull(input)
+                    runFormula(manager, currentInput)
+                    isRunning = false
+
+                    inspector?.onRunFinished()
+
+                    /**
+                     * If termination happened during runFormula() execution, let's perform
+                     * termination side-effects here.
+                     */
+                    if (manager.terminated) {
+                        run = false
+                        manager.performTerminationSideEffects()
+                    } else {
+                        run = localInputId != inputId
+                    }
+                } else {
+                    run = false
                 }
+            }
 
+            if (!manager.terminated) {
                 emitOutputIfNeeded(isInitialRun = false)
             }
         } catch (e: Throwable) {

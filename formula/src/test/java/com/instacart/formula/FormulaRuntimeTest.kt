@@ -26,6 +26,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
@@ -62,12 +63,14 @@ import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
+import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
+import com.instacart.formula.types.OnStartActionFormula
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -177,6 +180,16 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 val expected = listOf(1)
                 assertThat(values()).isEqualTo(expected)
             }
+    }
+
+    @Test fun `input change happens while formula is running`() {
+        val robot = InputChangeWhileFormulaRunningRobot(runtime, eventCount = 3)
+
+        // Start formula
+        robot.test.input(0)
+
+        // Input
+        robot.test.output { assertThat(this).isEqualTo(3) }
     }
 
     @Test
