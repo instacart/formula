@@ -37,7 +37,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         inspector = inspector,
     )
 
-    var transitionID: Long = 0
+    var globalEvaluationId: Long = 0
     var terminated = false
 
     /**
@@ -59,12 +59,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     private val transitionEffectQueue = LinkedList<Effects>()
 
-    fun canUpdatesContinue(id: Long): Boolean {
-        return !isEvaluationNeeded(id) && transitionQueue.isEmpty()
+    fun canUpdatesContinue(evaluationId: Long): Boolean {
+        return !isEvaluationNeeded(evaluationId) && transitionQueue.isEmpty()
     }
 
-    fun isEvaluationNeeded(id: Long): Boolean {
-        return transitionID != id
+    fun isEvaluationNeeded(evaluationId: Long): Boolean {
+        return globalEvaluationId != evaluationId
     }
 
     fun isTerminated(): Boolean {
@@ -84,7 +84,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             if (state != result.state) {
                 state = result.state
 
-                transitionID += 1
+                globalEvaluationId += 1
 
                 inspector?.onStateChanged(loggingType, old, result.state)
             }
@@ -96,7 +96,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         } else {
             val lastFrame = checkNotNull(frame) { "Transition cannot happen if frame is null" }
-            if (isEvaluationNeeded(lastFrame.transitionID)) {
+            if (isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
                 if (effects != null) {
                     transitionEffectQueue.addLast(effects)
                 }
@@ -123,17 +123,17 @@ internal class FormulaManagerImpl<Input, State, Output>(
         var firstRun = true
         while (result == null) {
             val lastFrame = frame
-            val transitionID = transitionID
+            val evaluationId = globalEvaluationId
             val evaluation = if (firstRun) {
                 firstRun = false
-                evaluation(input, transitionID)
-            } else if (lastFrame == null || isEvaluationNeeded(lastFrame.transitionID)) {
-                evaluation(input, transitionID)
+                evaluation(input, evaluationId)
+            } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
+                evaluation(input, evaluationId)
             } else {
                 lastFrame.evaluation
             }
 
-            if (postEvaluation(transitionID)) {
+            if (postEvaluation(evaluationId)) {
                 continue
             }
 
@@ -147,7 +147,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
-    private fun evaluation(input: Input, transitionID: Long): Evaluation<Output> {
+    private fun evaluation(input: Input, evaluationId: Long): Evaluation<Output> {
         // TODO: assert main thread.
 
         val lastFrame = frame
@@ -166,7 +166,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (lastFrame != null) {
             val prevInput = lastFrame.input
             val hasInputChanged = prevInput != input
-            if (!isValidationEnabled && lastFrame.transitionID == transitionID && !hasInputChanged) {
+            if (!isValidationEnabled && lastFrame.associatedEvaluationId == evaluationId && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
                 inspector?.onEvaluateFinished(loggingType, evaluation.output, evaluated = false)
                 return evaluation
@@ -181,7 +181,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val snapshot = SnapshotImpl(input, state, transitionID, listeners, this)
+        val snapshot = SnapshotImpl(input, state, evaluationId, listeners, this)
         val result = formula.evaluate(snapshot)
 
         if (isValidationEnabled) {
@@ -197,7 +197,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val newFrame = Frame(snapshot, result, transitionID)
+        val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
 
         actionManager.prepareForPostEvaluation(newFrame.evaluation.actions)
@@ -232,7 +232,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun markAsTerminated() {
         terminated = true
-        frame?.snapshot?.terminated = true
         childrenManager?.markAsTerminated()
     }
 
@@ -255,7 +254,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun requestEvaluation() {
-        transitionID += 1
+        globalEvaluationId += 1
 
         if (!isRunning) {
             delegate.requestEvaluation()
@@ -268,24 +267,24 @@ internal class FormulaManagerImpl<Input, State, Output>(
      *
      * @return True if we need to re-evaluate.
      */
-    private fun postEvaluation(transitionID: Long): Boolean {
-        if (handleTransitionQueue(transitionID)) {
+    private fun postEvaluation(evaluationId: Long): Boolean {
+        if (handleTransitionQueue(evaluationId)) {
             return true
         }
 
-        if (!terminated && childrenManager?.terminateChildren(transitionID) == true) {
+        if (!terminated && childrenManager?.terminateChildren(evaluationId) == true) {
             return true
         }
 
-        if (!terminated && actionManager.terminateOld(transitionID)) {
+        if (!terminated && actionManager.terminateOld(evaluationId)) {
             return true
         }
 
-        if (!terminated && actionManager.startNew(transitionID)) {
+        if (!terminated && actionManager.startNew(evaluationId)) {
             return true
         }
 
-        return handleSideEffectQueue(transitionID)
+        return handleSideEffectQueue(evaluationId)
     }
 
     /**
@@ -293,11 +292,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
      *
      * @return True if formula evaluation needs to run again.
      */
-    private fun handleTransitionQueue(transitionID: Long): Boolean {
+    private fun handleTransitionQueue(evaluationId: Long): Boolean {
         while (transitionQueue.isNotEmpty()) {
             val event = transitionQueue.pollFirst()
             event.execute()
-            if (isEvaluationNeeded(transitionID)) {
+            if (isEvaluationNeeded(evaluationId)) {
                 return true
             }
         }
@@ -310,11 +309,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
      *
      * @return True if formula evaluation needs to run again.
      */
-    private fun handleSideEffectQueue(transitionID: Long): Boolean {
+    private fun handleSideEffectQueue(evaluationId: Long): Boolean {
         while (transitionEffectQueue.isNotEmpty()) {
             val effect = transitionEffectQueue.pollFirst()
             effect.execute()
-            if (!canUpdatesContinue(transitionID)) {
+            if (!canUpdatesContinue(evaluationId)) {
                 return true
             }
         }

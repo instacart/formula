@@ -26,7 +26,7 @@ internal class ChildrenManager(
         }
     }
 
-    fun terminateChildren(transitionID: Long): Boolean {
+    fun terminateChildren(evaluationId: Long): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
@@ -35,7 +35,7 @@ internal class ChildrenManager(
             return false
         }
 
-        return !delegate.canUpdatesContinue(transitionID)
+        return !delegate.canUpdatesContinue(evaluationId)
     }
 
     fun markAsTerminated() {

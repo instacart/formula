@@ -14,14 +14,13 @@ import kotlin.reflect.KClass
 internal class SnapshotImpl<out Input, State> internal constructor(
     override val input: Input,
     override val state: State,
-    private val transitionID: Long,
+    private val associatedEvaluationId: Long,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
 ) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
     var running = false
-    var terminated = false
 
     override val context: FormulaContext<Input, State> = this
 
@@ -93,9 +92,9 @@ internal class SnapshotImpl<out Input, State> internal constructor(
             throw IllegalStateException("Transitions are not allowed during evaluation")
         }
 
-        if (!terminated && delegate.isEvaluationNeeded(transitionID)) {
+        if (!delegate.terminated && delegate.isEvaluationNeeded(associatedEvaluationId)) {
             // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $transitionID != ${delegate.transitionID}")
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $associatedEvaluationId != ${delegate.globalEvaluationId}")
         }
 
         val result = transition.toResult(this, event)

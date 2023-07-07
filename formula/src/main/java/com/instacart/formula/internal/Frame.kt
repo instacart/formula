@@ -3,14 +3,18 @@ package com.instacart.formula.internal
 import com.instacart.formula.Evaluation
 
 /**
- * A frame is a representation of state after a process round. After each processing round
- * we need to look at what children and updates exist and do a diff.
+ * After each formula evaluation, we create a frame object which holds the evaluation result
+ * and parameters used to create it.
+ *
+ * @param input Input used in the evaluation
+ * @param state State used in the evaluation
+ * @param evaluation Result of the evaluation which contains formula output.
+ * @param associatedEvaluationId Each output is associated with a specific evaluation id. We use
+ * this identifier to determine if the frame is still valid or if we need to create a new one.
  */
 internal class Frame<Input, State, Output>(
-    val snapshot: SnapshotImpl<Input, State>,
+    val input: Input,
+    val state: State,
     val evaluation: Evaluation<Output>,
-    val transitionID: Long,
-) {
-    val input: Input = snapshot.input
-    val state: State = snapshot.state
-}
+    val associatedEvaluationId: Long,
+)

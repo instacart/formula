@@ -40,7 +40,7 @@ internal class ActionManager(
     /**
      * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(transitionID: Long): Boolean {
+    fun terminateOld(evaluationId: Long): Boolean {
         prepareStoppedActionList()
 
         if (scheduledForRemoval.isNullOrEmpty()) {
@@ -61,7 +61,7 @@ internal class ActionManager(
                     return false
                 }
 
-                if (!manager.canUpdatesContinue(transitionID)) {
+                if (!manager.canUpdatesContinue(evaluationId)) {
                     return true
                 }
             }
@@ -69,7 +69,7 @@ internal class ActionManager(
         return false
     }
 
-    fun startNew(transitionID: Long): Boolean {
+    fun startNew(evaluationId: Long): Boolean {
         prepareNewActionList()
 
         val scheduled = scheduledToStart ?: return false
@@ -92,7 +92,7 @@ internal class ActionManager(
                     return false
                 }
 
-                if (!manager.canUpdatesContinue(transitionID)) {
+                if (!manager.canUpdatesContinue(evaluationId)) {
                     return true
                 }
             }
