@@ -200,9 +200,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val newFrame = Frame(snapshot, result, transitionID)
         this.frame = newFrame
 
-        actionManager.onNewFrame(newFrame.evaluation.actions)
-        listeners.evaluationFinished()
-        childrenManager?.evaluationFinished()
+        actionManager.prepareForPostEvaluation(newFrame.evaluation.actions)
+        listeners.prepareForPostEvaluation()
+        childrenManager?.prepareForPostEvaluation()
 
         snapshot.running = true
         if (!isValidationEnabled) {

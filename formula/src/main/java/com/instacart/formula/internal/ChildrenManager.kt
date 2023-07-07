@@ -13,7 +13,12 @@ internal class ChildrenManager(
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    fun evaluationFinished() {
+    /**
+     * After evaluation, we iterate over detached child formulas, mark them as terminated
+     * and add them to [pendingRemoval] list. The work to clean them up will be performed
+     * in post evaluation, which will call [terminateChildren] function.
+     */
+    fun prepareForPostEvaluation() {
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
             it.markAsTerminated()

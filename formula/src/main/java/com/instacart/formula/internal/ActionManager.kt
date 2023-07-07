@@ -25,7 +25,12 @@ internal class ActionManager(
     private var removeListInvalidated: Boolean = false
     private var scheduledForRemoval: MutableList<DeferredAction<*>>? = null
 
-    fun onNewFrame(new: Set<DeferredAction<*>>) {
+    /**
+     * After evaluation, we might have a new list of actions that we need
+     * to start and some old ones that will need to be terminates. This function
+     * prepares for that work which will be performed in [terminateOld] and [startNew].
+     */
+    fun prepareForPostEvaluation(new: Set<DeferredAction<*>>) {
         actions = new
 
         startListInvalidated = true
