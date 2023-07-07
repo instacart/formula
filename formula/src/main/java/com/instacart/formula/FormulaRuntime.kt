@@ -113,7 +113,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 var shouldRun = true
                 while (shouldRun) {
                     val localInputId = inputId
-                    if (!manager.terminated) {
+                    if (!manager.isTerminated()) {
                         isRunning = true
                         inspector?.onRunStarted(true)
 
@@ -127,7 +127,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                          * If termination happened during runFormula() execution, let's perform
                          * termination side-effects here.
                          */
-                        if (manager.terminated) {
+                        if (manager.isTerminated()) {
                             shouldRun = false
                             performTermination()
                         } else {
@@ -142,7 +142,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             if (isExecutingEffects) return
             executeTransitionEffects()
 
-            if (!manager.terminated) {
+            if (!manager.isTerminated()) {
                 emitOutputIfNeeded(isInitialRun = false)
             }
         } catch (e: Throwable) {

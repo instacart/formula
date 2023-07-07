@@ -38,13 +38,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
     )
 
     /**
+     * Determines if formula is still attached. Termination is a two step process,
+     * first [markAsTerminated] is called to set this boolean which prevents use from
+     * start new actions. And then, [performTerminationSideEffects] is called to clean
+     * up this [formula] and its child formulas.
+     */
+    private var terminated = false
+
+    /**
      * Identifier used to track state changes of this [formula] and its children. Whenever
      * there is a state change, this identifier is incremented. This allows us to associate
      * each formula output with an identifier value and compare it for validity with
      * the global value.
      */
     var globalEvaluationId: Long = 0
-    var terminated = false
 
     /**
      * Determines if we are executing within [run] block. Enables optimizations

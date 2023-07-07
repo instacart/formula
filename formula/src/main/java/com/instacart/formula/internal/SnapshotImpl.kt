@@ -92,7 +92,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
             throw IllegalStateException("Transitions are not allowed during evaluation")
         }
 
-        if (!delegate.terminated && delegate.isEvaluationNeeded(associatedEvaluationId)) {
+        if (!delegate.isTerminated() && delegate.isEvaluationNeeded(associatedEvaluationId)) {
             // We have already transitioned, this should not happen.
             throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $associatedEvaluationId != ${delegate.globalEvaluationId}")
         }
