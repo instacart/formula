@@ -37,6 +37,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
         inspector = inspector,
     )
 
+    /**
+     * Identifier used to track state changes of this [formula] and its children. Whenever
+     * there is a state change, this identifier is incremented. This allows us to associate
+     * each formula output with an identifier value and compare it for validity with
+     * the global value.
+     */
     var globalEvaluationId: Long = 0
     var terminated = false
 
