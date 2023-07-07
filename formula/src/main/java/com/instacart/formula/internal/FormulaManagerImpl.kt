@@ -39,7 +39,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     /**
      * Determines if formula is still attached. Termination is a two step process,
-     * first [markAsTerminated] is called to set this boolean which prevents use from
+     * first [markAsTerminated] is called to set this boolean which prevents us from
      * start new actions. And then, [performTerminationSideEffects] is called to clean
      * up this [formula] and its child formulas.
      */

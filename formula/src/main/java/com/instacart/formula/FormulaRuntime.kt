@@ -178,10 +178,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     /**
-     * Iterates through and executed pending transition side-effects. It will keep going until the
+     * Iterates through and executes pending transition side-effects. It will keep going until the
      * whole queue is empty. If any transition happens due to an executed effect:
-     * - [runFormula] will run if needed before next effect is executed
-     * - Transition effects will be added to [globalEffectQueue] which will be picked up within
+     * - If state change happens, [runFormula] will run before next effect is executed
+     * - New transition effects will be added to [globalEffectQueue] which will be picked up within
      * this loop
      */
     private fun executeTransitionEffects() {
