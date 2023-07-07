@@ -3,6 +3,7 @@
 - **Breaking**: ActivityStoreContext.selectActivityEvents and StreamConfigurator.update now explicitly requires a non-null type. This allows Formula to be compatible with Kotlin 1.8
 - **Breaking**: Remove `Integration` and `FragmentContract`
 - **Breaking**: Remove `Stream`, `StreamBuilder` and `StreamFormula`
+- **Breaking**: Rewrite internals of formula action handling to enable inline re-evaluation. Lots of changes, can review them in https://github.com/instacart/formula/pull/301
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`

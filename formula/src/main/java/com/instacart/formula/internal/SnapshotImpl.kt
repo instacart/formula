@@ -14,14 +14,13 @@ import kotlin.reflect.KClass
 internal class SnapshotImpl<out Input, State> internal constructor(
     override val input: Input,
     override val state: State,
-    val transitionID: Long,
+    private val associatedEvaluationId: Long,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
 ) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
     var running = false
-    var terminated = false
 
     override val context: FormulaContext<Input, State> = this
 
@@ -45,7 +44,6 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         return delegate.child(key, formula, input)
     }
 
-
     override fun <Event> eventListener(
         key: Any,
         useIndex: Boolean,
@@ -53,6 +51,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
+        listener.manager = delegate
         listener.snapshotImpl = this
         listener.transition = transition
         return listener
@@ -88,21 +87,22 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         )
     }
 
-    fun dispatch(transition: Transition.Result<State>) {
+    fun <Event> dispatch(transition: Transition<Input, State, Event>, event: Event) {
         if (!running) {
             throw IllegalStateException("Transitions are not allowed during evaluation")
         }
 
-        if (TransitionUtils.isEmpty(transition)) {
+        if (!delegate.isTerminated() && delegate.isEvaluationNeeded(associatedEvaluationId)) {
+            // We have already transitioned, this should not happen.
+            throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $associatedEvaluationId != ${delegate.globalEvaluationId}")
+        }
+
+        val result = transition.toResult(this, event)
+        if (TransitionUtils.isEmpty(result)) {
             return
         }
 
-        if (!terminated && delegate.hasTransitioned(transitionID)) {
-            // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old event listener: $transition.")
-        }
-
-        delegate.handleTransitionResult(transition)
+        delegate.handleTransitionResult(result)
     }
 
     private fun ensureNotRunning() {

@@ -25,7 +25,12 @@ internal class ActionManager(
     private var removeListInvalidated: Boolean = false
     private var scheduledForRemoval: MutableList<DeferredAction<*>>? = null
 
-    fun onNewFrame(new: Set<DeferredAction<*>>) {
+    /**
+     * After evaluation, we might have a new list of actions that we need
+     * to start and some old ones that will need to be terminates. This function
+     * prepares for that work which will be performed in [terminateOld] and [startNew].
+     */
+    fun prepareForPostEvaluation(new: Set<DeferredAction<*>>) {
         actions = new
 
         startListInvalidated = true
@@ -35,7 +40,7 @@ internal class ActionManager(
     /**
      * Returns true if there was a transition while terminating streams.
      */
-    fun terminateOld(transitionID: Long): Boolean {
+    fun terminateOld(evaluationId: Long): Boolean {
         prepareStoppedActionList()
 
         if (scheduledForRemoval.isNullOrEmpty()) {
@@ -52,7 +57,11 @@ internal class ActionManager(
                 running?.remove(action)
                 finishAction(action)
 
-                if (manager.hasTransitioned(transitionID)) {
+                if (manager.isTerminated()) {
+                    return false
+                }
+
+                if (!manager.canUpdatesContinue(evaluationId)) {
                     return true
                 }
             }
@@ -60,7 +69,7 @@ internal class ActionManager(
         return false
     }
 
-    fun startNew(transitionID: Long): Boolean {
+    fun startNew(evaluationId: Long): Boolean {
         prepareNewActionList()
 
         val scheduled = scheduledToStart ?: return false
@@ -79,7 +88,11 @@ internal class ActionManager(
                 getOrInitRunningActions().add(action)
                 action.start()
 
-                if (manager.hasTransitioned(transitionID)) {
+                if (manager.isTerminated()) {
+                    return false
+                }
+
+                if (!manager.canUpdatesContinue(evaluationId)) {
                     return true
                 }
             }

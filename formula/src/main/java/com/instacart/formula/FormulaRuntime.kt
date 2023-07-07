@@ -5,7 +5,6 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.ThreadChecker
 import java.util.LinkedList
-import kotlin.reflect.KClass
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
@@ -23,13 +22,33 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
-    private var executionRequested: Boolean = false
-
-    private val effectQueue = LinkedList<Effects>()
 
     private var input: Input? = null
     private var key: Any? = null
-    private var isExecuting: Boolean = false
+
+    /**
+     * Determines if we are executing within [runFormula] block. It prevents to
+     * enter [runFormula] block when we are already within it.
+     */
+    private var isRunning: Boolean = false
+
+    /**
+     * When we are within the [run] block, inputId allows us to notice when input has changed
+     * and to re-run when that happens.
+     */
+    private var inputId: Int = 0
+
+    /**
+     * Global transition effect queue which executes side-effects
+     * after all formulas are idle.
+     */
+    private var globalEffectQueue = LinkedList<Effects>()
+
+    /**
+     * Determines if we are iterating through [globalEffectQueue]. It prevents us from
+     * entering executeTransitionEffects block when we are already within it.
+     */
+    private var isExecutingEffects: Boolean = false
 
     fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == formula.key(input)
@@ -42,82 +61,105 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
         if (initialization) {
             manager = FormulaManagerImpl(this, implementation, input, loggingType = formula::class, inspector = inspector)
-            forceRun()
+            run()
 
             hasInitialFinished = true
             emitOutputIfNeeded(isInitialRun = true)
         } else {
-            forceRun()
+            inputId += 1
+            run()
         }
     }
 
     fun terminate() {
         manager?.apply {
             markAsTerminated()
-            performTerminationSideEffects()
+
+            /**
+             * The way termination side-effects are performed:
+             * - If we are not running, let's perform them here
+             * - If we are running, runFormula() will handle them
+             *
+             * This way, we let runFormula() exit out before we terminate everything.
+             */
+            if (!isRunning) {
+                performTermination()
+            }
         }
     }
 
-    override fun onTransition(formulaType: KClass<*>, result: Transition.Result<*>, evaluate: Boolean) {
-        threadChecker.check("Only thread that created it can trigger transitions.")
+    override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
+        threadChecker.check("Only thread that created it can post transition result")
 
-        inspector?.onTransition(formulaType, result, evaluate)
-
-        result.effects?.let {
-            effectQueue.addLast(it)
+        effects?.let {
+            globalEffectQueue.addLast(effects)
         }
 
-        run(evaluate = evaluate)
+        if (effects != null || evaluate) {
+            run(evaluate = evaluate)
+        }
     }
-
-    private fun forceRun() = run(evaluate = true)
 
     /**
      * Performs the evaluation and execution phases.
-     *
-     * @param evaluate Determines if evaluation needs to be run.
      */
-    private fun run(evaluate: Boolean) {
+    private fun run(evaluate: Boolean = true) {
+        if (isRunning) return
+
         try {
-            runFormula(evaluate)
-            if (!isExecuting) {
+            val manager = checkNotNull(manager)
+
+            if (evaluate) {
+                var shouldRun = true
+                while (shouldRun) {
+                    val localInputId = inputId
+                    if (!manager.isTerminated()) {
+                        isRunning = true
+                        inspector?.onRunStarted(true)
+
+                        val currentInput = checkNotNull(input)
+                        runFormula(manager, currentInput)
+                        isRunning = false
+
+                        inspector?.onRunFinished()
+
+                        /**
+                         * If termination happened during runFormula() execution, let's perform
+                         * termination side-effects here.
+                         */
+                        if (manager.isTerminated()) {
+                            shouldRun = false
+                            performTermination()
+                        } else {
+                            shouldRun = localInputId != inputId
+                        }
+                    } else {
+                        shouldRun = false
+                    }
+                }
+            }
+
+            if (isExecutingEffects) return
+            executeTransitionEffects()
+
+            if (!manager.isTerminated()) {
                 emitOutputIfNeeded(isInitialRun = false)
             }
         } catch (e: Throwable) {
+            isRunning = false
+
             manager?.markAsTerminated()
             onError(e)
-            manager?.performTerminationSideEffects()
-        }
-    }
 
-    private fun runFormula(evaluate: Boolean) {
-        val freshRun = !isExecuting
-        if (freshRun) {
-            inspector?.onRunStarted(evaluate)
-        }
-
-        val manager = checkNotNull(manager)
-        val currentInput = checkNotNull(input)
-
-        if (evaluate && !manager.terminated) {
-            evaluationPhase(manager, currentInput)
-        }
-
-        executionRequested = true
-        if (isExecuting) return
-
-        executionPhase(manager)
-
-        if (freshRun) {
-            inspector?.onRunFinished()
+            performTermination()
         }
     }
 
     /**
      * Runs formula evaluation.
      */
-    private fun evaluationPhase(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        val result = manager.evaluate(currentInput)
+    private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
+        val result = manager.run(currentInput)
         lastOutput = result.output
         emitOutput = true
 
@@ -128,7 +170,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 // We run evaluation again in validation mode which ensures validates
                 // that inputs and outputs are stable and do not break equality across
                 // identical runs.
-                manager.evaluate(currentInput)
+                manager.run(currentInput)
             } finally {
                 manager.setValidationRun(false)
             }
@@ -136,43 +178,19 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     /**
-     * Executes operations containing side-effects such as starting/terminating streams.
+     * Iterates through and executes pending transition side-effects. It will keep going until the
+     * whole queue is empty. If any transition happens due to an executed effect:
+     * - If state change happens, [runFormula] will run before next effect is executed
+     * - New transition effects will be added to [globalEffectQueue] which will be picked up within
+     * this loop
      */
-    private fun executionPhase(manager: FormulaManagerImpl<Input, *, Output>) {
-        isExecuting = true
-        while (executionRequested) {
-            executionRequested = false
-
-            val transitionId = manager.transitionID
-            if (!manager.terminated) {
-                if (manager.executeUpdates()) {
-                    continue
-                }
-            }
-
-            // We execute pending side-effects even after termination
-            if (executeEffects(manager, transitionId)) {
-                continue
-            }
+    private fun executeTransitionEffects() {
+        isExecutingEffects = true
+        while (globalEffectQueue.isNotEmpty()) {
+            val effects = globalEffectQueue.pollFirst()
+            effects.execute()
         }
-        isExecuting = false
-    }
-
-    /**
-     * Executes effects from the [effectQueue].
-     */
-    private fun executeEffects(manager: FormulaManagerImpl<*, *, *>, transitionId: Long): Boolean {
-        while (effectQueue.isNotEmpty()) {
-            val effects = effectQueue.pollFirst()
-            if (effects != null) {
-                effects.execute()
-
-                if (manager.hasTransitioned(transitionId)) {
-                    return true
-                }
-            }
-        }
-        return false
+        isExecutingEffects = false
     }
 
     /**
@@ -184,6 +202,16 @@ class FormulaRuntime<Input : Any, Output : Any>(
         } else if (hasInitialFinished && emitOutput) {
             emitOutput = false
             onOutput(checkNotNull(lastOutput))
+        }
+    }
+
+    /**
+     * Performs formula termination effects and executes transition effects if needed.
+     */
+    private fun performTermination() {
+        manager?.performTerminationSideEffects()
+        if (!isExecutingEffects) {
+            executeTransitionEffects()
         }
     }
 }

@@ -26,6 +26,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
@@ -40,6 +41,7 @@ import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
 import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
+import com.instacart.formula.subjects.PendingActionFormulaTerminatedOnActionInit
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -62,7 +64,6 @@ import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
 import com.instacart.formula.types.OnEventFormula
@@ -75,7 +76,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
 class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
@@ -177,6 +177,16 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 val expected = listOf(1)
                 assertThat(values()).isEqualTo(expected)
             }
+    }
+
+    @Test fun `input change happens while formula is running`() {
+        val robot = InputChangeWhileFormulaRunningRobot(runtime, eventCount = 3)
+
+        // Start formula
+        robot.test.input(0)
+
+        // Input
+        robot.test.output { assertThat(this).isEqualTo(3) }
     }
 
     @Test
@@ -301,7 +311,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit, inspector)
             .output { assertThat(state).isEqualTo(3) }
 
-        inspector.assertRunCount(1)
+        // TODO: run count could be reduced to 1 with inline effect execution
+        inspector.assertRunCount(4)
         inspector.assertEvaluationCount(HasChildFormula::class, 4)
         inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
@@ -315,7 +326,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit, inspector)
             .output { assertThat(child.state).isEqualTo(3) }
 
-        inspector.assertRunCount(1)
+
+        // TODO: run count could be reduced to 1 with inline effect execution
+        inspector.assertRunCount(4)
         inspector.assertEvaluationCount(HasChildFormula::class, 8)
         inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
@@ -378,9 +391,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(child).isEqualTo(1)
             }
 
-        inspector.assertRunCount(1)
+        inspector.assertRunCount(2)
         inspector.assertEvaluationCount(ActionDelegateFormula::class, 2)
-        inspector.assertEvaluationCount(HasChildFormula::class, 3)
+        inspector.assertEvaluationCount(HasChildFormula::class, 2)
     }
 
     @Test
@@ -394,7 +407,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(child.state).isEqualTo(1)
             }
 
-        inspector.assertRunCount(2)
+        inspector.assertRunCount(3)
         inspector.assertEvaluationCount(OnEventFormula::class, 2)
         inspector.assertEvaluationCount(HasChildFormula::class, 3)
     }
@@ -821,7 +834,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         inspector.assertRunCount(1)
         inspector.assertEvaluationCount(EventFormula::class, 100001)
-        inspector.assertEvaluationCount(HasChildFormula::class, 100001)
+        inspector.assertEvaluationCount(HasChildFormula::class, 1)
     }
 
     @Test
@@ -937,6 +950,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
+    }
+
+    @Test
+    fun `terminate formula with multiple pending actions on first action init`() {
+        val robot = PendingActionFormulaTerminatedOnActionInit(runtime)
+        // Starts the formula
+        robot.test.input(Unit)
+
+        // Single output should be emitted
+        robot.assertActionsStarted(1)
+
+        // No output is emitted because we unsubscribe before doing so
+        robot.test.assertOutputCount(0)
     }
 
     @Test
@@ -1130,7 +1156,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             assertThat(this).isEqualTo(100)
         }
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(5150)
+        inspector.assertEvaluationCount(200)
     }
 
     @Test
@@ -1141,7 +1167,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             assertThat(this).isEqualTo(250)
         }
         inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(31625)
+        inspector.assertEvaluationCount(500)
     }
 
     @Ignore("stack overflows when there are 500 nested child formulas")

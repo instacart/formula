@@ -2,7 +2,6 @@ package com.instacart.formula.test
 
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Inspector
-import com.instacart.formula.Transition
 import java.lang.AssertionError
 import kotlin.reflect.KClass
 
@@ -26,14 +25,8 @@ class CountingInspector : Inspector {
         actionsStarted.add(formulaType.java)
     }
 
-    override fun onTransition(
-        formulaType: KClass<*>,
-        result: Transition.Result<*>,
-        evaluate: Boolean
-    ) {
-        if (result is Transition.Result.Stateful) {
-            stateTransitions.add(formulaType.java)
-        }
+    override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
+        stateTransitions.add(formulaType.java)
     }
 
     fun assertEvaluationCount(expected: Int) = apply {

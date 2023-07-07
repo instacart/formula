@@ -98,7 +98,7 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
-    private val inputFlow = MutableSharedFlow<Input>(1)
+    private val inputFlow = MutableSharedFlow<Input>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val formulaFlow = formula.toFlow(inputFlow, isValidationEnabled = true, inspector = inspector)
         .onEach { values.add(it) }
         .catch { errors.add(it) }

@@ -29,7 +29,11 @@ internal class Listeners {
         }
     }
 
-    fun evaluationFinished() {
+    /**
+     * After evaluation, we need to clean up temporary state and also disable
+     * event listeners that should not be valid anymore.
+     */
+    fun prepareForPostEvaluation() {
         indexes?.clear()
 
         listeners?.clearUnrequested {

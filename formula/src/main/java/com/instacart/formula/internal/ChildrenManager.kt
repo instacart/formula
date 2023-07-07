@@ -13,31 +13,29 @@ internal class ChildrenManager(
     private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
-    private val childrenToUpdate = PendingFormulaManagerList(delegate) { manager ->
-        manager.executeUpdates()
-    }
-    fun evaluationFinished() {
+    /**
+     * After evaluation, we iterate over detached child formulas, mark them as terminated
+     * and add them to [pendingRemoval] list. The work to clean them up will be performed
+     * in post evaluation, which will call [terminateChildren] function.
+     */
+    fun prepareForPostEvaluation() {
         children?.clearUnrequested {
             pendingRemoval = pendingRemoval ?: mutableListOf()
             it.markAsTerminated()
             pendingRemoval?.add(it)
         }
-
-        childrenToUpdate.evaluationFinished()
     }
 
-    fun executeChildUpdates(transitionID: Long): Boolean {
-        return childrenToUpdate.iterate(children, transitionID)
-    }
-
-    fun terminateChildren(transitionID: Long): Boolean {
+    fun terminateChildren(evaluationId: Long): Boolean {
         val local = pendingRemoval
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
-        if (delegate.hasTransitioned(transitionID)) {
-            return true
+
+        if (delegate.isTerminated()) {
+            return false
         }
-        return false
+
+        return !delegate.canUpdatesContinue(evaluationId)
     }
 
     fun markAsTerminated() {
