@@ -76,11 +76,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    override fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
-        threadChecker.check("Only thread that created it can trigger transitions.")
-        transition.execute()
-    }
-
     override fun requestEvaluation() {
         threadChecker.check("Only thread that created it can request evaluation.")
         run()

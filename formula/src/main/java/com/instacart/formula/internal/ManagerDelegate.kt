@@ -11,10 +11,4 @@ internal interface ManagerDelegate {
      * will request the parent delegate to trigger a new evaluation run.
      */
     fun requestEvaluation()
-
-    /**
-     * When [FormulaManagerImpl] is not terminated nor running, it will pass the transition
-     * to the parent delegate to handle.
-     */
-    fun onPendingTransition(transition: DeferredTransition<*, *, *>)
 }

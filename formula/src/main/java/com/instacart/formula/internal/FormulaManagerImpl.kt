@@ -238,18 +238,35 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override fun performTerminationSideEffects() {
         childrenManager?.performTerminationSideEffects()
         actionManager.terminate()
-        listeners.disableAll()
 
+        // Execute immediate side-effects
+        for (effect in transitionEffectQueue) {
+            effect.execute()
+        }
+
+        // Execute deferred transitions
+        for (transition in transitionQueue) {
+            transition.execute()
+        }
+
+        listeners.disableAll()
         inspector?.onFormulaFinished(loggingType)
     }
 
-    override fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
+    fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
         if (terminated) {
             transition.execute()
         } else if (isRunning) {
             transitionQueue.addLast(transition)
         } else {
-            delegate.onPendingTransition(transition)
+            val lastFrame = frame
+            if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
+                // Since evaluation is already needed, we can wait for it to happen and
+                // then we'll execute the transition.
+                transitionQueue.addLast(transition)
+            } else {
+                transition.execute()
+            }
         }
     }
 
