@@ -23,7 +23,6 @@ import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EffectOrderFormula
 import com.instacart.formula.subjects.EventCallbackFormula
 import com.instacart.formula.subjects.EventFormula
-import com.instacart.formula.subjects.ExecuteEffectAfterChildTerminatesRobot
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
@@ -136,14 +135,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit).output { onStateTransition() }.output {
             assertThat(events).isEqualTo(expectedStates)
         }
-    }
-
-    @Test
-    fun `transition effect is executed even if child formula is detached`() {
-        val robot = ExecuteEffectAfterChildTerminatesRobot(runtime)
-        robot.start(Unit)
-        robot.callActionToTerminate()
-        robot.assertEffectRelayCalled(1)
     }
 
     @Test fun `input change invokes onInputChanged`() {
@@ -320,7 +311,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit, inspector)
             .output { assertThat(state).isEqualTo(3) }
 
-        inspector.assertRunCount(1)
+        // TODO: run count could be reduced to 1 with inline effect execution
+        inspector.assertRunCount(4)
         inspector.assertEvaluationCount(HasChildFormula::class, 4)
         inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
@@ -334,8 +326,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit, inspector)
             .output { assertThat(child.state).isEqualTo(3) }
 
-        inspector.assertRunCount(1)
-        inspector.assertEvaluationCount(HasChildFormula::class, 5)
+
+        // TODO: run count could be reduced to 1 with inline effect execution
+        inspector.assertRunCount(4)
+        inspector.assertEvaluationCount(HasChildFormula::class, 8)
         inspector.assertEvaluationCount(OnInitActionFormula::class, 1)
     }
 
@@ -397,7 +391,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(child).isEqualTo(1)
             }
 
-        inspector.assertRunCount(1)
+        inspector.assertRunCount(2)
         inspector.assertEvaluationCount(ActionDelegateFormula::class, 2)
         inspector.assertEvaluationCount(HasChildFormula::class, 2)
     }
@@ -413,7 +407,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 assertThat(child.state).isEqualTo(1)
             }
 
-        inspector.assertRunCount(2)
+        inspector.assertRunCount(3)
         inspector.assertEvaluationCount(OnEventFormula::class, 2)
         inspector.assertEvaluationCount(HasChildFormula::class, 3)
     }

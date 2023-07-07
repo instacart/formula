@@ -53,12 +53,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     private val transitionQueue = LinkedList<DeferredTransition<*, *, *>>()
 
-    /**
-     * A queue for transition [Effects]. It will be executed within [run] block, after
-     * evaluation and action updates.
-     */
-    private val transitionEffectQueue = LinkedList<Effects>()
-
     fun canUpdatesContinue(evaluationId: Long): Boolean {
         return !isEvaluationNeeded(evaluationId) && transitionQueue.isEmpty()
     }
@@ -91,19 +85,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         if (isRunning) {
-            if (effects != null) {
-                transitionEffectQueue.addLast(effects)
-            }
+            delegate.onPostTransition(effects, false)
         } else {
             val lastFrame = checkNotNull(frame) { "Transition cannot happen if frame is null" }
-            if (isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
-                if (effects != null) {
-                    transitionEffectQueue.addLast(effects)
-                }
-                delegate.requestEvaluation()
-            } else {
-                effects?.execute()
-            }
+            val evaluationNeeded = isEvaluationNeeded(lastFrame.associatedEvaluationId)
+            delegate.onPostTransition(effects, evaluationNeeded)
         }
     }
 
@@ -239,11 +225,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         childrenManager?.performTerminationSideEffects()
         actionManager.terminate()
 
-        // Execute immediate side-effects
-        for (effect in transitionEffectQueue) {
-            effect.execute()
-        }
-
         // Execute deferred transitions
         for (transition in transitionQueue) {
             transition.execute()
@@ -270,12 +251,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
     }
 
-    override fun requestEvaluation() {
-        globalEvaluationId += 1
-
-        if (!isRunning) {
-            delegate.requestEvaluation()
+    override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
+        if (evaluate) {
+            globalEvaluationId += 1
         }
+
+        delegate.onPostTransition(effects, evaluate && !isRunning)
     }
 
     /**
@@ -301,7 +282,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return true
         }
 
-        return handleSideEffectQueue(evaluationId)
+        return false
     }
 
     /**
@@ -318,22 +299,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        return false
-    }
-
-    /**
-     * Iterates through pending transition side-effects.
-     *
-     * @return True if formula evaluation needs to run again.
-     */
-    private fun handleSideEffectQueue(evaluationId: Long): Boolean {
-        while (transitionEffectQueue.isNotEmpty()) {
-            val effect = transitionEffectQueue.pollFirst()
-            effect.execute()
-            if (!canUpdatesContinue(evaluationId)) {
-                return true
-            }
-        }
         return false
     }
 

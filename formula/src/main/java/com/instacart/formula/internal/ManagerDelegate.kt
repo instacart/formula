@@ -1,5 +1,7 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.Effects
+
 /**
  * Used by [FormulaManagerImpl] to delegate and request certain actions when it
  * cannot handle them internally.
@@ -7,8 +9,8 @@ package com.instacart.formula.internal
 internal interface ManagerDelegate {
 
     /**
-     * When [FormulaManagerImpl] is not currently running and needs to be evaluated again, it
-     * will request the parent delegate to trigger a new evaluation run.
+     * When a transition happens, we notify the parent if we need to re-evaluate or
+     * we have global transition effects that need to be executed or both.
      */
-    fun requestEvaluation()
+    fun onPostTransition(effects: Effects?, evaluate: Boolean)
 }
