@@ -23,6 +23,7 @@ import com.instacart.formula.subjects.DynamicStreamSubject
 import com.instacart.formula.subjects.EffectOrderFormula
 import com.instacart.formula.subjects.EventCallbackFormula
 import com.instacart.formula.subjects.EventFormula
+import com.instacart.formula.subjects.ExecuteEffectAfterChildTerminatesRobot
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
@@ -63,14 +64,11 @@ import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
-import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
-import com.instacart.formula.types.OnStartActionFormula
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -138,6 +136,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         runtime.test(formula, Unit).output { onStateTransition() }.output {
             assertThat(events).isEqualTo(expectedStates)
         }
+    }
+
+    @Test
+    fun `transition effect is executed even if child formula is detached`() {
+        val robot = ExecuteEffectAfterChildTerminatesRobot(runtime)
+        robot.start(Unit)
+        robot.callActionToTerminate()
+        robot.assertEffectRelayCalled(1)
     }
 
     @Test fun `input change invokes onInputChanged`() {
