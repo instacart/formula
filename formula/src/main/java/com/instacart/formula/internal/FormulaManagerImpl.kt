@@ -82,7 +82,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val effects = result.effects
         if (terminated) {
             // State transitions are ignored, let's just execute side-effects.
-            effects?.execute()
+            delegate.onPostTransition(effects, false)
             return
         }
 
