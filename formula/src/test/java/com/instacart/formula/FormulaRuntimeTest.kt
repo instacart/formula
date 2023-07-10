@@ -26,11 +26,13 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.IndirectNestedCallbackCallRobot
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
 import com.instacart.formula.subjects.MultipleChildEvents
+import com.instacart.formula.subjects.NestedCallbackCallRobot
 import com.instacart.formula.subjects.NestedChildTransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.NestedKeyFormula
 import com.instacart.formula.subjects.NestedTerminationWithInputChanged
@@ -41,6 +43,7 @@ import com.instacart.formula.subjects.OptionalChildFormula
 import com.instacart.formula.subjects.OptionalEventCallbackFormula
 import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
 import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
+import com.instacart.formula.subjects.ParentUpdateChildAndSelfOnEventRobot
 import com.instacart.formula.subjects.PendingActionFormulaTerminatedOnActionInit
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
@@ -671,6 +674,35 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .stopListening()
             .incrementBy(4)
             .assertCurrentValue(2)
+    }
+
+    @Test fun `parent updates a child and self in a single action`() {
+        val robot = ParentUpdateChildAndSelfOnEventRobot(runtime)
+        robot.start()
+        robot.subject.output { onAction() }
+        robot.subject.output {
+            assertThat(childValue).isEqualTo(1)
+            assertThat(parentValue).isEqualTo(3)
+        }
+    }
+
+    @Test
+    fun `formula calls an event listener from a transition`() {
+        val robot = NestedCallbackCallRobot(runtime)
+        robot.start()
+        robot.subject.output { onAction() }
+        robot.subject.output { assertThat(value).isEqualTo(1) }
+    }
+
+    @Test
+    fun `formula calls own event listener which starts multiple transitions`() {
+        val robot = IndirectNestedCallbackCallRobot(runtime)
+        robot.start()
+        robot.subject.output { onAction() }
+        robot.subject.output {
+            assertThat(childValue).isEqualTo(2)
+            assertThat(parentValue).isEqualTo(3)
+        }
     }
 
     @Test
