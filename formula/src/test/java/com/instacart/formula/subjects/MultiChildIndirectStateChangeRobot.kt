@@ -1,22 +1,24 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.types.IncrementFormula
 import io.reactivex.rxjava3.core.Observable
 
-class IndirectNestedCallbackCallRobot(runtime: TestableRuntime) {
+class MultiChildIndirectStateChangeRobot(runtime: TestableRuntime) {
     val subject = runtime.test(Parent())
 
     fun start() = apply {
         subject.input(Unit)
     }
 
-    class Child : Formula<Unit, Child.State, Child.Output>() {
+    class Child : Formula<Child.Input, Child.State, Child.Output>() {
+        data class Input(
+            val preAction: () -> Unit = {},
+        )
+
         data class State(
             val actionId: Int = 0,
             val value: Int = 0,
@@ -27,9 +29,9 @@ class IndirectNestedCallbackCallRobot(runtime: TestableRuntime) {
             val onChildAction: () -> Unit,
         )
 
-        override fun initialState(input: Unit): State = State()
+        override fun initialState(input: Input): State = State()
 
-        override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
             return Evaluation(
                 output = Output(
                     value = state.value,
@@ -41,6 +43,8 @@ class IndirectNestedCallbackCallRobot(runtime: TestableRuntime) {
                 actions = context.actions {
                     if (state.actionId > 0) {
                         RxAction.fromObservable(state.actionId) {
+                            input.preAction()
+
                             // Increment two times
                             Observable.just(1, 1)
                         }.onEvent {
@@ -75,12 +79,21 @@ class IndirectNestedCallbackCallRobot(runtime: TestableRuntime) {
                 transition(newState)
             }
 
-            val incrementOutput = context.child(incrementFormula)
+            val firstChild = context.key("first") {
+                context.child(incrementFormula, Child.Input())
+            }
+
+            val secondChild = context.key("second") {
+                context.child(
+                    formula = incrementFormula,
+                    input = Child.Input(firstChild.onChildAction),
+                )
+            }
 
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
-                    childValue = incrementOutput.value,
+                    childValue = secondChild.value,
                     onAction = context.callback {
                         transition {
                             next()
@@ -91,7 +104,7 @@ class IndirectNestedCallbackCallRobot(runtime: TestableRuntime) {
                     if (state.actionId > 0) {
                         RxAction.fromObservable(state.actionId) {
                             // Call child
-                            incrementOutput.onChildAction()
+                            secondChild.onChildAction()
 
                             // Emit events
                             Observable.just(1, 1, 1)

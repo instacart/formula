@@ -26,7 +26,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
-import com.instacart.formula.subjects.IndirectNestedCallbackCallRobot
+import com.instacart.formula.subjects.MultiChildIndirectStateChangeRobot
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
@@ -696,7 +696,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula calls own event listener which starts multiple transitions`() {
-        val robot = IndirectNestedCallbackCallRobot(runtime)
+        val robot = MultiChildIndirectStateChangeRobot(runtime)
         robot.start()
         robot.subject.output { onAction() }
         robot.subject.output {

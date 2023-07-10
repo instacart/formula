@@ -279,6 +279,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * @return True if we need to re-evaluate.
      */
     private fun postEvaluation(evaluationId: Long): Boolean {
+        if (isEvaluationNeeded(evaluationId)) {
+            return true
+        }
+
         if (handleTransitionQueue(evaluationId)) {
             return true
         }
