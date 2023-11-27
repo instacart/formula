@@ -1,5 +1,6 @@
 package com.instacart.formula.rxjava3
 
+import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.Inspector
@@ -17,13 +18,17 @@ object RxJavaRuntime {
     ): Observable<Output> {
         val threadChecker = ThreadChecker(formula)
         return Observable.create<Output> { emitter ->
+            val mergedInspector = FormulaPlugins.inspector(
+                type = formula.type(),
+                local = inspector,
+            )
             val runtimeFactory = {
                 FormulaRuntime(
                     threadChecker = threadChecker,
                     formula = formula,
                     onOutput = emitter::onNext,
                     onError = emitter::onError,
-                    inspector = inspector,
+                    inspector = mergedInspector,
                     isValidationEnabled = isValidationEnabled,
                 )
             }
