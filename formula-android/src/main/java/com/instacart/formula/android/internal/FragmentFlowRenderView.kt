@@ -35,7 +35,7 @@ internal class FragmentFlowRenderView(
     private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
     private val onLifecycleState: (FragmentId, Lifecycle.State) -> Unit,
     private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
-) : RenderView<FragmentFlowState> {
+) {
 
     private var fragmentState: FragmentFlowState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
@@ -119,9 +119,9 @@ internal class FragmentFlowRenderView(
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, false)
     }
 
-    override val render: Renderer<FragmentFlowState> = Renderer {
-        fragmentState = it
-        updateVisibleFragments(it)
+    fun render(state: FragmentFlowState) {
+        fragmentState = state
+        updateVisibleFragments(state)
     }
 
     fun onBackPressed(): Boolean {
