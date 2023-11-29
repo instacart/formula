@@ -6,64 +6,50 @@ import kotlin.reflect.KClass
 
 internal class ListInspector(
     private val inspectors: List<Inspector>,
-): Inspector {
+) : Inspector {
     override fun onFormulaStarted(formulaType: KClass<*>) {
-        for (inspector in inspectors) {
-            inspector.onFormulaStarted(formulaType)
-        }
+        forEachInspector { onFormulaStarted(formulaType) }
     }
 
     override fun onFormulaFinished(formulaType: KClass<*>) {
-        for (inspector in inspectors) {
-            inspector.onFormulaFinished(formulaType)
-        }
+        forEachInspector { onFormulaFinished(formulaType) }
     }
 
     override fun onEvaluateStarted(formulaType: KClass<*>, state: Any?) {
-        for (inspector in inspectors) {
-            inspector.onEvaluateStarted(formulaType, state)
-        }
+        forEachInspector { onEvaluateStarted(formulaType, state) }
     }
 
     override fun onInputChanged(formulaType: KClass<*>, prevInput: Any?, newInput: Any?) {
-        for (inspector in inspectors) {
-            inspector.onInputChanged(formulaType, prevInput, newInput)
-        }
+        forEachInspector { onInputChanged(formulaType, prevInput, newInput) }
     }
 
     override fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) {
-        for (inspector in inspectors) {
-            inspector.onEvaluateFinished(formulaType, output, evaluated)
-        }
+        forEachInspector { onEvaluateFinished(formulaType, output, evaluated) }
     }
 
     override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
-        for (inspector in inspectors) {
-            inspector.onActionStarted(formulaType, action)
-        }
+        forEachInspector { onActionStarted(formulaType, action) }
     }
 
     override fun onActionFinished(formulaType: KClass<*>, action: DeferredAction<*>) {
-        for (inspector in inspectors) {
-            inspector.onActionFinished(formulaType, action)
-        }
+        forEachInspector { onActionFinished(formulaType, action) }
     }
 
     override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
-        for (inspector in inspectors) {
-            inspector.onStateChanged(formulaType, old, new)
-        }
+        forEachInspector { onStateChanged(formulaType, old, new) }
     }
 
     override fun onRunStarted(evaluate: Boolean) {
-        for (inspector in inspectors) {
-            inspector.onRunStarted(evaluate)
-        }
+        forEachInspector { onRunStarted(evaluate) }
     }
 
     override fun onRunFinished() {
+        forEachInspector { onRunFinished() }
+    }
+
+    private inline fun forEachInspector(callback: Inspector.() -> Unit) {
         for (inspector in inspectors) {
-            inspector.onRunFinished()
+            inspector.callback()
         }
     }
 }

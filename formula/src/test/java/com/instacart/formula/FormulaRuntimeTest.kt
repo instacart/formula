@@ -1291,4 +1291,20 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             ).inOrder()
         }
     }
+
+    @Test
+    fun `only global inspector events`() {
+        val globalInspector = TestInspector()
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun inspector(type: KClass<*>): Inspector {
+                return globalInspector
+            }
+        })
+
+        val formula = StartStopFormula(runtime)
+        val subject = runtime.test(formula, Unit)
+        subject.dispose()
+
+        assertThat(globalInspector.events).isNotEmpty()
+    }
 }
