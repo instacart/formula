@@ -1,5 +1,6 @@
 package com.instacart.formula.coroutines
 
+import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.Inspector
@@ -26,13 +27,18 @@ object FlowRuntime {
         return callbackFlow<Output> {
             threadChecker.check("Need to subscribe on main thread.")
 
+            val mergedInspector = FormulaPlugins.inspector(
+                type = formula.type(),
+                local = inspector,
+            )
+
             val runtimeFactory = {
                 FormulaRuntime(
                     threadChecker = threadChecker,
                     formula = formula,
                     onOutput = this::trySendBlocking,
                     onError = this::close,
-                    inspector = inspector,
+                    inspector = mergedInspector,
                     isValidationEnabled = isValidationEnabled,
                 )
             }

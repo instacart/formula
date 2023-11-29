@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
+import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxAction
@@ -79,6 +80,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
 class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
@@ -92,7 +94,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @get:Rule
-    val rule = RuleChain.outerRule(TestName()).around(runtime.rule)
+    val rule = RuleChain
+        .outerRule(TestName())
+        .around(ClearPluginsRule())
+        .around(runtime.rule)
 
     @Test fun `state change triggers an evaluation`() {
         val formula = EventCallbackFormula()
@@ -1249,33 +1254,57 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `inspector events`() {
+        val globalInspector = TestInspector()
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun inspector(type: KClass<*>): Inspector {
+                return globalInspector
+            }
+        })
 
         val formula = StartStopFormula(runtime)
-        val inspector = TestInspector()
-        val subject = runtime.test(formula, Unit, inspector)
+        val localInspector = TestInspector()
+        val subject = runtime.test(formula, Unit, localInspector)
         subject.output { startListening() }
         subject.output { stopListening() }
         subject.dispose()
 
-        assertThat(inspector.events).containsExactly(
-            "formula-run-started",
-            "formula-started: com.instacart.formula.subjects.StartStopFormula",
-            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
-            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "formula-run-finished",
-            "state-changed: com.instacart.formula.subjects.StartStopFormula",
-            "formula-run-started",
-            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
-            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "action-started: com.instacart.formula.subjects.StartStopFormula",
-            "formula-run-finished",
-            "state-changed: com.instacart.formula.subjects.StartStopFormula",
-            "formula-run-started",
-            "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
-            "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
-            "action-finished: com.instacart.formula.subjects.StartStopFormula",
-            "formula-run-finished",
-            "formula-finished: com.instacart.formula.subjects.StartStopFormula"
-        ).inOrder()
+        for (inspector in listOf(globalInspector, localInspector)) {
+            assertThat(inspector.events).containsExactly(
+                "formula-run-started",
+                "formula-started: com.instacart.formula.subjects.StartStopFormula",
+                "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+                "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+                "formula-run-finished",
+                "state-changed: com.instacart.formula.subjects.StartStopFormula",
+                "formula-run-started",
+                "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+                "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+                "action-started: com.instacart.formula.subjects.StartStopFormula",
+                "formula-run-finished",
+                "state-changed: com.instacart.formula.subjects.StartStopFormula",
+                "formula-run-started",
+                "evaluate-started: com.instacart.formula.subjects.StartStopFormula",
+                "evaluate-finished: com.instacart.formula.subjects.StartStopFormula",
+                "action-finished: com.instacart.formula.subjects.StartStopFormula",
+                "formula-run-finished",
+                "formula-finished: com.instacart.formula.subjects.StartStopFormula"
+            ).inOrder()
+        }
+    }
+
+    @Test
+    fun `only global inspector events`() {
+        val globalInspector = TestInspector()
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun inspector(type: KClass<*>): Inspector {
+                return globalInspector
+            }
+        })
+
+        val formula = StartStopFormula(runtime)
+        val subject = runtime.test(formula, Unit)
+        subject.dispose()
+
+        assertThat(globalInspector.events).isNotEmpty()
     }
 }
