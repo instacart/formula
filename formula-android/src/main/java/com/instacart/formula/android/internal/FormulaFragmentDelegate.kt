@@ -32,11 +32,7 @@ internal object FormulaFragmentDelegate {
     }
 
 
-    fun logFragmentError(key: FragmentKey, error: Throwable) {
-        fragmentEnvironment().onScreenError(key, error)
-    }
-
-    private fun fragmentEnvironment(): FragmentEnvironment {
+    fun fragmentEnvironment(): FragmentEnvironment {
         return checkNotNull(fragmentEnvironment) { "FormulaAndroid.init() not called." }
     }
 }

@@ -1,5 +1,6 @@
 package com.instacart.formula.android.internal
 
+import android.os.SystemClock
 import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
@@ -33,8 +34,14 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
                             Action.onData(fragmentId).onEvent {
                                 transition {
                                     try {
+                                        val start = SystemClock.uptimeMillis()
                                         val dependencies = toDependencies(input.component)
                                         val feature = feature.initialize(dependencies, key as Key)
+                                        val end = SystemClock.uptimeMillis()
+                                        input.environment.eventListener?.onFeatureInitialized(
+                                            fragmentId = fragmentId,
+                                            durationInMillis = end - start,
+                                        )
                                         input.onInitializeFeature(FeatureEvent.Init(fragmentId, feature))
                                     } catch (e: Exception) {
                                         input.onInitializeFeature(FeatureEvent.Failure(fragmentId, e))

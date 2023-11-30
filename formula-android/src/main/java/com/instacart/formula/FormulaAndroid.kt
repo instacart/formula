@@ -22,6 +22,31 @@ object FormulaAndroid {
     /**
      * Initializes Formula Android integration. Should be called within [Application.onCreate].
      *
+     * @param fragmentEnvironment Environment model that configures various event listeners.
+     */
+    fun init(
+        application: Application,
+        fragmentEnvironment: FragmentEnvironment = FragmentEnvironment(),
+        activities: ActivityConfigurator.() -> Unit
+    ) {
+        // Should we allow re-initialization?
+        if (appManager != null) {
+            throw IllegalStateException("can only initialize the store once.")
+        }
+
+        val factory = ActivityStoreFactory(fragmentEnvironment, activities)
+        val appManager = AppManager(factory)
+        application.registerActivityLifecycleCallbacks(appManager)
+
+        this.application = application
+        this.appManager = appManager
+        FormulaFragmentDelegate.appManager = appManager
+        FormulaFragmentDelegate.fragmentEnvironment = fragmentEnvironment
+    }
+
+    /**
+     * Initializes Formula Android integration. Should be called within [Application.onCreate].
+     *
      * @param logger A logger for debug Formula Android events.
      * @param onFragmentError A global handler for fragment errors. Override this to log the crashes.
      */
@@ -31,20 +56,8 @@ object FormulaAndroid {
         onFragmentError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
         activities: ActivityConfigurator.() -> Unit
     ) {
-        // Should we allow re-initialization?
-        if (appManager != null) {
-            throw IllegalStateException("can only initialize the store once.")
-        }
-
         val fragmentEnvironment = FragmentEnvironment(logger ?: {}, onFragmentError)
-        val factory = ActivityStoreFactory(fragmentEnvironment, activities)
-        val appManager = AppManager(factory)
-        application.registerActivityLifecycleCallbacks(appManager)
-
-        this.application = application
-        this.appManager = appManager
-        FormulaFragmentDelegate.appManager = appManager
-        FormulaFragmentDelegate.fragmentEnvironment = fragmentEnvironment
+        init(application, fragmentEnvironment, activities)
     }
 
     /**

@@ -142,7 +142,11 @@ internal class FragmentFlowRenderView(
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
         initializeFragmentInstanceIdIfNeeded(fragment)
-        return FormulaFragmentViewFactory(fragment.getFormulaFragmentId(), featureProvider)
+        return FormulaFragmentViewFactory(
+            environment = fragmentEnvironment,
+            fragmentId = fragment.getFormulaFragmentId(),
+            featureProvider = featureProvider,
+        )
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.Cancelable
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
+import com.instacart.formula.android.internal.getFormulaFragmentId
 import com.jakewharton.rxrelay3.BehaviorRelay
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
@@ -49,10 +50,9 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         featureView?.let { value ->
             val state = FeatureView.State(
+                fragmentId = getFormulaFragmentId(),
+                environment = FormulaFragmentDelegate.fragmentEnvironment(),
                 observable = stateRelay,
-                onError = {
-                    FormulaFragmentDelegate.logFragmentError(key, it)
-                }
             )
             cancelable = value.bind(state)
             this.lifecycleCallback = value.lifecycleCallbacks
