@@ -22,7 +22,8 @@ class FeatureView<RenderModel>(
     val lifecycleCallbacks: FragmentLifecycleCallback? = null,
 ) {
     class State<RenderModel>(
+        val fragmentId: FragmentId,
+        val environment: FragmentEnvironment,
         val observable: Observable<RenderModel>,
-        val onError: (Throwable) -> Unit,
     )
 }

@@ -1,5 +1,6 @@
 package com.instacart.formula.android.compose
 
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
@@ -19,7 +20,13 @@ abstract class ComposeViewFactory<RenderModel> : ViewFactory<RenderModel> {
                 view.setContent {
                     val model = it.observable.subscribeAsState(null).value
                     if (model != null) {
+                        val start = SystemClock.uptimeMillis()
                         Content(model)
+                        val end = SystemClock.uptimeMillis()
+                        it.environment.eventListener?.onRendered(
+                            fragmentId = it.fragmentId,
+                            durationInMillis = end - start,
+                        )
                     }
                 }
                 null
