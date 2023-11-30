@@ -1,6 +1,7 @@
 package com.instacart.formula.android
 
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
+    private val initialized = SystemClock.uptimeMillis()
+
     private var featureView: FeatureView<Any>? = null
     private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
     private var cancelable: Cancelable? = null
@@ -50,6 +53,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         featureView?.let { value ->
             val state = FeatureView.State(
+                initialized = initialized,
                 fragmentId = getFormulaFragmentId(),
                 environment = FormulaFragmentDelegate.fragmentEnvironment(),
                 observable = stateRelay,

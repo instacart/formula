@@ -14,19 +14,28 @@ abstract class ComposeViewFactory<RenderModel> : ViewFactory<RenderModel> {
 
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel> {
         val view = ComposeView(inflater.context)
+        var firstRender = true
         return FeatureView(
             view = view,
-            bind = {
+            bind = { state ->
                 view.setContent {
-                    val model = it.observable.subscribeAsState(null).value
+                    val model = state.observable.subscribeAsState(null).value
                     if (model != null) {
                         val start = SystemClock.uptimeMillis()
                         Content(model)
                         val end = SystemClock.uptimeMillis()
-                        it.environment.eventListener?.onRendered(
-                            fragmentId = it.fragmentId,
+                        state.environment.eventListener?.onRendered(
+                            fragmentId = state.fragmentId,
                             durationInMillis = end - start,
                         )
+
+                        if (firstRender) {
+                            firstRender = false
+                            state.environment.eventListener?.onFirstModelRendered(
+                                fragmentId = state.fragmentId,
+                                durationInMillis = end - state.initialized,
+                            )
+                        }
                     }
                 }
                 null
