@@ -14,6 +14,7 @@ internal class FeatureViewBindFunction<RenderModel>(
 ) : (FeatureView.State<RenderModel>) -> Cancelable? {
     override fun invoke(state: FeatureView.State<RenderModel>): Cancelable {
         val environment = state.environment
+        var firstRender = true
         val disposable = state.observable.subscribe {
             try {
                 val start = SystemClock.uptimeMillis()
@@ -23,6 +24,13 @@ internal class FeatureViewBindFunction<RenderModel>(
                     fragmentId = state.fragmentId,
                     durationInMillis = end - start,
                 )
+                if (firstRender) {
+                    firstRender = false
+                    environment.eventListener?.onFirstModelRendered(
+                        fragmentId = state.fragmentId,
+                        durationInMillis = end - state.initializedAtMillis,
+                    )
+                }
             } catch (exception: Exception) {
                 environment.onScreenError(state.fragmentId.key, exception)
             }

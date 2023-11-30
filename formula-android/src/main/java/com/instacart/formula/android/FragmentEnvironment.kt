@@ -25,5 +25,11 @@ data class FragmentEnvironment(
          * Called after render model was applied to the [FeatureView].
          */
         fun onRendered(fragmentId: FragmentId, durationInMillis: Long)
+
+        /**
+         * Called after first render model is rendered. The [durationInMillis] starts
+         * when formula fragment is initialized and ends after first render model is applied.
+         */
+        fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long)
     }
 }
