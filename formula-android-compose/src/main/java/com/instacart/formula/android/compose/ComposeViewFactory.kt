@@ -33,7 +33,7 @@ abstract class ComposeViewFactory<RenderModel> : ViewFactory<RenderModel> {
                             firstRender = false
                             state.environment.eventListener?.onFirstModelRendered(
                                 fragmentId = state.fragmentId,
-                                durationInMillis = end - state.initialized,
+                                durationInMillis = end - state.initializedAtMillis,
                             )
                         }
                     }

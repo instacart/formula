@@ -28,7 +28,7 @@ internal class FeatureViewBindFunction<RenderModel>(
                     firstRender = false
                     environment.eventListener?.onFirstModelRendered(
                         fragmentId = state.fragmentId,
-                        durationInMillis = end - state.initialized,
+                        durationInMillis = end - state.initializedAtMillis,
                     )
                 }
             } catch (exception: Exception) {

@@ -22,7 +22,7 @@ class FeatureView<RenderModel>(
     val lifecycleCallbacks: FragmentLifecycleCallback? = null,
 ) {
     class State<RenderModel>(
-        val initialized: Long,
+        val initializedAtMillis: Long,
         val fragmentId: FragmentId,
         val environment: FragmentEnvironment,
         val observable: Observable<RenderModel>,

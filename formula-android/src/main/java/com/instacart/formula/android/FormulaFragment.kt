@@ -30,7 +30,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    private val initialized = SystemClock.uptimeMillis()
+    private val initializedAtMillis = SystemClock.uptimeMillis()
 
     private var featureView: FeatureView<Any>? = null
     private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
@@ -53,7 +53,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         featureView?.let { value ->
             val state = FeatureView.State(
-                initialized = initialized,
+                initializedAtMillis = initializedAtMillis,
                 fragmentId = getFormulaFragmentId(),
                 environment = FormulaFragmentDelegate.fragmentEnvironment(),
                 observable = stateRelay,
