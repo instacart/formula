@@ -10,6 +10,13 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper
 
 object RxJavaRuntime {
+
+    private var defaultErrorHandler: RxJavaRuntimeErrorHandler? = null
+
+    fun setDefaultErrorHandler(errorHandler: RxJavaRuntimeErrorHandler?) {
+        this.defaultErrorHandler = errorHandler
+    }
+
     fun <Input : Any, Output : Any> start(
         input: Observable<Input>,
         formula: IFormula<Input, Output>,
@@ -22,12 +29,18 @@ object RxJavaRuntime {
                 type = formula.type(),
                 local = inspector,
             )
+
+            val onError = { error: Throwable ->
+                val handled = defaultErrorHandler?.onError(error) ?: false
+                if (!handled) emitter.onError(error)
+            }.takeIf { defaultErrorHandler != null } ?: emitter::onError
+
             val runtimeFactory = {
                 FormulaRuntime(
                     threadChecker = threadChecker,
                     formula = formula,
                     onOutput = emitter::onNext,
-                    onError = emitter::onError,
+                    onError = onError,
                     inspector = mergedInspector,
                     isValidationEnabled = isValidationEnabled,
                 )
@@ -45,7 +58,7 @@ object RxJavaRuntime {
                     runtime = runtimeFactory()
                 }
                 runtime.onInput(input)
-            }, emitter::onError))
+            }, onError))
 
             val runnable = Runnable {
                 threadChecker.check("Need to unsubscribe on the main thread.")

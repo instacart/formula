@@ -7,6 +7,7 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxAction
+import com.instacart.formula.rxjava3.RxJavaRuntime
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
 import com.instacart.formula.subjects.ChildMessageTriggersEventTransitionInParent
@@ -1108,7 +1109,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
 
         val error = result.errorOrNull()?.cause
-        assertThat(error).isInstanceOf(IllegalStateException::class.java)
+        assertThat(error).isInstanceOf(DuplicateKeyException::class.java)
+        val expectedMessage = "There already is a child with same key: FormulaKey(scopeKey=null, type=class com.instacart.formula.subjects.KeyFormula, key=TestKey(id=1)). Override [Formula.key] function."
+        assertThat(error?.message).isEqualTo(expectedMessage)
     }
 
     @Test

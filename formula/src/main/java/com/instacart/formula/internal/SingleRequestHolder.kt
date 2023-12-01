@@ -1,5 +1,7 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.DuplicateKeyException
+
 /**
  * Holder tracks when object has already been request and throws an error if requested again. This
  * is used to track duplicate requests for a particular key.
@@ -9,7 +11,7 @@ internal class SingleRequestHolder<T>(val value: T) {
 
     inline fun requestAccess(errorMessage: () -> String): T {
         if (requested) {
-            throw IllegalStateException(errorMessage())
+            throw DuplicateKeyException(errorMessage())
         }
 
         requested = true
