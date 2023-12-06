@@ -259,6 +259,27 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 // then we'll execute the transition.
                 transitionQueue.addLast(transition)
             } else {
+                // If we pass this to the root manager it will add it to a queue.
+                // - When ready, it will process first one
+                // - First one, triggers state change and asks for evaluation
+                // - Can we execute more updates before we start an evaluation?
+                //      - If same formula has multiple batched updates, we need to evaluate it
+                //      - If different formulas have batched updates, we likely could trigger all
+                //      before a single evaluation setups actions and picks up new output.
+                //      - Maybe we need to have `canAcceptTransition()` function
+                //          - If my state changed already, I cannot accept new transition
+                //          - If child state changed, can I accept state change myself?
+                // it is ready to process these updates, it will t
+                // We likely need to add this locally and also pass it to the parent
+                //
+                // TODO: this is the place where we need to batch
+
+
+                //
+                // If for batchable updates, we add it to the queue and request re-eval?
+                // that be bad for performance? We could also optimize that via some peek mechanism
+                // that starts the
+                // Is update order important?
                 transition.execute()
             }
         }
@@ -295,6 +316,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return true
         }
 
+        @Suppress("RedundantIfStatement")
         if (!terminated && actionManager.startNew(evaluationId)) {
             return true
         }

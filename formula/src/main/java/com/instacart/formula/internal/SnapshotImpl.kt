@@ -47,6 +47,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     override fun <Event> eventListener(
         key: Any,
         useIndex: Boolean,
+        isBatchable: Boolean,
         transition: Transition<Input, State, Event>
     ): Listener<Event> {
         ensureNotRunning()
@@ -54,6 +55,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         listener.manager = delegate
         listener.snapshotImpl = this
         listener.transition = transition
+        listener.isBatchable = isBatchable
         return listener
     }
 

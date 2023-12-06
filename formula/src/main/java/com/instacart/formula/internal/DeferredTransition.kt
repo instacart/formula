@@ -13,6 +13,7 @@ class DeferredTransition<Input, State, EventT> internal constructor(
     private val listener: ListenerImpl<Input, State, EventT>,
     private val transition: Transition<Input, State, EventT>,
     private val event: EventT,
+    val isBatchable: Boolean,
 ) {
 
     fun execute() {

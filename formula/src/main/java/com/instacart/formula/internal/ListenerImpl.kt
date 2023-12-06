@@ -11,6 +11,7 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
 
     internal var manager: FormulaManagerImpl<Input, State, *>? = null
     internal var snapshotImpl: SnapshotImpl<Input, State>? = null
+    internal var isBatchable: Boolean = false
 
     internal lateinit var transition: Transition<Input, State, EventT>
 
@@ -18,7 +19,7 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
 
-        val deferredTransition = DeferredTransition(this, transition, event)
+        val deferredTransition = DeferredTransition(this, transition, event, isBatchable)
         manager.onPendingTransition(deferredTransition)
     }
 

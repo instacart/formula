@@ -100,6 +100,13 @@ interface Action<Event> {
      * An identifier used to distinguish between different types of actions.
      */
     fun key(): Any?
+
+    /**
+     * Defines if an action updates can be batched with other updates. This enables Formula
+     * to batch multiple updates into a single re-evaluation and emit a single output instead of
+     * emitting multiple intermediate updates.
+     */
+    fun isBatchable() = false // TODO default
 }
 
 /**

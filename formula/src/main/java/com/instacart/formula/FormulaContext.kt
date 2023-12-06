@@ -131,6 +131,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     internal abstract fun <Event> eventListener(
         key: Any,
         useIndex: Boolean = true,
+        isBatchable: Boolean = false,
         transition: Transition<Input, State, Event>
     ): Listener<Event>
 

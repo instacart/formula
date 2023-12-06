@@ -52,7 +52,12 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>,
     ): DeferredAction<Event> {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())
-        val listener = snapshot.context.eventListener(key, useIndex = false, transition)
+        val listener = snapshot.context.eventListener(
+            key = key,
+            useIndex = false,
+            isBatchable = stream.isBatchable(),
+            transition = transition,
+        )
         return DeferredAction(
             key = key,
             action = stream,
