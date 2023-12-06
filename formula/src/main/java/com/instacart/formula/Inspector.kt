@@ -65,10 +65,11 @@ interface Inspector {
      * Called when a state change happens
      *
      * @param formulaType Formula type used to filter for specific events.
+     * @param event Event that triggered this state change
      * @param old Previous state value
      * @param new New state value
      */
-    fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) = Unit
+    fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) = Unit
 
     /**
      * Called when [FormulaRuntime.run] is called. This method in combination with [onRunFinished]

@@ -36,7 +36,7 @@ class TestInspector : Inspector {
         events.add("action-finished: ${formulaType.qualifiedName}")
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
+    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
         events.add("state-changed: ${formulaType.qualifiedName}")
     }
 

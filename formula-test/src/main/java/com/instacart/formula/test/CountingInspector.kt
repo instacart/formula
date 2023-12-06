@@ -25,7 +25,7 @@ class CountingInspector : Inspector {
         actionsStarted.add(formulaType.java)
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
+    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
         stateTransitions.add(formulaType.java)
     }
 
