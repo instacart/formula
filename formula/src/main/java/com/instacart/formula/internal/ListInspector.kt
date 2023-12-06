@@ -35,8 +35,8 @@ internal class ListInspector(
         forEachInspector { onActionFinished(formulaType, action) }
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, old: Any?, new: Any?) {
-        forEachInspector { onStateChanged(formulaType, old, new) }
+    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
+        forEachInspector { onStateChanged(formulaType, event, old, new) }
     }
 
     override fun onRunStarted(evaluate: Boolean) {

@@ -102,7 +102,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
             return
         }
 
-        delegate.handleTransitionResult(result)
+        delegate.handleTransitionResult(event, result)
     }
 
     private fun ensureNotRunning() {
