@@ -78,7 +78,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return terminated
     }
 
-    fun handleTransitionResult(result: Transition.Result<State>) {
+    fun handleTransitionResult(event: Any?, result: Transition.Result<State>) {
         val effects = result.effects
         if (terminated) {
             // State transitions are ignored, let's just execute side-effects.
@@ -93,7 +93,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
                 globalEvaluationId += 1
 
-                inspector?.onStateChanged(loggingType, old, result.state)
+                inspector?.onStateChanged(
+                    formulaType = loggingType,
+                    event = event,
+                    old = old,
+                    new = result.state,
+                )
             }
         }
 
@@ -180,7 +185,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        val snapshot = SnapshotImpl(input, state, evaluationId, listeners, this)
+        val snapshot = SnapshotImpl(
+            input = input,
+            state = state,
+            associatedEvaluationId = evaluationId,
+            listeners = listeners,
+            delegate = this,
+        )
         val result = formula.evaluate(snapshot)
 
         if (isValidationEnabled) {
