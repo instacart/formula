@@ -4,6 +4,7 @@ import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.internal.ClearPluginsRule
+import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.rxjava3.RxAction
@@ -29,6 +30,7 @@ import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
 import com.instacart.formula.subjects.MultiChildIndirectStateChangeRobot
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
+import com.instacart.formula.subjects.KeyFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
@@ -1099,7 +1101,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    @Test fun `adding duplicate child throws an exception`() {
+    @Test fun `adding duplicate child logs global event`() {
+        val duplicateKeys = mutableListOf<Any>()
+
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun onDuplicateChildKey(
+                parentType: Class<*>,
+                childFormulaType: Class<*>,
+                key: Any
+            ) {
+                duplicateKeys.add(key)
+            }
+        })
+
         val result = Try {
             val formula = DynamicParentFormula()
             runtime.test(formula, Unit)
@@ -1107,8 +1121,15 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 .output { addChild(TestKey("1")) }
         }
 
+        // No errors
         val error = result.errorOrNull()?.cause
-        assertThat(error).isInstanceOf(IllegalStateException::class.java)
+        assertThat(error).isNull()
+
+        // Should log only once
+        assertThat(duplicateKeys).hasSize(1)
+        assertThat(duplicateKeys).containsExactly(
+            FormulaKey(null, KeyFormula::class.java, TestKey("1"))
+        )
     }
 
     @Test

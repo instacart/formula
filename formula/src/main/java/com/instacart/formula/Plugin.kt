@@ -12,4 +12,13 @@ interface Plugin {
     fun inspector(type: KClass<*>): Inspector? {
         return null
     }
+
+    /**
+     * Notified when there is a duplicate child key detected.
+     */
+    fun onDuplicateChildKey(
+        parentType: Class<*>,
+        childFormulaType: Class<*>,
+        key: Any,
+    ) = Unit
 }

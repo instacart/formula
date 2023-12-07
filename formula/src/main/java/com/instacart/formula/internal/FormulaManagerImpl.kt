@@ -21,7 +21,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    private val loggingType: KClass<*>,
+    internal val loggingType: KClass<*>,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
 ) : FormulaManager<Input, Output>, ManagerDelegate {

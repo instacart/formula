@@ -18,4 +18,12 @@ object FormulaPlugins {
             else -> ListInspector(listOf(global, local))
         }
     }
+
+    fun onDuplicateChildKey(
+        parentFormulaType: Class<*>,
+        childFormulaType: Class<*>,
+        key: Any,
+    ) {
+       plugin?.onDuplicateChildKey(parentFormulaType, childFormulaType, key)
+    }
 }
