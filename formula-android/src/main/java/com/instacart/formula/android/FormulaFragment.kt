@@ -1,5 +1,6 @@
 package com.instacart.formula.android
 
+import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
@@ -30,13 +31,20 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    private val initializedAtMillis = SystemClock.uptimeMillis()
+    private var initializedAtMillis: Long? = SystemClock.uptimeMillis()
 
     private var featureView: FeatureView<Any>? = null
     private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
     private var cancelable: Cancelable? = null
 
     private var lifecycleCallback: FragmentLifecycleCallback? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (initializedAtMillis == null) {
+            initializedAtMillis = SystemClock.uptimeMillis()
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
@@ -53,7 +61,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         featureView?.let { value ->
             val state = FeatureView.State(
-                initializedAtMillis = initializedAtMillis,
+                initializedAtMillis = initializedAtMillis ?: SystemClock.uptimeMillis(),
                 fragmentId = getFormulaFragmentId(),
                 environment = FormulaFragmentDelegate.fragmentEnvironment(),
                 observable = stateRelay,
@@ -100,6 +108,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     }
 
     override fun onDestroyView() {
+        initializedAtMillis = null
+
         cancelable?.cancel()
         cancelable = null
 
