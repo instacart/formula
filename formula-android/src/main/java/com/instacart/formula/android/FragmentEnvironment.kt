@@ -1,35 +1,54 @@
 package com.instacart.formula.android
 
+import android.view.LayoutInflater
+import android.view.ViewGroup
+
 data class FragmentEnvironment(
     val logger: (String) -> Unit = {},
     val onScreenError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
-    val eventListener: EventListener? = null,
+    val fragmentDelegate: FragmentDelegate = FragmentDelegate(),
 ) {
 
     /**
      * Introspection API to track various formula fragment events and their performance.
      */
-    interface EventListener {
+    open class FragmentDelegate {
 
         /**
-         * Called after [FeatureFactory.initialize] is called.
+         * Instantiates the feature.
          */
-        fun onFeatureInitialized(fragmentId: FragmentId, durationInMillis: Long)
+        fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
+            fragmentId: FragmentId,
+            factory: FeatureFactory<DependenciesT, KeyT>,
+            dependencies: DependenciesT,
+            key: KeyT,
+        ): Feature<*> {
+            return factory.initialize(dependencies, key)
+        }
 
         /**
-         * Called when [FormulaFragment] view is inflated.
+         * Called from [FormulaFragment.onCreateView] to instantiate the view.
          */
-        fun onViewInflated(fragmentId: FragmentId, durationInMillis: Long)
+        fun createView(
+            fragmentId: FragmentId,
+            viewFactory: ViewFactory<Any>,
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+        ): FeatureView<Any> {
+            return viewFactory.create(inflater, container)
+        }
 
         /**
-         * Called after render model was applied to the [FeatureView].
+         * Called when we are ready to apply [output] to the view.
          */
-        fun onRendered(fragmentId: FragmentId, durationInMillis: Long)
+        fun setOutput(fragmentId: FragmentId, output: Any, applyOutputToView: (Any) -> Unit) {
+            applyOutputToView(output)
+        }
 
         /**
          * Called after first render model is rendered. The [durationInMillis] starts
          * when formula fragment is initialized and ends after first render model is applied.
          */
-        fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long)
+        fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long) = Unit
     }
 }

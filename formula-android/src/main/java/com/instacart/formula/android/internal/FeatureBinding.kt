@@ -34,13 +34,12 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
                             Action.onData(fragmentId).onEvent {
                                 transition {
                                     try {
-                                        val start = SystemClock.uptimeMillis()
                                         val dependencies = toDependencies(input.component)
-                                        val feature = feature.initialize(dependencies, key as Key)
-                                        val end = SystemClock.uptimeMillis()
-                                        input.environment.eventListener?.onFeatureInitialized(
+                                        val feature = input.environment.fragmentDelegate.initializeFeature(
                                             fragmentId = fragmentId,
-                                            durationInMillis = end - start,
+                                            factory = feature,
+                                            dependencies = dependencies,
+                                            key = key as Key,
                                         )
                                         input.onInitializeFeature(FeatureEvent.Init(fragmentId, feature))
                                     } catch (e: Exception) {
