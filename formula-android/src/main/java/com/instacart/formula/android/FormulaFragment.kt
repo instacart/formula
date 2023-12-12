@@ -138,7 +138,6 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
             view.setOutput(output)
             val end = SystemClock.uptimeMillis()
 
-
             environment.eventListener?.onRendered(
                 fragmentId = fragmentId,
                 durationInMillis = end - start,
