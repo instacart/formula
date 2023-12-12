@@ -1,17 +1,21 @@
 enableFeaturePreview("VERSION_CATALOGS")
 
-include(":formula")
-include(":formula-android")
-include(":formula-android-compose")
-include(":formula-android-tests")
-include(":formula-lint")
-include(":formula-rxjava3")
-include(":formula-coroutines")
-include(":formula-test")
-include(":samples:composition")
-include(":samples:counter")
-include(":samples:custom-network-state-stream")
-include(":samples:stopwatch")
-include(":samples:stopwatch-coroutines")
-include(":samples:stopwatch-compose")
-include(":samples:todoapp")
+include(
+    ":formula",
+    ":formula-android",
+    ":formula-android-compose",
+    ":formula-android-tests",
+    ":formula-lint",
+    ":formula-rxjava3",
+    ":formula-coroutines",
+    ":formula-test",
+)
+include(
+    ":samples:composition",
+    ":samples:counter",
+    ":samples:custom-network-state-stream",
+    ":samples:stopwatch",
+    ":samples:stopwatch-coroutines",
+    ":samples:stopwatch-compose",
+    ":samples:todoapp"
+)

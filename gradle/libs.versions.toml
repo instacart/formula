@@ -1,4 +1,7 @@
 [versions]
+android-gradle = "7.0.4"
+dokka-gradle = "1.4.32"
+
 minSdk = "21"
 compileSdk = "30"
 targetSdk = "30"
@@ -17,6 +20,14 @@ lint = "30.0.0"
 autoService = "1.0-rc7"
 
 [libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-gradle" }
+dokka-android-gradle = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka-gradle" }
+maven-publish-gradle = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.14.2" }
+version-gradle = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.38.0" }
+jacoco-gradle = { module = "com.vanniktech:gradle-android-junit-jacoco-plugin", version = "0.16.0" }
+
 kotlin = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
