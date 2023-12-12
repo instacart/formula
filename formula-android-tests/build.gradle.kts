@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
     implementation(libs.lifecycle.extensions)
+    implementation(libs.androidx.test.core.ktx)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)

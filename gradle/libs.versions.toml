@@ -46,6 +46,7 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.0" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.3.1"}
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version = "1.3.1" }
+androidx-test-core-ktx = { module = "androidx.test:core-ktx", name = "core-ktx", version.ref = "androidTest" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidTest" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidTest" }
 

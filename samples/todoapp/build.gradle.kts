@@ -60,7 +60,7 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlin.reflect)
     testImplementation(project(":formula-test"))
-    testImplementation(libs.androidx.test.rules)
+    testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.espresso.core)
     testImplementation(libs.robolectric)
