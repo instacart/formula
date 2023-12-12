@@ -1,0 +1,21 @@
+apply plugin: "com.vanniktech.android.junit.jacoco"
+
+junitJacoco {
+    // WARNING! Don"t upgrade unless https://github.com/Malinskiy/danger-jacoco/issues/10 is fixed
+    jacocoVersion = '0.8.2'
+    excludes = [
+            // Defaults
+            '**/androidx/**/*.*',
+            '**/*$$*',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
+            '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
+            '**/com/instacart/formula/test/**/*.*'
+    ]
+    ignoreProjects = [
+            "samples/*"
+    ]
+    includeNoLocationClasses = true
+    includeInstrumentationCoverageInMergedReport = true
+}
