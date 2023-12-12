@@ -95,8 +95,6 @@ internal class FragmentFlowRenderView(
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
-            initializeFragmentInstanceIdIfNeeded(f)
-
             if (FragmentLifecycle.shouldTrack(f)) {
                 onLifecycleEvent(FragmentLifecycle.createAddedEvent(f))
             } else {
@@ -141,7 +139,6 @@ internal class FragmentFlowRenderView(
     }
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
-        initializeFragmentInstanceIdIfNeeded(fragment)
         return FormulaFragmentViewFactory(
             environment = fragmentEnvironment,
             fragmentId = fragment.getFormulaFragmentId(),
@@ -159,25 +156,6 @@ internal class FragmentFlowRenderView(
                 state.states[fragment.getFormulaFragmentId()]?.let {
                     (fragment as BaseFormulaFragment<Any>).setState(it.renderModel)
                 }
-            }
-        }
-    }
-
-    /**
-     * Creates a unique identifier the first time fragment is attached that
-     * is persisted across configuration changes.
-     */
-    private fun initializeFragmentInstanceIdIfNeeded(f: Fragment) {
-        if (f is BaseFormulaFragment<*>) {
-            val arguments = f.arguments ?: run {
-                Bundle().apply {
-                    f.arguments = this
-                }
-            }
-            val id = arguments.getString(FormulaFragment.ARG_FORMULA_ID, "")
-            if (id.isNullOrBlank()) {
-                val initializedId = UUID.randomUUID().toString()
-                arguments.putString(FormulaFragment.ARG_FORMULA_ID, initializedId)
             }
         }
     }
