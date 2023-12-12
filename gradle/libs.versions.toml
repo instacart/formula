@@ -49,6 +49,7 @@ androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version = "
 androidx-test-core-ktx = { module = "androidx.test:core-ktx", name = "core-ktx", version.ref = "androidTest" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidTest" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidTest" }
+androidx-test-junit = { module = "androidx.test.ext:junit", version = "1.1.0" }
 
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycle" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleKtx" }
