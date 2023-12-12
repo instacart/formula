@@ -132,20 +132,16 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
         val fragmentId = getFormulaFragmentId()
         val environment = FormulaFragmentDelegate.fragmentEnvironment()
+        val fragmentDelegate = environment.fragmentDelegate
 
         try {
-            val start = SystemClock.uptimeMillis()
-            view.setOutput(output)
-            val end = SystemClock.uptimeMillis()
-
-            environment.eventListener?.onRendered(
-                fragmentId = fragmentId,
-                durationInMillis = end - start,
-            )
+            fragmentDelegate.setOutput(fragmentId, output, view.setOutput)
 
             if (firstRender) {
+                val end = SystemClock.uptimeMillis()
+
                 firstRender = false
-                environment.eventListener?.onFirstModelRendered(
+                fragmentDelegate.onFirstModelRendered(
                     fragmentId = fragmentId,
                     durationInMillis = end - (initializedAtMillis ?: SystemClock.uptimeMillis()),
                 )

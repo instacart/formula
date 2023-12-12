@@ -1,6 +1,5 @@
 package com.instacart.formula.android.internal
 
-import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.instacart.formula.android.FeatureView
@@ -20,7 +19,6 @@ internal class FormulaFragmentViewFactory(
 
     @Suppress("UNCHECKED_CAST")
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<Any> {
-        val start = SystemClock.uptimeMillis()
         val key = fragmentId.key
         val featureEvent = featureProvider.getFeature(fragmentId) ?: throw IllegalStateException("Could not find feature for $key.")
         val viewFactory = factory ?: when (featureEvent) {
@@ -35,9 +33,7 @@ internal class FormulaFragmentViewFactory(
             }
         }
         this.factory = viewFactory
-        val view = viewFactory.create(inflater, container)
-        val endTime = SystemClock.uptimeMillis()
-        environment.eventListener?.onViewInflated(fragmentId, endTime - start)
-        return view
+        val delegate = environment.fragmentDelegate
+        return delegate.createView(fragmentId, viewFactory, inflater, container)
     }
 }
