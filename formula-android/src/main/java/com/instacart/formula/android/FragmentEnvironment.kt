@@ -15,6 +15,13 @@ data class FragmentEnvironment(
     open class FragmentDelegate {
 
         /**
+         * Called when new instance of [FormulaFragment] is created.
+         */
+        open fun onNewInstance(
+            fragmentId: FragmentId
+        ) = Unit
+
+        /**
          * Instantiates the feature.
          */
         open fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
@@ -44,11 +51,5 @@ data class FragmentEnvironment(
         open fun setOutput(fragmentId: FragmentId, output: Any, applyOutputToView: (Any) -> Unit) {
             applyOutputToView(output)
         }
-
-        /**
-         * Called after first render model is rendered. The [durationInMillis] starts
-         * when formula fragment is initialized and ends after first render model is applied.
-         */
-        open fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long) = Unit
     }
 }
