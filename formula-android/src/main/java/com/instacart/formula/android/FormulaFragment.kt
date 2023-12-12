@@ -1,8 +1,6 @@
 package com.instacart.formula.android
 
-import android.content.Context
 import android.os.Bundle
-import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,25 +28,38 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
+    private val formulaFragmentId: FragmentId by lazy {
+        getFormulaFragmentId()
+    }
+
+    private val environment: FragmentEnvironment
+        get() = FormulaFragmentDelegate.fragmentEnvironment()
+
+    private val fragmentDelegate: FragmentEnvironment.FragmentDelegate
+        get() = environment.fragmentDelegate
+
+    private var calledNewInstance = false
+
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
-
-    private var initializedAtMillis: Long? = SystemClock.uptimeMillis()
-    private var firstRender = true
 
     private val lifecycleCallback: FragmentLifecycleCallback?
         get() = featureView?.lifecycleCallbacks
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (initializedAtMillis == null) {
-            initializedAtMillis = SystemClock.uptimeMillis()
+    override fun setArguments(args: Bundle?) {
+        super.setArguments(args)
+
+        /**
+         * To ensure that we have both fragment key and formula instance id, we need
+         * to wait for arguments to be set.
+         */
+        if (!calledNewInstance) {
+            calledNewInstance = true
+            fragmentDelegate.onNewInstance(formulaFragmentId)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        firstRender = true
-
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
             // No view factory, no view
             return null
@@ -102,8 +113,6 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     }
 
     override fun onDestroyView() {
-        initializedAtMillis = null
-
         lifecycleCallback?.onDestroyView()
         super.onDestroyView()
         featureView = null
@@ -130,22 +139,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         val output = output ?: return
         val view = featureView ?: return
 
-        val fragmentId = getFormulaFragmentId()
-        val environment = FormulaFragmentDelegate.fragmentEnvironment()
-        val fragmentDelegate = environment.fragmentDelegate
-
         try {
-            fragmentDelegate.setOutput(fragmentId, output, view.setOutput)
-
-            if (firstRender) {
-                val end = SystemClock.uptimeMillis()
-
-                firstRender = false
-                fragmentDelegate.onFirstModelRendered(
-                    fragmentId = fragmentId,
-                    durationInMillis = end - (initializedAtMillis ?: SystemClock.uptimeMillis()),
-                )
-            }
+            fragmentDelegate.setOutput(formulaFragmentId, output, view.setOutput)
         } catch (exception: Exception) {
             environment.onScreenError(key, exception)
         }
