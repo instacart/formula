@@ -17,7 +17,7 @@ data class FragmentEnvironment(
         /**
          * Instantiates the feature.
          */
-        fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
+        open fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
             fragmentId: FragmentId,
             factory: FeatureFactory<DependenciesT, KeyT>,
             dependencies: DependenciesT,
@@ -29,7 +29,7 @@ data class FragmentEnvironment(
         /**
          * Called from [FormulaFragment.onCreateView] to instantiate the view.
          */
-        fun createView(
+        open fun createView(
             fragmentId: FragmentId,
             viewFactory: ViewFactory<Any>,
             inflater: LayoutInflater,
@@ -41,7 +41,7 @@ data class FragmentEnvironment(
         /**
          * Called when we are ready to apply [output] to the view.
          */
-        fun setOutput(fragmentId: FragmentId, output: Any, applyOutputToView: (Any) -> Unit) {
+        open fun setOutput(fragmentId: FragmentId, output: Any, applyOutputToView: (Any) -> Unit) {
             applyOutputToView(output)
         }
 
@@ -49,6 +49,6 @@ data class FragmentEnvironment(
          * Called after first render model is rendered. The [durationInMillis] starts
          * when formula fragment is initialized and ends after first render model is applied.
          */
-        fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long) = Unit
+        open fun onFirstModelRendered(fragmentId: FragmentId, durationInMillis: Long) = Unit
     }
 }
