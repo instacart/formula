@@ -3,7 +3,6 @@ package com.instacart.formula.android
 import android.view.View
 import com.instacart.formula.RenderView
 import com.instacart.formula.Renderer
-import com.instacart.formula.android.views.FeatureViewBindFunction
 
 /**
  * View instance contains an initialized Android [view] and provides factory
@@ -37,7 +36,7 @@ abstract class ViewInstance {
     ): FeatureView<RenderModel> {
         return FeatureView(
             view = view,
-            bind = FeatureViewBindFunction(renderer),
+            setOutput = renderer,
             lifecycleCallbacks = lifecycleCallbacks
         )
     }

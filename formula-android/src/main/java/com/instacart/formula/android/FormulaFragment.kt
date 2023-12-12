@@ -7,10 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.instacart.formula.Cancelable
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.instacart.formula.android.internal.getFormulaFragmentId
-import com.jakewharton.rxrelay3.BehaviorRelay
+import java.lang.Exception
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     companion object {
@@ -31,13 +30,14 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    private var initializedAtMillis: Long? = SystemClock.uptimeMillis()
-
     private var featureView: FeatureView<Any>? = null
-    private val stateRelay: BehaviorRelay<Any> = BehaviorRelay.create()
-    private var cancelable: Cancelable? = null
+    private var output: Any? = null
 
-    private var lifecycleCallback: FragmentLifecycleCallback? = null
+    private var initializedAtMillis: Long? = SystemClock.uptimeMillis()
+    private var firstRender = true
+
+    private val lifecycleCallback: FragmentLifecycleCallback?
+        get() = featureView?.lifecycleCallbacks
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -47,6 +47,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        firstRender = true
+
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
             // No view factory, no view
             return null
@@ -59,17 +61,9 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        featureView?.let { value ->
-            val state = FeatureView.State(
-                initializedAtMillis = initializedAtMillis ?: SystemClock.uptimeMillis(),
-                fragmentId = getFormulaFragmentId(),
-                environment = FormulaFragmentDelegate.fragmentEnvironment(),
-                observable = stateRelay,
-            )
-            cancelable = value.bind(state)
-            this.lifecycleCallback = value.lifecycleCallbacks
-            lifecycleCallback?.onViewCreated(view, savedInstanceState)
-        }
+        tryToSetState()
+
+        lifecycleCallback?.onViewCreated(view, savedInstanceState)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -110,21 +104,18 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     override fun onDestroyView() {
         initializedAtMillis = null
 
-        cancelable?.cancel()
-        cancelable = null
-
         lifecycleCallback?.onDestroyView()
-        lifecycleCallback = null
         super.onDestroyView()
         featureView = null
     }
 
     override fun setState(state: Any) {
-        stateRelay.accept(state)
+        output = state
+        tryToSetState()
     }
 
     override fun currentState(): Any? {
-        return stateRelay.value
+        return output
     }
 
     override fun getFragmentKey(): FragmentKey {
@@ -133,5 +124,34 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
     override fun toString(): String {
         return "${key.tag} -> $key"
+    }
+
+    private fun tryToSetState() {
+        val output = output ?: return
+        val view = featureView ?: return
+
+        val fragmentId = getFormulaFragmentId()
+        val environment = FormulaFragmentDelegate.fragmentEnvironment()
+
+        try {
+            val start = SystemClock.uptimeMillis()
+            view.setOutput(output)
+            val end = SystemClock.uptimeMillis()
+
+            environment.eventListener?.onRendered(
+                fragmentId = fragmentId,
+                durationInMillis = end - start,
+            )
+
+            if (firstRender) {
+                firstRender = false
+                environment.eventListener?.onFirstModelRendered(
+                    fragmentId = fragmentId,
+                    durationInMillis = end - (initializedAtMillis ?: SystemClock.uptimeMillis()),
+                )
+            }
+        } catch (exception: Exception) {
+            environment.onScreenError(key, exception)
+        }
     }
 }
