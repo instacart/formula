@@ -13,18 +13,11 @@ import io.reactivex.rxjava3.core.Observable
  * [FeatureView].
  *
  * @param view The root Android view.
- * @param bind A bind function connects state observable to the view rendering.
+ * @param setOutput A function called to apply [RenderModel] to the view.
  * @param lifecycleCallbacks Optional lifecycle callbacks if you need to know the Fragment state.
  */
 class FeatureView<RenderModel>(
     val view: View,
-    val bind: (State<RenderModel>) -> Cancelable?,
+    val setOutput: (RenderModel) -> Unit,
     val lifecycleCallbacks: FragmentLifecycleCallback? = null,
-) {
-    class State<RenderModel>(
-        val initializedAtMillis: Long,
-        val fragmentId: FragmentId,
-        val environment: FragmentEnvironment,
-        val observable: Observable<RenderModel>,
-    )
-}
+)
