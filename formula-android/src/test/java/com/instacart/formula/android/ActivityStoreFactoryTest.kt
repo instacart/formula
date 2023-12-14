@@ -3,8 +3,8 @@ package com.instacart.formula.android
 import androidx.fragment.app.FragmentActivity
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.internal.ActivityStoreFactory
-import com.nhaarman.mockito_kotlin.mock
 import org.junit.Test
+import org.mockito.kotlin.mock
 
 class ActivityStoreFactoryTest {
 

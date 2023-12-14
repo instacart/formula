@@ -10,7 +10,7 @@ import com.instacart.formula.android.ViewFactory
 import com.jakewharton.rxrelay3.BehaviorRelay
 
 
-abstract class ComposeViewFactory<RenderModel> : ViewFactory<RenderModel> {
+abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> {
 
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel> {
         val view = ComposeView(inflater.context)

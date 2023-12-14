@@ -5,10 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "com.instacart.formula.stopwatch.coroutines"
+    namespace = "com.instacart.formula.stopwatch"
 
     defaultConfig {
-        applicationId = "com.instacart.formula.stopwatch.coroutines"
+        applicationId = "com.instacart.formula.stopwatch"
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
