@@ -4,13 +4,14 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ActivityStoreContext
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.samples.R
+import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
-import com.instacart.formula.test.TestFragmentActivity
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule
@@ -36,7 +37,7 @@ class FragmentLifecycleStateTest {
                         configureActivity = {
                             initialContract = TestKey()
                         },
-                        contracts =  {
+                        contracts = {
                             bind(featureFactory<TestKey>(this@activity))
                             bind(featureFactory<TestKeyWithId>(this@activity))
                         }
@@ -57,18 +58,21 @@ class FragmentLifecycleStateTest {
         scenario = activityRule.scenario
     }
 
-    @Test fun `is fragment started`() {
+    @Test
+    fun `is fragment started`() {
         val events = selectStartedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
-    @Test fun `is fragment resumed`() {
+    @Test
+    fun `is fragment resumed`() {
         val events = selectResumedEvents(TestKey())
         assertThat(events).containsExactly(false, true).inOrder()
     }
 
     @LooperMode(LooperMode.Mode.LEGACY)
-    @Test fun `navigate forward`() {
+    @Test
+    fun `navigate forward`() {
         navigateToTaskDetail()
 
         val contract = TestKey()

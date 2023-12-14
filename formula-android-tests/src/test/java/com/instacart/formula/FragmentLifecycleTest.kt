@@ -9,6 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.ViewFactory
+import com.instacart.formula.samples.R
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestFragmentLifecycleCallback
 import com.instacart.formula.test.TestLifecycleKey

@@ -7,6 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
+import com.instacart.formula.samples.R
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleKey
 import io.reactivex.rxjava3.core.Observable
@@ -28,7 +29,7 @@ class FragmentAndroidEventTest {
                         configureActivity = {
                             initialContract = TestLifecycleKey()
                         },
-                        contracts =  {
+                        contracts = {
 
                             bind<TestLifecycleKey> { _, _ ->
                                 Feature(
@@ -52,14 +53,17 @@ class FragmentAndroidEventTest {
 
     private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
 
-    @get:Rule val rule = RuleChain.outerRule(formulaRule).around(activityRule)
+    @get:Rule
+    val rule = RuleChain.outerRule(formulaRule).around(activityRule)
     lateinit var scenario: ActivityScenario<TestFragmentActivity>
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         scenario = activityRule.scenario
     }
 
-    @Test fun `activity result`() {
+    @Test
+    fun `activity result`() {
         FormulaAndroid.onActivityResult(scenario.activity(), 1, 2, null)
 
         val expected = listOf(ActivityResult(1, 2, null))

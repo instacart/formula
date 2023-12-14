@@ -6,6 +6,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FormulaAppCompatActivity
+import com.instacart.formula.samples.R
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule

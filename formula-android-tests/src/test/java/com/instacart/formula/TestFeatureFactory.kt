@@ -4,6 +4,7 @@ import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.ViewFactory
+import com.instacart.formula.samples.R
 import com.instacart.formula.test.TestFragmentActivity
 import io.reactivex.rxjava3.core.Observable
 
