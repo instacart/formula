@@ -43,7 +43,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)
-    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlin.reflect)
     testImplementation(project(":formula-test"))

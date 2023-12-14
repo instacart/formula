@@ -56,7 +56,7 @@ dependencies {
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.espresso.core)
     testImplementation(libs.truth)
-    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlin.reflect)
 }
