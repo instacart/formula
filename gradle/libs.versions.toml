@@ -4,7 +4,7 @@ dokka-gradle = "1.4.32"
 
 kotlin = "1.9.20"
 coroutines = "1.5.2"
-compose = "1.0.1"
+compose = "1.5.4"
 
 androidX = "1.2.0"
 lifecycle = "2.2.0"
