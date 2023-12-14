@@ -16,7 +16,9 @@ class MockitoFormulaTest {
         assertThat(formula.type()).isEqualTo(MyFormula::class)
     }
 
-    class MyFormula : StatelessFormula<Unit, Unit>() {
+    class MyFormula : Formula<Unit, Unit, Unit>() {
+        override fun initialState(input: Unit) = Unit
+
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(Unit)
         }
