@@ -11,7 +11,7 @@ lifecycle = "2.2.0"
 lifecycleKtx = '2.4.0-alpha03'
 androidTest = "1.4.0"
 espresso = "3.4.0"
-robolectric = "4.6.1"
+robolectric = "4.11.1"
 lint = "30.0.0"
 autoService = "1.0-rc7"
 

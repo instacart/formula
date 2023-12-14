@@ -3,10 +3,10 @@ package com.instacart.formula.test
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.R
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
-import com.instacart.formula.samples.R
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
     @VisibleForTesting lateinit var initialContract: FragmentKey

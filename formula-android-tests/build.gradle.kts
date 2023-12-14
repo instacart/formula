@@ -9,9 +9,9 @@ apply {
 }
 
 android {
-    namespace = "com.instacart.formula.samples"
+    namespace = "com.instacart.formula"
     defaultConfig {
-        applicationId = "com.instacart.formula.samples"
+        applicationId = "com.instacart.formula"
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
