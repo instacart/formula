@@ -5,12 +5,10 @@ plugins {
 }
 
 android {
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    namespace = "com.instacart.formula.compose.stopwatch"
 
     defaultConfig {
         applicationId = "com.instacart.formula.compose.stopwatch"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -20,13 +18,7 @@ android {
         compose = true
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
     composeOptions {
-        kotlinCompilerVersion = libs.versions.kotlin.get()
         kotlinCompilerExtensionVersion = libs.versions.compose.get()
     }
 

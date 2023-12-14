@@ -1,5 +1,3 @@
-enableFeaturePreview("VERSION_CATALOGS")
-
 include(
     ":formula",
     ":formula-android",

@@ -24,7 +24,7 @@ afterEvaluate {
     }
 
     task mergeReports(type: Copy) {
-        from { testTasks*.reports.junitXml.destination } {
+        from { file("$buildDir/test-results") } {
             exclude("**/binary/*")
         }
         into { file("$buildDir/reports/allTests") }
@@ -39,7 +39,7 @@ def disableHtmlTestReport(Project project) {
     project.android {
         testOptions {
             unitTests.all {
-                reports.html.enabled = false
+                reports.html.required = false
             }
         }
     }

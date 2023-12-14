@@ -1,12 +1,8 @@
 [versions]
-android-gradle = "7.0.4"
+android-gradle = "8.2.0"
 dokka-gradle = "1.4.32"
 
-minSdk = "21"
-compileSdk = "30"
-targetSdk = "30"
-
-kotlin = "1.5.21"
+kotlin = "1.9.20"
 coroutines = "1.5.2"
 compose = "1.0.1"
 
@@ -26,7 +22,10 @@ dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref
 dokka-android-gradle = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka-gradle" }
 maven-publish-gradle = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.14.2" }
 version-gradle = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.38.0" }
-jacoco-gradle = { module = "com.vanniktech:gradle-android-junit-jacoco-plugin", version = "0.16.0" }
+
+# We need to fork the plugin to fix an incorrect usage of tasks.withType(Test)
+# https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/compare/master...Laimiux:gradle-android-junit-jacoco-plugin:laimonas/gradle-8?expand=1
+jacoco-gradle = { module = "com.github.Jawnnypoo:gradle-android-junit-jacoco-plugin", version = "61a9cc0129" }
 
 kotlin = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
