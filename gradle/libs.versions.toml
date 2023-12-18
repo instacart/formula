@@ -2,7 +2,7 @@
 android-gradle = "8.2.0"
 dokka-gradle = "1.4.32"
 
-kotlin = "1.9.20"
+kotlin = "1.9.10"
 coroutines = "1.5.2"
 compose = "1.5.4"
 
