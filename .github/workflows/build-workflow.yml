@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 18
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Install Ruby
@@ -51,7 +51,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 18
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Assemble Counter
