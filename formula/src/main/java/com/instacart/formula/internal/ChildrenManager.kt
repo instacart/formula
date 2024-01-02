@@ -110,9 +110,9 @@ internal class ChildrenManager(
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation()
             FormulaManagerImpl(
-                delegate,
-                implementation,
-                input,
+                delegate = delegate,
+                formula = implementation,
+                initialInput = input,
                 loggingType = formula::class,
                 inspector = inspector
             )
