@@ -1,5 +1,5 @@
 #!/bin/bash
-# Should match with what we run in .circleci/config.yml
+# Should match with what we run in .github/workflows/build-workflow.yml
 ./gradlew clean
 ./gradlew :formula:test
 ./gradlew :formula-android:testRelease
