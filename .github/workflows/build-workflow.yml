@@ -68,3 +68,11 @@ jobs:
         run: ./gradlew :samples:stopwatch-compose:assembleDebug
       - name: Assemble Stopwatch Kotlin Coroutine Sample
         run: ./gradlew :samples:stopwatch-coroutines:assembleDebug
+      - name: Publish all artifacts locally
+        run: |
+          ./gradlew :formula:build
+          ./gradlew :formula-android:build
+          ./gradlew :formula-test:build 
+          ./gradlew :formula-android-compose:build 
+          ./gradlew :formula-lint:build
+          ./gradlew publishToMavenLocal --no-parallel --no-daemon
