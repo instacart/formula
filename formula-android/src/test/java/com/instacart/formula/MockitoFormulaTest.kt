@@ -1,11 +1,10 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.spy
-import com.nhaarman.mockito_kotlin.whenever
 import org.junit.Test
 import org.mockito.internal.stubbing.answers.CallsRealMethods
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class MockitoFormulaTest {
 

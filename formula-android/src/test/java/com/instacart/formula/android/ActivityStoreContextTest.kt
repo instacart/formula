@@ -4,14 +4,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.internal.ActivityStoreContextImpl
 import com.jakewharton.rxrelay3.PublishRelay
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.parcelize.Parcelize
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 
 class ActivityStoreContextTest {
     class FakeActivity : FragmentActivity() {
@@ -58,7 +58,7 @@ class ActivityStoreContextTest {
             doSomething()
         }
 
-        verifyZeroInteractions(activity)
+        verifyNoInteractions(activity)
     }
 
     @Test fun `send event success`() {

@@ -6,6 +6,11 @@ jobs:
     env:
       DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
     steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 18
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Install Ruby
@@ -42,6 +47,11 @@ jobs:
   assemble_samples:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 18
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Assemble Counter

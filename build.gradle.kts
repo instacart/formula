@@ -1,3 +1,8 @@
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.TestExtension
+
 buildscript {
 
     repositories {
@@ -20,20 +25,77 @@ buildscript {
 apply(plugin = "com.github.ben-manes.versions")
 apply(plugin = "org.jetbrains.dokka")
 apply(from = "gradle/jacoco.gradle")
-apply(from = "gradle/merge-reports.gradle")
 
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
+}
+
+subprojects {
+    val javaVersion = JavaVersion.VERSION_18
 
     tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
         dokkaSourceSets.named("main") {
-            jdkVersion.set(8)
+            jdkVersion.set(11)
             skipDeprecated.set(true)
             skipEmptyPackages.set(true)
             reportUndocumented.set(false)
+        }
+    }
+
+    // Common android config
+    val commonAndroidConfig: CommonExtension<*, *, *, *, *>.() -> Unit = {
+        compileSdk = 34
+
+        compileOptions {
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
+        }
+    }
+
+    // Android library config
+    pluginManager.withPlugin("com.android.library") {
+        with(extensions.getByType<LibraryExtension>()) {
+            commonAndroidConfig()
+            defaultConfig { minSdk = 21 }
+        }
+    }
+
+    // Android app config
+    pluginManager.withPlugin("com.android.application") {
+        with(extensions.getByType<ApplicationExtension>()) {
+            commonAndroidConfig()
+            defaultConfig {
+                minSdk = 21
+                //noinspection ExpiredTargetSdkVersion
+                targetSdk = 30
+            }
+        }
+    }
+
+    // Android test config
+    pluginManager.withPlugin("com.android.test") {
+        with(extensions.getByType<TestExtension>()) {
+            commonAndroidConfig()
+            defaultConfig {
+                // Using sdk 28 for robolectric tests.
+                minSdk = 28
+                //noinspection ExpiredTargetSdkVersion
+                targetSdk = 28
+            }
+        }
+    }
+
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = javaVersion.toString()
+        targetCompatibility = javaVersion.toString()
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions {
+            jvmTarget = javaVersion.toString()
         }
     }
 }
@@ -53,3 +115,4 @@ tasks.register("install") {
     dependsOn(publishTasks)
 }
 
+apply(from = "gradle/merge-reports.gradle")

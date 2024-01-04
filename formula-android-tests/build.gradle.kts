@@ -9,19 +9,12 @@ apply {
 }
 
 android {
-    compileSdk = 28
+    namespace = "com.instacart.formula"
     defaultConfig {
-        applicationId = "com.instacart.formula.samples"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = 28 // Using sdk 28 for robolectric tests.
+        applicationId = "com.instacart.formula"
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -35,12 +28,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
         }
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 
