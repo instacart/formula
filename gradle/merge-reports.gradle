@@ -4,11 +4,11 @@ subprojects { project ->
     }
 
     project.plugins.withId("com.android.application") {
-        disableHtmlTestReport(project)
+//        disableHtmlTestReport(project)
     }
 
     project.plugins.withId("com.android.library") {
-        disableHtmlTestReport(project)
+//        disableHtmlTestReport(project)
     }
 }
 
