@@ -11,26 +11,10 @@ apply {
 }
 
 android {
-    compileSdk = libs.versions.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
+    namespace = "com.instacart.formula.android"
 
     testOptions {
         unitTests.isReturnDefaultValues = true
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 
@@ -42,8 +26,10 @@ task<Jar>("sourcesJar") {
 task<Javadoc>("javadoc") {
     isFailOnError = false
     source(android.sourceSets["main"].java.getSourceFiles())
-    classpath += project.files(android.bootClasspath.joinToString(separator = File.pathSeparator))
-    classpath += configurations.api
+    classpath = project.files(
+        android.bootClasspath.joinToString(separator = File.pathSeparator),
+        configurations.api,
+    )
 }
 
 task<Jar>("javadocJar") {
@@ -69,7 +55,7 @@ dependencies {
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.espresso.core)
     testImplementation(libs.truth)
-    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlin.reflect)
 }

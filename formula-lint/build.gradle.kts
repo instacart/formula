@@ -10,11 +10,6 @@ apply {
   from("$rootDir/.buildscript/configure-signing.gradle")
 }
 
-java {
-  targetCompatibility = JavaVersion.VERSION_1_8
-  sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
 dependencies {
   compileOnly(libs.lint.api)
   compileOnly(libs.lint.checks)

@@ -1,8 +1,7 @@
 apply plugin: "com.vanniktech.android.junit.jacoco"
 
 junitJacoco {
-    // WARNING! Don"t upgrade unless https://github.com/Malinskiy/danger-jacoco/issues/10 is fixed
-    jacocoVersion = '0.8.2'
+    jacocoVersion = '0.8.8'
     excludes = [
             // Defaults
             '**/androidx/**/*.*',
