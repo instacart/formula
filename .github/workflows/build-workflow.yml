@@ -3,16 +3,9 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - README.md
-      - CHANGELOG.md # Should never be edited anyway
-      - .gitignore
-      - .github/**
-  pull_request_target:
+  pull_request:
     branches:
       - master
-    types:
-      - closed
 jobs:
   test:
     runs-on: ubuntu-latest

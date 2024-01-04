@@ -119,8 +119,8 @@ tasks.register("install") {
 val isBuild = gradle.startParameter.taskNames.any { it.contains("build") }
 if (isBuild) {
     subprojects {
-        plugins.withType(JacocoPlugin::class) {
-            tasks.withType<JacocoReport>() {
+        plugins.withType<JacocoPlugin> {
+            tasks.withType<JacocoReport> {
                 enabled = false
             }
         }

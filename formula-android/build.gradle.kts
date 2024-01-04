@@ -1,11 +1,8 @@
-import com.android.build.gradle.internal.coverage.JacocoReportTask
-import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
-import com.android.build.gradle.internal.lint.LintModelWriterTask
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     id("com.android.library")
     id("kotlin-android")
-    id("kotlin-kapt")
     id("kotlin-parcelize")
 }
 
@@ -20,30 +17,10 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
-}
 
-task<Jar>("sourcesJar") {
-    from(android.sourceSets["main"].java.srcDirs)
-    archiveClassifier.set("sources")
-}
-
-task<Javadoc>("javadoc") {
-    isFailOnError = false
-    source(android.sourceSets["main"].java.getSourceFiles())
-    classpath = project.files(
-        android.bootClasspath.joinToString(separator = File.pathSeparator),
-    )
-}
-
-task<Jar>("javadocJar") {
-    dependsOn("javadoc")
-    archiveClassifier.set("javadoc")
-    from(tasks["javadoc"].path)
-}
-
-artifacts {
-    archives(tasks["sourcesJar"])
-    archives(tasks["javadocJar"])
+    publishing {
+        singleVariant("release")
+    }
 }
 
 dependencies {
@@ -62,3 +39,4 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlin.reflect)
 }
+
