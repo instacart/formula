@@ -16,9 +16,25 @@ class MockitoFormulaTest {
         assertThat(formula.type()).isEqualTo(MyFormula::class)
     }
 
+    @Test fun mockActionFormula() {
+        val testFormula = ReplacementFormula().implementation()
+        val formula = mock<MyActionFormula>(defaultAnswer = CallsRealMethods())
+        whenever(formula.implementation()).thenReturn(testFormula)
+        assertThat(formula.implementation()).isEqualTo(testFormula)
+        assertThat(formula.type()).isEqualTo(MyActionFormula::class)
+    }
+
     class MyFormula : StatelessFormula<Unit, Unit>() {
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
             return Evaluation(Unit)
+        }
+    }
+
+    class MyActionFormula : ActionFormula<Unit, Unit>() {
+        override fun initialValue(input: Unit) = Unit
+
+        override fun action(input: Unit): Action<Unit> {
+            return Action.onData(Unit)
         }
     }
 
