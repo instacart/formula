@@ -27,7 +27,7 @@ dependencies {
 // accessing the files produced by those lint tasks
 plugins.withId("jacoco") {
   tasks.named("jacocoTestReport") {
-    dependsOn(tasks.withType(AndroidLintAnalysisTask::class.java))
-    dependsOn(tasks.withType(LintModelWriterTask::class.java))
+    dependsOn(tasks.withType<AndroidLintAnalysisTask>())
+    dependsOn(tasks.withType<LintModelWriterTask>())
   }
 }
