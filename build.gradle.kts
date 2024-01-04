@@ -115,4 +115,16 @@ tasks.register("install") {
     dependsOn(publishTasks)
 }
 
+// We disable jacoco report when running buildTask
+val isBuild = gradle.startParameter.taskNames.any { it.contains("build") }
+if (isBuild) {
+    subprojects {
+        plugins.withType(JacocoPlugin::class) {
+            tasks.withType<JacocoReport>() {
+                enabled = false
+            }
+        }
+    }
+}
+
 apply(from = "gradle/merge-reports.gradle")

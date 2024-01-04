@@ -30,8 +30,6 @@ task<Javadoc>("javadoc") {
     source(android.sourceSets["main"].java.getSourceFiles())
     classpath = project.files(
         android.bootClasspath.joinToString(separator = File.pathSeparator),
-        configurations.api,
-        configurations.implementation
     )
 }
 

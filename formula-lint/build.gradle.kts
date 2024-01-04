@@ -22,12 +22,3 @@ dependencies {
   testImplementation(libs.lint.tests)
   testImplementation(libs.junit)
 }
-
-// Need to register direct task dependencies since jacocoTestReport is
-// accessing the files produced by those lint tasks
-plugins.withId("jacoco") {
-  tasks.named("jacocoTestReport") {
-    dependsOn(tasks.withType<AndroidLintAnalysisTask>())
-    dependsOn(tasks.withType<LintModelWriterTask>())
-  }
-}

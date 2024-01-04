@@ -1,3 +1,7 @@
+import com.android.build.gradle.internal.coverage.JacocoReportTask
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.LintModelWriterTask
+
 plugins {
     id("com.android.library")
     id("kotlin-android")
@@ -28,8 +32,6 @@ task<Javadoc>("javadoc") {
     source(android.sourceSets["main"].java.getSourceFiles())
     classpath = project.files(
         android.bootClasspath.joinToString(separator = File.pathSeparator),
-        configurations.api,
-        configurations.implementation
     )
 }
 
