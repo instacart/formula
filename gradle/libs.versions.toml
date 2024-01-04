@@ -1,6 +1,6 @@
 [versions]
 android-gradle = "8.2.0"
-dokka-gradle = "1.4.32"
+dokka-gradle = "1.9.10"
 
 kotlin = "1.9.10"
 coroutines = "1.5.2"

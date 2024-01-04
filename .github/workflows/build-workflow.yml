@@ -1,5 +1,11 @@
 name: Build
-on: [pull_request, push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,7 +33,7 @@ jobs:
       - name: Run Formula Android Instrumentation Tests
         run: ./gradlew :formula-android-tests:testRelease
       - name: Run Formula Lint Tests
-        run: ./gradlew :formula-lint:test
+        run: ./gradlew :formula-lint:build
       - name: Generate Jacoco Report
         run: ./gradlew jacocoTestReportMerged
       - name: Save Jacoco Report
@@ -68,3 +74,11 @@ jobs:
         run: ./gradlew :samples:stopwatch-compose:assembleDebug
       - name: Assemble Stopwatch Kotlin Coroutine Sample
         run: ./gradlew :samples:stopwatch-coroutines:assembleDebug
+      - name: Publish all artifacts locally
+        run: |
+          ./gradlew :formula:build
+          ./gradlew :formula-android:build
+          ./gradlew :formula-test:build 
+          ./gradlew :formula-android-compose:build 
+          ./gradlew :formula-lint:build
+          ./gradlew publishToMavenLocal --no-parallel --no-daemon
