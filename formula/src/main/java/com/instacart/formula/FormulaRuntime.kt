@@ -39,10 +39,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var inputId: Int = 0
 
     /**
-     * Global transition effect queue which executes side-effects
-     * after all formulas are idle.
+     * Global side-effect queue which executes effects after all formulas are idle.
      */
-    private var globalEffectQueue = LinkedList<Effects>()
+    private val globalEffectQueue = LinkedList<Effects>()
 
     /**
      * Determines if we are iterating through [globalEffectQueue]. It prevents us from

@@ -192,7 +192,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
             listeners = listeners,
             delegate = this,
         )
-        val result = formula.evaluate(snapshot)
+        val result = formula.run {
+            snapshot.run { evaluate() }
+        }
 
         if (isValidationEnabled) {
             val oldOutput = lastFrame?.evaluation?.output
@@ -277,6 +279,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
         if (evaluate) {
+            // Child needs to re-evaluate, so we do as well.
             globalEvaluationId += 1
         }
 
@@ -284,7 +287,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     /**
-     * Called after [evaluate] to remove detached children, stop detached actions and start
+     * Called after [evaluation] to remove detached children, stop detached actions and start
      * new ones. It will start with child formulas first and then perform execution it self.
      *
      * @return True if we need to re-evaluate.
@@ -336,11 +339,5 @@ internal class FormulaManagerImpl<Input, State, Output>(
             childrenManager = value
             value
         }
-    }
-
-    private fun Formula<Input, State, Output>.evaluate(
-        snapshot: Snapshot<Input, State>
-    ): Evaluation<Output> {
-        return snapshot.run { evaluate() }
     }
 }
