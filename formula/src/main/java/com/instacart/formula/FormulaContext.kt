@@ -14,51 +14,14 @@ abstract class FormulaContext<out Input, State> internal constructor(
 ) {
 
     /**
-     * Creates a [Listener] that takes an [Event] and performs a [Transition].
+     * Creates a listener that takes an event and performs a [Transition]. It uses a composite
+     * key of [transition] type and optional [key] property.
      *
-     * It uses [transition] type as key.
-     */
-    fun <Event> onEvent(
-        transition: Transition<Input, State, Event>,
-    ): Listener<Event> {
-        return eventListener(
-            key = createScopedKey(transition.type()),
-            transition = transition
-        )
-    }
-
-    /**
-     * Creates a [Listener] that takes a [Event] and performs a [Transition].
-     *
-     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
-     */
-    fun <Event> onEvent(
-        key: Any,
-        transition: Transition<Input, State, Event>,
-    ): Listener<Event> {
-        return eventListener(
-            key = createScopedKey(transition.type(), key),
-            transition = transition
-        )
-    }
-
-    /**
-     * Creates a listener that takes an event and performs a [Transition].
-     *
-     * It uses [transition] type as key.
-     */
-    fun callback(transition: Transition<Input, State, Unit>): () -> Unit {
-        val listener = onEvent(transition)
-        return UnitListener(listener)
-    }
-
-    /**
-     * Creates a listener that takes an event and performs a [Transition].
-     *
-     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
+     * @param key Optional key property that the listener will be associated with. Same key value
+     * should not be used with the same [transition] type.
      */
     fun callback(
-        key: Any,
+        key: Any? = null,
         transition: Transition<Input, State, Unit>,
     ): () -> Unit {
         val listener = onEvent(key, transition)
@@ -66,28 +29,20 @@ abstract class FormulaContext<out Input, State> internal constructor(
     }
 
     /**
-     * Creates a listener that takes a [Event] and performs a [Transition].
+     * Creates a [Listener] that takes a [Event] and performs a [Transition]. It uses a composite
+     * key of [transition] type and optional [key] property.
      *
-     * It uses [transition] type as key.
+     * @param key Optional key property that the listener will be associated with. Same key value
+     * should not be used with the same [transition] type.
      */
-    @Deprecated("Use context.onEvent {} instead.", replaceWith = ReplaceWith("onEvent(transition)"))
-    fun <Event> eventCallback(
+    fun <Event> onEvent(
+        key: Any? = null,
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
-        return onEvent(transition)
-    }
-
-    /**
-     * Creates a listener that takes a [Event] and performs a [Transition].
-     *
-     * @param key key with which the listener is to be associated. Same key cannot be used for multiple listeners.
-     */
-    @Deprecated("Use context.onEvent(key) {} instead.", replaceWith = ReplaceWith("onEvent(key, transition)"))
-    fun <Event> eventCallback(
-        key: Any,
-        transition: Transition<Input, State, Event>,
-    ): Listener<Event> {
-        return onEvent(key, transition)
+        return eventListener(
+            key = createScopedKey(transition.type(), key),
+            transition = transition
+        )
     }
 
     /**
