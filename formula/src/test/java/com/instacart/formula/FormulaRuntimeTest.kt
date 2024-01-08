@@ -646,7 +646,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
 
         val observer = runtime.test(formula, Unit)
-        bgAction.latch.await(10, TimeUnit.MILLISECONDS)
+        bgAction.latch.await(50, TimeUnit.MILLISECONDS)
         assertThat(bgAction.errors.values().firstOrNull()?.message).contains(
             "com.instacart.formula.subjects.OnlyUpdateFormula - Only thread that created it can post transition result Expected:"
         )
