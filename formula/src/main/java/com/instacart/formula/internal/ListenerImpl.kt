@@ -18,8 +18,10 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
 
-        val deferredTransition = DeferredTransition(this, transition, event)
-        manager.onPendingTransition(deferredTransition)
+        manager.queue.postUpdate {
+            val deferredTransition = DeferredTransition(this, transition, event)
+            manager.onPendingTransition(deferredTransition)
+        }
     }
 
     fun disable() {

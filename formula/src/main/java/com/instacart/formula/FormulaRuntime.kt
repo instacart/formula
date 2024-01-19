@@ -3,30 +3,27 @@ package com.instacart.formula
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
-import com.instacart.formula.internal.ThreadChecker
+import com.instacart.formula.internal.SynchronizedUpdateQueue
 import java.util.LinkedList
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
  */
 class FormulaRuntime<Input : Any, Output : Any>(
-    private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val isValidationEnabled: Boolean = false,
     inspector: Inspector? = null,
 ) : ManagerDelegate {
+    private val synchronizedUpdateQueue = SynchronizedUpdateQueue()
+    private val inspector = FormulaPlugins.inspector(type = formula.type(), local = inspector)
     private val implementation = formula.implementation()
+
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
-    private val inspector = FormulaPlugins.inspector(
-        type = formula.type(),
-        local = inspector,
-    )
 
     private var emitOutput = false
     private var lastOutput: Output? = null
-
     private var input: Input? = null
     private var key: Any? = null
 
@@ -43,8 +40,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var inputId: Int = 0
 
     /**
-     * Global transition effect queue which executes side-effects
-     * after all formulas are idle.
+     * Global transition effect queue which executes side-effects after all formulas are idle.
      */
     private var globalEffectQueue = LinkedList<Effects>()
 
@@ -66,8 +62,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun onInput(input: Input) {
-        threadChecker.check("Input arrived on a wrong thread.")
+        synchronizedUpdateQueue.postUpdate { onInputInternal(input) }
+    }
 
+    private fun onInputInternal(input: Input) {
         if (isRuntimeTerminated) return
 
         val isKeyValid = isKeyValid(input)
@@ -105,8 +103,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun terminate() {
-        threadChecker.check("Need to unsubscribe on the main thread.")
+        synchronizedUpdateQueue.postUpdate(this::terminateInternal)
+    }
 
+    private fun terminateInternal() {
         if (isRuntimeTerminated) return
         isRuntimeTerminated = true
 
@@ -127,8 +127,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
-        threadChecker.check("Only thread that created it can post transition result")
-
         effects?.let {
             globalEffectQueue.addLast(effects)
         }
@@ -271,6 +269,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
+            queue = synchronizedUpdateQueue,
             delegate = this,
             formula = implementation,
             initialInput = initialInput,

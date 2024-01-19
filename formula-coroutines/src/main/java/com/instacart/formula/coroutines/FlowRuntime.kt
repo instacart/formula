@@ -3,7 +3,6 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.Inspector
-import com.instacart.formula.internal.ThreadChecker
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
@@ -22,12 +21,8 @@ object FlowRuntime {
         inspector: Inspector? = null,
         isValidationEnabled: Boolean = false,
     ): Flow<Output> {
-        val threadChecker = ThreadChecker(formula)
         return callbackFlow<Output> {
-            threadChecker.check("Need to subscribe on main thread.")
-
             val runtime = FormulaRuntime(
-                threadChecker = threadChecker,
                 formula = formula,
                 onOutput = this::trySendBlocking,
                 onError = this::close,
@@ -35,7 +30,7 @@ object FlowRuntime {
                 isValidationEnabled = isValidationEnabled,
             )
 
-            input.onEach { input -> runtime.onInput(input) }.launchIn(this)
+            input.onEach(runtime::onInput).launchIn(this)
 
             awaitClose {
                 runtime.terminate()
