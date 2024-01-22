@@ -19,7 +19,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
 ) : ManagerDelegate {
     private val implementation = formula.implementation()
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
-    private var hasInitialFinished = false
     private var emitOutput = false
     private var lastOutput: Output? = null
 
@@ -69,8 +68,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             )
             run()
 
-            hasInitialFinished = true
-            emitOutputIfNeeded(isInitialRun = true)
+            emitOutputIfNeeded()
         } else {
             inputId += 1
             run()
@@ -149,7 +147,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             executeTransitionEffects()
 
             if (!manager.isTerminated()) {
-                emitOutputIfNeeded(isInitialRun = false)
+                emitOutputIfNeeded()
             }
         } catch (e: Throwable) {
             isRunning = false
@@ -202,13 +200,17 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Emits output to the formula subscriber.
      */
-    private fun emitOutputIfNeeded(isInitialRun: Boolean) {
-        if (isInitialRun) {
-            lastOutput?.let(onOutput)
-        } else if (hasInitialFinished && emitOutput) {
+    private fun emitOutputIfNeeded() {
+        if (emitOutput) {
             emitOutput = false
             onOutput(checkNotNull(lastOutput))
         }
+//        if (isInitialRun) {
+//            lastOutput?.let(onOutput)
+//        } else if (hasInitialFinished && emitOutput) {
+//            emitOutput = false
+//            onOutput(checkNotNull(lastOutput))
+//        }
     }
 
     /**
