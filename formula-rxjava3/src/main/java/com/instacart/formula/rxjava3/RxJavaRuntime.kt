@@ -17,42 +17,24 @@ object RxJavaRuntime {
         isValidationEnabled: Boolean = false,
     ): Observable<Output> {
         val threadChecker = ThreadChecker(formula)
-        return Observable.create<Output> { emitter ->
-            val mergedInspector = FormulaPlugins.inspector(
-                type = formula.type(),
-                local = inspector,
-            )
-            val runtimeFactory = {
-                FormulaRuntime(
-                    threadChecker = threadChecker,
-                    formula = formula,
-                    onOutput = emitter::onNext,
-                    onError = emitter::onError,
-                    inspector = mergedInspector,
-                    isValidationEnabled = isValidationEnabled,
-                )
-            }
-
+        return Observable.create { emitter ->
             threadChecker.check("Need to subscribe on main thread.")
 
-            var runtime = runtimeFactory()
+            val runtime = FormulaRuntime(
+                threadChecker = threadChecker,
+                formula = formula,
+                onOutput = emitter::onNext,
+                onError = emitter::onError,
+                inspector = inspector,
+                isValidationEnabled = isValidationEnabled,
+            )
 
             val disposables = CompositeDisposable()
             disposables.add(input.subscribe({ input ->
-                threadChecker.check("Input arrived on a wrong thread.")
-                if (!runtime.isKeyValid(input)) {
-                    runtime.terminate()
-                    runtime = runtimeFactory()
-                }
                 runtime.onInput(input)
             }, emitter::onError))
 
-            val runnable = Runnable {
-                threadChecker.check("Need to unsubscribe on the main thread.")
-                runtime.terminate()
-            }
-            disposables.add(FormulaDisposableHelper.fromRunnable(runnable))
-
+            disposables.add(FormulaDisposableHelper.fromRunnable(runtime::terminate))
             emitter.setDisposable(disposables)
         }.distinctUntilChanged()
     }
