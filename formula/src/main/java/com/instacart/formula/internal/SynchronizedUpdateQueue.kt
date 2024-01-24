@@ -51,14 +51,14 @@ class SynchronizedUpdateQueue {
             return
         }
 
-        val success = if (updateQueue.peek() == null) {
+        val updateExecuted = if (updateQueue.peek() == null) {
             // No pending update, let's try to run our update immediately
-            takeOver(currentThread) { update() }
+            takeOver(currentThread, update)
         } else {
             false
         }
 
-        if (!success) {
+        if (!updateExecuted) {
             updateQueue.add(update)
         }
         tryToDrainQueue(currentThread)
@@ -74,15 +74,8 @@ class SynchronizedUpdateQueue {
             val peekUpdate = updateQueue.peek()
             if (peekUpdate != null) {
                 // Since there is a pending update, we try to process it.
-                val success = takeOver(currentThread) {
-                    // We successfully set ourselves as the running thread
-                    // We poll the queue to get the latest value (it could have changed). It
-                    // also removes the value from the queue.
-                    val actualUpdate = updateQueue.poll()
-                    actualUpdate?.invoke()
-                }
-
-                if (!success) {
+                val updateExecuted = takeOver(currentThread, this::pollAndExecute)
+                if (!updateExecuted) {
                     return
                 }
             } else {
@@ -91,13 +84,19 @@ class SynchronizedUpdateQueue {
         }
     }
 
+    private fun pollAndExecute() {
+        // We remove first update from the queue and execute if it exists.
+        val actualUpdate = updateQueue.poll()
+        actualUpdate?.invoke()
+    }
+
     /**
      * Tries to take over the processing and execute an [update].
      *
      * Returns true if it was able to successfully claim the ownership and execute the
      * update. Otherwise, returns false (this indicates another thread claimed the right first).
      */
-    private inline fun takeOver(currentThread: Thread, crossinline update: () -> Unit): Boolean {
+    private fun takeOver(currentThread: Thread, update: () -> Unit): Boolean {
         return if (threadRunning.compareAndSet(null, currentThread)) {
             // We took over the processing, let's execute the [update]
             try {

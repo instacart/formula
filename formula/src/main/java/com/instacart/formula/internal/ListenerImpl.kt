@@ -33,6 +33,6 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
 /**
  * A wrapper to convert Listener<Unit> from (Unit) -> Unit into () -> Unit
  */
-internal data class UnitListener(val delegate: Listener<Unit>): () -> Unit {
+internal data class UnitListener(private val delegate: Listener<Unit>): () -> Unit {
     override fun invoke() = delegate(Unit)
 }
