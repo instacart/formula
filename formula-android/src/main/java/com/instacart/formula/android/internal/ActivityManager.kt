@@ -6,6 +6,7 @@ import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaFragment
+import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.ViewFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -61,12 +62,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.attachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
-        uiSubscription = fragmentState.subscribe {
-            Utils.assertMainThread()
 
+        val updateScheduler = AndroidUpdateScheduler<FragmentFlowState> {
             renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
+
+        uiSubscription = fragmentState.subscribe(updateScheduler::emitUpdate)
     }
 
     fun onActivityStarted(activity: Activity) {

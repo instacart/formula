@@ -71,9 +71,11 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     }
 
     override fun send(effect: Activity.() -> Unit) {
-        // We allow emitting effects only after activity has started
-        startedActivity()?.effect() ?: run {
-            // Log missing activity.
+        Utils.executeOnMainThread {
+            // We allow emitting effects only after activity has started
+            startedActivity()?.effect() ?: run {
+                // Log missing activity.
+            }
         }
     }
 
