@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.android.FragmentEnvironment
 
 class TodoApp : Application() {
 
@@ -12,9 +13,11 @@ class TodoApp : Application() {
 
         FormulaAndroid.init(
             application = this,
-            onFragmentError = { contract, error ->
-                Log.e("TodoApp", "fragment crashed", error)
-            },
+            fragmentEnvironment = FragmentEnvironment(
+                onScreenError = { _, error ->
+                    Log.e("TodoApp", "fragment crashed", error)
+                }
+            ),
             activities = {
                 activity<TodoActivity> {
                     val component = TodoAppComponent(this)

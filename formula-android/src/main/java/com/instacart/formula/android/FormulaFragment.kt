@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.instacart.formula.android.internal.getFormulaFragmentId
 import java.lang.Exception
@@ -33,7 +34,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     }
 
     private val environment: FragmentEnvironment
-        get() = FormulaFragmentDelegate.fragmentEnvironment()
+        get() = FormulaAndroid.fragmentEnvironment()
 
     private val fragmentDelegate: FragmentEnvironment.FragmentDelegate
         get() = environment.fragmentDelegate

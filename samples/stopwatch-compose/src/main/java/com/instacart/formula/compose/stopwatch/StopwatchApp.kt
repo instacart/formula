@@ -3,6 +3,7 @@ package com.instacart.formula.compose.stopwatch
 import android.app.Application
 import android.util.Log
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.android.FragmentEnvironment
 
 class StopwatchApp : Application() {
 
@@ -11,9 +12,11 @@ class StopwatchApp : Application() {
 
         FormulaAndroid.init(
             application = this,
-            onFragmentError = { contract, error ->
-                Log.e("StopwatchApp", "fragment crashed", error)
-            },
+            fragmentEnvironment = FragmentEnvironment(
+                onScreenError = { key, error ->
+                    Log.e("StopwatchApp", "fragment crashed", error)
+                }
+            ),
             activities = {
                 activity<StopwatchActivity> {
                     store(
