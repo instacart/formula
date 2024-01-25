@@ -28,10 +28,10 @@ class AndroidUpdateScheduler<Value : Any>(
 
     private val updateRunnable = object : Runnable {
         override fun run() {
-            updateScheduled.set(false)
-
             var localPending = pendingValue.getAndSet(null)
             while (localPending != null) {
+                updateScheduled.set(false)
+
                 // Handle the update
                 isUpdating = true
                 update(localPending)
