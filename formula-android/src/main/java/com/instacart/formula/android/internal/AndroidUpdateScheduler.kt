@@ -38,7 +38,7 @@ class AndroidUpdateScheduler<Value : Any>(
                 isUpdating = false
 
                 // Check if another update arrived while we were processing.
-                localPending =  pendingValue.getAndSet(null)
+                localPending = pendingValue.getAndSet(null)
 
                 if (localPending != null) {
                     // We will take over processing, so let's clear the message
@@ -63,7 +63,6 @@ class AndroidUpdateScheduler<Value : Any>(
         } else {
             // If no update is scheduled, schedule one
             if (updateScheduled.compareAndSet(false, true)) {
-
                 Utils.mainThreadHandler.post(updateRunnable)
             }
         }
