@@ -3,7 +3,6 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
-import com.instacart.formula.actions.EventOnBgThreadAction
 import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
@@ -85,9 +84,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
-
 
 @RunWith(Parameterized::class)
 class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
@@ -634,28 +631,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val observer = runtime.test(formula, Unit)
         assertThat(observer.values()).containsExactly(Unit).inOrder()
         assertThat(eventCallback.values()).containsExactly("a", "b").inOrder()
-    }
-
-    @Ignore("Not valid anymore since we enabled thread-safety")
-    @Test
-    fun `when action returns value on background thread, we emit an error`() {
-        val bgAction = EventOnBgThreadAction()
-        val eventCallback = TestEventCallback<String>()
-        val formula = OnlyUpdateFormula<Unit> {
-            bgAction.onEvent {
-                transition {
-                    eventCallback(it.toString())
-                }
-            }
-        }
-
-        val observer = runtime.test(formula, Unit)
-        if (!bgAction.latch.await(50, TimeUnit.MILLISECONDS)) {
-            throw IllegalStateException("Timeout")
-        }
-        assertThat(bgAction.errors.values().firstOrNull()?.message).contains(
-            "com.instacart.formula.subjects.OnlyUpdateFormula - Only thread that created it can post transition result Expected:"
-        )
     }
 
     @Test fun `stream is disposed when evaluation does not contain it`() {
@@ -1342,7 +1317,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             awaitCompletion()
 
             thread("c") { dispose() }
-            thread("d") { input("key-2") }
+            thread("d") {
+                // We delay to ensure that dispose is called first
+                Thread.sleep(50)
+                input("key-2")
+            }
 
             awaitEvents { events ->
                 assertThat(events).hasSize(1)
