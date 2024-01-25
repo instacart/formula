@@ -26,7 +26,7 @@ class AndroidUpdateScheduler<Value : Any>(
      */
     private var isUpdating = false
 
-    private val updateRunnable = object :Runnable {
+    private val updateRunnable = object : Runnable {
         override fun run() {
             updateScheduled.set(false)
 

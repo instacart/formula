@@ -12,14 +12,6 @@ internal object Utils {
         }
     }
 
-    inline fun executeOnMainThread(crossinline runnable: () -> Unit) {
-        if (isMainThread()) {
-            runnable()
-        } else {
-            mainThreadHandler.post { runnable() }
-        }
-    }
-
     fun isMainThread(): Boolean {
         return Looper.getMainLooper() == Looper.myLooper()
     }
