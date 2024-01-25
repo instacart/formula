@@ -28,10 +28,10 @@ class AndroidUpdateScheduler<Value : Any>(
 
     private val updateRunnable = object : Runnable {
         override fun run() {
+            updateScheduled.set(false)
+
             var localPending = pendingValue.getAndSet(null)
             while (localPending != null) {
-                updateScheduled.set(false)
-
                 // Handle the update
                 isUpdating = true
                 update(localPending)
@@ -41,7 +41,8 @@ class AndroidUpdateScheduler<Value : Any>(
                 localPending = pendingValue.getAndSet(null)
 
                 if (localPending != null) {
-                    // We will take over processing, so let's clear the message
+                    // We will perform the update, let's clear the values.
+                    updateScheduled.set(false)
                     Utils.mainThreadHandler.removeCallbacks(this)
                 }
             }

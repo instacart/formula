@@ -72,7 +72,10 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
     override fun types(): Set<Class<*>> = types
 
     override fun binds(key: Any): Boolean {
-        return types.contains(key.javaClass)
+        bindings.forEachIndices {
+            if (it.binds(key)) return true
+        }
+        return false
     }
 
     override fun bind(context: FormulaContext<*, *>, input: Input<ParentComponent>) {
