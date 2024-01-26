@@ -4,7 +4,9 @@ import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintResult
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.instacart.formula.lint.WrongFormulaUsageDetector.Companion.issues
+import com.intellij.lang.PsiBuilderUtil.expect
 import org.junit.Test
 
 class WrongFormulaUsageDetectorTest {
@@ -95,6 +97,7 @@ class WrongFormulaUsageDetectorTest {
         return lint()
             .files(*array)
             .issues(*issues)
+            .skipTestModes(TestMode.SUPPRESSIBLE)
             .run()
     }
 

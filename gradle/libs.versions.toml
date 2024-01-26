@@ -1,5 +1,5 @@
 [versions]
-android-gradle = "8.2.0"
+android-gradle = "8.2.2"
 dokka-gradle = "1.9.10"
 
 kotlin = "1.9.10"
@@ -14,7 +14,7 @@ lifecycleKtx = '2.6.2'
 androidTest = "1.4.0"
 espresso = "3.4.0"
 robolectric = "4.11.1"
-lint = "31.2.0"
+lint = "31.2.2"
 autoService = "1.1.1"
 
 [libraries]
