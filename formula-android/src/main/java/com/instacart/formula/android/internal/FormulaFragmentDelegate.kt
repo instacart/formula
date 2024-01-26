@@ -1,16 +1,13 @@
 package com.instacart.formula.android.internal
 
+import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.FormulaAndroid.fragmentEnvironment
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.ViewFactory
 
 internal object FormulaFragmentDelegate {
-    var appManager: AppManager? = null
-    var fragmentEnvironment: FragmentEnvironment? = null
-
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
-        val appManager = checkNotNull(appManager) { "FormulaAndroid.init() not called." }
+        val appManager = FormulaAndroid.appManagerOrThrow()
 
         val activity = fragment.activity ?: run {
             fragmentEnvironment().logger("FormulaFragment has no activity attached: ${fragment.getFragmentKey()}")
@@ -29,10 +26,5 @@ internal object FormulaFragmentDelegate {
             return null
         }
         return viewFactory
-    }
-
-
-    fun fragmentEnvironment(): FragmentEnvironment {
-        return checkNotNull(fragmentEnvironment) { "FormulaAndroid.init() not called." }
     }
 }

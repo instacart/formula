@@ -35,10 +35,10 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
             val component = state.component
             if (component != null) {
                 val childInput = Input(
-                    input.environment,
-                    component.component,
-                    input.activeFragments,
-                    input.onInitializeFeature,
+                    environment = input.environment,
+                    component = component.component,
+                    activeFragments = input.activeFragments,
+                    onInitializeFeature = input.onInitializeFeature,
                 )
                 bindings.forEachIndices {
                     it.bind(context, childInput)

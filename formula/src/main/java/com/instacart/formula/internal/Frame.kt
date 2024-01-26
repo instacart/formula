@@ -14,7 +14,7 @@ import com.instacart.formula.Evaluation
  */
 internal class Frame<Input, State, Output>(
     val input: Input,
-    val state: State,
+    private val state: State,
     val evaluation: Evaluation<Output>,
     val associatedEvaluationId: Long,
 )

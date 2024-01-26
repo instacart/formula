@@ -3,7 +3,6 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
-import com.instacart.formula.actions.EventOnBgThreadAction
 import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
@@ -29,12 +28,13 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
-import com.instacart.formula.subjects.MultiChildIndirectStateChangeRobot
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
 import com.instacart.formula.subjects.MessageFormula
 import com.instacart.formula.subjects.MixingCallbackUseWithKeyUse
+import com.instacart.formula.subjects.MultiChildIndirectStateChangeRobot
+import com.instacart.formula.subjects.MultiThreadRobot
 import com.instacart.formula.subjects.MultipleChildEvents
 import com.instacart.formula.subjects.NestedCallbackCallRobot
 import com.instacart.formula.subjects.NestedChildTransitionAfterNoEvaluationPass
@@ -50,8 +50,10 @@ import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
 import com.instacart.formula.subjects.ParentUpdateChildAndSelfOnEventRobot
 import com.instacart.formula.subjects.PendingActionFormulaTerminatedOnActionInit
 import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
+import com.instacart.formula.subjects.ReusableFunctionCreatesUniqueListeners
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
+import com.instacart.formula.subjects.SleepFormula
 import com.instacart.formula.subjects.StartStopFormula
 import com.instacart.formula.subjects.StateTransitionTimingFormula
 import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
@@ -60,9 +62,8 @@ import com.instacart.formula.subjects.SubscribesToAllUpdatesBeforeDeliveringMess
 import com.instacart.formula.subjects.TerminateFormula
 import com.instacart.formula.subjects.TestKey
 import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
-import com.instacart.formula.subjects.UseInputFormula
-import com.instacart.formula.subjects.ReusableFunctionCreatesUniqueListeners
 import com.instacart.formula.subjects.UniqueListenersWithinLoop
+import com.instacart.formula.subjects.UseInputFormula
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
@@ -83,7 +84,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
@@ -631,25 +631,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val observer = runtime.test(formula, Unit)
         assertThat(observer.values()).containsExactly(Unit).inOrder()
         assertThat(eventCallback.values()).containsExactly("a", "b").inOrder()
-    }
-
-    @Test
-    fun `when action returns value on background thread, we emit an error`() {
-        val bgAction = EventOnBgThreadAction()
-        val eventCallback = TestEventCallback<String>()
-        val formula = OnlyUpdateFormula<Unit> {
-            bgAction.onEvent {
-                transition {
-                    eventCallback(it.toString())
-                }
-            }
-        }
-
-        val observer = runtime.test(formula, Unit)
-        bgAction.latch.await(10, TimeUnit.MILLISECONDS)
-        assertThat(bgAction.errors.values().firstOrNull()?.message).contains(
-            "com.instacart.formula.subjects.OnlyUpdateFormula - Only thread that created it can post transition result Expected:"
-        )
     }
 
     @Test fun `stream is disposed when evaluation does not contain it`() {
@@ -1292,6 +1273,60 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .assertValue(2)
             .resetKey()
             .assertValue(0)
+    }
+
+    @Test
+    fun `formula multi-thread handoff to executing thread`() {
+        with(MultiThreadRobot(runtime)) {
+            thread("thread-a", 50)
+            thread("thread-b", 10)
+            awaitCompletion()
+            thread("thread-b", 10)
+
+            awaitEvents(
+                SleepFormula.SleepEvent(50, "thread-a"),
+                // First thread-b event is handed-off to thread-a
+                SleepFormula.SleepEvent(10, "thread-a"),
+                // Second thread-b event is handled by thread-b
+                SleepFormula.SleepEvent(10, "thread-b")
+            )
+        }
+    }
+
+    @Test
+    fun `formula multi-threaded events fired at the same time`() {
+        with(MultiThreadRobot(runtime)) {
+            thread("a", 25)
+            thread("b", 25)
+            thread("c", 25)
+            thread("d", 25)
+
+            awaitEvents { events ->
+                assertThat(events).hasSize(4)
+
+                val durations = events.map { it.duration }
+                assertThat(durations).containsExactly(25L, 25L, 25L, 25L)
+            }
+        }
+    }
+
+    @Test
+    fun `formula multi-threaded input after termination`() {
+        with(MultiThreadRobot(runtime)) {
+            thread("a", 25)
+            awaitCompletion()
+
+            thread("c") { dispose() }
+            thread("d") {
+                // We delay to ensure that dispose is called first
+                Thread.sleep(50)
+                input("key-2")
+            }
+
+            awaitEvents { events ->
+                assertThat(events).hasSize(1)
+            }
+        }
     }
 
     @Test

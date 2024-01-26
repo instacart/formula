@@ -31,12 +31,15 @@ dependencies {
     api(libs.rxandroid)
     api(libs.rxrelay)
 
+
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.androidx.test.junit)
     testImplementation(libs.espresso.core)
-    testImplementation(libs.truth)
+    testImplementation(libs.kotlin.reflect)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
-    testImplementation(libs.kotlin.reflect)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.truth)
 }
 

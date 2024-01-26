@@ -11,13 +11,13 @@ import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.internal.AppManager
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import java.lang.IllegalStateException
 
 object FormulaAndroid {
 
     private var application: Application? = null
     private var appManager: AppManager? = null
+    private var fragmentEnvironment: FragmentEnvironment? = null
 
     /**
      * Initializes Formula Android integration. Should be called within [Application.onCreate].
@@ -40,31 +40,14 @@ object FormulaAndroid {
 
         this.application = application
         this.appManager = appManager
-        FormulaFragmentDelegate.appManager = appManager
-        FormulaFragmentDelegate.fragmentEnvironment = fragmentEnvironment
-    }
-
-    /**
-     * Initializes Formula Android integration. Should be called within [Application.onCreate].
-     *
-     * @param logger A logger for debug Formula Android events.
-     * @param onFragmentError A global handler for fragment errors. Override this to log the crashes.
-     */
-    fun init(
-        application: Application,
-        logger: ((String) -> Unit)? = null,
-        onFragmentError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
-        activities: ActivityConfigurator.() -> Unit
-    ) {
-        val fragmentEnvironment = FragmentEnvironment(logger ?: {}, onFragmentError)
-        init(application, fragmentEnvironment, activities)
+        this.fragmentEnvironment = fragmentEnvironment
     }
 
     /**
      * Call this method in [FragmentActivity.onCreate] before calling [FragmentActivity.super.onCreate]
      */
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
-        managerOrThrow(activity).onPreCreate(activity, savedInstance)
+        appManagerOrThrow().onPreCreate(activity, savedInstance)
     }
 
     /**
@@ -72,7 +55,7 @@ object FormulaAndroid {
      */
     fun onActivityResult(activity: FragmentActivity, requestCode: Int, resultCode: Int, data: Intent?) {
         val result = ActivityResult(requestCode, resultCode, data)
-        managerOrThrow(activity).onActivityResult(activity, result)
+        appManagerOrThrow().onActivityResult(activity, result)
     }
 
     /**
@@ -91,21 +74,30 @@ object FormulaAndroid {
      * ```
      */
     fun onBackPressed(activity: FragmentActivity): Boolean {
-        return managerOrThrow(activity).onBackPressed(activity)
-    }
-
-    private fun managerOrThrow(activity: FragmentActivity): AppManager {
-        return appManager ?: throw IllegalStateException("call FormulaAndroid.init() from your Application: $activity")
+        return appManagerOrThrow().onBackPressed(activity)
     }
 
     /**
      * Used in testing to clear current store manager.
      */
     @VisibleForTesting fun reset() {
-        val app = application ?: throw IllegalStateException("not initialized")
+        val app = ensureInitialized(application)
         app.unregisterActivityLifecycleCallbacks(appManager)
 
         application = null
         appManager = null
+    }
+
+
+    internal fun appManagerOrThrow(): AppManager {
+        return ensureInitialized(appManager)
+    }
+
+    internal fun fragmentEnvironment(): FragmentEnvironment {
+        return ensureInitialized(fragmentEnvironment)
+    }
+
+    private fun <T : Any> ensureInitialized(variable: T?): T {
+        return checkNotNull(variable) { "Need to call FormulaAndroid.init() from your Application." }
     }
 }

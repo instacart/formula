@@ -1,6 +1,5 @@
 package com.instacart.formula.android.internal
 
-import android.os.SystemClock
 import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
