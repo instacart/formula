@@ -15,14 +15,12 @@ buildscript {
         classpath(libs.android.gradle)
         classpath(libs.kotlin.gradle)
         classpath(libs.jacoco.gradle)
-        classpath(libs.version.gradle)
         classpath(libs.dokka.gradle)
         classpath(libs.dokka.android.gradle)
         classpath(libs.maven.publish.gradle)
     }
 }
 
-apply(plugin = "com.github.ben-manes.versions")
 apply(plugin = "org.jetbrains.dokka")
 apply(from = "gradle/jacoco.gradle")
 
