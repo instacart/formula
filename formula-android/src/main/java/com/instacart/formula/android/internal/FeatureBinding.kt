@@ -32,7 +32,6 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
                         if (binds(key)) {
                             Action.onData(fragmentId).onEvent {
                                 transition {
-                                    // TODO: should this happen on the main thread? It needs to be available to main thread
                                     try {
                                         val dependencies = toDependencies(input.component)
                                         val feature = input.environment.fragmentDelegate.initializeFeature(

@@ -6,7 +6,6 @@ import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.ViewFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -20,12 +19,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    private val fragmentState = store
-        .contracts
-        .state(environment)
-        .doOnNext(delegate.fragmentFlowStateRelay::accept)
-        .replay(1)
-
     internal val stateSubscription: Disposable
     private var uiSubscription: Disposable? = null
     private var fragmentRenderView: FragmentFlowRenderView? = null
@@ -33,11 +26,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
     init {
         stateSubscription = if (store.streams != null) {
             val disposables = CompositeDisposable()
-            disposables.add(fragmentState.connect())
+            disposables.add(subscribeToFragmentStateChanges())
             disposables.add(store.streams.invoke(StreamConfiguratorIml(delegate)))
             disposables
         } else {
-            fragmentState.connect()
+            subscribeToFragmentStateChanges()
         }
     }
 
@@ -63,12 +56,10 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
 
-        val updateScheduler = AndroidUpdateScheduler<FragmentFlowState> {
+        uiSubscription = delegate.fragmentFlowState().subscribe {
             renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
-
-        uiSubscription = fragmentState.subscribe(updateScheduler::emitUpdate)
     }
 
     fun onActivityStarted(activity: Activity) {
@@ -113,6 +104,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
         return fragmentRenderView?.viewFactory(fragment)
+    }
+
+    private fun subscribeToFragmentStateChanges(): Disposable {
+        return store
+            .contracts
+            .state(environment)
+            .subscribe(delegate.fragmentFlowStateRelay::accept)
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {

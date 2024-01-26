@@ -42,7 +42,6 @@ internal class FragmentFlowRenderView(
 
     private val featureProvider = object : FeatureProvider {
         override fun getFeature(id: FragmentId): FeatureEvent? {
-            // TODO: should we initialize feature if it's missing
             return fragmentState?.features?.get(id)
         }
     }

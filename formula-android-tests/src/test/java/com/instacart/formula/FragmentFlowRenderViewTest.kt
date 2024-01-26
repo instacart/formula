@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import android.os.Looper
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
@@ -9,6 +10,8 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
+import com.instacart.formula.android.FragmentEnvironment
+import com.instacart.formula.rxjava3.toObservable
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
@@ -19,7 +22,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
+import org.robolectric.Shadows
 import org.robolectric.annotation.LooperMode
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class FragmentFlowRenderViewTest {
@@ -29,6 +36,7 @@ class FragmentFlowRenderViewTest {
     private var lastState: FragmentFlowState? = null
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
     private var onPreCreated: (TestFragmentActivity) -> Unit = {}
+    private var updateThreads = linkedSetOf<Thread>()
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
@@ -40,6 +48,8 @@ class FragmentFlowRenderViewTest {
                         },
                         onRenderFragmentState = { a, state ->
                             lastState = state
+
+                            updateThreads.add(Thread.currentThread())
                         },
                         contracts =  {
                             bind(TestFeatureFactory<TestKey> { stateChanges(it) })
@@ -52,6 +62,7 @@ class FragmentFlowRenderViewTest {
         },
         cleanUp = {
             lastState = null
+            updateThreads = linkedSetOf()
         })
 
     private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
@@ -197,6 +208,51 @@ class FragmentFlowRenderViewTest {
 
         assertFragmentViewIsCreated(TestKeyWithId(1))
         assertThat(activeContracts()).containsExactly(TestKey(), TestKeyWithId(1)).inOrder()
+    }
+
+    @Test fun `background feature events are moved to the main thread`() {
+
+        val executor = Executors.newSingleThreadExecutor()
+        val latch = CountDownLatch(1)
+
+        val initial = TestKey()
+        val keyWithId = TestKeyWithId(1)
+
+        navigateToTaskDetail(1)
+        // Both contracts should be active.
+        assertThat(activeContracts()).containsExactly(TestKey(), TestKeyWithId(1)).inOrder()
+
+        // Pass feature updates on a background thread
+        executor.execute {
+            stateChangeRelay.accept(initial to "main-state-1")
+            stateChangeRelay.accept(initial to "main-state-2")
+            stateChangeRelay.accept(initial to "main-state-3")
+
+            stateChangeRelay.accept(keyWithId to "detail-state-1")
+            stateChangeRelay.accept(keyWithId to "detail-state-2")
+            stateChangeRelay.accept(keyWithId to "detail-state-3")
+            latch.countDown()
+        }
+
+        // Wait for background execution to finish
+        if(!latch.await(100, TimeUnit.MILLISECONDS)) {
+            throw IllegalStateException("timeout")
+        }
+
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        val currentState = lastState?.states.orEmpty()
+            .mapKeys { it.key.key }
+            .mapValues { it.value.renderModel }
+
+        val expected = mapOf(
+            TestKey() to "main-state-3",
+            TestKeyWithId(1) to "detail-state-3"
+        )
+
+        assertThat(currentState).isEqualTo(expected)
+        assertThat(updateThreads).hasSize(1)
+        assertThat(updateThreads).containsExactly(Thread.currentThread())
     }
 
     private fun navigateBack() {
