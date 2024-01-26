@@ -2,7 +2,7 @@ package com.examples.todoapp.tasks
 
 import com.instacart.formula.Listener
 
-class TaskItemRenderModel(
+data class TaskItemRenderModel(
     val id: String,
     val text: String,
     val isSelected: Boolean,
