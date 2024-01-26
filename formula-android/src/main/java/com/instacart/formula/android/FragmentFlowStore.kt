@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.internal.FeatureObservableAction
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
@@ -122,14 +123,18 @@ class FragmentFlowStore @PublishedApi internal constructor(
                     val fragmentId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
-                        RxAction.fromObservable(feature) {
-                            feature.state.onErrorResumeNext {
-                                input.onScreenError(fragmentId.key, it)
-                                Observable.empty()
+                        val action = FeatureObservableAction(
+                            fragmentEnvironment = input,
+                            fragmentId = fragmentId,
+                            feature = feature,
+                        )
+                        action.onEvent {
+                            if (state.activeIds.contains(fragmentId)) {
+                                val keyState = FragmentState(fragmentId.key, it)
+                                transition(state.copy(states = state.states.plus(fragmentId to keyState)))
+                            } else {
+                                none()
                             }
-                        }.onEvent {
-                            val keyState = FragmentState(fragmentId.key, it)
-                            transition(state.copy(states = state.states.plus(fragmentId to keyState)))
                         }
                     }
                 }

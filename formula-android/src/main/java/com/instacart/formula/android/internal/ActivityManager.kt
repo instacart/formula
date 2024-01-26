@@ -19,12 +19,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    private val fragmentState = store
-        .contracts
-        .state(environment)
-        .doOnNext(delegate.fragmentFlowStateRelay::accept)
-        .replay(1)
-
     internal val stateSubscription: Disposable
     private var uiSubscription: Disposable? = null
     private var fragmentRenderView: FragmentFlowRenderView? = null
@@ -32,11 +26,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
     init {
         stateSubscription = if (store.streams != null) {
             val disposables = CompositeDisposable()
-            disposables.add(fragmentState.connect())
+            disposables.add(subscribeToFragmentStateChanges())
             disposables.add(store.streams.invoke(StreamConfiguratorIml(delegate)))
             disposables
         } else {
-            fragmentState.connect()
+            subscribeToFragmentStateChanges()
         }
     }
 
@@ -61,9 +55,8 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.attachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
-        uiSubscription = fragmentState.subscribe {
-            Utils.assertMainThread()
 
+        uiSubscription = delegate.fragmentFlowState().subscribe {
             renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
@@ -111,6 +104,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
         return fragmentRenderView?.viewFactory(fragment)
+    }
+
+    private fun subscribeToFragmentStateChanges(): Disposable {
+        return store
+            .contracts
+            .state(environment)
+            .subscribe(delegate.fragmentFlowStateRelay::accept)
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {

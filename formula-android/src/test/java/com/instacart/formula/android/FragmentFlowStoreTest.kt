@@ -1,5 +1,7 @@
 package com.instacart.formula.android
 
+import android.os.Looper
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeAuthFlowFactory
@@ -10,9 +12,16 @@ import com.instacart.formula.android.fakes.NoOpViewFactory
 import com.instacart.formula.android.fakes.TestAccountFragmentKey
 import com.instacart.formula.android.fakes.TestLoginFragmentKey
 import com.instacart.formula.android.fakes.TestSignUpFragmentKey
+import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Shadows
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
+@RunWith(AndroidJUnit4::class)
 class FragmentFlowStoreTest {
 
     @Test fun `duplicate contract registration throws an exception`() {
@@ -173,6 +182,57 @@ class FragmentFlowStoreTest {
                 expectedState(),
                 expectedState(MainKey(1) to "Dependency: 100")
             )
+    }
+
+    @Test fun `background feature events are moved to the main thread`() {
+        val executor = Executors.newSingleThreadExecutor()
+        val component = FakeComponent()
+        val store = createStore(component)
+
+        val latch = CountDownLatch(1)
+
+        val updates = mutableListOf<Map<FragmentKey, Any>>()
+        val updateThreads = linkedSetOf<Thread>()
+        val disposable = store.toObservable(FragmentEnvironment()).subscribe {
+            val states = it.states.mapKeys { it.key.key }.mapValues { it.value.renderModel }
+            updates.add(states)
+
+            updateThreads.add(Thread.currentThread())
+        }
+
+        // Add couple of features
+        store.onLifecycleEffect(MainKey(1).asAddedEvent())
+        store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+
+        // Pass feature updates on a background thread
+        executor.execute {
+            component.updateRelay.accept(MainKey(1) to "main-state-1")
+            component.updateRelay.accept(MainKey(1) to "main-state-2")
+            component.updateRelay.accept(MainKey(1) to "main-state-3")
+
+            component.updateRelay.accept(DetailKey(2) to "detail-state-1")
+            component.updateRelay.accept(DetailKey(2) to "detail-state-2")
+            component.updateRelay.accept(DetailKey(2) to "detail-state-3")
+            latch.countDown()
+        }
+
+        // Wait for background execution to finish
+        if(!latch.await(100, TimeUnit.MILLISECONDS)) {
+            throw IllegalStateException("timeout")
+        }
+
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        val expected = mapOf(
+            MainKey(1) to "main-state-3",
+            DetailKey(2) to "detail-state-3"
+        )
+
+        val last = updates.last()
+        assertThat(last).isEqualTo(expected)
+
+        assertThat(updateThreads).hasSize(1)
+        assertThat(updateThreads).containsExactly(Thread.currentThread())
     }
 
     private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, FragmentState>> {
