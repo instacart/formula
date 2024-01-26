@@ -118,6 +118,8 @@ internal class FragmentFlowRenderView(
     }
 
     fun render(state: FragmentFlowState) {
+        Utils.assertMainThread()
+
         fragmentState = state
         updateVisibleFragments(state)
     }

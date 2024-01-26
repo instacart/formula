@@ -3,26 +3,27 @@ package com.instacart.formula
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
-import com.instacart.formula.internal.ThreadChecker
+import com.instacart.formula.internal.SynchronizedUpdateQueue
 import java.util.LinkedList
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
  */
 class FormulaRuntime<Input : Any, Output : Any>(
-    private val threadChecker: ThreadChecker,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val isValidationEnabled: Boolean = false,
-    private val inspector: Inspector? = null,
+    inspector: Inspector? = null,
 ) : ManagerDelegate {
+    private val synchronizedUpdateQueue = SynchronizedUpdateQueue()
+    private val inspector = FormulaPlugins.inspector(type = formula.type(), local = inspector)
     private val implementation = formula.implementation()
+
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
-    private var hasInitialFinished = false
+
     private var emitOutput = false
     private var lastOutput: Output? = null
-
     private var input: Input? = null
     private var key: Any? = null
 
@@ -39,8 +40,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var inputId: Int = 0
 
     /**
-     * Global transition effect queue which executes side-effects
-     * after all formulas are idle.
+     * Global transition effect queue which executes side-effects after all formulas are idle.
      */
     private var globalEffectQueue = LinkedList<Effects>()
 
@@ -50,34 +50,66 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private var isExecutingEffects: Boolean = false
 
-    fun isKeyValid(input: Input): Boolean {
+    /**
+     * This is a global termination flag that indicates that upstream has disposed of the
+     * this [FormulaRuntime] instance. We will not accept any more [onInput] changes and will
+     * not emit any new [Output] events.
+     */
+    private var isRuntimeTerminated: Boolean = false
+
+    private fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == formula.key(input)
     }
 
     fun onInput(input: Input) {
-        val initialization = this.input == null
+        synchronizedUpdateQueue.postUpdate { onInputInternal(input) }
+    }
+
+    private fun onInputInternal(input: Input) {
+        if (isRuntimeTerminated) return
+
+        val isKeyValid = isKeyValid(input)
+
         this.input = input
         this.key = formula.key(input)
 
-        if (initialization) {
-            manager = FormulaManagerImpl(
-                delegate = this,
-                formula = implementation,
-                initialInput = input,
-                loggingType = formula::class,
-                inspector = inspector,
-            )
-            run()
+        val current = manager
+        if (current == null) {
+            // First input arrived, need to start a formula manager
+            startNewManager(input)
+        } else if (!isKeyValid) {
+            // Formula key changed, need to reset the formula state. We mark old manager as
+            // terminated, will perform termination effects and then start a new manager.
+            current.markAsTerminated()
 
-            hasInitialFinished = true
-            emitOutputIfNeeded(isInitialRun = true)
+            // Input changed, increment the id
+            inputId += 1
+
+            if (isRunning) {
+                // Since we are already running, we let that function to take over.
+                // No need to do anything more here
+            } else {
+                // Let's first execute side-effects
+                current.performTerminationSideEffects()
+
+                // Start new manager
+                startNewManager(input)
+            }
         } else {
+            // Input changed, need to re-run
             inputId += 1
             run()
         }
     }
 
     fun terminate() {
+        synchronizedUpdateQueue.postUpdate(this::terminateInternal)
+    }
+
+    private fun terminateInternal() {
+        if (isRuntimeTerminated) return
+        isRuntimeTerminated = true
+
         manager?.apply {
             markAsTerminated()
 
@@ -89,14 +121,12 @@ class FormulaRuntime<Input : Any, Output : Any>(
              * This way, we let runFormula() exit out before we terminate everything.
              */
             if (!isRunning) {
-                performTermination()
+                terminateManager(this)
             }
         }
     }
 
     override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
-        threadChecker.check("Only thread that created it can post transition result")
-
         effects?.let {
             globalEffectQueue.addLast(effects)
         }
@@ -135,7 +165,18 @@ class FormulaRuntime<Input : Any, Output : Any>(
                          */
                         if (manager.isTerminated()) {
                             shouldRun = false
-                            performTermination()
+                            terminateManager(manager)
+
+                            // If runtime has been terminated, we are stopping and do
+                            // not need to do anything else.
+                            if (!isRuntimeTerminated) {
+                                // Terminated manager with input change indicates that formula
+                                // key changed and we are resetting formula state. We need to
+                                // start a new formula manager.
+                                if (localInputId != inputId) {
+                                    input?.let(this::startNewManager)
+                                }
+                            }
                         } else {
                             shouldRun = localInputId != inputId
                         }
@@ -149,15 +190,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
             executeTransitionEffects()
 
             if (!manager.isTerminated()) {
-                emitOutputIfNeeded(isInitialRun = false)
+                emitOutputIfNeeded()
             }
         } catch (e: Throwable) {
             isRunning = false
 
             manager?.markAsTerminated()
             onError(e)
-
-            performTermination()
+            manager?.let(this::terminateManager)
         }
     }
 
@@ -202,22 +242,39 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Emits output to the formula subscriber.
      */
-    private fun emitOutputIfNeeded(isInitialRun: Boolean) {
-        if (isInitialRun) {
-            lastOutput?.let(onOutput)
-        } else if (hasInitialFinished && emitOutput) {
+    private fun emitOutputIfNeeded() {
+        if (emitOutput && !isRuntimeTerminated) {
             emitOutput = false
             onOutput(checkNotNull(lastOutput))
         }
     }
 
     /**
+     * Creates a new formula manager and runs it.
+     */
+    private fun startNewManager(initialInput: Input) {
+        manager = initManager(initialInput)
+        run()
+    }
+
+    /**
      * Performs formula termination effects and executes transition effects if needed.
      */
-    private fun performTermination() {
-        manager?.performTerminationSideEffects()
+    private fun terminateManager(manager: FormulaManager<Input, Output>) {
+        manager.performTerminationSideEffects()
         if (!isExecutingEffects) {
             executeTransitionEffects()
         }
+    }
+
+    private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
+        return FormulaManagerImpl(
+            queue = synchronizedUpdateQueue,
+            delegate = this,
+            formula = implementation,
+            initialInput = initialInput,
+            loggingType = formula::class,
+            inspector = inspector,
+        )
     }
 }

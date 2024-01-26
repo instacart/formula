@@ -18,14 +18,17 @@ internal class StreamConfiguratorIml<out Activity : FragmentActivity>(
         val stateEmissions = Observable.combineLatest(
             state,
             context.activityStartedEvents(),
-            BiFunction<State, Unit, State> { state, event ->
-                state
+            BiFunction { stateValue, _ ->
+                stateValue
             }
         )
-        return stateEmissions.subscribe { state ->
+
+        val updateScheduler = AndroidUpdateScheduler<State> { stateValue ->
             context.startedActivity()?.let {
-                update(it, state)
+                update(it, stateValue)
             }
         }
+
+        return stateEmissions.subscribe(updateScheduler::emitUpdate)
     }
 }

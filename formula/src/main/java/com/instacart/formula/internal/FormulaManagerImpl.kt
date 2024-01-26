@@ -18,6 +18,7 @@ import kotlin.reflect.KClass
  * a state change, it will rerun [Formula.evaluate].
  */
 internal class FormulaManagerImpl<Input, State, Output>(
+    val queue: SynchronizedUpdateQueue,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
