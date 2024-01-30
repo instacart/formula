@@ -16,8 +16,11 @@ import java.util.concurrent.TimeUnit
 class AndroidUpdateSchedulerTest {
 
     @Test fun `when an update triggers another update, scheduler finishes first one before proceeding to the next`() {
+        val looper = mutableSetOf<Looper?>()
         val computedValues = LinkedList<String>()
         val scheduler = AndroidUpdateScheduler<() -> String> { valueComputation ->
+            looper.add(Looper.myLooper())
+
             val value = valueComputation()
             computedValues.addLast(value)
         }
@@ -31,8 +34,11 @@ class AndroidUpdateSchedulerTest {
     }
 
     @Test fun `when update arrives on bg thread, handle it on main thread`() {
+        val looper = mutableSetOf<Looper?>()
         val computedValues = LinkedList<String>()
         val scheduler = AndroidUpdateScheduler<() -> String> { valueComputation ->
+            looper.add(Looper.myLooper())
+
             val value = valueComputation()
             computedValues.addLast(value)
         }
@@ -49,11 +55,16 @@ class AndroidUpdateSchedulerTest {
 
         shadowOf(Looper.getMainLooper()).idle()
         assertThat(computedValues).containsExactly("bg update").inOrder()
+
+        assertThat(looper).containsExactly(Looper.getMainLooper())
     }
 
     @Test fun `when multiple updates arrive on bg thread before main thread is ready, we handle only last`() {
+        val looper = mutableSetOf<Looper?>()
         val computedValues = LinkedList<String>()
         val scheduler = AndroidUpdateScheduler<() -> String> { valueComputation ->
+            looper.add(Looper.myLooper())
+
             val value = valueComputation()
             computedValues.addLast(value)
         }
@@ -73,5 +84,7 @@ class AndroidUpdateSchedulerTest {
 
         shadowOf(Looper.getMainLooper()).idle()
         assertThat(computedValues).containsExactly("bg update-4").inOrder()
+
+        assertThat(looper).containsExactly(Looper.getMainLooper())
     }
 }
