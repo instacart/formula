@@ -4,9 +4,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * Handles state update scheduling to the main thread. If update arrives on a background thread,
- * it will added it the main thread queue. It will throw away a pending update if a new update
- * arrives.
+ * Handles state update scheduling to the main thread. If an update arrives on a background thread,
+ * it will be set to pending and executed when the main thread is ready. This class will throw
+ * away a pending update if a new update arrives.
  */
 class AndroidUpdateScheduler<Value : Any>(
     private val update: (Value) -> Unit,
