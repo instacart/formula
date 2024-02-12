@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.internal.ListInspector
+import com.instacart.formula.plugin.Dispatcher
 import kotlin.reflect.KClass
 
 object FormulaPlugins {
@@ -25,5 +26,13 @@ object FormulaPlugins {
         key: Any,
     ) {
        plugin?.onDuplicateChildKey(parentFormulaType, childFormulaType, key)
+    }
+
+    fun mainThreadDispatcher(): Dispatcher {
+        return plugin?.mainThreadDispatcher() ?: Dispatcher.NoOp
+    }
+
+    fun backgroundThreadDispatcher(): Dispatcher {
+        return plugin?.backgroundThreadDispatcher() ?: Dispatcher.NoOp
     }
 }

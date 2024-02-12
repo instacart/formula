@@ -128,8 +128,10 @@ class TransitionApiTest {
     }
 
     private fun <State> Transition.Result<State>.assertAndExecuteEffects() {
-        Truth.assertThat(effects).isNotNull()
-        effects?.execute()
+        Truth.assertThat(effects).isNotEmpty()
+        for (effect in effects) {
+            effect.executable()
+        }
     }
 
     class AddTransition : Transition<Any, Int, Int> {
