@@ -30,8 +30,8 @@ interface TransitionContext<out Input, State> {
     }
 
     /**
-     * Returns a result that contains a new [State] object and optional effect
-     * executable that will be executed after the state is updated.
+     * Returns a result that contains a new [State] and an effect that
+     * will be executed on the main thread after state is updated.
      */
     fun <State> transition(
         state: State,
@@ -41,8 +41,8 @@ interface TransitionContext<out Input, State> {
     }
 
     /**
-     * Returns a result that contains a new [State] object and optional effect
-     * executable that will be executed after the state is updated.
+     * Returns a resul that contains a new [State] object and an effect that
+     * will be executed using execution model specified by the [effectType].
      */
     fun <State> transition(
         state: State,
@@ -54,7 +54,8 @@ interface TransitionContext<out Input, State> {
     }
 
     /**
-     * Returns a result that requests effect function to be executed.
+     * Returns a result that has an effect that will be executed on the
+     * main thread after state is updated.
      */
     fun transition(
         effect: () -> Unit,
@@ -63,7 +64,8 @@ interface TransitionContext<out Input, State> {
     }
 
     /**
-     * Returns a result that requests effect function to be executed.
+     * Returns a result that has an effect that will be executed using execution model
+     * specified by the [effectType].
      */
     fun transition(
         effectType: Effect.Type,
