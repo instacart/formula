@@ -22,7 +22,8 @@ data class Effect(
 
     /**
      * Unconfined effect type indicates that the effect can run on any thread and will be
-     * executed after all state changes are processed.
+     * executed after all state changes are processed. Given that any thread could run
+     * this effect, the function should be thread-safe.
      */
     data object Unconfined : Type()
 
