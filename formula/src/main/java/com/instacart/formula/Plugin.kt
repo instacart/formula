@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.plugin.Dispatcher
 import kotlin.reflect.KClass
 
 interface Plugin {
@@ -21,4 +22,20 @@ interface Plugin {
         childFormulaType: Class<*>,
         key: Any,
     ) = Unit
+
+    /**
+     * Dispatcher for the main thread. It will be used to execute
+     * effects defined by [Effect.Main].
+     */
+    fun mainThreadDispatcher(): Dispatcher? {
+        return null
+    }
+
+    /**
+     * Dispatcher for the background thread. It will be used to execute
+     * effects defined by [Effect.Background].
+     */
+    fun backgroundThreadDispatcher(): Dispatcher? {
+        return null
+    }
 }

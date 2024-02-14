@@ -1,6 +1,6 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Effects
+import com.instacart.formula.Effect
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
@@ -276,7 +276,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
     }
 
-    override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
+    override fun onPostTransition(effects: List<Effect>, evaluate: Boolean) {
         if (evaluate) {
             globalEvaluationId += 1
         }

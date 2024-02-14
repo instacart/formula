@@ -7,6 +7,7 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
+import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
@@ -28,6 +29,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.IncrementingDispatcher
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
@@ -60,6 +62,7 @@ import com.instacart.formula.subjects.StreamInitMessageDeliveredOnce
 import com.instacart.formula.subjects.StreamInputFormula
 import com.instacart.formula.subjects.SubscribesToAllUpdatesBeforeDeliveringMessages
 import com.instacart.formula.subjects.TerminateFormula
+import com.instacart.formula.subjects.TestDispatcherPlugin
 import com.instacart.formula.subjects.TestKey
 import com.instacart.formula.subjects.TransitionAfterNoEvaluationPass
 import com.instacart.formula.subjects.UniqueListenersWithinLoop
@@ -84,6 +87,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
@@ -1384,4 +1388,83 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         assertThat(globalInspector.events).isNotEmpty()
     }
+
+    @Test fun `only main dispatcher effect`() {
+        val plugin = TestDispatcherPlugin()
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onInit().onEvent {
+                            transition(Effect.Main) {
+                                // main-effect
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val subject = runtime.test(formula, Unit)
+        plugin.mainDispatcher.assertCalled(1)
+        plugin.backgroundDispatcher.assertCalled(0)
+    }
+
+    @Test fun `only background dispatcher effect`() {
+        val plugin = TestDispatcherPlugin()
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onInit().onEvent {
+                            transition(Effect.Background) {
+                                // main-effect
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val subject = runtime.test(formula, Unit)
+        plugin.mainDispatcher.assertCalled(0)
+        plugin.backgroundDispatcher.assertCalled(1)
+    }
+
+    @Test fun `combined dispatcher transition`() {
+        val plugin = TestDispatcherPlugin()
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onInit().onEvent {
+                            // Combined effect
+                            val mainTransition = transition(Effect.Main) {
+
+                            }
+                            mainTransition.andThen {
+                                transition(Effect.Background) {
+
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val subject = runtime.test(formula, Unit)
+        plugin.mainDispatcher.assertCalled(1)
+        plugin.backgroundDispatcher.assertCalled(1)
+    }
 }
+
