@@ -35,7 +35,7 @@ interface TransitionContext<out Input, State> {
      */
     fun <State> transition(
         state: State,
-        effect: () -> Unit,
+        effect: (() -> Unit)?,
     ): Transition.Result.Stateful<State> {
         return transition(state, Effect.Main, effect)
     }
@@ -47,10 +47,14 @@ interface TransitionContext<out Input, State> {
     fun <State> transition(
         state: State,
         effectType: Effect.Type,
-        effect: () -> Unit,
+        effect: (() -> Unit)?,
     ): Transition.Result.Stateful<State> {
-        val effectList = listOf(Effect(effectType, effect))
-        return Transition.Result.Stateful(state, effectList)
+        val effects = if (effect != null) {
+            listOf(Effect(effectType, effect))
+        } else {
+            emptyList()
+        }
+        return Transition.Result.Stateful(state, effects)
     }
 
     /**
@@ -58,8 +62,8 @@ interface TransitionContext<out Input, State> {
      * main thread after state is updated.
      */
     fun transition(
-        effect: () -> Unit,
-    ): Transition.Result.OnlyEffects {
+        effect: (() -> Unit)?,
+    ): Transition.Result<Nothing> {
         return transition(Effect.Main, effect)
     }
 
@@ -69,10 +73,14 @@ interface TransitionContext<out Input, State> {
      */
     fun transition(
         effectType: Effect.Type,
-        effect: () -> Unit,
-    ): Transition.Result.OnlyEffects {
-        val effectList = listOf(Effect(effectType, effect))
-        return Transition.Result.OnlyEffects(effectList)
+        effect: (() -> Unit)?,
+    ): Transition.Result<Nothing> {
+        return if (effect == null) {
+            Transition.Result.None
+        } else {
+            val effectList = listOf(Effect(effectType, effect))
+            Transition.Result.OnlyEffects(effectList)
+        }
     }
 
     /**
