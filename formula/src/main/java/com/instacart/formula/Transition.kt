@@ -5,8 +5,8 @@ import kotlin.reflect.KClass
 /**
  * Transition is a function that is called when an [Event] happens and produces a [Result] which
  * indicates what [Formula] should do in response to this event. It can contain a new [state][State]
- * object which will trigger [Formula.evaluate] to be called and/or an [effects][Effects] function
- * which will be executed by the [FormulaRuntime]. If there was a state change, effects function
+ * object which will trigger [Formula.evaluate] to be called and/or a list of [effect][Effect]
+ * executables which will be executed by the [FormulaRuntime]. If there was a state change, effects
  * will be executed after [Formula.evaluate] is called.
  */
 fun interface Transition<in Input, State, in Event> {
@@ -14,7 +14,7 @@ fun interface Transition<in Input, State, in Event> {
     /**
      * Result is an object returned by [Transition.toResult] which indicates what
      * [Formula] should do in response to an event. It can contain a new [state][Stateful]
-     * and/or an [effects][Effects] function which will be executed by the [FormulaRuntime].
+     * and/or a list of [effect][Effect] executables which will be executed by the [FormulaRuntime].
      * Usually, you should use [TransitionContext] to construct the [Result] object.
      */
     sealed class Result<out State> {
@@ -29,7 +29,10 @@ fun interface Transition<in Input, State, in Event> {
          * function is the place to call listeners, log events, trigger network requests or
          * database writes, and etc.
          */
-        data class Stateful<State>(val state: State, override val effects: Effects? = null) : Result<State>()
+        data class Stateful<State>(
+            val state: State,
+            override val effects: List<Effect> = emptyList(),
+        ) : Result<State>()
 
         /**
          * Only effects result returned by the transition indicates that we don't need to update
@@ -39,14 +42,14 @@ fun interface Transition<in Input, State, in Event> {
          * is the place to call listeners, log events, trigger network requests or database
          * writes, and etc.
          */
-        data class OnlyEffects(override val effects: Effects) : Result<Nothing>()
+        data class OnlyEffects(override val effects: List<Effect>) : Result<Nothing>()
 
         /**
          * None result returned by the transition indicates that [Formula] doesn't need to
          * do anything in response to an event.
          */
-        object None : Result<Nothing>() {
-            override val effects: Effects? = null
+        data object None : Result<Nothing>() {
+            override val effects: List<Effect> = emptyList()
         }
 
         /**
@@ -54,9 +57,9 @@ fun interface Transition<in Input, State, in Event> {
          * [FormulaRuntime]. This function is the place to call listeners, log events, trigger
          * network requests or database writes, and etc.
          *
-         * @see Effects
+         * @see Effect
          */
-        abstract val effects: Effects?
+        abstract val effects: List<Effect>
     }
 
     /**

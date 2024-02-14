@@ -22,16 +22,12 @@ internal fun <State> TransitionContext<*, State>.combine(
             result
         }
         is Transition.Result.OnlyEffects -> {
-            transition {
-                result.effects.execute()
-                other.effects.execute()
-            }
+            val combined = result.effects + other.effects
+            Transition.Result.OnlyEffects(combined)
         }
         is Transition.Result.Stateful -> {
-            transition(other.state) {
-                result.effects.execute()
-                other.effects?.execute()
-            }
+            val combined = result.effects + other.effects
+            Transition.Result.Stateful(other.state, combined)
         }
     }
 }
@@ -48,16 +44,12 @@ internal fun <State> TransitionContext<*, State>.combine(
             result
         }
         is Transition.Result.OnlyEffects -> {
-            transition(result.state) {
-                result.effects?.execute()
-                other.effects.execute()
-            }
+            val combined = result.effects + other.effects
+            Transition.Result.Stateful(result.state, combined)
         }
         is Transition.Result.Stateful -> {
-            transition(other.state) {
-                result.effects?.execute()
-                other.effects?.execute()
-            }
+            val combined = result.effects + other.effects
+            Transition.Result.Stateful(other.state, combined)
         }
     }
 }

@@ -21,23 +21,58 @@ interface TransitionContext<out Input, State> {
     }
 
     /**
-     * Returns a result that contains a new [State] object and optional [effects][Effects]
-     * that will be executed after the state is updated.
+     * Returns a result that contains a new [State] object.
      */
     fun <State> transition(
         state: State,
-        effects: Effects? = null
     ): Transition.Result.Stateful<State> {
-        return Transition.Result.Stateful(state, effects)
+        return Transition.Result.Stateful(state, emptyList())
     }
 
     /**
-     * Returns a result that requests [effects][Effects] to be executed.
+     * Returns a result that contains a new [State] and an effect that
+     * will be executed on the main thread after state is updated.
+     */
+    fun <State> transition(
+        state: State,
+        effect: () -> Unit,
+    ): Transition.Result.Stateful<State> {
+        return transition(state, Effect.Main, effect)
+    }
+
+    /**
+     * Returns a resul that contains a new [State] object and an effect that
+     * will be executed using execution model specified by the [effectType].
+     */
+    fun <State> transition(
+        state: State,
+        effectType: Effect.Type,
+        effect: () -> Unit,
+    ): Transition.Result.Stateful<State> {
+        val effectList = listOf(Effect(effectType, effect))
+        return Transition.Result.Stateful(state, effectList)
+    }
+
+    /**
+     * Returns a result that has an effect that will be executed on the
+     * main thread after state is updated.
      */
     fun transition(
-        effects: Effects
+        effect: () -> Unit,
     ): Transition.Result.OnlyEffects {
-        return Transition.Result.OnlyEffects(effects)
+        return transition(Effect.Main, effect)
+    }
+
+    /**
+     * Returns a result that has an effect that will be executed using execution model
+     * specified by the [effectType].
+     */
+    fun transition(
+        effectType: Effect.Type,
+        effect: () -> Unit,
+    ): Transition.Result.OnlyEffects {
+        val effectList = listOf(Effect(effectType, effect))
+        return Transition.Result.OnlyEffects(effectList)
     }
 
     /**

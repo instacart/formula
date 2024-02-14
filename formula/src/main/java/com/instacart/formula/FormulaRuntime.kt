@@ -4,6 +4,7 @@ import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
+import com.instacart.formula.plugin.Dispatcher
 import java.util.LinkedList
 
 /**
@@ -42,7 +43,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Global transition effect queue which executes side-effects after all formulas are idle.
      */
-    private var globalEffectQueue = LinkedList<Effects>()
+    private var globalEffectQueue = LinkedList<Effect>()
 
     /**
      * Determines if we are iterating through [globalEffectQueue]. It prevents us from
@@ -126,12 +127,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    override fun onPostTransition(effects: Effects?, evaluate: Boolean) {
-        effects?.let {
-            globalEffectQueue.addLast(effects)
+    override fun onPostTransition(effects: List<Effect>, evaluate: Boolean) {
+        if (effects.isNotEmpty()) {
+            // Using indices instead of allocating an iterator.
+            for (index in effects.indices) {
+                globalEffectQueue.addLast(effects[index])
+            }
         }
 
-        if (effects != null || evaluate) {
+        if (effects.isNotEmpty() || evaluate) {
             run(evaluate = evaluate)
         }
     }
@@ -233,8 +237,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private fun executeTransitionEffects() {
         isExecutingEffects = true
         while (globalEffectQueue.isNotEmpty()) {
-            val effects = globalEffectQueue.pollFirst()
-            effects.execute()
+            val effect = globalEffectQueue.pollFirst()
+            val dispatcher = when (effect.type) {
+                Effect.Unconfined -> Dispatcher.NoOp
+                Effect.Main -> FormulaPlugins.mainThreadDispatcher()
+                Effect.Background -> FormulaPlugins.backgroundThreadDispatcher()
+            }
+            dispatcher.dispatch(effect.executable)
         }
         isExecutingEffects = false
     }
