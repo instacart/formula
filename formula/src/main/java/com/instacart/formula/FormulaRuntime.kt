@@ -6,6 +6,8 @@ import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
 import java.util.LinkedList
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
@@ -17,14 +19,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val isValidationEnabled: Boolean = false,
     inspector: Inspector? = null,
 ) : ManagerDelegate {
-    private val synchronizedUpdateQueue = SynchronizedUpdateQueue()
+    private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
+        onEmpty = { emitOutputIfNeeded() }
+    )
     private val inspector = FormulaPlugins.inspector(type = formula.type(), local = inspector)
     private val implementation = formula.implementation()
 
+    @Volatile
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
 
-    private var emitOutput = false
-    private var lastOutput: Output? = null
     private var input: Input? = null
     private var key: Any? = null
 
@@ -56,7 +59,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * this [FormulaRuntime] instance. We will not accept any more [onInput] changes and will
      * not emit any new [Output] events.
      */
+    @Volatile
     private var isRuntimeTerminated: Boolean = false
+
+    /**
+     * Pending output to be emitted to the formula subscriber.
+     */
+    private var pendingOutput = AtomicReference<Output>()
+    private var isEmitting = AtomicBoolean(false)
 
     private fun isKeyValid(input: Input): Boolean {
         return this.input == null || key == formula.key(input)
@@ -193,9 +203,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
             if (isExecutingEffects) return
             executeTransitionEffects()
 
-            if (!manager.isTerminated()) {
-                emitOutputIfNeeded()
-            }
         } catch (e: Throwable) {
             isRunning = false
 
@@ -210,8 +217,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
      */
     private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
         val result = manager.run(currentInput)
-        lastOutput = result.output
-        emitOutput = true
+        pendingOutput.set(result.output)
 
         if (isValidationEnabled) {
             try {
@@ -252,9 +258,25 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Emits output to the formula subscriber.
      */
     private fun emitOutputIfNeeded() {
-        if (emitOutput && !isRuntimeTerminated) {
-            emitOutput = false
-            onOutput(checkNotNull(lastOutput))
+        var output = pendingOutput.get()
+        while (output != null) {
+            if (isEmitting.compareAndSet(false, true)) {
+                if (!isRuntimeTerminated && manager?.isTerminated() != true) {
+                    onOutput(output)
+                }
+
+                // If it is still our output, we try to clear it
+                pendingOutput.compareAndSet(output, null)
+
+                // Allow others to take on the processing
+                isEmitting.set(false)
+
+                // Check if there is another update and try to process if no-one else has taken over
+                output = pendingOutput.get()
+            } else {
+                // Someone else is emitting the value
+                output = null
+            }
         }
     }
 
