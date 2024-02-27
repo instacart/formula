@@ -13,7 +13,9 @@ import java.util.concurrent.atomic.AtomicReference
  * that there is happens-before relationship between each thread and memory changes are visible
  * between them.
  */
-class SynchronizedUpdateQueue {
+class SynchronizedUpdateQueue(
+    private val onEmpty: (() -> Unit)? = null,
+) {
     /**
      * Defines a thread currently executing formula update. Null value indicates idle queue.
      *
@@ -79,6 +81,7 @@ class SynchronizedUpdateQueue {
                     return
                 }
             } else {
+                onEmpty?.invoke()
                 return
             }
         }

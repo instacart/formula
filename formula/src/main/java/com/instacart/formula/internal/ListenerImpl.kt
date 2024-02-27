@@ -9,10 +9,9 @@ import com.instacart.formula.Transition
 @PublishedApi
 internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Listener<EventT> {
 
-    internal var manager: FormulaManagerImpl<Input, State, *>? = null
-    internal var snapshotImpl: SnapshotImpl<Input, State>? = null
-
-    internal lateinit var transition: Transition<Input, State, EventT>
+    @Volatile internal var manager: FormulaManagerImpl<Input, State, *>? = null
+    @Volatile internal var snapshotImpl: SnapshotImpl<Input, State>? = null
+    @Volatile internal lateinit var transition: Transition<Input, State, EventT>
 
     override fun invoke(event: EventT) {
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)

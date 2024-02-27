@@ -44,6 +44,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * start new actions. And then, [performTerminationSideEffects] is called to clean
      * up this [formula] and its child formulas.
      */
+    @Volatile
     private var terminated = false
 
     /**
