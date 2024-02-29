@@ -36,6 +36,24 @@ abstract class ActionBuilder<out Input, State>(
      */
     abstract fun <Event> events(
         action: Action<Event>,
+        executionType: Transition.ExecutionType? = null,
+        transition: Transition<Input, State, Event>,
+    )
+
+    /**
+     * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
+     * when it is initially added and cleaned up when it is not returned
+     * as part of [Evaluation].
+     * Example:
+     * ```
+     * Action.onInit().onEvent {
+     *   transition { /* */ }
+     * }
+     * ```
+     *
+     * @param transition A function that is invoked when [Action] emits an [Event].
+     */
+    abstract fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     )
 
@@ -44,16 +62,18 @@ abstract class ActionBuilder<out Input, State>(
      * when it is initially added and cleaned up when it is not returned
      * as part of [Evaluation].
      *
-     * @param transition A function that is invoked when [Action] emits an [Event].
-     *
      * Example:
      * ```
-     * Action.onInit().onEvent {
-     *   transition { /* */ }
+     * Action.onInit().onEventWithExecutionType(Transition.Background) {
+     *     transition { /* */ }
      * }
      * ```
+     *
+     * @param executionType Defines the execution model for this event such as threading and timing.
+     * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    abstract fun <Event> Action<Event>.onEvent(
+    abstract fun <Event> Action<Event>.onEventWithExecutionType(
+        executionType: Transition.ExecutionType,
         transition: Transition<Input, State, Event>,
     )
 }

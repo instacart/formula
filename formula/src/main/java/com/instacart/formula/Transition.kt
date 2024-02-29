@@ -63,6 +63,24 @@ fun interface Transition<in Input, State, in Event> {
     }
 
     /**
+     * Defines an execution model for the transition
+     */
+    sealed class ExecutionType
+
+    /**
+     * Immediate execution type will try to process the transition immediately on the thread that
+     * it arrives on. This should be used for user events that need to be processed quickly such
+     * as navigation.
+     */
+    data object Immediate : ExecutionType()
+
+    /**
+     * Background execution type will try to process the transition on a background thread. This
+     * should be used for data events that might be expensive to process.
+     */
+    data object Background : ExecutionType()
+
+    /**
      * Called when an [Event] happens and returns a [Result] object which can indicate a state
      * change and/or some executable effects. Use [TransitionContext.none] if nothing should happen
      * as part of this event.

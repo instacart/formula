@@ -6,6 +6,7 @@
 - **Breaking**: Rewrite internals of formula action handling to enable inline re-evaluation. Lots of changes, can review them in https://github.com/instacart/formula/pull/301
 - **Breaking**: Remove `FragmentFlowState.activeKeys` and `FragmentFlowState.visibleKeys`
 - Move `Renderer` and `RenderView` from `formula` core into `formula-android` module
+- Enable fine-grained control of dispatching via `Plugin.defaultDispatcher`, `RuntimeConfig.defaultDispatcher`, `Transition.ExecutionType` and `Effect.Type`.
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
