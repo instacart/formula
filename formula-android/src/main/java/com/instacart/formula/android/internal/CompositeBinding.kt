@@ -48,7 +48,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
                 output = Unit,
                 actions = context.actions {
                     val isInScope = input.activeFragments.any { binds(it.key) }
-                    events(Action.onData(isInScope)) {
+                    Action.onData(isInScope).onEvent {
                         if (isInScope && component == null) {
                             transition(State(component = scopeFactory.invoke(input.component)))
                         } else if (!isInScope && component != null) {
@@ -60,7 +60,7 @@ internal class CompositeBinding<ParentComponent, ScopedComponent>(
                         }
                     }
 
-                    events(Action.onTerminate()) {
+                    Action.onTerminate().onEvent {
                         transition { component?.dispose() }
                     }
                 }

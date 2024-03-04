@@ -33,7 +33,7 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
                         Observable.interval(1, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
                     }
 
-                    events(incrementTimePassed) {
+                    incrementTimePassed.onEvent {
                         transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
                     }
                 }

@@ -21,30 +21,13 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         action: Action<Event>,
         transition: Transition<Input, State, Event>,
     ) {
-        add(toBoundStream(action, transition))
-    }
-
-    override fun <Event> onEvent(
-        action: Action<Event>,
-        avoidParameterClash: Any,
-        transition: Transition<Input, State, Event>,
-    ) {
-        add(toBoundStream(action, transition))
+        actions.add(toBoundStream(action, transition))
     }
 
     override fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     ) {
-        val stream = this
-        this@ActionBuilderImpl.events(stream, transition)
-    }
-
-    private fun add(action: DeferredAction<*>) {
-        if (actions.contains(action)) {
-            throw IllegalStateException("duplicate stream with key: ${action.keyAsString()}")
-        }
-
-        actions.add(action)
+        events(this, transition)
     }
 
     private fun <Event> toBoundStream(

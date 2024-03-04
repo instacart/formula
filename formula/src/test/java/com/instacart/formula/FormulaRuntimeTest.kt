@@ -885,11 +885,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same stream declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(EmptyAction.init()) {
+            EmptyAction.init().onEvent {
                 transition(Unit)
             }
 
-            events(EmptyAction.init()) {
+            EmptyAction.init().onEvent {
                 transition(Unit)
             }
         }
@@ -901,11 +901,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same observable declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(RxAction.fromObservable("same") { Observable.just(1) }) {
+            RxAction.fromObservable("same") { Observable.just(1) }.onEvent {
                 none()
             }
 
-            events(RxAction.fromObservable("same") { Observable.just(1) }) {
+            RxAction.fromObservable("same") { Observable.just(1) }.onEvent {
                 none()
             }
         }
@@ -918,7 +918,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyAction.init()) {
+                EmptyAction.init().onEvent {
                     none()
                 }
             }
@@ -933,7 +933,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyAction.init(it)) {
+                EmptyAction.init(it).onEvent {
                     none()
                 }
             }
@@ -946,13 +946,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple event streams without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 transition {
                     executed += 1
                 }
             }
 
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 transition {
                     executed += 1
                 }
@@ -968,11 +968,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Action.onData(it)) {
+            Action.onData(it).onEvent {
                 transition { executed += 1 }
             }
 
-            events(Action.onData(it)) {
+            Action.onData(it).onEvent {
                 transition { executed += 1 }
             }
         }
@@ -987,7 +987,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(0, 1, 2)
             list.forEach {
-                events(Action.onInit()) {
+                Action.onInit().onEvent {
                     none()
                 }
             }
@@ -1041,7 +1041,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         var emissions = 0
         var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            events(Action.onTerminate()) {
+            Action.onTerminate().onEvent {
                 transition {
                     emissions += 1
                     terminateCallback = input
@@ -1204,7 +1204,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 throw java.lang.IllegalStateException("crashed")
             }
         }

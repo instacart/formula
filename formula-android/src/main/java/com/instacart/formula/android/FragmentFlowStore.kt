@@ -76,7 +76,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
         return Evaluation(
             output = state,
             actions = context.actions {
-                events(lifecycleEventStream) { event ->
+                lifecycleEventStream.onEvent { event ->
                     val fragmentId = event.fragmentId
                     when (event) {
                         is FragmentLifecycleEvent.Removed -> {
@@ -106,7 +106,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
                     }
                 }
 
-                events(visibleContractEventStream) {
+                visibleContractEventStream.onEvent {
                     if (state.visibleIds.contains(it)) {
                         // TODO: should we log this duplicate visibility event?
                         none()
@@ -115,7 +115,7 @@ class FragmentFlowStore @PublishedApi internal constructor(
                     }
                 }
 
-                events(hiddenContractEventStream) {
+                hiddenContractEventStream.onEvent {
                     transition(state.copy(visibleIds = state.visibleIds.minus(it)))
                 }
 
