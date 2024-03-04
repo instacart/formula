@@ -1,6 +1,5 @@
-package com.instacart.formula
+package com.instacart.formula.plugin
 
-import com.instacart.formula.plugin.Dispatcher
 import kotlin.reflect.KClass
 
 interface Plugin {

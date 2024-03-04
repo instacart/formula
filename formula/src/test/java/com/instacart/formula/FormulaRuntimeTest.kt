@@ -7,7 +7,8 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
-import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
@@ -29,7 +30,6 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
-import com.instacart.formula.subjects.IncrementingDispatcher
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
@@ -87,7 +87,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)

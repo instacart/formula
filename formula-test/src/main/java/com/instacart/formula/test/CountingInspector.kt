@@ -1,7 +1,7 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.DeferredAction
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 import java.lang.AssertionError
 import kotlin.reflect.KClass
 

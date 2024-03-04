@@ -2,6 +2,8 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.ListInspector
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.plugin.Plugin
 import kotlin.reflect.KClass
 
 object FormulaPlugins {

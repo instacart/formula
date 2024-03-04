@@ -1,6 +1,6 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Plugin
+import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.plugin.Dispatcher
 
 class TestDispatcherPlugin : Plugin {

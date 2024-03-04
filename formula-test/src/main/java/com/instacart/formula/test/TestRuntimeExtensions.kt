@@ -2,7 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 
 /**
  * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.

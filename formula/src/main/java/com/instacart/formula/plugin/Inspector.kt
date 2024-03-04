@@ -1,5 +1,6 @@
-package com.instacart.formula
+package com.instacart.formula.plugin
 
+import com.instacart.formula.DeferredAction
 import kotlin.reflect.KClass
 
 /**

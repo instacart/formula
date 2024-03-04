@@ -5,6 +5,7 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -16,13 +17,16 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
-    private val isValidationEnabled: Boolean = false,
-    inspector: Inspector? = null,
+    config: RuntimeConfig?,
 ) : ManagerDelegate {
+    private val isValidationEnabled = config?.isValidationEnabled ?: false
     private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }
     )
-    private val inspector = FormulaPlugins.inspector(type = formula.type(), local = inspector)
+    private val inspector = FormulaPlugins.inspector(
+        type = formula.type(),
+        local = config?.inspector,
+    )
     private val implementation = formula.implementation()
 
     @Volatile
