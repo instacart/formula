@@ -1,31 +1,30 @@
 package com.instacart.formula.rxjava3
 
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.plugin.Inspector
 import io.reactivex.rxjava3.core.Observable
 
 fun <Output : Any> IFormula<Unit, Output>.toObservable(
-    inspector: Inspector? = null,
+    config: RuntimeConfig? = null,
 ): Observable<Output> {
-    return toObservable(input = Unit, inspector)
+    return toObservable(input = Unit, config)
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
     input: Input,
-    inspector: Inspector? = null,
+    config: RuntimeConfig? = null,
 ): Observable<Output> {
-    return toObservable(input = Observable.just(input), inspector)
+    return toObservable(input = Observable.just(input), config)
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
     input: Observable<Input>,
-    inspector: Inspector? = null,
-    isValidationEnabled: Boolean = false,
+    config: RuntimeConfig? = null,
 ): Observable<Output> {
     return RxJavaRuntime.start(
         input = input,
         formula = this,
-        inspector = inspector,
-        isValidationEnabled = isValidationEnabled,
+        config = config,
     )
 }

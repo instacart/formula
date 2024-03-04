@@ -2,7 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 import java.lang.IllegalStateException
 
 /**

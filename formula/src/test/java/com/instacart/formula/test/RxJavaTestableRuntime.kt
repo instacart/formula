@@ -2,7 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
