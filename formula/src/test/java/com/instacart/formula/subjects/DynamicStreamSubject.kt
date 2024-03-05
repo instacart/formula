@@ -36,7 +36,7 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
                 output = Unit,
                 actions = context.actions {
                     input.forEach { key ->
-                        events(action(key)) {
+                        action(key).onEvent {
                             none()
                         }
                     }

@@ -45,19 +45,6 @@ abstract class ActionBuilder<out Input, State>(
      * as part of [Evaluation].
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
-     */
-    abstract fun <Event> onEvent(
-        action: Action<Event>,
-        avoidParameterClash: Any = this,
-        transition: Transition<Input, State, Event>,
-    )
-
-    /**
-     * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
-     * when it is initially added and cleaned up when it is not returned
-     * as part of [Evaluation].
-     *
-     * @param transition A function that is invoked when [Action] emits an [Event].
      *
      * Example:
      * ```
