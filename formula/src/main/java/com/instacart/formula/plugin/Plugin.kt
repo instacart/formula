@@ -37,4 +37,12 @@ interface Plugin {
     fun backgroundThreadDispatcher(): Dispatcher? {
         return null
     }
+
+    /**
+     * Default dispatcher that each formula runtime will use to process events. This
+     * can be overwritten by each formula individually.
+     */
+    fun defaultDispatcher(): Dispatcher? {
+        return null
+    }
 }

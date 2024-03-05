@@ -3,7 +3,7 @@ package com.instacart.formula.subjects
 import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.plugin.Dispatcher
 
-class TestDispatcherPlugin : Plugin {
+class TestDispatcherPlugin(val defaultDispatcher: Dispatcher? = null) : Plugin {
     val mainDispatcher = IncrementingDispatcher()
     val backgroundDispatcher = IncrementingDispatcher()
 
@@ -13,5 +13,9 @@ class TestDispatcherPlugin : Plugin {
 
     override fun backgroundThreadDispatcher(): Dispatcher {
         return backgroundDispatcher
+    }
+
+    override fun defaultDispatcher(): Dispatcher? {
+        return defaultDispatcher
     }
 }

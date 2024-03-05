@@ -3,7 +3,6 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.plugin.Inspector
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking

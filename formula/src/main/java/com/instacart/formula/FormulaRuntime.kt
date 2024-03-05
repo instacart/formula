@@ -5,7 +5,6 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
-import com.instacart.formula.plugin.Inspector
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -20,14 +19,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
     config: RuntimeConfig?,
 ) : ManagerDelegate {
     private val isValidationEnabled = config?.isValidationEnabled ?: false
-    private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
-        onEmpty = { emitOutputIfNeeded() }
-    )
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
         local = config?.inspector,
     )
+    private val defaultDispatcher: Dispatcher = config?.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
     private val implementation = formula.implementation()
+    private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
+        onEmpty = { emitOutputIfNeeded() }
+    )
 
     @Volatile
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -249,9 +249,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
         while (globalEffectQueue.isNotEmpty()) {
             val effect = globalEffectQueue.pollFirst()
             val dispatcher = when (effect.type) {
-                Effect.Unconfined -> Dispatcher.NoOp
-                Effect.Main -> FormulaPlugins.mainThreadDispatcher()
-                Effect.Background -> FormulaPlugins.backgroundThreadDispatcher()
+                Effect.Unconfined -> Dispatcher.None
+                Effect.Main -> Dispatcher.Main
+                Effect.Background -> Dispatcher.Background
             }
             dispatcher.dispatch(effect.executable)
         }
@@ -310,6 +310,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             initialInput = initialInput,
             loggingType = formula::class,
             inspector = inspector,
+            defaultDispatcher = defaultDispatcher,
         )
     }
 }

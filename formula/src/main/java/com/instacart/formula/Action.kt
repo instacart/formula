@@ -34,6 +34,7 @@ package com.instacart.formula
  */
 interface Action<Event> {
     companion object {
+        private val INIT_ACTION = StartEventAction(Unit)
 
         /**
          * Emits an event when [Action] is initialized. You can use this action to send an event
@@ -44,8 +45,7 @@ interface Action<Event> {
          * }
          */
         fun onInit(): Action<Unit> {
-            @Suppress("UNCHECKED_CAST")
-            return StartEventAction(Unit)
+            return INIT_ACTION
         }
 
         /**
