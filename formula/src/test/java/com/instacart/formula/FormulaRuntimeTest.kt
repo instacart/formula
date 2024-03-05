@@ -30,6 +30,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.IncrementingDispatcher
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyFormula
 import com.instacart.formula.subjects.KeyUsingListFormula
@@ -1464,6 +1465,33 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val subject = runtime.test(formula, Unit)
         plugin.mainDispatcher.assertCalled(1)
         plugin.backgroundDispatcher.assertCalled(1)
+    }
+
+    @Test fun `use global background dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = IncrementFormula()
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(1)
+    }
+
+    @Test fun `specify formula-level dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formulaDispatcher = IncrementingDispatcher()
+        val formula = IncrementFormula()
+        val subject = runtime.test(formula, Unit, dispatcher = formulaDispatcher)
+        globalDispatcher.assertCalled(0)
+        formulaDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(0)
+        formulaDispatcher.assertCalled(1)
     }
 }
 

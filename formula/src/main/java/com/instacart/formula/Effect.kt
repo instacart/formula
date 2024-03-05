@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.plugin.Plugin
+
 /**
  * Effect is a function returned within [Transition.Result] which will be executed
  * by [FormulaRuntime]. The execution timing and thread will depend on the [Effect.Type]

@@ -31,10 +31,14 @@ object FormulaPlugins {
     }
 
     fun mainThreadDispatcher(): Dispatcher {
-        return plugin?.mainThreadDispatcher() ?: Dispatcher.NoOp
+        return plugin?.mainThreadDispatcher() ?: Dispatcher.None
     }
 
     fun backgroundThreadDispatcher(): Dispatcher {
-        return plugin?.backgroundThreadDispatcher() ?: Dispatcher.NoOp
+        return plugin?.backgroundThreadDispatcher() ?: Dispatcher.None
+    }
+
+    fun defaultDispatcher(): Dispatcher {
+        return plugin?.defaultDispatcher() ?: Dispatcher.None
     }
 }
