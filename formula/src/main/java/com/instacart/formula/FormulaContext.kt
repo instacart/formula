@@ -29,6 +29,22 @@ abstract class FormulaContext<out Input, State> internal constructor(
     }
 
     /**
+     * Creates a listener with specific [executionType] that takes an event and performs a [Transition].
+     *
+     * @param executionType Defines the execution model for this event such as threading and timing.
+     * @param key Optional key property that the listener will be associated with. Same key value
+     *      should not be used with the same [transition] type.
+     */
+    fun callbackWithExecutionType(
+        executionType: Transition.ExecutionType,
+        key: Any? = null,
+        transition: Transition<Input, State, Unit>,
+    ): () -> Unit {
+        val listener = onEventWithExecutionType(executionType, key, transition)
+        return UnitListener(listener)
+    }
+
+    /**
      * Creates a [Listener] that takes a [Event] and performs a [Transition]. It uses a composite
      * key of [transition] type and optional [key] property.
      *
@@ -41,7 +57,28 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): Listener<Event> {
         return eventListener(
             key = createScopedKey(transition.type(), key),
-            transition = transition
+            executionType = null,
+            transition = transition,
+        )
+    }
+
+    /**
+     * Creates a [Listener] that takes a [Event] and performs a [Transition]. It uses a composite
+     * key of [transition] type and optional [key] property.
+     *
+     * @param executionType Defines the execution model for this event such as threading and timing.
+     * @param key Optional key property that the listener will be associated with. Same key value
+     * should not be used with the same [transition] type.
+     */
+    fun <Event> onEventWithExecutionType(
+        executionType: Transition.ExecutionType,
+        key: Any? = null,
+        transition: Transition<Input, State, Event>,
+    ): Listener<Event> {
+        return eventListener(
+            key = createScopedKey(transition.type(), key),
+            executionType = executionType,
+            transition = transition,
         )
     }
 
@@ -86,6 +123,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     internal abstract fun <Event> eventListener(
         key: Any,
         useIndex: Boolean = true,
+        executionType: Transition.ExecutionType? = null,
         transition: Transition<Input, State, Event>
     ): Listener<Event>
 

@@ -78,6 +78,7 @@ import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.OnDataActionFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import io.reactivex.rxjava3.core.Observable
@@ -1492,6 +1493,42 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         subject.output { onIncrement() }
         globalDispatcher.assertCalled(0)
         formulaDispatcher.assertCalled(1)
+    }
+
+    @Test fun `immediate execution type within callbackWithExecutionType overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = IncrementFormula(executionType = Transition.Immediate)
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(0)
+    }
+
+    @Test fun `immediate execution type within onEventWithExecutionType overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = EventCallbackFormula(executionType = Transition.Immediate)
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { this.changeState("new state") }
+        globalDispatcher.assertCalled(0)
+    }
+
+    @Test fun `background execution type within action overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = OnDataActionFormula(executionType = Transition.Background)
+        val input = OnDataActionFormula.Input(0, onData = {})
+        val subject = runtime.test(formula, input)
+        globalDispatcher.assertCalled(0)
+        plugin.backgroundDispatcher.assertCalled(1)
     }
 }
 

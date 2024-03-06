@@ -12,6 +12,7 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
 
     @Volatile internal var manager: FormulaManagerImpl<Input, State, *>? = null
     @Volatile internal var snapshotImpl: SnapshotImpl<Input, State>? = null
+    @Volatile internal var executionType: Transition.ExecutionType? = null
 
     internal lateinit var transition: Transition<Input, State, EventT>
 
@@ -19,7 +20,13 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
 
-        val dispatcher = manager.defaultDispatcher
+        val dispatcher = when (executionType) {
+            Transition.Immediate -> Dispatcher.None
+            Transition.Background -> Dispatcher.Background
+            // If transition does not specify dispatcher, we use the default one.
+            else -> manager.defaultDispatcher
+        }
+
         dispatcher.dispatch {
             manager.queue.postUpdate {
                 val deferredTransition = DeferredTransition(this, transition, event)
