@@ -1,6 +1,5 @@
-package com.instacart.formula
+package com.instacart.formula.plugin
 
-import com.instacart.formula.plugin.Dispatcher
 import kotlin.reflect.KClass
 
 interface Plugin {
@@ -36,6 +35,14 @@ interface Plugin {
      * effects defined by [Effect.Background].
      */
     fun backgroundThreadDispatcher(): Dispatcher? {
+        return null
+    }
+
+    /**
+     * Default dispatcher that each formula runtime will use to process events. This
+     * can be overwritten by each formula individually.
+     */
+    fun defaultDispatcher(): Dispatcher? {
         return null
     }
 }

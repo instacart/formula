@@ -7,7 +7,8 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
-import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
@@ -77,6 +78,7 @@ import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.OnDataActionFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import io.reactivex.rxjava3.core.Observable
@@ -87,7 +89,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
@@ -885,11 +886,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same stream declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(EmptyAction.init()) {
+            EmptyAction.init().onEvent {
                 transition(Unit)
             }
 
-            events(EmptyAction.init()) {
+            EmptyAction.init().onEvent {
                 transition(Unit)
             }
         }
@@ -901,11 +902,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `same observable declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(RxAction.fromObservable("same") { Observable.just(1) }) {
+            RxAction.fromObservable("same") { Observable.just(1) }.onEvent {
                 none()
             }
 
-            events(RxAction.fromObservable("same") { Observable.just(1) }) {
+            RxAction.fromObservable("same") { Observable.just(1) }.onEvent {
                 none()
             }
         }
@@ -918,7 +919,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyAction.init()) {
+                EmptyAction.init().onEvent {
                     none()
                 }
             }
@@ -933,7 +934,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
-                events(EmptyAction.init(it)) {
+                EmptyAction.init(it).onEvent {
                     none()
                 }
             }
@@ -946,13 +947,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple event streams without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 transition {
                     executed += 1
                 }
             }
 
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 transition {
                     executed += 1
                 }
@@ -968,11 +969,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `multiple events with input and without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Int> {
-            events(Action.onData(it)) {
+            Action.onData(it).onEvent {
                 transition { executed += 1 }
             }
 
-            events(Action.onData(it)) {
+            Action.onData(it).onEvent {
                 transition { executed += 1 }
             }
         }
@@ -987,7 +988,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(0, 1, 2)
             list.forEach {
-                events(Action.onInit()) {
+                Action.onInit().onEvent {
                     none()
                 }
             }
@@ -1041,7 +1042,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         var emissions = 0
         var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            events(Action.onTerminate()) {
+            Action.onTerminate().onEvent {
                 transition {
                     emissions += 1
                     terminateCallback = input
@@ -1204,7 +1205,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
-            events(Action.onInit()) {
+            Action.onInit().onEvent {
                 throw java.lang.IllegalStateException("crashed")
             }
         }
@@ -1464,6 +1465,69 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val subject = runtime.test(formula, Unit)
         plugin.mainDispatcher.assertCalled(1)
+        plugin.backgroundDispatcher.assertCalled(1)
+    }
+
+    @Test fun `use global background dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = IncrementFormula()
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(1)
+    }
+
+    @Test fun `specify formula-level dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formulaDispatcher = IncrementingDispatcher()
+        val formula = IncrementFormula()
+        val subject = runtime.test(formula, Unit, dispatcher = formulaDispatcher)
+        globalDispatcher.assertCalled(0)
+        formulaDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(0)
+        formulaDispatcher.assertCalled(1)
+    }
+
+    @Test fun `immediate execution type within callbackWithExecutionType overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = IncrementFormula(executionType = Transition.Immediate)
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { onIncrement() }
+        globalDispatcher.assertCalled(0)
+    }
+
+    @Test fun `immediate execution type within onEventWithExecutionType overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = EventCallbackFormula(executionType = Transition.Immediate)
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(0)
+        subject.output { this.changeState("new state") }
+        globalDispatcher.assertCalled(0)
+    }
+
+    @Test fun `background execution type within action overrides default dispatcher`() {
+        val globalDispatcher = IncrementingDispatcher()
+        val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
+        FormulaPlugins.setPlugin(plugin)
+
+        val formula = OnDataActionFormula(executionType = Transition.Background)
+        val input = OnDataActionFormula.Input(0, onData = {})
+        val subject = runtime.test(formula, input)
+        globalDispatcher.assertCalled(0)
         plugin.backgroundDispatcher.assertCalled(1)
     }
 }

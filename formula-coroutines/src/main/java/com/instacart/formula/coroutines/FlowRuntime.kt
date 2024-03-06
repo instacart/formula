@@ -2,7 +2,7 @@ package com.instacart.formula.coroutines
 
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.RuntimeConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
@@ -18,16 +18,14 @@ object FlowRuntime {
     fun <Input : Any, Output : Any> start(
         input: Flow<Input>,
         formula: IFormula<Input, Output>,
-        inspector: Inspector? = null,
-        isValidationEnabled: Boolean = false,
+        config: RuntimeConfig?,
     ): Flow<Output> {
         return callbackFlow<Output> {
             val runtime = FormulaRuntime(
                 formula = formula,
                 onOutput = this::trySendBlocking,
                 onError = this::close,
-                inspector = inspector,
-                isValidationEnabled = isValidationEnabled,
+                config = config,
             )
 
             input.onEach(runtime::onInput).launchIn(this)

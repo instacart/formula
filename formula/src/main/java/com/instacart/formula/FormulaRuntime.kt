@@ -16,14 +16,18 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
-    private val isValidationEnabled: Boolean = false,
-    inspector: Inspector? = null,
+    config: RuntimeConfig?,
 ) : ManagerDelegate {
+    private val isValidationEnabled = config?.isValidationEnabled ?: false
+    private val inspector = FormulaPlugins.inspector(
+        type = formula.type(),
+        local = config?.inspector,
+    )
+    private val defaultDispatcher: Dispatcher = config?.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
+    private val implementation = formula.implementation()
     private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }
     )
-    private val inspector = FormulaPlugins.inspector(type = formula.type(), local = inspector)
-    private val implementation = formula.implementation()
 
     @Volatile
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -245,9 +249,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
         while (globalEffectQueue.isNotEmpty()) {
             val effect = globalEffectQueue.pollFirst()
             val dispatcher = when (effect.type) {
-                Effect.Unconfined -> Dispatcher.NoOp
-                Effect.Main -> FormulaPlugins.mainThreadDispatcher()
-                Effect.Background -> FormulaPlugins.backgroundThreadDispatcher()
+                Effect.Unconfined -> Dispatcher.None
+                Effect.Main -> Dispatcher.Main
+                Effect.Background -> Dispatcher.Background
             }
             dispatcher.dispatch(effect.executable)
         }
@@ -306,6 +310,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             initialInput = initialInput,
             loggingType = formula::class,
             inspector = inspector,
+            defaultDispatcher = defaultDispatcher,
         )
     }
 }

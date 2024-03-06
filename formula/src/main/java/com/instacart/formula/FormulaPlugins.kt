@@ -2,6 +2,8 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.ListInspector
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.plugin.Plugin
 import kotlin.reflect.KClass
 
 object FormulaPlugins {
@@ -29,10 +31,14 @@ object FormulaPlugins {
     }
 
     fun mainThreadDispatcher(): Dispatcher {
-        return plugin?.mainThreadDispatcher() ?: Dispatcher.NoOp
+        return plugin?.mainThreadDispatcher() ?: Dispatcher.None
     }
 
     fun backgroundThreadDispatcher(): Dispatcher {
-        return plugin?.backgroundThreadDispatcher() ?: Dispatcher.NoOp
+        return plugin?.backgroundThreadDispatcher() ?: Dispatcher.None
+    }
+
+    fun defaultDispatcher(): Dispatcher {
+        return plugin?.defaultDispatcher() ?: Dispatcher.None
     }
 }

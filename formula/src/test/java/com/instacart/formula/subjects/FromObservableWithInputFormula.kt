@@ -29,7 +29,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
                 val fetchItem = RxAction.fromObservable(key = input.itemId) {
                     repo.fetchItem(input.itemId)
                 }
-                events(fetchItem) {
+                fetchItem.onEvent() {
                     transition { input.onItem(it) }
                 }
             }

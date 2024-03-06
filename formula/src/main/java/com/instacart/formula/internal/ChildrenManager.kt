@@ -2,7 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 import java.lang.IllegalStateException
 
 /**
@@ -100,7 +100,6 @@ internal class ChildrenManager(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>> {
-        @Suppress("UNCHECKED_CAST")
         val children = children ?: run {
             val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
             this.children = initialized
@@ -115,7 +114,8 @@ internal class ChildrenManager(
                 formula = implementation,
                 initialInput = input,
                 loggingType = formula::class,
-                inspector = inspector
+                inspector = inspector,
+                defaultDispatcher = delegate.defaultDispatcher,
             )
         }
         @Suppress("UNCHECKED_CAST")

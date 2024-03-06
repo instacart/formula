@@ -4,9 +4,10 @@ import com.instacart.formula.Effect
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.plugin.Dispatcher
 import java.util.LinkedList
 import kotlin.reflect.KClass
 
@@ -25,6 +26,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     internal val loggingType: KClass<*>,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
+    val defaultDispatcher: Dispatcher,
 ) : FormulaManager<Input, Output>, ManagerDelegate {
 
     private var state: State = formula.initialState(initialInput)

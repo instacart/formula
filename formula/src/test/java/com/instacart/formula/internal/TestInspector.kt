@@ -1,8 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.DeferredAction
-import com.instacart.formula.Inspector
-import com.instacart.formula.Transition
+import com.instacart.formula.plugin.Inspector
 import kotlin.reflect.KClass
 
 class TestInspector : Inspector {

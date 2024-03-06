@@ -21,7 +21,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
             return Evaluation(
                 output = state,
                 actions = context.actions {
-                    events(initial) {
+                    initial.onEvent {
                         transition { incrementRelay.triggerEvent() }
                     }
 

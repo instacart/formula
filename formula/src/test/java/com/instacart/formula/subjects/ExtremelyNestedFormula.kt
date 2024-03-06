@@ -19,7 +19,7 @@ object ExtremelyNestedFormula {
             return Evaluation(
                 output = state + childValue,
                 actions = context.actions {
-                    events(Action.onInit()) {
+                    Action.onInit().onEvent {
                         transition(state + 1)
                     }
                 }

@@ -2,7 +2,8 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
@@ -16,8 +17,14 @@ object RxJavaTestableRuntime : TestableRuntime {
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F,
         inspector: Inspector?,
+        defaultDispatcher: Dispatcher?,
     ): TestFormulaObserver<Input, Output, F> {
-        return TestFormulaObserver(RxJavaFormulaTestDelegate(formula, inspector = inspector))
+        val delegate = RxJavaFormulaTestDelegate(
+            formula = formula,
+            inspector = inspector,
+            dispatcher = defaultDispatcher,
+        )
+        return TestFormulaObserver(delegate)
     }
 
     override fun newRelay(): Relay {

@@ -19,40 +19,33 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
 
     override fun <Event> events(
         action: Action<Event>,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
-        add(toBoundStream(action, transition))
-    }
-
-    override fun <Event> onEvent(
-        action: Action<Event>,
-        avoidParameterClash: Any,
-        transition: Transition<Input, State, Event>,
-    ) {
-        add(toBoundStream(action, transition))
+        actions.add(toBoundStream(action, executionType, transition))
     }
 
     override fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     ) {
-        val stream = this
-        this@ActionBuilderImpl.events(stream, transition)
+        events(this, null, transition)
     }
 
-    private fun add(action: DeferredAction<*>) {
-        if (actions.contains(action)) {
-            throw IllegalStateException("duplicate stream with key: ${action.keyAsString()}")
-        }
-
-        actions.add(action)
+    override fun <Event> Action<Event>.onEventWithExecutionType(
+        executionType: Transition.ExecutionType,
+        transition: Transition<Input, State, Event>
+    ) {
+        val stream = this
+        events(stream, executionType, transition)
     }
 
     private fun <Event> toBoundStream(
         stream: Action<Event>,
+        executionType: Transition.ExecutionType? = null,
         transition: Transition<Input, State, Event>,
     ): DeferredAction<Event> {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())
-        val listener = snapshot.context.eventListener(key, useIndex = false, transition)
+        val listener = snapshot.context.eventListener(key, useIndex = false, executionType, transition)
         return DeferredAction(
             key = key,
             action = stream,

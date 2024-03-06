@@ -2,10 +2,12 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.Inspector
+import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.coroutines.FlowAction
 import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow
+import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,9 +37,10 @@ object CoroutinesTestableRuntime : TestableRuntime {
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F,
         inspector: Inspector?,
+        defaultDispatcher: Dispatcher?,
     ): TestFormulaObserver<Input, Output, F> {
         val scope = coroutineTestRule.testCoroutineScope
-        val delegate = CoroutineTestDelegate(scope, formula, inspector)
+        val delegate = CoroutineTestDelegate(scope, formula, inspector, defaultDispatcher)
         return TestFormulaObserver(delegate)
     }
 
@@ -94,12 +97,18 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     private val scope: CoroutineScope,
     override val formula: FormulaT,
     private val inspector: Inspector?,
+    private val dispatcher: Dispatcher?,
 ): FormulaTestDelegate<Input, Output, FormulaT> {
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
+    private val runtimeConfig = RuntimeConfig(
+        isValidationEnabled = true,
+        inspector = inspector,
+        defaultDispatcher = dispatcher,
+    )
     private val inputFlow = MutableSharedFlow<Input>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private val formulaFlow = formula.toFlow(inputFlow, isValidationEnabled = true, inspector = inspector)
+    private val formulaFlow = formula.toFlow(inputFlow, runtimeConfig)
         .onEach { values.add(it) }
         .catch { errors.add(it) }
 
