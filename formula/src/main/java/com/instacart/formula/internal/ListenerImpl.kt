@@ -20,12 +20,31 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
 
-        val dispatcher = when (executionType) {
-            Transition.Immediate -> Dispatcher.None
-            Transition.Background -> Dispatcher.Background
+        when (val type = executionType) {
+            is Transition.Batched -> handleBatched(type, event)
+            Transition.Immediate -> executeWithDispatcher(Dispatcher.None, event)
+            Transition.Background -> executeWithDispatcher(Dispatcher.Background, event)
             // If transition does not specify dispatcher, we use the default one.
-            else -> manager.defaultDispatcher
+            else -> executeWithDispatcher(manager.defaultDispatcher, event)
         }
+    }
+
+    fun disable() {
+        manager = null
+        snapshotImpl = null
+    }
+
+    private fun handleBatched(type: Transition.Batched, event: EventT) {
+        val manager = manager ?: return
+
+        manager.batchManager.add(type, event) {
+            val deferredTransition = DeferredTransition(this, transition, event)
+            manager.onPendingTransition(deferredTransition)
+        }
+    }
+
+    private fun executeWithDispatcher(dispatcher: Dispatcher, event: EventT) {
+        val manager = manager ?: return
 
         dispatcher.dispatch {
             manager.queue.postUpdate {
@@ -33,11 +52,6 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
                 manager.onPendingTransition(deferredTransition)
             }
         }
-    }
-
-    fun disable() {
-        manager = null
-        snapshotImpl = null
     }
 }
 

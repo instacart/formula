@@ -17,6 +17,11 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
      */
     abstract fun action(input: Input): Action<Output>
 
+    /**
+     * Transition execution type that will be used with this action.
+     */
+    open fun executionType(): Transition.ExecutionType? = null
+
     // Implements the common API used by the runtime.
     private val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
@@ -25,7 +30,8 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
             return Evaluation(
                 output = state,
                 actions = context.actions {
-                    action(input).onEvent {
+                    val executionType = executionType()
+                    action(input).onEventWithExecutionType(executionType) {
                         transition(it)
                     }
                 }
