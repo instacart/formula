@@ -252,7 +252,72 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         // Check that termination was called
         assertThat(terminationCallback.values()).containsExactly(0).inOrder()
+    }
 
+    @Test fun `runtime termination triggered while formula is running`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                // This is outside of effect to trigger termination while running
+                                observer?.dispose()
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
+    }
+
+    @Test fun `runtime termination triggered by an effect`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                transition {
+                                    observer?.dispose()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
     }
 
     @Test

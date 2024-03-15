@@ -67,7 +67,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Global transition effect queue which executes side-effects after all formulas are idle.
      */
-    private var globalEffectQueue = LinkedList<Effect>()
+    private val globalEffectQueue = LinkedList<Effect>()
 
     /**
      * Determines if we are iterating through [globalEffectQueue]. It prevents us from
@@ -207,45 +207,42 @@ class FormulaRuntime<Input : Any, Output : Any>(
         if (isRunning) return
 
         try {
-            val manager = checkNotNull(manager)
+            val manager = requireManager()
 
             if (evaluate) {
                 var shouldRun = true
                 while (shouldRun) {
                     val localInputId = inputId
-                    if (!manager.isTerminated()) {
-                        isRunning = true
-                        inspector?.onRunStarted(true)
+                    isRunning = true
+                    inspector?.onRunStarted(true)
 
-                        val currentInput = checkNotNull(input)
-                        runFormula(manager, currentInput)
-                        isRunning = false
+                    val currentInput = requireInput()
+                    runFormula(manager, currentInput)
+                    isRunning = false
 
-                        inspector?.onRunFinished()
+                    inspector?.onRunFinished()
+
+                    /**
+                     * If termination happened during runFormula() execution, let's perform
+                     * termination side-effects here.
+                     */
+                    if (manager.isTerminated()) {
+                        shouldRun = false
+                        terminateManager(manager)
 
                         /**
-                         * If termination happened during runFormula() execution, let's perform
-                         * termination side-effects here.
+                         *  If runtime has been terminated, there is nothing else to do.
                          */
-                        if (manager.isTerminated()) {
-                            shouldRun = false
-                            terminateManager(manager)
-
-                            // If runtime has been terminated, we are stopping and do
-                            // not need to do anything else.
-                            if (!isRuntimeTerminated) {
-                                // Terminated manager with input change indicates that formula
-                                // key changed and we are resetting formula state. We need to
-                                // start a new formula manager.
-                                if (localInputId != inputId) {
-                                    input?.let(this::startNewManager)
-                                }
-                            }
-                        } else {
-                            shouldRun = localInputId != inputId
+                        if (!isRuntimeTerminated) {
+                            /**
+                             * Terminated manager with non-terminated runtime indicates that
+                             * formula input has triggered a key change and we are resetting
+                             * formula state. We need to start a new formula manager here.
+                             */
+                            startNewManager(requireInput())
                         }
                     } else {
-                        shouldRun = false
+                        shouldRun = localInputId != inputId
                     }
                 }
             }
@@ -256,9 +253,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         } catch (e: Throwable) {
             isRunning = false
 
-            manager?.markAsTerminated()
+            val manager = requireManager()
+            manager.markAsTerminated()
             onError(e)
-            manager?.let(this::terminateManager)
+            manager.let(this::terminateManager)
         }
     }
 
@@ -359,5 +357,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
         )
+    }
+
+    // Visible for testing
+    internal fun requireInput(): Input {
+        return checkNotNull(input)
+    }
+
+    // Visible for testing
+    internal fun requireManager(): FormulaManagerImpl<Input, *, Output> {
+        return checkNotNull(manager)
     }
 }
