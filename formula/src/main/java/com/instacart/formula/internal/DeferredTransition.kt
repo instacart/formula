@@ -1,7 +1,5 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Transition
-
 /**
  * A deferred transition contains an [event] and a related [transition] which can
  * be executed using the [execute] function. If the formula is ready, it will be
@@ -11,11 +9,10 @@ import com.instacart.formula.Transition
  */
 class DeferredTransition<Input, State, EventT> internal constructor(
     private val listener: ListenerImpl<Input, State, EventT>,
-    private val transition: Transition<Input, State, EventT>,
     private val event: EventT,
 ) {
 
     fun execute() {
-        listener.snapshotImpl?.dispatch(transition, event)
+        listener.applyInternal(event)
     }
 }
