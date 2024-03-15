@@ -3,6 +3,7 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
+import com.instacart.formula.batch.StateBatchScheduler
 import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
@@ -77,10 +78,12 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
+import com.instacart.formula.types.IncrementActionFormula
 import com.instacart.formula.types.IncrementFormula
 import com.instacart.formula.types.OnDataActionFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
+import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Ignore
 import org.junit.Rule
@@ -89,6 +92,8 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import kotlin.reflect.KClass
 
 @RunWith(Parameterized::class)
@@ -1529,6 +1534,141 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val subject = runtime.test(formula, input)
         globalDispatcher.assertCalled(0)
         plugin.backgroundDispatcher.assertCalled(1)
+    }
+
+
+    @Test fun `batched formulas are executed as part of a single evaluation`() {
+        val childFormulaCount = 100
+
+        val batchScheduler = StateBatchScheduler()
+        val relay = runtime.newRelay()
+
+        val childFormula = IncrementActionFormula(
+            incrementRelay = relay,
+            executionType = Transition.Batched(batchScheduler)
+        )
+
+        val rootFormula = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val sum = (0 until childFormulaCount).sumOf { id ->
+                    context.key(id) {
+                        context.child(childFormula, input)
+                    }
+                }
+                return Evaluation(
+                    output = sum,
+                )
+            }
+        }
+
+        val subject = runtime.test(rootFormula, Unit)
+        batchScheduler.performUpdate {
+            relay.triggerEvent()
+
+            // No updates until batch scheduler executes the batch
+            assertThat(subject.values()).containsExactly(0).inOrder()
+        }
+
+        // There are 100 formulas listening to the same relay, but only 1 evaluation happens.
+        assertThat(subject.values()).containsExactly(0, 100).inOrder()
+
+        // Second update
+        batchScheduler.performUpdate { relay.triggerEvent() }
+
+        // There are 100 formulas listening to the same relay, but only 1 evaluation happens.
+        assertThat(subject.values()).containsExactly(0, 100, 200).inOrder()
+    }
+
+    @Test fun `two formulas using same state batch scheduler`() {
+        val childFormulaCount = 100
+
+        val batchScheduler = StateBatchScheduler()
+        val relay = runtime.newRelay()
+
+        val childFormula = IncrementActionFormula(
+            incrementRelay = relay,
+            executionType = Transition.Batched(batchScheduler)
+        )
+
+        val rootFormula = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val sum = (0 until childFormulaCount).sumOf { id ->
+                    context.key(id) {
+                        context.child(childFormula, input)
+                    }
+                }
+                return Evaluation(
+                    output = sum,
+                )
+            }
+        }
+
+        val subject1 = runtime.test(rootFormula, Unit)
+        val subject2 = runtime.test(rootFormula, Unit)
+
+        // Update
+        batchScheduler.performUpdate { relay.triggerEvent() }
+
+        // There are 100 formulas listening to the same relay, but only 1 evaluation happens.
+        assertThat(subject1.values()).containsExactly(0, 100).inOrder()
+        assertThat(subject2.values()).containsExactly(0, 100).inOrder()
+     }
+
+    @Test fun `batched state update while formula already is processing`() {
+        val childFormulaCount = 100
+
+        val batchScheduler = TestStateBatchScheduler()
+        val incrementRelay = runtime.newRelay()
+        val sleepRelay = runtime.newRelay()
+
+        val childFormula = IncrementActionFormula(
+            incrementRelay = incrementRelay,
+            executionType = Transition.Batched(batchScheduler)
+        )
+
+        val rootFormula = object : Formula<Unit, Int, Int>() {
+            override fun initialState(input: Unit): Int = 0
+
+            override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+                val sum = (0 until childFormulaCount).sumOf { id ->
+                    context.key(id) {
+                        context.child(childFormula, input)
+                    }
+                }
+                return Evaluation(
+                    output = state + sum,
+                    actions = context.actions {
+                        sleepRelay.action().onEvent {
+                            Thread.sleep(500)
+                            transition(state + 1)
+                        }
+                    }
+                )
+            }
+        }
+        val subject = runtime.test(rootFormula, Unit)
+
+        val countDownLatch = CountDownLatch(1)
+        // Start sleep
+        Executors.newSingleThreadExecutor().execute {
+            sleepRelay.triggerEvent()
+
+            countDownLatch.countDown()
+        }
+
+        // Wait for single thread to start the long evaluation (using sleep relay + sleep)
+        Thread.sleep(100)
+
+        batchScheduler.performUpdate(Unit) {
+            incrementRelay.triggerEvent()
+        }
+
+        countDownLatch.await()
+
+        // There are 100 formulas listening to the same relay, but only 1 evaluation happens.
+        assertThat(subject.values()).containsExactly(0, 101).inOrder()
+
+        assertThat(batchScheduler.batchesOutsideOfScope).hasSize(0)
     }
 }
 

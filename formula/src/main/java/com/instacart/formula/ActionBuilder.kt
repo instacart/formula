@@ -73,7 +73,7 @@ abstract class ActionBuilder<out Input, State>(
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
     abstract fun <Event> Action<Event>.onEventWithExecutionType(
-        executionType: Transition.ExecutionType,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     )
 }

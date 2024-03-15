@@ -13,7 +13,7 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
     /**
      * Allows us to define a custom action.
      */
-    interface DelegateAction {
+    fun interface DelegateAction {
         fun ActionBuilder<Input, Int>.runAction()
     }
 

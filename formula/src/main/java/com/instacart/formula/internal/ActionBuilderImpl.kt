@@ -32,7 +32,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
     }
 
     override fun <Event> Action<Event>.onEventWithExecutionType(
-        executionType: Transition.ExecutionType,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>
     ) {
         val stream = this

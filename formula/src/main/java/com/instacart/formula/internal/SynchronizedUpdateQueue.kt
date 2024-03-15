@@ -44,8 +44,7 @@ class SynchronizedUpdateQueue(
      */
     fun postUpdate(update: () -> Unit) {
         val currentThread = Thread.currentThread()
-        val owner = threadRunning.get()
-        if (owner == currentThread) {
+        if (isProcessingOnCurrentThread()) {
             // This indicates a nested update where an update triggers another update. Given we
             // are already thread gated, we can execute this update immediately without a need
             // for any extra synchronization.
@@ -64,6 +63,10 @@ class SynchronizedUpdateQueue(
             updateQueue.add(update)
         }
         tryToDrainQueue(currentThread)
+    }
+
+    fun isProcessingOnCurrentThread(): Boolean {
+        return threadRunning.get() == Thread.currentThread()
     }
 
     /**

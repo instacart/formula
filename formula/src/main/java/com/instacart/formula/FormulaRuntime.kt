@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
@@ -17,7 +18,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     config: RuntimeConfig?,
-) : ManagerDelegate {
+) : ManagerDelegate, BatchManager.Executor {
     private val isValidationEnabled = config?.isValidationEnabled ?: false
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
@@ -29,11 +30,27 @@ class FormulaRuntime<Input : Any, Output : Any>(
         onEmpty = { emitOutputIfNeeded() }
     )
 
+    /**
+     * Global batched event manager.
+     */
+    private val batchManager = BatchManager(this)
+
     @Volatile
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
 
     private var input: Input? = null
     private var key: Any? = null
+
+    /**
+     * Used by [executeBatch] to disable running while we queue up batched updates.
+     */
+    private var isRunEnabled: Boolean = true
+
+    /**
+     * Used when [isRunEnabled] is disabled to track if evaluate is needed when [isRunEnabled]
+     * is re-enabled.
+     */
+    private var pendingEvaluation: Boolean = false
 
     /**
      * Determines if we are executing within [runFormula] block. It prevents to
@@ -150,7 +167,35 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
 
         if (effects.isNotEmpty() || evaluate) {
-            run(evaluate = evaluate)
+            if (isRunEnabled) {
+                run(evaluate = evaluate)
+            } else {
+                pendingEvaluation = pendingEvaluation || evaluate
+            }
+        }
+    }
+
+    override fun executeBatch(updates: List<() -> Unit>) {
+        // Using default dispatcher for batch execution
+        defaultDispatcher.dispatch {
+            synchronizedUpdateQueue.postUpdate {
+                // We disable run until all batch updates are processed
+                isRunEnabled = false
+                for (update in updates) {
+                    update()
+                }
+                /**
+                 * Re-enable run and check if there were any state changes or side-effects that
+                 * need to be run.
+                 */
+                isRunEnabled = true
+
+                if (globalEffectQueue.isNotEmpty() || pendingEvaluation) {
+                    val evaluate = pendingEvaluation
+                    pendingEvaluation = false
+                    run(evaluate = evaluate)
+                }
+            }
         }
     }
 
@@ -305,6 +350,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
             queue = synchronizedUpdateQueue,
+            batchManager = batchManager,
             delegate = this,
             formula = implementation,
             initialInput = initialInput,
