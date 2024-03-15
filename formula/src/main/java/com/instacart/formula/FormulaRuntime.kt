@@ -166,12 +166,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
             }
         }
 
-        if (effects.isNotEmpty() || evaluate) {
-            if (isRunEnabled) {
-                run(evaluate = evaluate)
-            } else {
-                pendingEvaluation = pendingEvaluation || evaluate
-            }
+        pendingEvaluation = pendingEvaluation || evaluate
+        if (isRunEnabled) {
+            runIfNeeded()
         }
     }
 
@@ -190,12 +187,16 @@ class FormulaRuntime<Input : Any, Output : Any>(
                  */
                 isRunEnabled = true
 
-                if (globalEffectQueue.isNotEmpty() || pendingEvaluation) {
-                    val evaluate = pendingEvaluation
-                    pendingEvaluation = false
-                    run(evaluate = evaluate)
-                }
+                runIfNeeded()
             }
+        }
+    }
+
+    private fun runIfNeeded() {
+        if (globalEffectQueue.isNotEmpty() || pendingEvaluation) {
+            val evaluate = pendingEvaluation
+            pendingEvaluation = false
+            run(evaluate = evaluate)
         }
     }
 

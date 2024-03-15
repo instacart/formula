@@ -1114,7 +1114,20 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    @Test fun `adding duplicate child logs global event`() {
+    @Test fun `child formulas with duplicate key are supported`() {
+        val result = Try {
+            val formula = DynamicParentFormula()
+            runtime.test(formula, Unit)
+                .output { addChild(TestKey("1")) }
+                .output { addChild(TestKey("1")) }
+        }
+
+        // No errors
+        val error = result.errorOrNull()?.cause
+        assertThat(error).isNull()
+    }
+
+    @Test fun `when child formulas with duplicate key are added, plugin is notified`() {
         val duplicateKeys = mutableListOf<Any>()
 
         FormulaPlugins.setPlugin(object : Plugin {
