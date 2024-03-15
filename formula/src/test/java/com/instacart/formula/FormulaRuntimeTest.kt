@@ -80,6 +80,7 @@ import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
 import com.instacart.formula.types.IncrementFormula
+import com.instacart.formula.types.InputIdentityFormula
 import com.instacart.formula.types.OnDataActionFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
@@ -1375,6 +1376,49 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 "action-finished: com.instacart.formula.subjects.StartStopFormula",
                 "formula-run-finished",
                 "formula-finished: com.instacart.formula.subjects.StartStopFormula"
+            ).inOrder()
+        }
+    }
+
+    @Test fun `input changed inspector event`() {
+        val localInspector = TestInspector()
+        val globalInspector = TestInspector()
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun inspector(type: KClass<*>): Inspector {
+                return globalInspector
+            }
+        })
+
+        val formula = object : StatelessFormula<Int, Int>() {
+            val delegate = InputIdentityFormula<Int>()
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = context.child(delegate, input)
+                )
+            }
+        }
+        val subject = runtime.test(formula, 0, localInspector)
+        subject.input(1)
+
+        for (inspector in listOf(globalInspector, localInspector)) {
+            assertThat(inspector.events).containsExactly(
+                "formula-run-started",
+                "formula-started: null",
+                "evaluate-started: null",
+                "formula-started: com.instacart.formula.types.InputIdentityFormula",
+                "evaluate-started: com.instacart.formula.types.InputIdentityFormula",
+                "evaluate-finished: com.instacart.formula.types.InputIdentityFormula",
+                "evaluate-finished: null",
+                "formula-run-finished",
+
+                "formula-run-started",
+                "evaluate-started: null",
+                "input-changed: null",
+                "evaluate-started: com.instacart.formula.types.InputIdentityFormula",
+                "input-changed: com.instacart.formula.types.InputIdentityFormula",
+                "evaluate-finished: com.instacart.formula.types.InputIdentityFormula",
+                "evaluate-finished: null",
+                "formula-run-finished"
             ).inOrder()
         }
     }
