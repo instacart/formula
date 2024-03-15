@@ -284,6 +284,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         observer = runtime.test(root)
         observer.input(0)
 
+        // No output since formula exited before producing an output
+        observer.assertOutputCount(0)
+
         // Check that termination was called
         assertThat(terminationCallback.values()).containsExactly(0).inOrder()
     }
@@ -316,6 +319,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         observer = runtime.test(root)
         observer.input(0)
+
+        // No output since formula exited before producing an output
+        observer.assertOutputCount(0)
 
         // Check that termination was called
         assertThat(terminationCallback.values()).containsExactly(0).inOrder()
