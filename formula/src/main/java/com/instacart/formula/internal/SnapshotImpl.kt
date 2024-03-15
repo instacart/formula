@@ -53,10 +53,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
-        listener.manager = delegate
-        listener.snapshotImpl = this
-        listener.executionType = executionType
-        listener.transition = transition
+        listener.setDependencies(delegate, this, executionType, transition)
         return listener
     }
 

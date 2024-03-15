@@ -8,13 +8,13 @@ import com.instacart.formula.plugin.Dispatcher
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Listener<EventT> {
+internal class ListenerImpl<Input, State, EventT>(val key: Any) : Listener<EventT> {
 
-    @Volatile internal var manager: FormulaManagerImpl<Input, State, *>? = null
-    @Volatile internal var snapshotImpl: SnapshotImpl<Input, State>? = null
-    @Volatile internal var executionType: Transition.ExecutionType? = null
+    @Volatile private var manager: FormulaManagerImpl<Input, State, *>? = null
+    @Volatile private var snapshotImpl: SnapshotImpl<Input, State>? = null
+    @Volatile private var executionType: Transition.ExecutionType? = null
 
-    internal lateinit var transition: Transition<Input, State, EventT>
+    private lateinit var transition: Transition<Input, State, EventT>
 
     override fun invoke(event: EventT) {
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
@@ -29,16 +29,32 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
         }
     }
 
+    fun setDependencies(
+        manager: FormulaManagerImpl<Input, State, *>?,
+        snapshot: SnapshotImpl<Input, State>?,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, EventT>,
+    ) {
+        this.manager = manager
+        this.snapshotImpl = snapshot
+        this.executionType = executionType
+        this.transition = transition
+    }
+
     fun disable() {
         manager = null
         snapshotImpl = null
+    }
+
+    fun applyInternal(event: EventT) {
+        snapshotImpl?.dispatch(transition, event)
     }
 
     private fun handleBatched(type: Transition.Batched, event: EventT) {
         val manager = manager ?: return
 
         manager.batchManager.add(type, event) {
-            val deferredTransition = DeferredTransition(this, transition, event)
+            val deferredTransition = DeferredTransition(this, event)
             manager.onPendingTransition(deferredTransition)
         }
     }
@@ -48,7 +64,7 @@ internal class ListenerImpl<Input, State, EventT>(internal var key: Any) : Liste
 
         dispatcher.dispatch {
             manager.queue.postUpdate {
-                val deferredTransition = DeferredTransition(this, transition, event)
+                val deferredTransition = DeferredTransition(this, event)
                 manager.onPendingTransition(deferredTransition)
             }
         }
