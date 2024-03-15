@@ -26,11 +26,7 @@ internal class ChildrenManager(
     fun prepareForPostEvaluation() {
         indexes?.clear()
 
-        children?.clearUnrequested {
-            pendingRemoval = pendingRemoval ?: mutableListOf()
-            it.markAsTerminated()
-            pendingRemoval?.add(it)
-        }
+        children?.clearUnrequested(this::prepareForTermination)
     }
 
     fun terminateChildren(evaluationId: Long): Boolean {
@@ -93,6 +89,12 @@ internal class ChildrenManager(
                 "There already is a child with same key: $key. Override [Formula.key] function."
             }
         }
+    }
+
+    private fun prepareForTermination(it: FormulaManager<*, *>) {
+        pendingRemoval = pendingRemoval ?: mutableListOf()
+        it.markAsTerminated()
+        pendingRemoval?.add(it)
     }
 
     private fun <ChildInput, ChildOutput>  childFormulaHolder(

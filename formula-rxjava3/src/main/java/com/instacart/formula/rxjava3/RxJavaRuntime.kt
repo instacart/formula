@@ -19,7 +19,7 @@ object RxJavaRuntime {
                 formula = formula,
                 onOutput = emitter::onNext,
                 onError = emitter::onError,
-                config = config,
+                config = config ?: RuntimeConfig(),
             )
 
             val disposables = CompositeDisposable()

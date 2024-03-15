@@ -8,6 +8,7 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
+import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.rxjava3.RxAction
@@ -76,6 +77,7 @@ import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
+import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
@@ -210,6 +212,119 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         // Input
         robot.test.output { assertThat(this).isEqualTo(3) }
+    }
+
+    @Test fun `input change while running triggers root formula restart`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun key(input: Int): Any {
+                return input
+            }
+
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                /**
+                                 * We call observer explicitly outside of effect block to ensure
+                                 * that input change happens while formula is running
+                                 */
+                                observer?.input(1)
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+        observer.output { assertThat(this).isEqualTo(1) }
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
+    }
+
+    @Test fun `runtime termination triggered while formula is running`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                // This is outside of effect to trigger termination while running
+                                observer?.dispose()
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+
+        // No output since formula exited before producing an output
+        observer.assertOutputCount(0)
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
+    }
+
+    @Test fun `runtime termination triggered by an effect`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                transition {
+                                    observer?.dispose()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+
+        // No output since formula exited before producing an output
+        observer.assertOutputCount(0)
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
     }
 
     @Test
@@ -543,6 +658,28 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
             }
+    }
+
+    @Test fun `listener removed while dispatching an event will drop the event`() {
+        var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? = null
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun backgroundThreadDispatcher(): Dispatcher {
+                return object : Dispatcher {
+                    override fun dispatch(executable: () -> Unit) {
+                        // We disable callback before executing increment
+                        observer?.output { toggleCallback() }
+                        executable()
+                    }
+                }
+            }
+        })
+
+        val root = OptionalCallbackFormula(
+            incrementExecutionType = Transition.Background
+        )
+        observer = runtime.test(root, Unit)
+        observer.output { listener?.invoke() }
+        observer.output { assertThat(state).isEqualTo(0) }
     }
 
     @Test
@@ -1114,7 +1251,20 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    @Test fun `adding duplicate child logs global event`() {
+    @Test fun `child formulas with duplicate key are supported`() {
+        val result = Try {
+            val formula = DynamicParentFormula()
+            runtime.test(formula, Unit)
+                .output { addChild(TestKey("1")) }
+                .output { addChild(TestKey("1")) }
+        }
+
+        // No errors
+        val error = result.errorOrNull()?.cause
+        assertThat(error).isNull()
+    }
+
+    @Test fun `when child formulas with duplicate key are added, plugin is notified`() {
         val duplicateKeys = mutableListOf<Any>()
 
         FormulaPlugins.setPlugin(object : Plugin {

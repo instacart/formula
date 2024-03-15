@@ -36,7 +36,7 @@ abstract class ActionBuilder<out Input, State>(
      */
     abstract fun <Event> events(
         action: Action<Event>,
-        executionType: Transition.ExecutionType? = null,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     )
 
