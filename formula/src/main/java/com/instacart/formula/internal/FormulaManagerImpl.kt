@@ -7,6 +7,7 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.plugin.Dispatcher
 import java.util.LinkedList
 import kotlin.reflect.KClass
@@ -20,6 +21,7 @@ import kotlin.reflect.KClass
  */
 internal class FormulaManagerImpl<Input, State, Output>(
     val queue: SynchronizedUpdateQueue,
+    val batchManager: BatchManager,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
@@ -61,7 +63,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * Determines if we are executing within [run] block. Enables optimizations
      * such as performing [DeferredTransition] inline.
      */
-    private var isRunning: Boolean = false
+    internal var isRunning: Boolean = false
 
     /**
      * Pending transition queue which will be populated and executed within [run] function

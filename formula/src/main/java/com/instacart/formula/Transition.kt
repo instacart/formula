@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.batch.BatchScheduler
 import kotlin.reflect.KClass
 
 /**
@@ -79,6 +80,25 @@ fun interface Transition<in Input, State, in Event> {
      * should be used for data events that might be expensive to process.
      */
     data object Background : ExecutionType()
+
+
+    /**
+     * NOTE: this is experimental feature, the APIs might change in the future.
+     *
+     * Batched execution type indicates that the event can be collected into a batch
+     * and processed as part of a group.
+     *
+     * @param scheduler Scheduler used to batch these events. The [BatchScheduler.key] will
+     * be used to group events together and [BatchScheduler.schedule] will be used to
+     * schedule the execution of the batch.
+     *
+     * TODO: add dropPrevious If true, will drop the previous event if a new event
+     * arrives before batch is processed.
+     */
+    data class Batched(
+        val scheduler: BatchScheduler, // TODO: make optional with default?
+//        val dropPrevious: Boolean = false,
+    ): ExecutionType()
 
     /**
      * Called when an [Event] happens and returns a [Result] object which can indicate a state
