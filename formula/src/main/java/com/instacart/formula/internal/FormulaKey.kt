@@ -1,7 +1,7 @@
 package com.instacart.formula.internal
 
 internal data class FormulaKey(
-    val scopeKey: Any?,
-    val type: Class<*>,
-    val key: Any?
+    private val scopeKey: Any?,
+    private val type: Class<*>,
+    private val key: Any?
 )

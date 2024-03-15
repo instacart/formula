@@ -41,7 +41,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
 
     private fun <Event> toBoundStream(
         stream: Action<Event>,
-        executionType: Transition.ExecutionType? = null,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ): DeferredAction<Event> {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())

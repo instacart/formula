@@ -71,7 +71,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
      * should not be used with the same [transition] type.
      */
     fun <Event> onEventWithExecutionType(
-        executionType: Transition.ExecutionType,
+        executionType: Transition.ExecutionType?,
         key: Any? = null,
         transition: Transition<Input, State, Event>,
     ): Listener<Event> {
@@ -123,12 +123,12 @@ abstract class FormulaContext<out Input, State> internal constructor(
     internal abstract fun <Event> eventListener(
         key: Any,
         useIndex: Boolean = true,
-        executionType: Transition.ExecutionType? = null,
+        executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>
     ): Listener<Event>
 
     // Internal key scope management
     @PublishedApi internal abstract fun enterScope(key: Any)
     @PublishedApi internal abstract fun endScope()
-    @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any? = null): Any
+    @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any?): Any
 }
