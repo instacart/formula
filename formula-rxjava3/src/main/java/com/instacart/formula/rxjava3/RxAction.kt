@@ -20,17 +20,10 @@ interface RxAction<Event : Any> : Action<Event> {
          * }
          * ```
          */
-        inline fun <Event : Any> fromObservable(
-            crossinline create: () -> Observable<Event>
+        fun <Event : Any> fromObservable(
+            create: () -> Observable<Event>
         ): Action<Event> {
-            return object : RxAction<Event> {
-
-                override fun observable(): Observable<Event> {
-                    return create()
-                }
-
-                override fun key(): Any = Unit
-            }
+            return fromObservable(Unit, create)
         }
 
         /**
@@ -45,18 +38,11 @@ interface RxAction<Event : Any> : Action<Event> {
          *
          * @param key Used to distinguish this [Action] from other actions.
          */
-        inline fun <Event : Any> fromObservable(
+        fun <Event : Any> fromObservable(
             key: Any?,
-            crossinline create: () -> Observable<Event>
+            create: () -> Observable<Event>
         ): Action<Event> {
-            return object : RxAction<Event> {
-
-                override fun observable(): Observable<Event> {
-                    return create()
-                }
-
-                override fun key(): Any? = key
-            }
+            return RxActionImpl(key, create)
         }
     }
 
@@ -65,5 +51,18 @@ interface RxAction<Event : Any> : Action<Event> {
     override fun start(send: (Event) -> Unit): Cancelable? {
         val disposable = observable().subscribe(send)
         return Cancelable(disposable::dispose)
+    }
+}
+
+private data class RxActionImpl<Event : Any>(
+    private val key: Any?,
+    private val factory: () -> Observable<Event>
+): RxAction<Event> {
+    override fun observable(): Observable<Event> {
+        return factory()
+    }
+
+    override fun key(): Any? {
+        return key
     }
 }
