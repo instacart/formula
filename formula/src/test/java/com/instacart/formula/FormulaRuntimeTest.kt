@@ -76,6 +76,7 @@ import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
+import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
@@ -210,6 +211,48 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         // Input
         robot.test.output { assertThat(this).isEqualTo(3) }
+    }
+
+    @Test fun `input change while running triggers root formula restart`() {
+        val terminationCallback = TestEventCallback<Int>()
+        var observer: TestFormulaObserver<Int, *, *>? = null
+        val root = object : StatelessFormula<Int, Int>() {
+            override fun key(input: Int): Any {
+                return input
+            }
+
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            transition {
+                                terminationCallback.invoke(input)
+                            }
+                        }
+
+                        if (input == 0) {
+                            Action.onInit().onEvent {
+                                /**
+                                 * We call observer explicitly outside of effect block to ensure
+                                 * that input change happens while formula is running
+                                 */
+                                observer?.input(1)
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        observer = runtime.test(root)
+        observer.input(0)
+        observer.output { assertThat(this).isEqualTo(1) }
+
+        // Check that termination was called
+        assertThat(terminationCallback.values()).containsExactly(0).inOrder()
+
     }
 
     @Test

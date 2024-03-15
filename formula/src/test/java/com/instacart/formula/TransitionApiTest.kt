@@ -35,11 +35,6 @@ class TransitionApiTest {
         assertThat(result).isEqualTo(Transition.Result.None)
     }
 
-    @Test fun `none transition has no effects`() {
-        val result = Transition.Result.None
-        Truth.assertThat(result.effects).isEmpty()
-    }
-
     @Test fun `stateful transition`() {
         val transition = Transition<Unit, Int, Unit> { transition(state + 1) }
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()

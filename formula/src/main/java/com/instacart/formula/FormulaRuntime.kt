@@ -17,14 +17,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
-    config: RuntimeConfig?,
+    config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
-    private val isValidationEnabled = config?.isValidationEnabled ?: false
+    private val isValidationEnabled = config.isValidationEnabled
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
-        local = config?.inspector,
+        local = config.inspector,
     )
-    private val defaultDispatcher: Dispatcher = config?.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
+    private val defaultDispatcher: Dispatcher = config.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
     private val implementation = formula.implementation()
     private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }
