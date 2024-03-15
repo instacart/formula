@@ -30,7 +30,7 @@ interface BatchScheduler {
     /**
      * Defines the batch key.
      */
-    fun key(event: Any?): Any
+    fun key(event: Any?): Any = this
 
     /**
      * TODO: will allow to immediately execute certain events.

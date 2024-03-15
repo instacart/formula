@@ -1,12 +1,11 @@
 package com.instacart.formula.batch
 
-import com.instacart.formula.FormulaRuntime
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class BatchImpl internal constructor(
-    private val runtime: FormulaRuntime<*, *>,
     private val batchManager: BatchManager,
+    private val executor: BatchManager.Executor,
     private val key: Any,
 ) : BatchScheduler.Batch {
 
@@ -24,11 +23,7 @@ internal class BatchImpl internal constructor(
          * that batch was already processed.
          */
         if (batchManager.removeBatch(this)) {
-            runtime.executeBatch {
-                for (update in updates) {
-                    update()
-                }
-            }
+            executor.executeBatch(updates)
         }
     }
 

@@ -18,7 +18,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     config: RuntimeConfig?,
-) : ManagerDelegate {
+) : ManagerDelegate, BatchManager.Executor {
     private val isValidationEnabled = config?.isValidationEnabled ?: false
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
@@ -175,12 +175,19 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
-    fun executeBatch(batchExecutable: () -> Unit) {
+    override fun executeBatch(updates: List<() -> Unit>) {
         // Using default dispatcher for batch execution
         defaultDispatcher.dispatch {
             synchronizedUpdateQueue.postUpdate {
+                // We disable run until all batch updates are processed
                 isRunEnabled = false
-                batchExecutable()
+                for (update in updates) {
+                    update()
+                }
+                /**
+                 * Re-enable run and check if there were any state changes or side-effects that
+                 * need to be run.
+                 */
                 isRunEnabled = true
 
                 if (globalEffectQueue.isNotEmpty() || pendingEvaluation) {

@@ -16,7 +16,17 @@ import java.util.concurrent.ConcurrentHashMap
  * schedule the execution of the batch. The [BatchScheduler] will keep a reference to the batch
  * until it is executed.
  */
-internal class BatchManager(private val runtime: FormulaRuntime<*, *>) {
+internal class BatchManager(private val batchExecutor: Executor) {
+
+    /**
+     * Responsible for executing batch of updates.
+     *
+     * @see [FormulaRuntime]
+     */
+    interface Executor {
+        fun executeBatch(updates: List<() -> Unit>)
+    }
+
     private var activeBatches: MutableMap<Any, BatchImpl>? = null
 
     fun add(batched: Transition.Batched, event: Any?, update: () -> Unit) {
@@ -42,7 +52,7 @@ internal class BatchManager(private val runtime: FormulaRuntime<*, *>) {
 
         val key = scheduler.key(event)
         return activeBatches.getOrPut(key) {
-            BatchImpl(runtime, this, key)
+            BatchImpl(this, batchExecutor, key)
         }
     }
 }
