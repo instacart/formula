@@ -4,7 +4,7 @@ import com.instacart.formula.Action
 import com.instacart.formula.DelegateAction
 
 internal class OverrideKeyAction<Event>(
-    val key: Any,
+    private val key: Any,
     delegateAction: Action<Event>,
 ) : DelegateAction<Event>(delegateAction) {
 
