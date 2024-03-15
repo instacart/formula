@@ -8,6 +8,7 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
+import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.rxjava3.RxAction
@@ -651,6 +652,28 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .apply {
                 assertThat(values().map { it.state }).containsExactly(0, 1, 1).inOrder()
             }
+    }
+
+    @Test fun `listener removed while dispatching an event will drop the event`() {
+        var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? = null
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun backgroundThreadDispatcher(): Dispatcher {
+                return object : Dispatcher {
+                    override fun dispatch(executable: () -> Unit) {
+                        // We disable callback before executing increment
+                        observer?.output { toggleCallback() }
+                        executable()
+                    }
+                }
+            }
+        })
+
+        val root = OptionalCallbackFormula(
+            incrementExecutionType = Transition.Background
+        )
+        observer = runtime.test(root, Unit)
+        observer.output { listener?.invoke() }
+        observer.output { assertThat(state).isEqualTo(0) }
     }
 
     @Test

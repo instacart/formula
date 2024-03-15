@@ -57,7 +57,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * each formula output with an identifier value and compare it for validity with
      * the global value.
      */
-    var globalEvaluationId: Long = 0
+    private var globalEvaluationId: Long = 0
 
     /**
      * Determines if we are executing within [run] block. Enables optimizations
@@ -194,7 +194,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val snapshot = SnapshotImpl(
             input = input,
             state = state,
-            associatedEvaluationId = evaluationId,
             listeners = listeners,
             delegate = this,
         )
@@ -220,7 +219,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         listeners.prepareForPostEvaluation()
         childrenManager?.prepareForPostEvaluation()
 
-        snapshot.running = true
+        snapshot.markRunning()
         if (!isValidationEnabled) {
             inspector?.onEvaluateFinished(loggingType, newFrame.evaluation.output, evaluated = true)
         }
