@@ -45,18 +45,21 @@ class StateBatchScheduler : BatchScheduler {
         }
 
         isUpdating.set(true)
-        update()
-        isUpdating.remove()
+        try {
+            update()
+        } finally {
+            isUpdating.remove()
 
-        // Get collected batches
-        val batches: MutableSet<BatchScheduler.Batch>? = threadLocalBatches.get()
-        // Clear them from our state
-        threadLocalBatches.remove()
+            // Get collected batches
+            val batches: MutableSet<BatchScheduler.Batch>? = threadLocalBatches.get()
+            // Clear them from our state
+            threadLocalBatches.remove()
 
-        // Execute them
-        if (batches != null) {
-            for(batch in batches) {
-                batch.execute()
+            // Execute them
+            if (batches != null) {
+                for(batch in batches) {
+                    batch.execute()
+                }
             }
         }
     }
