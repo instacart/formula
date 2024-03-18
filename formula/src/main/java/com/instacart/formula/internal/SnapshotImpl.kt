@@ -8,20 +8,18 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
-import com.instacart.formula.plugin.Dispatcher
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State> internal constructor(
     override val input: Input,
     override val state: State,
-    private val associatedEvaluationId: Long,
     listeners: Listeners,
     private val delegate: FormulaManagerImpl<Input, State, *>,
 ) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
-    var running = false
+    private var running = false
 
     override val context: FormulaContext<Input, State> = this
 
@@ -53,10 +51,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     ): Listener<Event> {
         ensureNotRunning()
         val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
-        listener.manager = delegate
-        listener.snapshotImpl = this
-        listener.executionType = executionType
-        listener.transition = transition
+        listener.setDependencies(delegate, this, executionType, transition)
         return listener
     }
 
@@ -91,21 +86,16 @@ internal class SnapshotImpl<out Input, State> internal constructor(
     }
 
     fun <Event> dispatch(transition: Transition<Input, State, Event>, event: Event) {
-        if (!running) {
-            throw IllegalStateException("Transitions are not allowed during evaluation")
-        }
-
-        if (!delegate.isTerminated() && delegate.isEvaluationNeeded(associatedEvaluationId)) {
-            // We have already transitioned, this should not happen.
-            throw IllegalStateException("Transition already happened. This is using old event listener: $transition & $event. Transition: $associatedEvaluationId != ${delegate.globalEvaluationId}")
-        }
-
         val result = transition.toResult(this, event)
         if (TransitionUtils.isEmpty(result)) {
             return
         }
 
         delegate.handleTransitionResult(event, result)
+    }
+
+    fun markRunning() {
+        running = true
     }
 
     private fun ensureNotRunning() {

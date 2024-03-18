@@ -4,9 +4,12 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
+import com.instacart.formula.Transition
 
-class OptionalCallbackFormula :
-    Formula<Unit, OptionalCallbackFormula.State, OptionalCallbackFormula.Output>() {
+class OptionalCallbackFormula(
+    private val toggleExecutionType: Transition.ExecutionType? = null,
+    private val incrementExecutionType: Transition.ExecutionType? = null,
+) : Formula<Unit, OptionalCallbackFormula.State, OptionalCallbackFormula.Output>() {
     data class State(
         val callbackEnabled: Boolean = true,
         val state: Int = 0
@@ -22,7 +25,9 @@ class OptionalCallbackFormula :
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
         val callback = if (state.callbackEnabled) {
-            context.onEvent<Unit> { transition(state.copy(state = state.state + 1)) }
+            context.onEventWithExecutionType<Unit>(incrementExecutionType) {
+                transition(state.copy(state = state.state + 1))
+            }
         } else {
             null
         }
@@ -31,7 +36,7 @@ class OptionalCallbackFormula :
             output = Output(
                 state = state.state,
                 listener = callback,
-                toggleCallback = context.onEvent {
+                toggleCallback = context.onEventWithExecutionType(toggleExecutionType) {
                     transition(state.copy(callbackEnabled = !state.callbackEnabled))
                 }
             )

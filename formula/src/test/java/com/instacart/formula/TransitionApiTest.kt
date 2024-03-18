@@ -1,8 +1,10 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.DelegateTransitionContext
 import com.instacart.formula.internal.toResult
+import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestListener
 import org.junit.Test
 
@@ -11,13 +13,32 @@ class TransitionApiTest {
     @Test fun `none transition`() {
         val transition = Transition<Unit, Int, Unit> { none() }
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit)
-        Truth.assertThat(result).isEqualTo(Transition.Result.None)
+        assertThat(result).isEqualTo(Transition.Result.None)
+    }
+
+    @Test fun `none transition has no effects`() {
+        val result = Transition.Result.None
+        assertThat(result.effects).isEmpty()
+    }
+
+    @Test fun `state transition result with effect type but null effect`() {
+        val result = DelegateTransitionContext(Unit, 0)
+            .transition(1, Effect.Unconfined, null)
+
+        assertThat(result.state).isEqualTo(1)
+        assertThat(result.effects).isEmpty()
+    }
+
+    @Test fun `transition returns null if effect is null`() {
+        val result = DelegateTransitionContext(Unit, 0)
+            .transition(Effect.Unconfined, null)
+        assertThat(result).isEqualTo(Transition.Result.None)
     }
 
     @Test fun `stateful transition`() {
         val transition = Transition<Unit, Int, Unit> { transition(state + 1) }
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(1)
+        assertThat(result.state).isEqualTo(1)
     }
 
     @Test fun `stateful transition with effects`() {
@@ -29,7 +50,7 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(1)
+        assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
         testListener.assertTimesCalled(1)
@@ -54,7 +75,7 @@ class TransitionApiTest {
             delegate(AddTransition(), 5)
         }
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(5)
+        assertThat(result.state).isEqualTo(5)
     }
 
     @Test fun `transition combine none transition with stateful transition`() {
@@ -63,7 +84,7 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(1)
+        assertThat(result.state).isEqualTo(1)
     }
 
     @Test fun `transition combine only effects transition with stateful transition`() {
@@ -74,7 +95,7 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(1)
+        assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
         testListener.assertTimesCalled(1)
@@ -86,7 +107,32 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(2)
+        assertThat(result.state).isEqualTo(2)
+    }
+
+    @Test fun `combine effect with none`() {
+        val effect = TestCallback()
+        val transition = Transition<Unit, Int, Unit> {
+            transition(effect = effect).andThen { none() }
+        }
+
+        transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertAndExecuteEffects()
+        effect.assertTimesCalled(1)
+    }
+
+    @Test
+    fun `combine stateful transition with only effects`() {
+        val effect = TestCallback()
+        val transition = Transition<Unit, Int, Unit> {
+            transition(state + 1).andThen {
+                transition(effect = effect)
+            }
+        }
+        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        assertThat(result.state).isEqualTo(1)
+        result.assertAndExecuteEffects()
+
+        effect.assertTimesCalled(1)
     }
 
     @Test fun `transition combine keeps effect order`() {
@@ -97,10 +143,10 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(2)
+        assertThat(result.state).isEqualTo(2)
 
         result.assertAndExecuteEffects()
-        Truth.assertThat(listener.values()).containsExactly(1, 2).inOrder()
+        assertThat(listener.values()).containsExactly(1, 2).inOrder()
     }
 
     @Test fun `state andThen another stateful result`() {
@@ -109,7 +155,7 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(3)
+        assertThat(result.state).isEqualTo(3)
     }
 
     @Test fun `state andThen empty result`() {
@@ -119,16 +165,16 @@ class TransitionApiTest {
         }
 
         val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
-        Truth.assertThat(result.state).isEqualTo(1)
+        assertThat(result.state).isEqualTo(1)
     }
 
     private fun <State> Transition.Result<State>.assertStateful(): Transition.Result.Stateful<State> {
-        Truth.assertThat(this).isInstanceOf(Transition.Result.Stateful::class.java)
+        assertThat(this).isInstanceOf(Transition.Result.Stateful::class.java)
         return this as Transition.Result.Stateful<State>
     }
 
     private fun <State> Transition.Result<State>.assertAndExecuteEffects() {
-        Truth.assertThat(effects).isNotEmpty()
+        assertThat(effects).isNotEmpty()
         for (effect in effects) {
             effect.executable()
         }

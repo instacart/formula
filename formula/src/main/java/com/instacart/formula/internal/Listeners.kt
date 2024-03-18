@@ -35,11 +35,7 @@ internal class Listeners {
      */
     fun prepareForPostEvaluation() {
         indexes?.clear()
-
-        listeners?.clearUnrequested {
-            // TODO log that disabled listener was invoked.
-            it.disable()
-        }
+        listeners?.clearUnrequested(this::disableListener)
     }
 
     fun disableAll() {
@@ -48,6 +44,10 @@ internal class Listeners {
             it.disable()
         }
         listeners?.clear()
+    }
+
+    private fun disableListener(listener: ListenerImpl<*, *, *>) {
+        listener.disable()
     }
 
     /**

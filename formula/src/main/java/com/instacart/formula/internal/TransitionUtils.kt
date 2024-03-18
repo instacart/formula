@@ -13,7 +13,7 @@ internal object TransitionUtils {
 /**
  * Combines only effects transition result with another transition result.
  */
-internal fun <State> TransitionContext<*, State>.combine(
+internal fun <State> combine(
     result: Transition.Result.OnlyEffects,
     other: Transition.Result<State>
 ): Transition.Result<State> {
@@ -35,7 +35,7 @@ internal fun <State> TransitionContext<*, State>.combine(
 /**
  * Combines stateful result with the result of another transition.
  */
-internal fun <State> TransitionContext<*, State>.combine(
+internal fun <State> combine(
     result: Transition.Result.Stateful<State>,
     other: Transition.Result<State>
 ): Transition.Result<State> {

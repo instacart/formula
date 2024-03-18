@@ -25,7 +25,7 @@ object FlowRuntime {
                 formula = formula,
                 onOutput = this::trySendBlocking,
                 onError = this::close,
-                config = config,
+                config = config ?: RuntimeConfig(),
             )
 
             input.onEach(runtime::onInput).launchIn(this)
