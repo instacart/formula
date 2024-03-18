@@ -83,4 +83,14 @@ interface Inspector {
      * executing actions.
      */
     fun onRunFinished() = Unit
+
+    /**
+     * Called when batch execution started.
+     */
+    fun onBatchStarted(updateCount: Int) = Unit
+
+    /**
+     * Called when batch execution finished
+     */
+    fun onBatchFinished() = Unit
 }

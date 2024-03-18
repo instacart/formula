@@ -56,4 +56,14 @@ class TestInspector : Inspector {
         super.onFormulaFinished(formulaType)
         events.add("formula-finished: ${formulaType.qualifiedName}")
     }
+
+    override fun onBatchStarted(updateCount: Int) {
+        super.onBatchStarted(updateCount)
+        events.add("batch-started: $updateCount updates")
+    }
+
+    override fun onBatchFinished() {
+        super.onBatchFinished()
+        events.add("batch-finished")
+    }
 }

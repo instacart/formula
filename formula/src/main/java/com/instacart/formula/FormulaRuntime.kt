@@ -178,6 +178,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
             synchronizedUpdateQueue.postUpdate {
                 // We disable run until all batch updates are processed
                 isRunEnabled = false
+
+                inspector?.onBatchStarted(updates.size)
+
                 for (update in updates) {
                     update()
                 }
@@ -188,6 +191,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 isRunEnabled = true
 
                 runIfNeeded()
+
+                inspector?.onBatchFinished()
             }
         }
     }

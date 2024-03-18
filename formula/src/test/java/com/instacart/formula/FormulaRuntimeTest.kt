@@ -1732,6 +1732,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
 
     @Test fun `batched formulas are executed as part of a single evaluation`() {
+
+
         val childFormulaCount = 100
 
         val batchScheduler = StateBatchScheduler()
@@ -1863,6 +1865,65 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         assertThat(subject.values()).containsExactly(0, 101).inOrder()
 
         assertThat(batchScheduler.batchesOutsideOfScope).hasSize(0)
+    }
+
+    @Test fun `batched events notify the inspector of start and stop`() {
+        val globalInspector = TestInspector()
+        FormulaPlugins.setPlugin(object : Plugin {
+            override fun inspector(type: KClass<*>): Inspector {
+                return globalInspector
+            }
+        })
+        val localInspector = TestInspector()
+
+        val childFormulaCount = 3
+
+        val batchScheduler = StateBatchScheduler()
+        val relay = runtime.newRelay()
+
+        val childFormula = IncrementActionFormula(
+            incrementRelay = relay,
+            executionType = Transition.Batched(batchScheduler)
+        )
+
+        val rootFormula = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val sum = (0 until childFormulaCount).sumOf { id ->
+                    context.key(id) {
+                        context.child(childFormula, input)
+                    }
+                }
+                return Evaluation(
+                    output = sum,
+                )
+            }
+        }
+
+        val subject = runtime.test(rootFormula, Unit, localInspector)
+        batchScheduler.performUpdate { relay.triggerEvent() }
+
+        // Inspect!
+        for (inspector in listOf(localInspector, globalInspector)) {
+            // Filtering out logs before "batch-started"
+            val events = inspector.events.dropWhile { !it.contains("batch-started") }
+            assertThat(events).containsExactly(
+                "batch-started: 3 updates",
+                "state-changed: com.instacart.formula.types.IncrementActionFormula",
+                "state-changed: com.instacart.formula.types.IncrementActionFormula",
+                "state-changed: com.instacart.formula.types.IncrementActionFormula",
+                "formula-run-started",
+                "evaluate-started: null",
+                "evaluate-started: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-finished: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-started: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-finished: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-started: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-finished: com.instacart.formula.types.IncrementActionFormula",
+                "evaluate-finished: null",
+                "formula-run-finished",
+                "batch-finished",
+            ).inOrder()
+        }
     }
 }
 
