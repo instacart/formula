@@ -47,6 +47,14 @@ internal class ListInspector(
         forEachInspector { onRunFinished() }
     }
 
+    override fun onBatchStarted(updateCount: Int) {
+        forEachInspector { onBatchStarted(updateCount) }
+    }
+
+    override fun onBatchFinished() {
+        forEachInspector { onBatchFinished() }
+    }
+
     private inline fun forEachInspector(callback: Inspector.() -> Unit) {
         for (inspector in inspectors) {
             inspector.callback()
