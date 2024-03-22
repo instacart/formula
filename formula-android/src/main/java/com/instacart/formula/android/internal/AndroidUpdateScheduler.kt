@@ -1,5 +1,7 @@
 package com.instacart.formula.android.internal
 
+import android.os.Build
+import android.os.Message
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -64,7 +66,11 @@ class AndroidUpdateScheduler<Value : Any>(
         } else {
             // If no update is scheduled, schedule one
             if (updateScheduled.compareAndSet(false, true)) {
-                Utils.mainThreadHandler.post(updateRunnable)
+                val message = Message.obtain(Utils.mainThreadHandler, updateRunnable)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    message.isAsynchronous = true
+                }
+                Utils.mainThreadHandler.sendMessage(message)
             }
         }
     }
