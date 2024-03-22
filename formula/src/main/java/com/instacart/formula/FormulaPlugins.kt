@@ -7,7 +7,7 @@ import com.instacart.formula.plugin.Plugin
 import kotlin.reflect.KClass
 
 object FormulaPlugins {
-    private var plugin: Plugin? = null
+    @Volatile private var plugin: Plugin? = null
 
     fun setPlugin(plugin: Plugin?) {
         this.plugin = plugin
