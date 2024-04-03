@@ -130,28 +130,30 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         var result: Evaluation<Output>? = null
         isRunning = true
-        var firstRun = true
-        while (result == null) {
-            val lastFrame = frame
-            val evaluationId = globalEvaluationId
-            val evaluation = if (firstRun) {
-                firstRun = false
-                evaluation(input, evaluationId)
-            } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
-                evaluation(input, evaluationId)
-            } else {
-                lastFrame.evaluation
-            }
+        try {
+            var firstRun = true
+            while (result == null) {
+                val lastFrame = frame
+                val evaluationId = globalEvaluationId
+                val evaluation = if (firstRun) {
+                    firstRun = false
+                    evaluation(input, evaluationId)
+                } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
+                    evaluation(input, evaluationId)
+                } else {
+                    lastFrame.evaluation
+                }
 
-            if (postEvaluation(evaluationId)) {
-                continue
-            }
+                if (postEvaluation(evaluationId)) {
+                    continue
+                }
 
-            result = evaluation
+                result = evaluation
+            }
+            return result
+        } finally {
+            isRunning = false
         }
-        isRunning = false
-
-        return result
     }
 
     /**
