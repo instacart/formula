@@ -289,8 +289,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
         actionManager.terminate()
 
         // Execute deferred transitions
-        for (transition in transitionQueue) {
-            transition.execute()
+        while (transitionQueue.isNotEmpty()) {
+            transitionQueue.pollFirst().execute()
         }
 
         listeners.disableAll()
