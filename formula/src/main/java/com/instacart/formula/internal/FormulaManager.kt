@@ -19,6 +19,8 @@ interface FormulaManager<Input, Output> {
      */
     fun run(input: Input): Evaluation<Output>
 
+    fun isTerminated(): Boolean
+
     /**
      * Called when [Formula] is removed. This is should not trigger any external side-effects,
      * only mark itself and its children as terminated.

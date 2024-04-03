@@ -80,7 +80,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return globalEvaluationId != evaluationId
     }
 
-    fun isTerminated(): Boolean {
+    override fun isTerminated(): Boolean {
         return terminated
     }
 
@@ -243,6 +243,39 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
         manager.setValidationRun(isValidationEnabled)
         return manager.run(input).output
+    }
+
+    fun <ChildInput, ChildOutput> child(
+        key: Any,
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput,
+        onError: (Throwable) -> Unit,
+    ): ChildOutput? {
+        val childrenManager = getOrInitChildrenManager()
+        val manager = childrenManager.findOrInitChild(key, formula, input)
+
+        // If termination happens while running, we might still be initializing child formulas. To
+        // ensure correct behavior, we mark each requested child manager as terminated to avoid
+        // starting new actions.
+        if (isTerminated()) {
+            manager.markAsTerminated()
+        }
+        manager.setValidationRun(isValidationEnabled)
+
+        return try {
+            if (!manager.isTerminated()) {
+                manager.run(input).output
+            } else {
+                null
+            }
+        } catch (e: ValidationException) {
+            throw e
+        } catch (e: Throwable) {
+            manager.markAsTerminated()
+            onError(e)
+            manager.performTerminationSideEffects()
+            null
+        }
     }
 
     override fun markAsTerminated() {

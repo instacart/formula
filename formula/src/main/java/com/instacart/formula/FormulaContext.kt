@@ -103,6 +103,18 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): ChildOutput
 
     /**
+     * Returns the latest output of the [child] formula or null if the child formula has encountered
+     * an exception. Child formulas that encounter exceptions will be be terminated and will not
+     * be run again. Formula runtime ensures the [child] is running, manages its internal state
+     * and will trigger `evaluate` if needed.
+     */
+    abstract fun <ChildInput, ChildOutput> child(
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput,
+        onError: (Throwable) -> Unit,
+    ): ChildOutput?
+
+    /**
      * Builds a list of deferred actions that will be executed by Formula runtime.
      */
     abstract fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>>
