@@ -259,6 +259,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         // starting new actions.
         if (isTerminated()) {
             manager.markAsTerminated()
+            manager.performTerminationSideEffects()
         }
         manager.setValidationRun(isValidationEnabled)
 
