@@ -3,6 +3,10 @@ plugins {
     id("kotlin")
 }
 
+apply {
+    from("$rootDir/.buildscript/configure-signing.gradle")
+}
+
 dependencies {
     implementation(libs.kotlin)
     implementation(libs.coroutines)
