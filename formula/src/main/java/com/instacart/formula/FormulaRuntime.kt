@@ -94,9 +94,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun onInput(input: Input) {
-        defaultDispatcher.dispatch {
-            synchronizedUpdateQueue.postUpdate { onInputInternal(input) }
-        }
+        synchronizedUpdateQueue.postUpdate(defaultDispatcher) { onInputInternal(input) }
     }
 
     private fun onInputInternal(input: Input) {
@@ -137,7 +135,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun terminate() {
-        synchronizedUpdateQueue.postUpdate(this::terminateInternal)
+        synchronizedUpdateQueue.postUpdate(defaultDispatcher, this::terminateInternal)
     }
 
     private fun terminateInternal() {
@@ -176,26 +174,24 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     override fun executeBatch(updates: List<() -> Unit>) {
         // Using default dispatcher for batch execution
-        defaultDispatcher.dispatch {
-            synchronizedUpdateQueue.postUpdate {
-                // We disable run until all batch updates are processed
-                isRunEnabled = false
+        synchronizedUpdateQueue.postUpdate(defaultDispatcher) {
+            // We disable run until all batch updates are processed
+            isRunEnabled = false
 
-                inspector?.onBatchStarted(updates.size)
+            inspector?.onBatchStarted(updates.size)
 
-                for (update in updates) {
-                    update()
-                }
-                /**
-                 * Re-enable run and check if there were any state changes or side-effects that
-                 * need to be run.
-                 */
-                isRunEnabled = true
-
-                runIfNeeded()
-
-                inspector?.onBatchFinished()
+            for (update in updates) {
+                update()
             }
+            /**
+             * Re-enable run and check if there were any state changes or side-effects that
+             * need to be run.
+             */
+            isRunEnabled = true
+
+            runIfNeeded()
+
+            inspector?.onBatchFinished()
         }
     }
 

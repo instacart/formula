@@ -660,15 +660,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    @Test fun `listener removed while dispatching an event will drop the event`() {
+    @Test fun `dispatching does not affect event order`() {
         var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? = null
         FormulaPlugins.setPlugin(object : Plugin {
             override fun backgroundThreadDispatcher(): Dispatcher {
                 return object : Dispatcher {
                     override fun dispatch(executable: () -> Unit) {
-                        // We disable callback before executing increment
+                        // We try to disable callback before processing increment
                         observer?.output { toggleCallback() }
                         executable()
+                    }
+
+                    override fun isDispatchNeeded(): Boolean {
+                        return true
                     }
                 }
             }
@@ -679,7 +683,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         )
         observer = runtime.test(root, Unit)
         observer.output { listener?.invoke() }
-        observer.output { assertThat(state).isEqualTo(0) }
+
+        // Increment was processed before listener removal
+        observer.output { assertThat(state).isEqualTo(1) }
     }
 
     @Test
@@ -1723,17 +1729,31 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
         FormulaPlugins.setPlugin(plugin)
 
-        val formula = OnDataActionFormula(executionType = Transition.Background)
-        val input = OnDataActionFormula.Input(0, onData = {})
-        val subject = runtime.test(formula, input)
+        val relay = runtime.newRelay()
+        val formula = object : Formula<Unit, Int, Int>() {
+            override fun initialState(input: Unit): Int = 0
+
+            override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        relay.action().onEventWithExecutionType(Transition.Background) {
+                            transition(state + 1)
+                        }
+                    }
+                )
+            }
+        }
+        val subject = runtime.test(formula, Unit)
+        globalDispatcher.assertCalled(1) // Once for input
+        plugin.backgroundDispatcher.assertCalled(0)
+        relay.triggerEvent()
         globalDispatcher.assertCalled(1) // Once for input
         plugin.backgroundDispatcher.assertCalled(1)
     }
 
 
     @Test fun `batched formulas are executed as part of a single evaluation`() {
-
-
         val childFormulaCount = 100
 
         val batchScheduler = StateBatchScheduler()
