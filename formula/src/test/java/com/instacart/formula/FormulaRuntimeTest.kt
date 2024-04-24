@@ -1674,9 +1674,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val formula = IncrementFormula()
         val subject = runtime.test(formula, Unit)
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1) // Input
         subject.output { onIncrement() }
-        globalDispatcher.assertCalled(1)
+        globalDispatcher.assertCalled(2) // Input + event
     }
 
     @Test fun `specify formula-level dispatcher`() {
@@ -1688,10 +1688,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = IncrementFormula()
         val subject = runtime.test(formula, Unit, dispatcher = formulaDispatcher)
         globalDispatcher.assertCalled(0)
-        formulaDispatcher.assertCalled(0)
+        formulaDispatcher.assertCalled(1) // Input
         subject.output { onIncrement() }
         globalDispatcher.assertCalled(0)
-        formulaDispatcher.assertCalled(1)
+        formulaDispatcher.assertCalled(2) // Input + event
     }
 
     @Test fun `immediate execution type within callbackWithExecutionType overrides default dispatcher`() {
@@ -1701,9 +1701,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val formula = IncrementFormula(executionType = Transition.Immediate)
         val subject = runtime.test(formula, Unit)
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1) // Initial for input
         subject.output { onIncrement() }
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1) // Initial for input
     }
 
     @Test fun `immediate execution type within onEventWithExecutionType overrides default dispatcher`() {
@@ -1713,9 +1713,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val formula = EventCallbackFormula(executionType = Transition.Immediate)
         val subject = runtime.test(formula, Unit)
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1) // Initial for input
         subject.output { this.changeState("new state") }
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1)
     }
 
     @Test fun `background execution type within action overrides default dispatcher`() {
@@ -1726,7 +1726,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OnDataActionFormula(executionType = Transition.Background)
         val input = OnDataActionFormula.Input(0, onData = {})
         val subject = runtime.test(formula, input)
-        globalDispatcher.assertCalled(0)
+        globalDispatcher.assertCalled(1) // Once for input
         plugin.backgroundDispatcher.assertCalled(1)
     }
 

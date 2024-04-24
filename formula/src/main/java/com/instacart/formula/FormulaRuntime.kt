@@ -94,7 +94,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun onInput(input: Input) {
-        synchronizedUpdateQueue.postUpdate { onInputInternal(input) }
+        defaultDispatcher.dispatch {
+            synchronizedUpdateQueue.postUpdate { onInputInternal(input) }
+        }
     }
 
     private fun onInputInternal(input: Input) {
