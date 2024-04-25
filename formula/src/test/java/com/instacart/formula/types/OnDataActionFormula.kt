@@ -23,15 +23,8 @@ class OnDataActionFormula(
         return Evaluation(
             output = Unit,
             actions = context.actions {
-                val onData = Action.onData(input.data)
-                if (executionType == null) {
-                    onData.onEvent {
-                        transition { input.onData(it) }
-                    }
-                } else {
-                    onData.onEventWithExecutionType(executionType) {
-                        transition { input.onData(it) }
-                    }
+                Action.onData(input.data).onEventWithExecutionType(executionType) {
+                    transition { input.onData(it) }
                 }
             }
         )

@@ -12,6 +12,10 @@ class IncrementingDispatcher : Dispatcher {
         executable()
     }
 
+    override fun isDispatchNeeded(): Boolean {
+        return true
+    }
+
     fun assertCalled(times: Int) {
         Truth.assertThat(count.get()).isEqualTo(times)
     }
