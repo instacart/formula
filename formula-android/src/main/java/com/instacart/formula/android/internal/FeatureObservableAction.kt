@@ -21,9 +21,7 @@ class FeatureObservableAction(
             Observable.empty()
         }
 
-        // We ensure all feature state updates come on the main thread.
-        val androidUpdateScheduler = AndroidUpdateScheduler(send)
-        val disposable = observable.subscribe(androidUpdateScheduler::emitUpdate)
+        val disposable = observable.subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }
