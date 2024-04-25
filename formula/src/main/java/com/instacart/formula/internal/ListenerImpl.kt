@@ -61,12 +61,9 @@ internal class ListenerImpl<Input, State, EventT>(val key: Any) : Listener<Event
 
     private fun executeWithDispatcher(dispatcher: Dispatcher, event: EventT) {
         val manager = manager ?: return
-
-        dispatcher.dispatch {
-            manager.queue.postUpdate {
-                val deferredTransition = DeferredTransition(this, event)
-                manager.onPendingTransition(deferredTransition)
-            }
+        manager.queue.postUpdate(dispatcher) {
+            val deferredTransition = DeferredTransition(this, event)
+            manager.onPendingTransition(deferredTransition)
         }
     }
 }
