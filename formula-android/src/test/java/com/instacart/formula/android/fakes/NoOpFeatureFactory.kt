@@ -7,7 +7,7 @@ import io.reactivex.rxjava3.core.Observable
 
 class NoOpFeatureFactory<FragmentKeyT : FragmentKey> : FeatureFactory<Unit, FragmentKeyT> {
 
-    override fun initialize(dependencies: Unit, key: FragmentKeyT): Feature<Any> {
+    override fun initialize(dependencies: Unit, key: FragmentKeyT): Feature {
         return Feature(
             state = Observable.empty(),
             viewFactory = NoOpViewFactory()

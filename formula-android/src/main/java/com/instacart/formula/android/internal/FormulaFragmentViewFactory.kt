@@ -17,7 +17,6 @@ internal class FormulaFragmentViewFactory(
 
     private var factory: ViewFactory<Any>? = null
 
-    @Suppress("UNCHECKED_CAST")
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<Any> {
         val key = fragmentId.key
         val featureEvent = featureProvider.getFeature(fragmentId) ?: throw IllegalStateException("Could not find feature for $key.")
@@ -29,7 +28,7 @@ internal class FormulaFragmentViewFactory(
                 throw IllegalStateException("Feature failed to initialize: $key", featureEvent.error)
             }
             is FeatureEvent.Init -> {
-                featureEvent.feature.viewFactory as ViewFactory<Any>
+                featureEvent.feature.viewFactory
             }
         }
         this.factory = viewFactory

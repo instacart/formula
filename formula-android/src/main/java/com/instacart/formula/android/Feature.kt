@@ -12,7 +12,20 @@ import io.reactivex.rxjava3.core.Observable
  *
  * Take a look at [FeatureFactory] for more information.
  */
-class Feature<RenderModel : Any>(
-    val state: Observable<RenderModel>,
-    val viewFactory: ViewFactory<RenderModel>
-)
+class Feature private constructor(
+    val stateObservable: Observable<Any>,
+    val viewFactory: ViewFactory<Any>
+) {
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        operator fun <RenderModel : Any> invoke(
+            state: Observable<RenderModel>,
+            viewFactory: ViewFactory<RenderModel>
+        ): Feature {
+            return Feature(
+                stateObservable = state as Observable<Any>,
+                viewFactory = viewFactory as ViewFactory<Any>,
+            )
+        }
+    }
+}

@@ -15,7 +15,7 @@ class TaskListFeatureFactory : FeatureFactory<TaskListFeatureFactory.Dependencie
         fun taskListInput(): TaskListFormula.Input
     }
 
-    override fun initialize(dependencies: Dependencies, key: TaskListKey): Feature<*> {
+    override fun initialize(dependencies: Dependencies, key: TaskListKey): Feature {
         // Note: we could create our own internal dagger component here using the dependencies.
         val formula = TaskListFormula(dependencies.taskRepo())
         return Feature(
