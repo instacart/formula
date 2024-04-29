@@ -37,7 +37,7 @@ example, we define a `CounterFeatureFactory` which will handle `CounterKey` frag
 
 ```kotlin
 class CounterFeatureFactory : FeatureFactory<Any, CounterKey> {
-    override fun initialize(dependencies: Any, key: CounterKey): Feature<*> {
+    override fun initialize(dependencies: Any, key: CounterKey): Feature {
         val counterFormula = CounterFormula()        
         return Feature(
             state = counterFormula.toObservable(),
@@ -125,7 +125,7 @@ data class CounterKey(
 You can access the `CounterKey` within `CounterFeatureFactory`
 ```kotlin
 class CounterFeatureFactory : FeatureFactory<Any, CounterKey> {
-    override fun initialize(dependencies: Any, key: CounterKey): Feature<*> {
+    override fun initialize(dependencies: Any, key: CounterKey): Feature {
         val initialCount = key.initialCount    
         val counterFormula = CounterFormula(initialCount)        
         ...                
@@ -159,7 +159,7 @@ class CounterFeatureFactory : FeatureFactory<Dependencies, CounterKey> {
         fun counterEventRouter(): CounterEventRouter
     }
 
-    override fun initialize(dependencies: Dependencies, key: CounterKey): Feature<*> {
+    override fun initialize(dependencies: Dependencies, key: CounterKey): Feature {
         val counterEventRouter = dependencies.counterEventRouter()
         // We can pass the event router to the counter formula.
         val counterFormula = CounterFormula(counterEventRouter)        

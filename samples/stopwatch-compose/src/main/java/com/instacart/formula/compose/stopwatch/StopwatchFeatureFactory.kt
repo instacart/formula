@@ -24,7 +24,7 @@ import com.instacart.formula.invoke
 import com.instacart.formula.rxjava3.toObservable
 
 class StopwatchFeatureFactory : FeatureFactory<Any, StopwatchKey> {
-    override fun initialize(dependencies: Any, key: StopwatchKey): Feature<*> {
+    override fun initialize(dependencies: Any, key: StopwatchKey): Feature {
         return Feature(
             state = StopwatchFormula().toObservable(),
             viewFactory = StopwatchViewFactory()
