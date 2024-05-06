@@ -71,10 +71,10 @@ class FragmentStoreBuilder<Component> {
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
     inline fun <reified Key: FragmentKey> bind(
-        crossinline initFeature: (Component, Key) -> Feature<*>,
+        crossinline initFeature: (Component, Key) -> Feature,
     ) = apply {
         val factory = object : FeatureFactory<Component, Key> {
-            override fun initialize(dependencies: Component, key: Key): Feature<*> {
+            override fun initialize(dependencies: Component, key: Key): Feature {
                 return initFeature(dependencies, key)
             }
         }

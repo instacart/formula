@@ -29,7 +29,7 @@ data class FragmentEnvironment(
             factory: FeatureFactory<DependenciesT, KeyT>,
             dependencies: DependenciesT,
             key: KeyT,
-        ): Feature<*> {
+        ): Feature {
             return factory.initialize(dependencies, key)
         }
 

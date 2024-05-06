@@ -25,7 +25,7 @@ class FakeAuthFlowFactory : FlowFactory<FakeComponent, FakeAuthFlowFactory.Compo
     }
 
     class TestFeatureFactory<FragmentKeyT : FragmentKey> : FeatureFactory<Component, FragmentKeyT> {
-        override fun initialize(dependencies: Component, key: FragmentKeyT): Feature<Any> {
+        override fun initialize(dependencies: Component, key: FragmentKeyT): Feature {
             dependencies.onInitialized(dependencies, key)
             return Feature(
                 state = Observable.empty(),

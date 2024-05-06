@@ -10,7 +10,7 @@ import io.reactivex.rxjava3.core.Observable
 class TestFeatureFactory<Key : FragmentKey>(
     private val state: (Key) -> Observable<Any>
 ) : FeatureFactory<Unit, Key> {
-    override fun initialize(dependencies: Unit, key: Key): Feature<*> {
+    override fun initialize(dependencies: Unit, key: Key): Feature {
         return Feature(
             state = state(key),
             viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
