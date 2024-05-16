@@ -38,7 +38,7 @@ class FragmentLifecycleTest {
                     },
                     contracts =  {
                         val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
-                            override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature<*> {
+                            override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature {
                                 return Feature(
                                     state = Observable.empty(),
                                     viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {

@@ -2,10 +2,12 @@ package com.instacart.formula.android
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.internal.FeatureObservableAction
+import com.instacart.formula.android.utils.MainThreadDispatcher
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.rxjava3.toObservable
 import com.jakewharton.rxrelay3.PublishRelay
@@ -143,6 +145,9 @@ class FragmentFlowStore @PublishedApi internal constructor(
     }
 
     internal fun state(environment: FragmentEnvironment): Observable<FragmentFlowState> {
-        return toObservable(environment)
+        val config = RuntimeConfig(
+            defaultDispatcher = MainThreadDispatcher(),
+        )
+        return toObservable(environment, config)
     }
 }

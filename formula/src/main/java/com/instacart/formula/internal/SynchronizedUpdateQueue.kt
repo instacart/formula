@@ -1,5 +1,6 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.plugin.Dispatcher
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
@@ -42,8 +43,7 @@ class SynchronizedUpdateQueue(
      * Failure to start processing indicates that another thread was first and we allow that
      * thread to continue.
      */
-    fun postUpdate(update: () -> Unit) {
-        val currentThread = Thread.currentThread()
+    fun postUpdate(dispatcher: Dispatcher, update: () -> Unit) {
         if (isProcessingOnCurrentThread()) {
             // This indicates a nested update where an update triggers another update. Given we
             // are already thread gated, we can execute this update immediately without a need
@@ -52,20 +52,25 @@ class SynchronizedUpdateQueue(
             return
         }
 
-        val updateExecuted = if (updateQueue.peek() == null) {
-            // No pending update, let's try to run our update immediately
-            takeOver(currentThread, update)
-        } else {
-            false
-        }
-
-        if (!updateExecuted) {
+        if (dispatcher.isDispatchNeeded()) {
             updateQueue.add(update)
+            dispatcher.dispatch(this::tryToDrainQueue)
+        } else {
+            val updateExecuted = if (updateQueue.peek() == null) {
+                // No pending update, let's try to run our update immediately
+                takeOver(update)
+            } else {
+                false
+            }
+
+            if (!updateExecuted) {
+                updateQueue.add(update)
+            }
+            tryToDrainQueue()
         }
-        tryToDrainQueue(currentThread)
     }
 
-    fun isProcessingOnCurrentThread(): Boolean {
+    private fun isProcessingOnCurrentThread(): Boolean {
         return threadRunning.get() == Thread.currentThread()
     }
 
@@ -73,13 +78,13 @@ class SynchronizedUpdateQueue(
      * Tries to drain the update queue. It will process one update at a time until
      * queue is empty or another thread takes over processing.
      */
-    private fun tryToDrainQueue(currentThread: Thread) {
+    private fun tryToDrainQueue() {
         while (true) {
             // First, we peek to see if there is a value to process.
             val peekUpdate = updateQueue.peek()
             if (peekUpdate != null) {
                 // Since there is a pending update, we try to process it.
-                val updateExecuted = takeOver(currentThread, this::pollAndExecute)
+                val updateExecuted = takeOver(this::pollAndExecute)
                 if (!updateExecuted) {
                     return
                 }
@@ -102,8 +107,8 @@ class SynchronizedUpdateQueue(
      * Returns true if it was able to successfully claim the ownership and execute the
      * update. Otherwise, returns false (this indicates another thread claimed the right first).
      */
-    private fun takeOver(currentThread: Thread, update: () -> Unit): Boolean {
-        return if (threadRunning.compareAndSet(null, currentThread)) {
+    private fun takeOver(update: () -> Unit): Boolean {
+        return if (threadRunning.compareAndSet(null, Thread.currentThread())) {
             // We took over the processing, let's execute the [update]
             try {
                 update()

@@ -10,20 +10,18 @@ import io.reactivex.rxjava3.core.Observable
 class FeatureObservableAction(
     private val fragmentEnvironment: FragmentEnvironment,
     private val fragmentId: FragmentId,
-    private val feature: Feature<*>,
+    private val feature: Feature,
 ) : Action<Any> {
 
     override fun key(): Any = fragmentId
 
     override fun start(send: (Any) -> Unit): Cancelable {
-        val observable = feature.state.onErrorResumeNext {
+        val observable = feature.stateObservable.onErrorResumeNext {
             fragmentEnvironment.onScreenError(fragmentId.key, it)
             Observable.empty()
         }
 
-        // We ensure all feature state updates come on the main thread.
-        val androidUpdateScheduler = AndroidUpdateScheduler(send)
-        val disposable = observable.subscribe(androidUpdateScheduler::emitUpdate)
+        val disposable = observable.subscribe(send)
         return Cancelable(disposable::dispose)
     }
 }

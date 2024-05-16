@@ -12,7 +12,6 @@ import com.instacart.formula.android.fakes.NoOpViewFactory
 import com.instacart.formula.android.fakes.TestAccountFragmentKey
 import com.instacart.formula.android.fakes.TestLoginFragmentKey
 import com.instacart.formula.android.fakes.TestSignUpFragmentKey
-import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -163,7 +162,7 @@ class FragmentFlowStoreTest {
 
     @Test fun `bind feature factory with to dependencies defined`() {
         val myFeatureFactory = object : FeatureFactory<String, MainKey> {
-            override fun initialize(dependencies: String, key: MainKey): Feature<*> {
+            override fun initialize(dependencies: String, key: MainKey): Feature {
                 return TestUtils.feature(
                     stateValue = dependencies
                 )
@@ -193,7 +192,7 @@ class FragmentFlowStoreTest {
 
         val updates = mutableListOf<Map<FragmentKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
-        val disposable = store.toObservable(FragmentEnvironment()).subscribe {
+        val disposable = store.state(FragmentEnvironment()).subscribe {
             val states = it.states.mapKeys { it.key.key }.mapValues { it.value.renderModel }
             updates.add(states)
 
@@ -269,7 +268,7 @@ class FragmentFlowStoreTest {
     private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 
     class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT> {
-        override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature<*> {
+        override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature {
             return Feature(
                 state = dependencies.state(key),
                 viewFactory = NoOpViewFactory()
