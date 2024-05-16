@@ -84,8 +84,8 @@ class SynchronizedUpdateQueue(
             val peekUpdate = updateQueue.peek()
             if (peekUpdate != null) {
                 // Since there is a pending update, we try to process it.
-                val updateExecuted = takeOver(this::pollAndExecute)
-                if (!updateExecuted) {
+                val executed = takeOver(this::executeQueue)
+                if (!executed) {
                     return
                 }
             } else {
@@ -95,10 +95,12 @@ class SynchronizedUpdateQueue(
         }
     }
 
-    private fun pollAndExecute() {
-        // We remove first update from the queue and execute if it exists.
-        val actualUpdate = updateQueue.poll()
-        actualUpdate?.invoke()
+    private fun executeQueue() {
+        var update = updateQueue.poll()
+        while (update != null) {
+            update()
+            update = updateQueue.poll()
+        }
     }
 
     /**
