@@ -32,6 +32,7 @@ import com.instacart.formula.subjects.EventFormula
 import com.instacart.formula.subjects.ExtremelyNestedFormula
 import com.instacart.formula.subjects.FromObservableWithInputFormula
 import com.instacart.formula.subjects.HasChildFormula
+import com.instacart.formula.subjects.HasChildrenFormula
 import com.instacart.formula.subjects.IncrementingDispatcher
 import com.instacart.formula.subjects.InputChangeWhileFormulaRunningRobot
 import com.instacart.formula.subjects.KeyFormula
@@ -1376,7 +1377,55 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
+    fun `errored child formula can fail in isolation when evaluation throws`() {
+        val childFormula = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                if (input == 1) throw RuntimeException()
+                return Evaluation(output = input)
+            }
+        }
+        val formula = HasChildrenFormula(
+            childCount = 3,
+            child = childFormula,
+            createChildInput = { it },
+        )
+        runtime.test(formula, Unit)
+            .output {
+                assertThat(childOutputs).isEqualTo(listOf(0, 2))
+                assertThat(errors).hasSize(1)
+            }
+    }
+
+    @Test
+    fun `errored child formula can fail in isolation when action throws`() {
+        val childFormula = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = input,
+                    actions = context.actions {
+                        Action.onInit().onEvent {
+                            if (input == 1) throw RuntimeException()
+                            transition(Unit) {}
+                        }
+                    }
+                )
+            }
+        }
+        val formula = HasChildrenFormula(
+            childCount = 3,
+            child = childFormula,
+            createChildInput = { it },
+        )
+        runtime.test(formula, Unit)
+            .output {
+                assertThat(childOutputs).isEqualTo(listOf(0, 2))
+                assertThat(errors).hasSize(1)
+            }
+    }
+
+    @Test
     fun `initialize 100 levels nested formula`() {
+
         val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(100)
         runtime.test(formula, Unit, inspector).output {
