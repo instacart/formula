@@ -13,6 +13,7 @@ import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
+import com.instacart.formula.subjects.ChildErrorAfterToggleFormula
 import com.instacart.formula.subjects.ChildMessageNoParentStateChange
 import com.instacart.formula.subjects.ChildMessageTriggersEventTransitionInParent
 import com.instacart.formula.subjects.ChildMessageWithParentStateChange
@@ -1378,18 +1379,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `errored child formula can fail in isolation when evaluation throws`() {
-        val childFormula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                if (input == 1) throw RuntimeException()
-                return Evaluation(output = input)
+        val childFormula = object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
+            override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
+                if (input.index == 1) throw RuntimeException()
+                return Evaluation(output = input.index)
             }
         }
-        val formula = HasChildrenFormula(
-            childCount = 3,
-            child = childFormula,
-            createChildInput = { it },
-        )
-        runtime.test(formula, Unit)
+        val formula = HasChildrenFormula(childCount = 3, childFormula)
+        runtime.test(formula, 0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
                 assertThat(errors).hasSize(1)
@@ -1398,29 +1395,55 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `errored child formula can fail in isolation when action throws`() {
-        val childFormula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+        val childFormula = object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
+            override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(
-                    output = input,
+                    output = input.index,
                     actions = context.actions {
                         Action.onInit().onEvent {
-                            if (input == 1) throw RuntimeException()
+                            if (input.index == 1) throw RuntimeException()
                             transition(Unit) {}
                         }
                     }
                 )
             }
         }
-        val formula = HasChildrenFormula(
-            childCount = 3,
-            child = childFormula,
-            createChildInput = { it },
-        )
-        runtime.test(formula, Unit)
+        val formula = HasChildrenFormula(childCount = 3, childFormula)
+        runtime.test(formula, 0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
                 assertThat(errors).hasSize(1)
             }
+    }
+    @Test
+    fun `errored child event listener disabled`() {
+        val indexToExecutionCount = mutableMapOf<Int, Int>()
+        val listener = { index: Int ->
+            indexToExecutionCount[index] = indexToExecutionCount.getOrDefault(index, 0) + 1
+        }
+        val formula = HasChildrenFormula(
+            childCount = 3,
+            child = ChildErrorAfterToggleFormula(),
+            createChildInput = { params ->
+                HasChildrenFormula.ChildParamsInput(
+                    index = params.index,
+                    run = params.index,
+                    value = callback { transition { listener(params.index) }}
+                )
+            },
+        )
+        runtime.test(formula, 0)
+            .output {
+                childOutputs.forEach { it.listener() }
+                childOutputs[1].errorToggle()
+                childOutputs.forEach { it.listener() }
+            }
+        val expected = mapOf(
+            0 to 2,
+            1 to 1,
+            2 to 2,
+        )
+        assertThat(indexToExecutionCount).containsExactlyEntriesIn(expected)
     }
 
     @Test
