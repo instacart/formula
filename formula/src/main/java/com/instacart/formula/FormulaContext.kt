@@ -94,6 +94,20 @@ abstract class FormulaContext<out Input, State> internal constructor(
     }
 
     /**
+     * A convenience method to run a formula that takes no input. Returns the latest output of
+     * the [child] formula or null if the child formula has encountered an exception. Child formulas
+     * that encounter exceptions will be be terminated and will not be run again. Formula runtime
+     * ensures the [formula] is running, manages its internal state and will trigger `evaluate`
+     * if needed.
+     */
+    fun <ChildOutput> child(
+        formula: IFormula<Unit, ChildOutput>,
+        onError: (Throwable) -> Unit,
+    ): ChildOutput? {
+        return child(formula, Unit, onError)
+    }
+
+    /**
      * Returns the latest output of the [child] formula. Formula runtime ensures the [child]
      * is running, manages its internal state and will trigger `evaluate` if needed.
      */

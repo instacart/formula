@@ -45,8 +45,8 @@ internal class ChildrenManager(
         children?.forEachValue { it.markAsTerminated() }
     }
 
-    fun performTerminationSideEffects() {
-        children?.forEachValue { it.performTerminationSideEffects() }
+    fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
+        children?.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
     }
 
     fun <ChildInput, ChildOutput> findOrInitChild(

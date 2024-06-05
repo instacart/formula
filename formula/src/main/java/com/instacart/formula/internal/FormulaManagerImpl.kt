@@ -265,6 +265,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         manager.setValidationRun(isValidationEnabled)
 
         return try {
+            // If manager.run(input) previously threw an exception it would be marked as
+            // terminated in the catch block. We avoid running it again because there is a decent
+            // chance it will continue to throw the same exception and cause performance issues
             if (!manager.isTerminated()) {
                 manager.run(input).output
             } else {
@@ -285,13 +288,17 @@ internal class FormulaManagerImpl<Input, State, Output>(
         childrenManager?.markAsTerminated()
     }
 
-    override fun performTerminationSideEffects() {
-        childrenManager?.performTerminationSideEffects()
+    override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
+        childrenManager?.performTerminationSideEffects(executeTransitionQueue)
         actionManager.terminate()
 
-        // Execute deferred transitions
-        while (transitionQueue.isNotEmpty()) {
-            transitionQueue.pollFirst().execute()
+        if (executeTransitionQueue) {
+            // Execute deferred transitions
+            while (transitionQueue.isNotEmpty()) {
+                transitionQueue.pollFirst().execute()
+            }
+        } else {
+            transitionQueue.clear()
         }
 
         listeners.disableAll()

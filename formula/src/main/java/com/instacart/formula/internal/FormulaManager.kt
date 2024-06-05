@@ -29,6 +29,11 @@ interface FormulaManager<Input, Output> {
 
     /**
      * Called when we are ready to perform termination side-effects.
+     * @param executeTransitionQueue whether the formula should execute remaining transitions
+     *      that accumulated while it was running. False is passed in the case where the
+     *      formula threw an exception and we want to avoid executubg transitions that have
+     *      an elevated chance of also throwing an exception. Other termination side
+     *      effects such as listener and action termination still happen.
      */
-    fun performTerminationSideEffects()
+    fun performTerminationSideEffects(executeTransitionQueue: Boolean = true)
 }
