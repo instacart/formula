@@ -43,6 +43,20 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         return delegate.child(key, formula, input)
     }
 
+    override fun <ChildInput, ChildOutput> child(
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput,
+        onError: (Throwable) -> Unit,
+    ): ChildOutput? {
+        ensureNotRunning()
+
+        val key = createScopedKey(
+            type = formula.type(),
+            key = formula.key(input)
+        )
+        return delegate.child(key, formula, input, onError)
+    }
+
     override fun <Event> eventListener(
         key: Any,
         useIndex: Boolean,
