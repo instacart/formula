@@ -11,7 +11,7 @@ import java.lang.IllegalStateException
  * output updates and [inspect/interact][input] with input.
  */
 abstract class TestFormula<Input, Output> :
-    Formula<Input, TestFormula.State<Input, Output>, Output>() {
+    Formula<Input, TestFormula.State<Output>, Output>() {
 
     companion object {
         /**
@@ -29,9 +29,10 @@ abstract class TestFormula<Input, Output> :
         }
     }
 
-    data class State<Input, Output>(
-        val initialInput: Input,
-        val currentInput: Input,
+    data class State<Output>(
+        val key: Any?,
+//        val initialInput: Input,
+//        val currentInput: Input,
         val output: Output
     )
 
@@ -43,26 +44,18 @@ abstract class TestFormula<Input, Output> :
     /**
      * Uses initial input as key (to be decided if its robust enough)
      */
-    private val stateMap = mutableMapOf<Input, Value<Input, Output>>()
+    private val stateMap = mutableMapOf<Any?, Value<Input, Output>>()
 
     abstract fun initialOutput(): Output
 
-    override fun initialState(input: Input): State<Input, Output> {
-        return State(input, input, initialOutput())
+    override fun initialState(input: Input): State<Output> {
+        return State(key = key(input), output = initialOutput())
     }
 
-    override fun onInputChanged(
-        oldInput: Input,
-        input: Input,
-        state: State<Input, Output>
-    ): State<Input, Output> {
-        return state.copy(currentInput = input)
-    }
-
-    override fun Snapshot<Input, State<Input, Output>>.evaluate(): Evaluation<Output> {
-        stateMap[state.initialInput] = Value(
+    override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
+        stateMap[state.key] = Value(
             input = input,
-            onNewOutput = context.onEvent<Output> {
+            onNewOutput = context.onEvent {
                 transition(state.copy(output = it))
             }
         )
@@ -72,7 +65,7 @@ abstract class TestFormula<Input, Output> :
             actions = context.actions {
                 Action.onTerminate().onEvent {
                     transition {
-                        stateMap.remove(state.initialInput)
+                        stateMap.remove(state.key)
                     }
                 }
             }
@@ -87,11 +80,28 @@ abstract class TestFormula<Input, Output> :
         update(output)
     }
 
+    fun output(key: Any?, output: Output) {
+        val instance = requireNotNull(stateMap[key]) {
+            "Formula is not running"
+        }
+        instance.onNewOutput(output)
+    }
+
     /**
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(interact: Input.() -> Unit) {
         val input = stateMap.values.lastOrNull()?.input ?: throw IllegalStateException("Formula is not running")
         interact(input)
+    }
+
+    /**
+     * Performs an interaction on the current [Input] passed by the parent.
+     */
+    fun input(key: Any?, interact: Input.() -> Unit) {
+        val instance = requireNotNull(stateMap[key]) {
+            "Formula is not running"
+        }
+        instance.input.interact()
     }
 }
