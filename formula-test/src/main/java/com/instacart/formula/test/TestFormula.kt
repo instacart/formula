@@ -106,4 +106,11 @@ abstract class TestFormula<Input, Output> :
         }
         instance.input.interact()
     }
+
+    fun assertRunningCount(expected: Int) {
+        val count = stateMap.size
+        if (count != expected) {
+            throw AssertionError("Expected $expected running formulas, but there were $count instead")
+        }
+    }
 }
