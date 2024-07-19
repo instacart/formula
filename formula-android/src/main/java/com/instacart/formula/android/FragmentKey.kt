@@ -20,4 +20,5 @@ interface FragmentKey : Parcelable {
      * Tag is a unique identifier used to distinguish each fragment instance by the [FragmentManager].
      */
     val tag: String
+        get() = this::class.java.simpleName
 }
