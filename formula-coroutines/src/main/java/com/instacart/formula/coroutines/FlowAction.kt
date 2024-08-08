@@ -52,8 +52,8 @@ interface FlowAction<Event> : Action<Event> {
          * @param key Used to distinguish this [Action] from other actions.
          */
         inline fun <Event> fromFlow(
-            scope: CoroutineScope = MainScope(),
             key: Any?,
+            scope: CoroutineScope = MainScope(),
             crossinline create: () -> Flow<Event>
         ): Action<Event> {
             return object : FlowAction<Event> {
