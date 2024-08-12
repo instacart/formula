@@ -3,6 +3,8 @@ package com.instacart.formula.coroutines
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -24,20 +26,10 @@ interface FlowAction<Event> : Action<Event> {
          * }
          * ```
          */
-        inline fun <Event> fromFlow(
-            scope: CoroutineScope = MainScope(),
-            crossinline create: () -> Flow<Event>
+        fun <Event> fromFlow(
+            create: () -> Flow<Event>
         ): Action<Event> {
-            return object : FlowAction<Event> {
-
-                override val scope: CoroutineScope = scope
-
-                override fun flow(): Flow<Event> {
-                    return create()
-                }
-
-                override fun key(): Any = Unit
-            }
+            return FlowActionImpl(null, create)
         }
 
         /**
@@ -51,31 +43,30 @@ interface FlowAction<Event> : Action<Event> {
          *
          * @param key Used to distinguish this [Action] from other actions.
          */
-        inline fun <Event> fromFlow(
-            scope: CoroutineScope = MainScope(),
+        fun <Event> fromFlow(
             key: Any?,
-            crossinline create: () -> Flow<Event>
+            create: () -> Flow<Event>
         ): Action<Event> {
-            return object : FlowAction<Event> {
-                override val scope: CoroutineScope = scope
-
-                override fun flow(): Flow<Event> {
-                    return create()
-                }
-
-                override fun key(): Any? = key
-            }
+            return FlowActionImpl(key, create)
         }
     }
 
     fun flow(): Flow<Event>
 
-    val scope: CoroutineScope
-
+    @OptIn(DelicateCoroutinesApi::class)
     override fun start(send: (Event) -> Unit): Cancelable? {
         val job = flow()
             .onEach { send(it) }
-            .launchIn(scope)
+            .launchIn(GlobalScope)
         return Cancelable(job::cancel)
     }
+}
+
+private data class FlowActionImpl<Event>(
+    private val key: Any?,
+    private val factory: () -> Flow<Event>
+) : FlowAction<Event> {
+    override fun flow(): Flow<Event> = factory()
+
+    override fun key(): Any? = key
 }
