@@ -3,6 +3,7 @@ package com.instacart.formula.test
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
+import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.toObservable
 
@@ -37,4 +38,11 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
     observer.assertNoErrors()
     observer.dispose()
     return observer.values().last()
+}
+
+fun <Input, Output> IFormula<Input, Output>.testFormula(
+    initialOutput: Output,
+    key: (Input) -> Any? = { null }
+): TestFormula<Input, Output> {
+    return TestFormula(initialOutput, key)
 }

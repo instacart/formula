@@ -8,6 +8,7 @@
 - Move `Renderer` and `RenderView` from `formula` core into `formula-android` module
 - Enable fine-grained control of dispatching via `Plugin.defaultDispatcher`, `RuntimeConfig.defaultDispatcher`, `Transition.ExecutionType` and `Effect.Type`.
 - Remove `RxStream` type alias.
+- Replace `implementation` function with a value
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`

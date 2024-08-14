@@ -6,24 +6,8 @@ package com.instacart.formula
  * the [Action] whenever [Input] changes.
  */
 abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output> {
-
-    /**
-     * Initial value returned by this formula.
-     */
-    abstract fun initialValue(input: Input): Output
-
-    /**
-     * A factory function that takes an [Input] and constructs a [Action] of type [Output].
-     */
-    abstract fun action(input: Input): Action<Output>
-
-    /**
-     * Transition execution type that will be used with this action.
-     */
-    open fun executionType(): Transition.ExecutionType? = null
-
     // Implements the common API used by the runtime.
-    private val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
+    override val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
 
         override fun Snapshot<Input, Output>.evaluate(): Evaluation<Output> {
@@ -41,5 +25,18 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
         override fun key(input: Input): Any = input
     }
 
-    final override fun implementation(): Formula<Input, *, Output> = implementation
+    /**
+     * Initial value returned by this formula.
+     */
+    abstract fun initialValue(input: Input): Output
+
+    /**
+     * A factory function that takes an [Input] and constructs a [Action] of type [Output].
+     */
+    abstract fun action(input: Input): Action<Output>
+
+    /**
+     * Transition execution type that will be used with this action.
+     */
+    open fun executionType(): Transition.ExecutionType? = null
 }

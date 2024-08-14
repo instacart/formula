@@ -25,7 +25,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         local = config.inspector,
     )
     private val defaultDispatcher: Dispatcher = config.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
-    private val implementation = formula.implementation()
+    private val implementation = formula.implementation
     private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }
     )

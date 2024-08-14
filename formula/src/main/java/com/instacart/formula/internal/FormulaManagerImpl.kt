@@ -80,7 +80,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return globalEvaluationId != evaluationId
     }
 
-    fun isTerminated(): Boolean {
+    override fun isTerminated(): Boolean {
         return terminated
     }
 
@@ -130,28 +130,30 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         var result: Evaluation<Output>? = null
         isRunning = true
-        var firstRun = true
-        while (result == null) {
-            val lastFrame = frame
-            val evaluationId = globalEvaluationId
-            val evaluation = if (firstRun) {
-                firstRun = false
-                evaluation(input, evaluationId)
-            } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
-                evaluation(input, evaluationId)
-            } else {
-                lastFrame.evaluation
-            }
+        try {
+            var firstRun = true
+            while (result == null) {
+                val lastFrame = frame
+                val evaluationId = globalEvaluationId
+                val evaluation = if (firstRun) {
+                    firstRun = false
+                    evaluation(input, evaluationId)
+                } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
+                    evaluation(input, evaluationId)
+                } else {
+                    lastFrame.evaluation
+                }
 
-            if (postEvaluation(evaluationId)) {
-                continue
-            }
+                if (postEvaluation(evaluationId)) {
+                    continue
+                }
 
-            result = evaluation
+                result = evaluation
+            }
+            return result
+        } finally {
+            isRunning = false
         }
-        isRunning = false
-
-        return result
     }
 
     /**
@@ -245,18 +247,58 @@ internal class FormulaManagerImpl<Input, State, Output>(
         return manager.run(input).output
     }
 
+    fun <ChildInput, ChildOutput> child(
+        key: Any,
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput,
+        onError: (Throwable) -> Unit,
+    ): ChildOutput? {
+        val childrenManager = getOrInitChildrenManager()
+        val manager = childrenManager.findOrInitChild(key, formula, input)
+
+        // If termination happens while running, we might still be initializing child formulas. To
+        // ensure correct behavior, we mark each requested child manager as terminated to avoid
+        // starting new actions.
+        if (isTerminated()) {
+            manager.markAsTerminated()
+        }
+        manager.setValidationRun(isValidationEnabled)
+
+        return try {
+            // If manager.run(input) previously threw an exception it would be marked as
+            // terminated in the catch block. We avoid running it again because there is a decent
+            // chance it will continue to throw the same exception and cause performance issues
+            if (!manager.isTerminated()) {
+                manager.run(input).output
+            } else {
+                null
+            }
+        } catch (e: ValidationException) {
+            throw e
+        } catch (e: Throwable) {
+            manager.markAsTerminated()
+            onError(e)
+            manager.performTerminationSideEffects()
+            null
+        }
+    }
+
     override fun markAsTerminated() {
         terminated = true
         childrenManager?.markAsTerminated()
     }
 
-    override fun performTerminationSideEffects() {
-        childrenManager?.performTerminationSideEffects()
+    override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
+        childrenManager?.performTerminationSideEffects(executeTransitionQueue)
         actionManager.terminate()
 
-        // Execute deferred transitions
-        for (transition in transitionQueue) {
-            transition.execute()
+        if (executeTransitionQueue) {
+            // Execute deferred transitions
+            while (transitionQueue.isNotEmpty()) {
+                transitionQueue.pollFirst().execute()
+            }
+        } else {
+            transitionQueue.clear()
         }
 
         listeners.disableAll()

@@ -45,8 +45,8 @@ internal class ChildrenManager(
         children?.forEachValue { it.markAsTerminated() }
     }
 
-    fun performTerminationSideEffects() {
-        children?.forEachValue { it.performTerminationSideEffects() }
+    fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
+        children?.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
     }
 
     fun <ChildInput, ChildOutput> findOrInitChild(
@@ -109,7 +109,7 @@ internal class ChildrenManager(
         }
 
         val childFormulaHolder = children.findOrInit(key) {
-            val implementation = formula.implementation()
+            val implementation = formula.implementation
             FormulaManagerImpl(
                 queue = delegate.queue,
                 batchManager = delegate.batchManager,
