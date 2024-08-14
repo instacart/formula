@@ -20,7 +20,7 @@ interface IFormula<in Input, out Output> {
      * to define the contract and hide the implementation details. We also override this
      * method to provide a fake implementation when writing tests.
      */
-    fun implementation(): Formula<Input, *, Output>
+    val implementation: Formula<Input, *, Output>
 
     /**
      * Type is used in conjunction with [key] to uniquely identify a formula
@@ -36,5 +36,5 @@ interface IFormula<in Input, out Output> {
      * override fun key(input: ItemInput) = input.itemId
      * ```
      */
-    fun key(input: Input): Any? = implementation().key(input)
+    fun key(input: Input): Any? = implementation.key(input)
 }

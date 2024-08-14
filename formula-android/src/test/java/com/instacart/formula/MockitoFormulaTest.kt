@@ -9,18 +9,18 @@ import org.mockito.kotlin.whenever
 class MockitoFormulaTest {
 
     @Test fun mockMaintainsType() {
-        val testFormula = ReplacementFormula().implementation()
+        val testFormula = ReplacementFormula().implementation
         val formula = mock<MyFormula>(defaultAnswer = CallsRealMethods())
-        whenever(formula.implementation()).thenReturn(testFormula)
-        assertThat(formula.implementation()).isEqualTo(testFormula)
+        whenever(formula.implementation).thenReturn(testFormula)
+        assertThat(formula.implementation).isEqualTo(testFormula)
         assertThat(formula.type()).isEqualTo(MyFormula::class)
     }
 
     @Test fun mockActionFormula() {
-        val testFormula = ReplacementFormula().implementation()
+        val testFormula = ReplacementFormula().implementation
         val formula = mock<MyActionFormula>(defaultAnswer = CallsRealMethods())
-        whenever(formula.implementation()).thenReturn(testFormula)
-        assertThat(formula.implementation()).isEqualTo(testFormula)
+        whenever(formula.implementation).thenReturn(testFormula)
+        assertThat(formula.implementation).isEqualTo(testFormula)
         assertThat(formula.type()).isEqualTo(MyActionFormula::class)
     }
 

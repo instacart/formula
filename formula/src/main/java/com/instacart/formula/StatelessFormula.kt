@@ -13,7 +13,7 @@ package com.instacart.formula
 abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
 
     // Implements the common API used by the runtime.
-    private val implementation: Formula<Input, Unit, Output> = object : Formula<Input, Unit, Output>() {
+    override val implementation = object : Formula<Input, Unit, Output>() {
         override fun initialState(input: Input) = Unit
 
         override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output> {
@@ -46,6 +46,4 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
      * ```
      */
     override fun key(input: Input): Any? = null
-
-    override fun implementation(): Formula<Input, *, Output> = implementation
 }

@@ -22,7 +22,7 @@ class TestFormulaTest {
     @Test fun `trigger listener using child input`() {
         subject
             .apply {
-                childFormula.input { onChangeName("my name") }
+                childFormula.implementation.input { onChangeName("my name") }
             }
             .output {
                 assertThat(name).isEqualTo("my name")
@@ -30,7 +30,7 @@ class TestFormulaTest {
     }
 
     @Test fun `input passed to formula`() {
-        childFormula.input {
+        childFormula.implementation.input {
             assertThat(name).isEqualTo("")
         }
     }
@@ -73,7 +73,9 @@ class TestFormulaTest {
         class Button(val onNameChanged: (String) -> Unit)
     }
 
-    class FakeChildFormula : TestFormula<ChildFormula.Input, ChildFormula.Button>(), ChildFormula {
-        override fun initialOutput() = ChildFormula.Button {}
+    class FakeChildFormula : ChildFormula {
+        override val implementation = testFormula(
+            initialOutput = ChildFormula.Button {}
+        )
     }
 }
