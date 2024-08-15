@@ -4,7 +4,7 @@ import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import java.lang.IllegalStateException
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Test formula is used to provide a fake formula implementation. It allows you to [send][output]
@@ -30,14 +30,18 @@ abstract class TestFormula<Input, Output> :
     }
 
     data class State<Output>(
+        val uniqueIdentifier: Long,
         val key: Any?,
         val output: Output
     )
 
     data class Value<Input, Output>(
+        val key: Any?,
         val input: Input,
         val onNewOutput: (Output) -> Unit
     )
+
+    private val identifierGenerator = AtomicLong(0)
 
     /**
      * Uses initial input as key (to be decided if its robust enough)
@@ -47,11 +51,16 @@ abstract class TestFormula<Input, Output> :
     abstract fun initialOutput(): Output
 
     override fun initialState(input: Input): State<Output> {
-        return State(key = key(input), output = initialOutput())
+        return State(
+            uniqueIdentifier = identifierGenerator.getAndIncrement(),
+            key = key(input),
+            output = initialOutput(),
+        )
     }
 
     override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
-        stateMap[state.key] = Value(
+        stateMap[state.uniqueIdentifier] = Value(
+            key = state.key,
             input = input,
             onNewOutput = context.onEvent {
                 transition(state.copy(output = it))
@@ -62,9 +71,8 @@ abstract class TestFormula<Input, Output> :
             output = state.output,
             actions = context.actions {
                 Action.onTerminate().onEvent {
-                    transition {
-                        stateMap.remove(state.key)
-                    }
+                    stateMap.remove(state.uniqueIdentifier)
+                    none()
                 }
             }
         )
@@ -81,9 +89,7 @@ abstract class TestFormula<Input, Output> :
     }
 
     fun output(key: Any?, output: Output) {
-        val instance = requireNotNull(stateMap[key]) {
-            "Formula is not running"
-        }
+        val instance = getByKey(key)
         instance.onNewOutput(output)
     }
 
@@ -101,9 +107,7 @@ abstract class TestFormula<Input, Output> :
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(key: Any?, interact: Input.() -> Unit) {
-        val instance = requireNotNull(stateMap[key]) {
-            "Formula for $key is not running, there are ${stateMap.keys} running"
-        }
+        val instance = getByKey(key)
         instance.input.interact()
     }
 
@@ -111,6 +115,13 @@ abstract class TestFormula<Input, Output> :
         val count = stateMap.size
         if (count != expected) {
             throw AssertionError("Expected $expected running formulas, but there were $count instead")
+        }
+    }
+
+    private fun getByKey(key: Any?): Value<Input, Output> {
+        return requireNotNull(stateMap.entries.firstOrNull { it.key == key }?.value) {
+            val existingKeys = stateMap.entries.map { it.key }
+            "Formula for $key is not running, there are $existingKeys running"
         }
     }
 }

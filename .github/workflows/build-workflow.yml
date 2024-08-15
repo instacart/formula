@@ -32,6 +32,8 @@ jobs:
         run: ./gradlew :formula-android:testRelease
       - name: Run Formula Android Instrumentation Tests
         run: ./gradlew :formula-android-tests:testRelease
+      - name: Run Formula Test Module tests
+        run: ./gradlew :formula-test:test
       - name: Run Formula Lint Tests
         run: ./gradlew :formula-lint:build
       - name: Generate Jacoco Report
