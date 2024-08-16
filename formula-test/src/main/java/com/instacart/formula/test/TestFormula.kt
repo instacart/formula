@@ -119,8 +119,8 @@ abstract class TestFormula<Input, Output> :
     }
 
     private fun getByKey(key: Any?): Value<Input, Output> {
-        return requireNotNull(stateMap.entries.firstOrNull { it.key == key }?.value) {
-            val existingKeys = stateMap.entries.map { it.key }
+        return requireNotNull(stateMap.entries.firstOrNull { it.value.key == key }?.value) {
+            val existingKeys = stateMap.entries.map { it.value.key }
             "Formula for $key is not running, there are $existingKeys running"
         }
     }
