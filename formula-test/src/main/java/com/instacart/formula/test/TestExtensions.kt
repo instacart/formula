@@ -42,6 +42,10 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
 
 fun <Input, Output> IFormula<Input, Output>.testFormula(
     initialOutput: Output,
+    key: (Input) -> Any? = { null },
 ): TestFormula<Input, Output> {
-    return TestFormula(initialOutput, key = { this.key(it) })
+    return TestFormula(
+        initialOutput = initialOutput,
+        key = key,
+    )
 }

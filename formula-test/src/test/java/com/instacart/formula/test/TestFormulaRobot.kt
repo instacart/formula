@@ -66,7 +66,8 @@ class TestFormulaRobot {
 
     class FakeChildFormula : ChildFormula {
         override val implementation = testFormula(
-            initialOutput = ChildFormula.Button {}
+            initialOutput = ChildFormula.Button {},
+            key = { this.key(it) },
         )
     }
 }
