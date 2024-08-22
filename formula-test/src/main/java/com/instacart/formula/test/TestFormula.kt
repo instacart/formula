@@ -38,6 +38,7 @@ abstract class TestFormula<Input, Output> :
     data class Value<Input, Output>(
         val key: Any?,
         val input: Input,
+        val output: Output,
         val onNewOutput: (Output) -> Unit
     )
 
@@ -62,6 +63,7 @@ abstract class TestFormula<Input, Output> :
         stateMap[state.uniqueIdentifier] = Value(
             key = state.key,
             input = input,
+            output = state.output,
             onNewOutput = context.onEvent {
                 transition(state.copy(output = it))
             }
@@ -82,24 +84,32 @@ abstract class TestFormula<Input, Output> :
      * Emits a new [Output].
      */
     fun output(output: Output) {
-        val update = requireNotNull(stateMap.values.lastOrNull()?.onNewOutput) {
-            "Formula is not running"
-        }
+        val update = getMostRecentRunningFormula().onNewOutput
         update(output)
     }
 
     fun output(key: Any?, output: Output) {
-        val instance = getByKey(key)
+        val instance = getRunningFormulaByKey(key)
         instance.onNewOutput(output)
+    }
+
+    fun updateOutput(modify: Output.() -> Output) {
+        val formulaValue = getMostRecentRunningFormula()
+        val newOutput = formulaValue.output.modify()
+        formulaValue.onNewOutput(newOutput)
+    }
+
+    fun updateOutput(key: Any?, modify: Output.() -> Output) {
+        val formulaValue = getRunningFormulaByKey(key)
+        val newOutput = formulaValue.output.modify()
+        formulaValue.onNewOutput(newOutput)
     }
 
     /**
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(interact: Input.() -> Unit) {
-        val input = requireNotNull(stateMap.values.lastOrNull()?.input) {
-            "Formula is not running"
-        }
+        val input = getMostRecentRunningFormula().input
         interact(input)
     }
 
@@ -107,7 +117,7 @@ abstract class TestFormula<Input, Output> :
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(key: Any?, interact: Input.() -> Unit) {
-        val instance = getByKey(key)
+        val instance = getRunningFormulaByKey(key)
         instance.input.interact()
     }
 
@@ -118,7 +128,13 @@ abstract class TestFormula<Input, Output> :
         }
     }
 
-    private fun getByKey(key: Any?): Value<Input, Output> {
+    private fun getMostRecentRunningFormula(): Value<Input, Output> {
+        return requireNotNull(stateMap.values.lastOrNull()) {
+            "Formula is not running"
+        }
+    }
+
+    private fun getRunningFormulaByKey(key: Any?): Value<Input, Output> {
         return requireNotNull(stateMap.entries.firstOrNull { it.value.key == key }?.value) {
             val existingKeys = stateMap.entries.map { it.value.key }
             "Formula for $key is not running, there are $existingKeys running"
