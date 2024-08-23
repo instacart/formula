@@ -13,9 +13,10 @@ class TestFormulaTest {
     }
 
     @Test fun `emits initial output when subscribed`() {
-        val formula = TestSimpleFormula()
+        val initialOutput = SimpleFormula.Output(100, "random")
+        val formula = TestSimpleFormula(initialOutput)
         formula.test().input(SimpleFormula.Input()).output {
-            assertThat(this).isEqualTo(formula.implementation.initialOutput())
+            assertThat(this).isEqualTo(initialOutput)
         }
     }
 
@@ -134,5 +135,17 @@ class TestFormulaTest {
         formula.implementation.input(key = "simple-formula-key") {
             assertThat(this).isEqualTo(myInput)
         }
+    }
+
+    @Test fun `default key is null`() {
+        val formula = TestSimpleFormula(useCustomKey = false)
+        val key = formula.key(SimpleFormula.Input())
+        assertThat(key).isNull()
+    }
+
+    @Test fun `custom key is applied correctly`() {
+        val formula = TestSimpleFormula(useCustomKey = true)
+        val key = formula.key(SimpleFormula.Input())
+        assertThat(key).isEqualTo(SimpleFormula.CUSTOM_KEY)
     }
 }

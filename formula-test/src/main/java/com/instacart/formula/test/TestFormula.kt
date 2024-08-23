@@ -3,69 +3,73 @@ package com.instacart.formula.test
 import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
+import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
+import com.instacart.formula.test.utils.RunningInstanceManager
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Test formula is used to provide a fake formula implementation. It allows you to [send][output]
- * output updates and [inspect/interact][input] with input.
+ * Test formula is used to replace a real formula with a fake implementation. This allows you to:
+ * - Verify that parent passes correct inputs. Take a look at [input].
+ * - Verify that parent deals with output changes correctly. Take a look at [output]
+ *
+ *
+ * ```kotlin
+ * // To replace a real formula with a fake one, we need first define the interface
+ * interface UserFormula : IFormula<Input, Output> {
+ *     data class Input(val userId: String)
+ *     data class Output(val user: User?)
+ * }
+ *
+ * // Then, we can create a fake implementation
+ * class FakeUserFormula : UserFormula {
+ *     override val implementation = testFormula(
+ *         initialOutput = Output(user = null)
+ *     )
+ * }
+ *
+ * // Then, in our test, we can do the following
+ * @Test fun `ensure that account formula passes user id to user formula`() {
+ *     val userFormula = FakeUserFormula()
+ *     val accountFormula = RealAccountFormula(userFormula)
+ *     accountFormula.test().input(AccountFormula.Input(userId = "my-user-id"))
+ *
+ *     userFormula.implementation.input {
+ *       Truth.assertThat(this.userId).isEqualTo("my-user-id")
+ *     }
+ * }
+ * ```
  */
-abstract class TestFormula<Input, Output> :
-    Formula<Input, TestFormula.State<Output>, Output>() {
-
-    companion object {
-        /**
-         * Initializes [TestFormula] instance with [initialOutput].
-         */
-        operator fun <Input, Output> invoke(
-            initialOutput: Output,
-            key: (Input) -> Any? = { null }
-        ): TestFormula<Input, Output> {
-            return object : TestFormula<Input, Output>() {
-                override fun initialOutput(): Output = initialOutput
-
-                override fun key(input: Input): Any? = key(input)
-            }
-        }
-    }
+class TestFormula<Input, Output> internal constructor(
+    private val parentFormula: IFormula<Input, Output>,
+    private val initialOutput: Output,
+) : Formula<Input, TestFormula.State<Output>, Output>() {
 
     data class State<Output>(
         val uniqueIdentifier: Long,
-        val key: Any?,
         val output: Output
     )
 
-    data class Value<Input, Output>(
-        val key: Any?,
-        val input: Input,
-        val output: Output,
-        val onNewOutput: (Output) -> Unit
-    )
-
     private val identifierGenerator = AtomicLong(0)
-
-    /**
-     * Uses initial input as key (to be decided if its robust enough)
-     */
-    private val stateMap = mutableMapOf<Any?, Value<Input, Output>>()
-
-    abstract fun initialOutput(): Output
+    private val runningInstanceManager = RunningInstanceManager<Input, Output>(
+        formulaKeyFactory = { parentFormula.key(it) },
+    )
 
     override fun initialState(input: Input): State<Output> {
         return State(
             uniqueIdentifier = identifierGenerator.getAndIncrement(),
-            key = key(input),
-            output = initialOutput(),
+            output = initialOutput,
         )
     }
 
     override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
-        stateMap[state.uniqueIdentifier] = Value(
-            key = state.key,
+        runningInstanceManager.onEvaluate(
+            uniqueIdentifier = state.uniqueIdentifier,
             input = input,
             output = state.output,
             onNewOutput = context.onEvent {
-                transition(state.copy(output = it))
+                val newState = state.copy(output = it)
+                transition(newState)
             }
         )
 
@@ -73,7 +77,7 @@ abstract class TestFormula<Input, Output> :
             output = state.output,
             actions = context.actions {
                 Action.onTerminate().onEvent {
-                    stateMap.remove(state.uniqueIdentifier)
+                    runningInstanceManager.onTerminate(state.uniqueIdentifier)
                     none()
                 }
             }
@@ -84,23 +88,23 @@ abstract class TestFormula<Input, Output> :
      * Emits a new [Output].
      */
     fun output(output: Output) {
-        val update = getMostRecentRunningFormula().onNewOutput
+        val update = runningInstanceManager.mostRecentInstance().onNewOutput
         update(output)
     }
 
     fun output(key: Any?, output: Output) {
-        val instance = getRunningFormulaByKey(key)
+        val instance = runningInstanceManager.instanceByKey(key)
         instance.onNewOutput(output)
     }
 
     fun updateOutput(modify: Output.() -> Output) {
-        val formulaValue = getMostRecentRunningFormula()
+        val formulaValue = runningInstanceManager.mostRecentInstance()
         val newOutput = formulaValue.output.modify()
         formulaValue.onNewOutput(newOutput)
     }
 
     fun updateOutput(key: Any?, modify: Output.() -> Output) {
-        val formulaValue = getRunningFormulaByKey(key)
+        val formulaValue = runningInstanceManager.instanceByKey(key)
         val newOutput = formulaValue.output.modify()
         formulaValue.onNewOutput(newOutput)
     }
@@ -109,35 +113,33 @@ abstract class TestFormula<Input, Output> :
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(interact: Input.() -> Unit) {
-        val input = getMostRecentRunningFormula().input
-        interact(input)
+        mostRecentInput().interact()
     }
 
     /**
      * Performs an interaction on the current [Input] passed by the parent.
      */
     fun input(key: Any?, interact: Input.() -> Unit) {
-        val instance = getRunningFormulaByKey(key)
-        instance.input.interact()
+        inputByKey(key).interact()
     }
 
     fun assertRunningCount(expected: Int) {
-        val count = stateMap.size
-        if (count != expected) {
-            throw AssertionError("Expected $expected running formulas, but there were $count instead")
-        }
+        runningInstanceManager.assertRunningCount(expected)
     }
 
-    private fun getMostRecentRunningFormula(): Value<Input, Output> {
-        return requireNotNull(stateMap.values.lastOrNull()) {
-            "Formula is not running"
-        }
+    fun mostRecentInput(): Input {
+        return runningInstanceManager.mostRecentInstance().inputs.last()
     }
 
-    private fun getRunningFormulaByKey(key: Any?): Value<Input, Output> {
-        return requireNotNull(stateMap.entries.firstOrNull { it.value.key == key }?.value) {
-            val existingKeys = stateMap.entries.map { it.value.key }
-            "Formula for $key is not running, there are $existingKeys running"
-        }
+    fun inputByKey(key: Any?): Input {
+        return runningInstanceManager.instanceByKey(key).inputs.last()
+    }
+
+    fun mostRecentInputs(): List<Input> {
+        return runningInstanceManager.mostRecentInstance().inputs
+    }
+
+    fun inputsByKey(key: Any): List<Input> {
+        return runningInstanceManager.instanceByKey(key).inputs
     }
 }
