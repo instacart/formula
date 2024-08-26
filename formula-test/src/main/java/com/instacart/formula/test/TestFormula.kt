@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Test formula is used to replace a real formula with a fake implementation. This allows you to:
  * - Verify that parent passes correct inputs. Take a look at [input].
  * - Verify that parent deals with output changes correctly. Take a look at [output]
- *
+ * - Verify how many instances of formula parent is running. Take a look at [assertRunningCount]
  *
  * ```kotlin
  * // To replace a real formula with a fake one, we need first define the interface
