@@ -14,7 +14,7 @@ package com.instacart.formula
  * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
 abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
-    override val implementation: Formula<Input, *, Output>
+    final override val implementation: Formula<Input, *, Output>
         get() = this
 
     /**

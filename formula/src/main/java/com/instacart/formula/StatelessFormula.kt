@@ -13,7 +13,7 @@ package com.instacart.formula
 abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
 
     // Implements the common API used by the runtime.
-    override val implementation = object : Formula<Input, Unit, Output>() {
+    final override val implementation = object : Formula<Input, Unit, Output>() {
         override fun initialState(input: Input) = Unit
 
         override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output> {
@@ -37,13 +37,4 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
      * All side-effects should happen as part of event listeners or [actions][Evaluation.actions].
      */
      abstract fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output>
-
-    /**
-     * A unique identifier used to distinguish formulas of the same type.
-     *
-     * ```
-     * override fun key(input: ItemInput) = input.itemId
-     * ```
-     */
-    override fun key(input: Input): Any? = null
 }

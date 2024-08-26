@@ -7,7 +7,7 @@ package com.instacart.formula
  */
 abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output> {
     // Implements the common API used by the runtime.
-    override val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
+    final override val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
 
         override fun Snapshot<Input, Output>.evaluate(): Evaluation<Output> {
