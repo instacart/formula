@@ -1,5 +1,6 @@
 package com.instacart.formula.test
 
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.junit.Test
@@ -13,9 +14,10 @@ class TestFormulaTest {
     }
 
     @Test fun `emits initial output when subscribed`() {
-        val formula = TestSimpleFormula()
+        val initialOutput = SimpleFormula.Output(100, "random")
+        val formula = TestSimpleFormula(initialOutput)
         formula.test().input(SimpleFormula.Input()).output {
-            assertThat(this).isEqualTo(formula.implementation.initialOutput())
+            assertThat(this).isEqualTo(initialOutput)
         }
     }
 
@@ -134,5 +136,59 @@ class TestFormulaTest {
         formula.implementation.input(key = "simple-formula-key") {
             assertThat(this).isEqualTo(myInput)
         }
+    }
+
+    @Test fun `mostRecentInput returns last input passed by parent`() {
+        val inputA = SimpleFormula.Input("a")
+        val inputB = SimpleFormula.Input("b")
+        val formula = TestSimpleFormula()
+        formula.test().input(inputA).input(inputB)
+
+        val mostRecentInput = formula.implementation.mostRecentInput()
+        assertThat(mostRecentInput).isEqualTo(inputB)
+    }
+
+    @Test fun `mostRecentInputs returns all inputs parent passed`() {
+        val inputA = SimpleFormula.Input("a")
+        val inputB = SimpleFormula.Input("b")
+        val formula = TestSimpleFormula()
+        formula.test().input(inputA).input(inputB)
+
+        assertThat(formula.implementation.mostRecentInputs()).containsExactly(
+            inputA, inputB
+        ).inOrder()
+    }
+
+    @Test fun `inputByKey returns last input passed by parent`() {
+        val inputA = SimpleFormula.Input("a")
+        val inputB = SimpleFormula.Input("b")
+        val formula = TestSimpleFormula()
+        formula.test().input(inputA).input(inputB)
+
+        val inputByKey = formula.implementation.inputByKey(SimpleFormula.CUSTOM_KEY)
+        assertThat(inputByKey).isEqualTo(inputB)
+    }
+
+    @Test fun `inputsByKey returns all inputs parent passed`() {
+        val inputA = SimpleFormula.Input("a")
+        val inputB = SimpleFormula.Input("b")
+        val formula = TestSimpleFormula()
+        formula.test().input(inputA).input(inputB)
+
+        assertThat(formula.implementation.inputsByKey(SimpleFormula.CUSTOM_KEY)).containsExactly(
+            inputA, inputB
+        ).inOrder()
+    }
+
+    @Test fun `default key is null`() {
+        val formula = TestSimpleFormula(useCustomKey = false)
+        val key = formula.key(SimpleFormula.Input())
+        assertThat(key).isNull()
+    }
+
+    @Test fun `custom key is applied correctly`() {
+        val formula = TestSimpleFormula(useCustomKey = true)
+        val key = formula.key(SimpleFormula.Input())
+        assertThat(key).isEqualTo(SimpleFormula.CUSTOM_KEY)
     }
 }

@@ -37,13 +37,4 @@ abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
      * All side-effects should happen as part of event listeners or [actions][Evaluation.actions].
      */
      abstract fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output>
-
-    /**
-     * A unique identifier used to distinguish formulas of the same type.
-     *
-     * ```
-     * override fun key(input: ItemInput) = input.itemId
-     * ```
-     */
-    override fun key(input: Input): Any? = null
 }

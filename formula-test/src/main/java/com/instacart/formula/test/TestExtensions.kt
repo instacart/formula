@@ -40,8 +40,22 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
     return observer.values().last()
 }
 
+/**
+ *
+ * Creates a test formula for a specific [IFormula] instance.
+ *
+ * ```kotlin
+ * class FakeUserFormula : UserFormula {
+ *      override val implementation = testFormula(
+ *          initialOutput = User(
+ *              name = "Fake user name",
+ *          )
+ *      )
+ * }
+ * ```
+ */
 fun <Input, Output> IFormula<Input, Output>.testFormula(
     initialOutput: Output,
 ): TestFormula<Input, Output> {
-    return TestFormula(initialOutput, key = { this.key(it) })
+    return TestFormula(this, initialOutput)
 }
