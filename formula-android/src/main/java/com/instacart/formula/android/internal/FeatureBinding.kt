@@ -53,8 +53,8 @@ internal class FeatureBinding<in Component, in Dependencies, in Key : FragmentKe
         }
     }
 
-    override fun types(): Set<Class<*>> {
-        return setOf(type)
+    override fun type(): Class<*> {
+        return type
     }
 
     override fun binds(key: Any): Boolean {

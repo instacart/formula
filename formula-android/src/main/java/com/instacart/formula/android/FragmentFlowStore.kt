@@ -6,6 +6,7 @@ import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.internal.Binding
 import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.internal.CompositeBinding
 import com.instacart.formula.android.internal.FeatureObservableAction
 import com.instacart.formula.android.utils.MainThreadDispatcher
 import com.instacart.formula.rxjava3.RxAction
@@ -17,7 +18,7 @@ import io.reactivex.rxjava3.core.Observable
  * A FragmentFlowStore is responsible for managing the state of multiple [FragmentKey] instances.
  */
 class FragmentFlowStore @PublishedApi internal constructor(
-    private val root: Binding<Unit>
+    private val root: CompositeBinding<*>,
 ) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState>() {
     companion object {
         inline fun init(
@@ -30,12 +31,8 @@ class FragmentFlowStore @PublishedApi internal constructor(
             rootComponent: Component,
             crossinline contracts: FragmentStoreBuilder<Component>.() -> Unit
         ): FragmentFlowStore {
-            val factory: (Unit) -> DisposableScope<Component> = {
-                DisposableScope(component = rootComponent, onDispose = {})
-            }
-
             val bindings = FragmentStoreBuilder.build(contracts)
-            val root = Binding.composite(factory, bindings)
+            val root = CompositeBinding(rootComponent, bindings.bindings)
             return FragmentFlowStore(root)
         }
     }

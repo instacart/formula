@@ -8,7 +8,7 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
- * A class used by [FragmentFlowStore] and [Flow] to register [fragment keys][FragmentKey] and their
+ * A class used by [FragmentFlowStore] to register [fragment keys][FragmentKey] and their
  * feature factories.
  */
 class FragmentStoreBuilder<Component> {
@@ -94,41 +94,19 @@ class FragmentStoreBuilder<Component> {
         bind(Key::class, featureFactory, toDependencies)
     }
 
-    /**
-     * Binds a flow factory.
-     */
-    fun bind(flowFactory: FlowFactory<Component, *>) = apply {
-        val binding = Binding.composite(flowFactory)
-        bind(binding)
-    }
-
-    /**
-     * Binds a flow factory.
-     */
-    fun <Dependencies> bind(
-        flowFactory: FlowFactory<Dependencies, *>,
-        toDependencies: (Component) -> Dependencies
-    ) = apply {
-        val binding = Binding.composite(flowFactory, toDependencies)
-        bind(binding)
-    }
-
     @PublishedApi
     internal fun build(): Bindings<Component> {
         return Bindings(
-            types = types,
             bindings = bindings
         )
     }
 
     private fun bind(binding: Binding<Component>) = apply {
-        binding.types().forEach {
-            if (types.contains(it)) {
-                throw IllegalStateException("Binding for $it already exists")
-            }
-            types += it
+        val type = binding.type()
+        if (types.contains(type)) {
+            throw IllegalStateException("Binding for $type already exists")
         }
-
+        types += type
         bindings += binding
     }
 }

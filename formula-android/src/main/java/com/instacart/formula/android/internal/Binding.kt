@@ -2,7 +2,6 @@ package com.instacart.formula.android.internal
 
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.FlowFactory
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentId
 
@@ -11,37 +10,6 @@ import com.instacart.formula.android.FragmentId
  */
 @PublishedApi
 internal abstract class Binding<in ParentComponent> {
-    companion object {
-        fun <ParentComponent, Component> composite(
-            flowFactory: FlowFactory<ParentComponent, Component>,
-        ): Binding<ParentComponent> {
-            return composite(
-                flowFactory::createComponent,
-                flowFactory.createFlow().bindings
-            )
-        }
-
-        fun <ParentComponent, Dependencies, Component> composite(
-            flowFactory: FlowFactory<Dependencies, Component>,
-            toDependencies: (ParentComponent) -> Dependencies,
-        ): Binding<ParentComponent> {
-            return composite(
-                scopeFactory = { component ->
-                    val dependencies = toDependencies(component)
-                    flowFactory.createComponent(dependencies)
-                },
-                flowFactory.createFlow().bindings
-            )
-        }
-
-        @PublishedApi internal fun <ParentComponent, Component> composite(
-            scopeFactory: ComponentFactory<ParentComponent, Component>,
-            bindings: Bindings<Component>
-        ): Binding<ParentComponent> {
-            return CompositeBinding(scopeFactory, bindings.types, bindings.bindings)
-        }
-    }
-
     data class Input<out Component>(
         val environment: FragmentEnvironment,
         val component: Component,
@@ -49,7 +17,7 @@ internal abstract class Binding<in ParentComponent> {
         val onInitializeFeature: (FeatureEvent) -> Unit,
     )
 
-    internal abstract fun types(): Set<Class<*>>
+    internal abstract fun type():  Class<*>
 
     /**
      * Returns true if this binding handles this [key]
