@@ -1,9 +1,7 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.android.internal.Binding
-import com.instacart.formula.android.internal.Bindings
-import com.instacart.formula.android.internal.FunctionUtils
 import com.instacart.formula.android.internal.FeatureBinding
+import com.instacart.formula.android.internal.MappedFeatureFactory
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
@@ -13,33 +11,16 @@ import kotlin.reflect.KClass
  */
 class FragmentStoreBuilder<Component> {
     companion object {
-
         @PublishedApi
         internal inline fun <Component> build(
             init: FragmentStoreBuilder<Component>.() -> Unit
-        ): Bindings<Component> {
+        ): List<FeatureBinding<Component, *>> {
             return FragmentStoreBuilder<Component>().apply(init).build()
         }
     }
 
     private val types = mutableSetOf<Class<*>>()
-    private val bindings: MutableList<Binding<Component>> = mutableListOf()
-
-    /**
-     * Binds a [feature factory][FeatureFactory] for a specific [key][type].
-     *
-     * @param type The class which describes the [key][Key].
-     * @param featureFactory Feature factory that provides state observable and view rendering logic.
-     * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
-     */
-    fun <Dependencies, Key : FragmentKey> bind(
-        type : KClass<Key>,
-        featureFactory: FeatureFactory<Dependencies, Key>,
-        toDependencies: (Component) -> Dependencies
-    ) = apply {
-        val binding = FeatureBinding(type.java, featureFactory, toDependencies)
-        bind(binding as Binding<Component>)
-    }
+    private val bindings: MutableList<FeatureBinding<Component, *>> = mutableListOf()
 
     /**
      * Binds a [feature factory][FeatureFactory] for a specific [key][type].
@@ -49,13 +30,14 @@ class FragmentStoreBuilder<Component> {
      */
     fun <Key : FragmentKey> bind(
         type : KClass<Key>,
-        featureFactory: FeatureFactory<Component, Key>
+        featureFactory: FeatureFactory<Component, Key>,
     ) = apply {
-        bind(type, featureFactory, FunctionUtils.identity())
+        val binding = FeatureBinding(type.java, featureFactory)
+        bind(type.java, binding)
     }
 
     /**
-     * A convenience inline function that binds a feature factory for a specific [key][Key].
+     * Binds a feature factory for a [Key].
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
@@ -69,40 +51,25 @@ class FragmentStoreBuilder<Component> {
      * A convenience inline function that binds a feature factory for a specific [key][Key].
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
-     */
-    inline fun <reified Key: FragmentKey> bind(
-        crossinline initFeature: (Component, Key) -> Feature,
-    ) = apply {
-        val factory = object : FeatureFactory<Component, Key> {
-            override fun initialize(dependencies: Component, key: Key): Feature {
-                return initFeature(dependencies, key)
-            }
-        }
-        bind(Key::class, factory)
-    }
-
-    /**
-     * A convenience inline function that binds a feature factory for a specific [key][Key].
-     *
-     * @param featureFactory Feature factory that provides state observable and view rendering logic.
      * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
      */
     inline fun <Dependencies, reified Key: FragmentKey> bind(
         featureFactory: FeatureFactory<Dependencies, Key>,
         noinline toDependencies: (Component) -> Dependencies
     ) = apply {
-        bind(Key::class, featureFactory, toDependencies)
+        val mapped = MappedFeatureFactory(
+            delegate = featureFactory,
+            toDependencies = toDependencies,
+        )
+        bind(Key::class, mapped)
     }
 
     @PublishedApi
-    internal fun build(): Bindings<Component> {
-        return Bindings(
-            bindings = bindings
-        )
+    internal fun build(): List<FeatureBinding<Component, *>> {
+        return bindings
     }
 
-    private fun bind(binding: Binding<Component>) = apply {
-        val type = binding.type()
+    private fun bind(type: Class<*>, binding: FeatureBinding<Component, *>) = apply {
         if (types.contains(type)) {
             throw IllegalStateException("Binding for $type already exists")
         }
