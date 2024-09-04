@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentFlowStore
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.test.TestFragmentActivity
@@ -29,7 +30,7 @@ class FragmentAndroidEventTest {
                         configureActivity = {
                             initialContract = TestLifecycleKey()
                         },
-                        contracts =  {
+                        fragmentStore = FragmentFlowStore.init {
                             val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
                                 override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature {
                                     return Feature(

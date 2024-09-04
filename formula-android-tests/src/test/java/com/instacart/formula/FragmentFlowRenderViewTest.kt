@@ -10,6 +10,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
+import com.instacart.formula.android.FragmentFlowStore
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
@@ -49,7 +50,7 @@ class FragmentFlowRenderViewTest {
 
                             updateThreads.add(Thread.currentThread())
                         },
-                        contracts =  {
+                        fragmentStore = FragmentFlowStore.init {
                             bind(TestFeatureFactory<TestKey> { stateChanges(it) })
                             bind(TestFeatureFactory<TestKeyWithId> { stateChanges(it) })
                         }

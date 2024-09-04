@@ -79,58 +79,21 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
      * @param streams This provides ability to configure arbitrary RxJava streams that survive
      *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts [FragmentFlowStore] used to provide state management for individual screens.
+     * @param fragmentStore [FragmentFlowStore] used to provide state management for individual screens.
      */
     fun <ActivityT : FragmentActivity> store(
         configureActivity: (ActivityT.() -> Unit)? = null,
         onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
         onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
         streams: (StreamConfigurator<ActivityT>.() -> Disposable)? = null,
-        contracts: FragmentFlowStore
+        fragmentStore: FragmentFlowStore = FragmentFlowStore.EMPTY,
     ): ActivityStore<ActivityT> {
         return ActivityStore(
-            contracts =  contracts,
+            fragmentStore =  fragmentStore,
             configureActivity = configureActivity,
             onFragmentLifecycleEvent = onFragmentLifecycleEvent,
             onRenderFragmentState = onRenderFragmentState,
             streams = streams
         )
-    }
-
-    /**
-     * Creates an [ActivityStore].
-     *
-     * @param configureActivity This is called when activity is created before view inflation. You can use this to
-     *                          configure / inject the activity.
-     * @param onRenderFragmentState This is called after [FragmentFlowState] is applied to UI.
-     * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
-     * @param streams This provides ability to configure arbitrary RxJava streams that survive
-     *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param contracts Builder method that configures [FragmentFlowStore] used to provide state management for individual screens.
-     */
-    inline fun <ActivityT : FragmentActivity> store(
-        noinline configureActivity: (ActivityT.() -> Unit)? = null,
-        noinline onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
-        noinline onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
-        noinline streams: (StreamConfigurator<ActivityT>.() -> Disposable)? = null,
-        crossinline contracts: FragmentStoreBuilder<Unit>.() -> Unit = {}
-    ): ActivityStore<ActivityT> {
-        return store(
-            configureActivity = configureActivity,
-            onRenderFragmentState = onRenderFragmentState,
-            onFragmentLifecycleEvent = onFragmentLifecycleEvent,
-            streams = streams,
-            contracts =  contracts(Unit, contracts)
-        )
-    }
-
-    /**
-     * Convenience method to to create a [FragmentFlowStore] with a [Component] instance.
-     */
-    inline fun <Component> contracts(
-        rootComponent: Component,
-        crossinline contracts: FragmentStoreBuilder<Component>.() -> Unit
-    ): FragmentFlowStore {
-        return FragmentFlowStore.init(rootComponent, contracts)
     }
 }

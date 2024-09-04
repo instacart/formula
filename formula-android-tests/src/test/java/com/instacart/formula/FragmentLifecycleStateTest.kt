@@ -7,6 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ActivityStoreContext
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentFlowStore
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
@@ -36,7 +37,7 @@ class FragmentLifecycleStateTest {
                         configureActivity = {
                             initialContract = TestKey()
                         },
-                        contracts =  {
+                        fragmentStore = FragmentFlowStore.init {
                             bind(featureFactory<TestKey>(this@activity))
                             bind(featureFactory<TestKeyWithId>(this@activity))
                         }
