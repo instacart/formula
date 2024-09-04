@@ -18,7 +18,7 @@ class ActivityStoreFactoryTest {
             environment = FragmentEnvironment(),
             activities = {
                 activity(FakeActivity::class) {
-                    store()
+                    ActivityStore()
                 }
             }
         )

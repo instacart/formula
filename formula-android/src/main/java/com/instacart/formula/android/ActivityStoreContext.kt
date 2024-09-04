@@ -3,9 +3,7 @@ package com.instacart.formula.android
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.events.FragmentLifecycleEvent
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * This class provides context within which you can create [ActivityStore]. It provides
@@ -69,31 +67,4 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
      * it will do nothing.
      */
     abstract fun send(effect: Activity.() -> Unit)
-
-    /**
-     * Creates an [ActivityStore].
-     *
-     * @param configureActivity This is called when activity is created before view inflation. You can use this to
-     *                          configure / inject the activity.
-     * @param onRenderFragmentState This is called after [FragmentFlowState] is applied to UI.
-     * @param onFragmentLifecycleEvent This is called after each [FragmentLifecycleEvent].
-     * @param streams This provides ability to configure arbitrary RxJava streams that survive
-     *                configuration changes. Check [StreamConfigurator] for utility methods.
-     * @param fragmentStore [FragmentFlowStore] used to provide state management for individual screens.
-     */
-    fun <ActivityT : FragmentActivity> store(
-        configureActivity: (ActivityT.() -> Unit)? = null,
-        onRenderFragmentState: ((ActivityT, FragmentFlowState) -> Unit)? = null,
-        onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
-        streams: (StreamConfigurator<ActivityT>.() -> Disposable)? = null,
-        fragmentStore: FragmentFlowStore = FragmentFlowStore.EMPTY,
-    ): ActivityStore<ActivityT> {
-        return ActivityStore(
-            fragmentStore =  fragmentStore,
-            configureActivity = configureActivity,
-            onFragmentLifecycleEvent = onFragmentLifecycleEvent,
-            onRenderFragmentState = onRenderFragmentState,
-            streams = streams
-        )
-    }
 }

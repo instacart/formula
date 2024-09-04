@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentFlowStore
@@ -31,11 +32,11 @@ class FragmentLifecycleTest {
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
             activity<TestFragmentActivity> {
-                store(
-                    configureActivity = {
+                ActivityStore(
+                    configureActivity = { activity ->
                         lifecycleCallback = TestFragmentLifecycleCallback()
                         contract = TestLifecycleKey()
-                        initialContract = contract
+                        activity.initialContract = contract
                     },
                     fragmentStore = FragmentFlowStore.init {
                         val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
