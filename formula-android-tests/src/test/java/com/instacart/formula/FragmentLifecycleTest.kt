@@ -9,7 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
-import com.instacart.formula.android.FragmentFlowStore
+import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestFragmentLifecycleCallback
@@ -38,7 +38,7 @@ class FragmentLifecycleTest {
                         contract = TestLifecycleKey()
                         activity.initialContract = contract
                     },
-                    fragmentStore = FragmentFlowStore.init {
+                    fragmentStore = FragmentStore.init {
                         val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
                             override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature {
                                 return Feature(

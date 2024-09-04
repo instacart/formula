@@ -3,7 +3,7 @@ package com.instacart.formula.android.internal
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.FragmentFlowState
+import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ActivityStoreContext
@@ -27,13 +27,13 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     private val lifecycleStates = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
-    internal val fragmentFlowStateRelay: BehaviorRelay<FragmentFlowState> = BehaviorRelay.create()
+    internal val fragmentStateRelay: BehaviorRelay<FragmentState> = BehaviorRelay.create()
 
     override fun activityLifecycleState(): Observable<Lifecycle.State> = lifecycleStates
 
     override fun activityResults(): Observable<ActivityResult> = activityResultRelay
 
-    override fun fragmentFlowState(): Observable<FragmentFlowState> = fragmentFlowStateRelay
+    override fun fragmentState(): Observable<FragmentState> = fragmentStateRelay
 
     override fun isFragmentStarted(tag: String): Observable<Boolean> {
         return fragmentLifecycleState(tag)

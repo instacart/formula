@@ -6,19 +6,19 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentFlowState
+import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.FragmentState
+import com.instacart.formula.android.FragmentOutput
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 
 @PublishedApi
-internal class FragmentFlowStoreFormula<in Component>(
+internal class FragmentStoreFormula<in Component>(
     private val component: Component,
     private val bindings: List<FeatureBinding<Component, *>>,
-) : Formula<FragmentEnvironment, FragmentFlowState, FragmentFlowState>(){
+) : Formula<FragmentEnvironment, FragmentState, FragmentState>(){
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
     private val hiddenContractEvents = PublishRelay.create<FragmentId>()
@@ -39,9 +39,9 @@ internal class FragmentFlowStoreFormula<in Component>(
         }
     }
 
-    override fun initialState(input: FragmentEnvironment): FragmentFlowState = FragmentFlowState()
+    override fun initialState(input: FragmentEnvironment): FragmentState = FragmentState()
 
-    override fun Snapshot<FragmentEnvironment, FragmentFlowState>.evaluate(): Evaluation<FragmentFlowState> {
+    override fun Snapshot<FragmentEnvironment, FragmentState>.evaluate(): Evaluation<FragmentState> {
         return Evaluation(
             output = state,
             actions = context.actions {
@@ -51,7 +51,7 @@ internal class FragmentFlowStoreFormula<in Component>(
                         is FragmentLifecycleEvent.Removed -> {
                             val updated = state.copy(
                                 activeIds = state.activeIds.minus(fragmentId),
-                                states = state.states.minus(fragmentId),
+                                outputs = state.outputs.minus(fragmentId),
                                 features = state.features.minus(fragmentId)
                             )
                             transition(updated)
@@ -95,8 +95,8 @@ internal class FragmentFlowStoreFormula<in Component>(
                         )
                         action.onEvent {
                             if (state.activeIds.contains(fragmentId)) {
-                                val keyState = FragmentState(fragmentId.key, it)
-                                transition(state.copy(states = state.states.plus(fragmentId to keyState)))
+                                val keyState = FragmentOutput(fragmentId.key, it)
+                                transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))
                             } else {
                                 none()
                             }

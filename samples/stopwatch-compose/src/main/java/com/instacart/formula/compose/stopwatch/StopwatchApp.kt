@@ -5,7 +5,7 @@ import android.util.Log
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentFlowStore
+import com.instacart.formula.android.FragmentStore
 
 class StopwatchApp : Application() {
 
@@ -22,7 +22,7 @@ class StopwatchApp : Application() {
             activities = {
                 activity<StopwatchActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentFlowStore.init(Unit) {
+                        fragmentStore = FragmentStore.init(Unit) {
                             bind(StopwatchFeatureFactory())
                         }
                     )

@@ -8,10 +8,10 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentFlowState
+import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
-import com.instacart.formula.android.FragmentFlowStore
+import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
@@ -33,7 +33,7 @@ class FragmentFlowRenderViewTest {
 
     class HeadlessFragment : Fragment()
 
-    private var lastState: FragmentFlowState? = null
+    private var lastState: FragmentState? = null
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
     private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private var updateThreads = linkedSetOf<Thread>()
@@ -51,7 +51,7 @@ class FragmentFlowRenderViewTest {
 
                             updateThreads.add(Thread.currentThread())
                         },
-                        fragmentStore = FragmentFlowStore.init {
+                        fragmentStore = FragmentStore.init {
                             bind(TestFeatureFactory<TestKey> { stateChanges(it) })
                             bind(TestFeatureFactory<TestKeyWithId> { stateChanges(it) })
                         }
@@ -241,7 +241,7 @@ class FragmentFlowRenderViewTest {
 
         Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-        val currentState = lastState?.states.orEmpty()
+        val currentState = lastState?.outputs.orEmpty()
             .mapKeys { it.key.key }
             .mapValues { it.value.renderModel }
 
