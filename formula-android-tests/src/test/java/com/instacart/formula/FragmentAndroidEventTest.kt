@@ -4,7 +4,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.Feature
+import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.test.TestFragmentActivity
@@ -24,23 +27,26 @@ class FragmentAndroidEventTest {
         initFormula = { app ->
             FormulaAndroid.init(app) {
                 activity<TestFragmentActivity> {
-                    store(
+                    ActivityStore(
                         configureActivity = {
-                            initialContract = TestLifecycleKey()
+                            it.initialContract = TestLifecycleKey()
                         },
-                        contracts =  {
-
-                            bind<TestLifecycleKey> { _, _ ->
-                                Feature(
-                                    state = activityResults().flatMap {
-                                        activityResults.add(it)
-                                        Observable.empty()
-                                    },
-                                    viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
-                                        featureView { }
-                                    }
-                                )
+                        fragmentStore = FragmentStore.init {
+                            val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
+                                override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature {
+                                    return Feature(
+                                        state = activityResults().flatMap {
+                                            activityResults.add(it)
+                                            Observable.empty()
+                                        },
+                                        viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
+                                            featureView { }
+                                        }
+                                    )
+                                }
                             }
+
+                            bind(featureFactory)
                         }
                     )
                 }
@@ -48,7 +54,8 @@ class FragmentAndroidEventTest {
         },
         cleanUp = {
             activityResults.clear()
-        })
+        }
+    )
 
     private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
 

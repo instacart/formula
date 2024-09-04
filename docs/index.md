@@ -169,7 +169,7 @@ class MyApp : Application() {
         
     FormulaAndroid.init(this) {
       activity<MyActivity> {
-        store(
+        ActivityStore(
           streams = {
             val formula = CounterFormula()
             update(formula.toObservable(), MyActivity::render)

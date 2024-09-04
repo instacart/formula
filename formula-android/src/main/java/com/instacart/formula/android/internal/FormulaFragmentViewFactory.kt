@@ -22,7 +22,7 @@ internal class FormulaFragmentViewFactory(
         val featureEvent = featureProvider.getFeature(fragmentId) ?: throw IllegalStateException("Could not find feature for $key.")
         val viewFactory = factory ?: when (featureEvent) {
             is FeatureEvent.MissingBinding -> {
-                throw IllegalStateException("Missing feature factory or integration for $key. Please check your FragmentFlowStore configuration.")
+                throw IllegalStateException("Missing feature factory or integration for $key. Please check your FragmentStore configuration.")
             }
             is FeatureEvent.Failure -> {
                 throw IllegalStateException("Feature failed to initialize: $key", featureEvent.error)

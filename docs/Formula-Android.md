@@ -215,9 +215,11 @@ class MyApp : Application() {
         
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
-                store(MyActivityComponent(this)) {
-                    bind(CounterFeatureFactory())
-                }
+                ActivityStore(
+                    fragmentStore = FragmentStore.init(MyActivityComponent(this)) {
+                        bind(CounterFeatureFactory())
+                    }
+                )
             }
         }
     }
@@ -357,9 +359,11 @@ Now that we have our dependencies configured, let's bind the flow factory to our
 val appComponent = AppComponent()
 FormulaAndroid.init(this) {
     activity(MyActivity::class) {
-        store(appComponent) {
-            bind(AuthFlowFactory())
-        }
+        ActivityStore(
+            fragmentStore = FragmentStore.init(appComponent) {
+                bind(AuthFlowFactory())
+            }
+        )
     }
 }
 ```
@@ -393,7 +397,7 @@ class MyApp : Application() {
         FormulaAndroid.init(this) {
             activity<MyActivity> {
             
-                store(
+                ActivityStore(
                     streams = {
                         // You can subscribe to your RxJava streams here.
                         val timerState =  Observable
@@ -453,7 +457,7 @@ FormulaAndroid.init(this) {
         // This component will survive configuration changes.
         val activityComponent = appComponent.createMyActivityComponent()
         
-        store(
+        ActivityStore(
             configureActivity = {
                 // in this callback `this` is the instance of MyActivity
                 // so we can use it to inject dependencies

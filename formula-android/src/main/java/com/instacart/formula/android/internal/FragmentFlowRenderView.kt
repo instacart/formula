@@ -7,27 +7,24 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import com.instacart.formula.Renderer
-import com.instacart.formula.RenderView
 import com.instacart.formula.android.BaseFormulaFragment
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentFlowState
+import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ViewFactory
 import java.util.LinkedList
-import java.util.UUID
 
 /**
- * Renders [FragmentFlowState] and provides back button handling.
+ * Renders [FragmentState] and provides back button handling.
  *
  * NOTE: Initialize this class before calling [FragmentActivity.super.onCreate]
  *
  * [activity] activity within which the [FragmentFlowRenderView] lives.
- * [onLifecycleEvent] fragment lifecycle events that should be passed to the [com.instacart.formula.fragment.FragmentFlowStore]
+ * [onLifecycleEvent] fragment lifecycle events that should be passed to the [com.instacart.formula.android.FragmentStore]
  */
 internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
@@ -37,7 +34,7 @@ internal class FragmentFlowRenderView(
     private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
 ) {
 
-    private var fragmentState: FragmentFlowState? = null
+    private var fragmentState: FragmentState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
     private val featureProvider = object : FeatureProvider {
@@ -117,7 +114,7 @@ internal class FragmentFlowRenderView(
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, false)
     }
 
-    fun render(state: FragmentFlowState) {
+    fun render(state: FragmentState) {
         Utils.assertMainThread()
 
         fragmentState = state
@@ -127,7 +124,7 @@ internal class FragmentFlowRenderView(
     fun onBackPressed(): Boolean {
         val lastFragment = visibleFragments.lastOrNull()
         if (lastFragment is BaseFormulaFragment<*>) {
-            val state = fragmentState?.states?.get(lastFragment.getFormulaFragmentId())?.renderModel
+            val state = fragmentState?.outputs?.get(lastFragment.getFormulaFragmentId())?.renderModel
             return state is BackCallback && state.onBackPressed()
         }
         return false
@@ -152,10 +149,10 @@ internal class FragmentFlowRenderView(
         onLifecycleState.invoke(fragment.getFormulaFragmentId(), newState)
     }
 
-    private fun updateVisibleFragments(state: FragmentFlowState) {
+    private fun updateVisibleFragments(state: FragmentState) {
         visibleFragments.forEachIndices { fragment ->
             if (fragment is BaseFormulaFragment<*>) {
-                state.states[fragment.getFormulaFragmentId()]?.let {
+                state.outputs[fragment.getFormulaFragmentId()]?.let {
                     (fragment as BaseFormulaFragment<Any>).setState(it.renderModel)
                 }
             }

@@ -4,14 +4,10 @@ import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.fakes.DetailKey
-import com.instacart.formula.android.fakes.FakeAuthFlowFactory
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.NoOpViewFactory
-import com.instacart.formula.android.fakes.TestAccountFragmentKey
-import com.instacart.formula.android.fakes.TestLoginFragmentKey
-import com.instacart.formula.android.fakes.TestSignUpFragmentKey
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,93 +17,21 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class FragmentFlowStoreTest {
+class FragmentStoreTest {
 
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
         try {
-            FragmentFlowStore.init(FakeComponent()) {
-                bind(FakeAuthFlowFactory())
-                bind(FakeAuthFlowFactory())
+            FragmentStore.init(FakeComponent()) {
+                bind(TestFeatureFactory<MainKey>())
+                bind(TestFeatureFactory<MainKey>())
             }
         } catch (t: Throwable) {
             exception = t
         }
         assertThat(exception?.message).isEqualTo(
-            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentKey already exists"
+            "Binding for class com.instacart.formula.android.fakes.MainKey already exists"
         )
-    }
-
-    @Test fun `component is shared between flow features`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-            }
-
-        val components = appComponent.initialized.map { it.first }
-        assertThat(components).hasSize(2)
-        assertThat(components[0]).isEqualTo(components[1])
-    }
-
-    @Test fun `component is disposed once flow exits`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(2)
-            }
-            .apply {
-                store.onLifecycleEffect(TestSignUpFragmentKey().asRemovedEvent())
-                store.onLifecycleEffect(TestLoginFragmentKey().asRemovedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(0)
-            }
-    }
-
-    @Test fun `component is alive if we enter another feature`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestAccountFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(2)
-            }
-    }
-
-    @Test fun `unsubscribe disposes of component`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(1)
-            }
-            .dispose()
-            .apply {
-                assertThat(appComponent.initialized).hasSize(0)
-            }
     }
 
     @Test fun `subscribed to state until removed from backstack`() {
@@ -169,7 +93,7 @@ class FragmentFlowStoreTest {
             }
         }
 
-        val store = FragmentFlowStore.init(100) {
+        val store = FragmentStore.init(100) {
             bind(myFeatureFactory) {
                 "Dependency: $it"
             }
@@ -193,7 +117,7 @@ class FragmentFlowStoreTest {
         val updates = mutableListOf<Map<FragmentKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
         val disposable = store.state(FragmentEnvironment()).subscribe {
-            val states = it.states.mapKeys { it.key.key }.mapValues { it.value.renderModel }
+            val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
             updates.add(states)
 
             updateThreads.add(Thread.currentThread())
@@ -234,31 +158,29 @@ class FragmentFlowStoreTest {
         assertThat(updateThreads).containsExactly(Thread.currentThread())
     }
 
-    private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, FragmentState>> {
+    private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
         return state(FragmentEnvironment())
-            .map { it.states.mapKeys { entry -> entry.key.key } }
+            .map { it.outputs.mapKeys { entry -> entry.key.key } }
             .test()
     }
 
-    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentState> {
+    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentOutput> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentState> {
-        val initial = mutableMapOf<FragmentKey, FragmentState>()
+    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentOutput> {
+        val initial = mutableMapOf<FragmentKey, FragmentOutput>()
         return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
-                acc.put(value.first, FragmentState(value.first, value.second!!))
+                acc.put(value.first, FragmentOutput(value.first, value.second!!))
             }
 
             acc
         }
     }
 
-    fun createStore(component: FakeComponent): FragmentFlowStore {
-        return FragmentFlowStore.init(component) {
-            bind(FakeAuthFlowFactory())
-
+    fun createStore(component: FakeComponent): FragmentStore {
+        return FragmentStore.init(component) {
             bind(TestFeatureFactory<MainKey>())
             bind(TestFeatureFactory<DetailKey>())
         }

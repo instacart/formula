@@ -4,9 +4,11 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ActivityStoreContext
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
@@ -32,11 +34,11 @@ class FragmentLifecycleStateTest {
                     started = mutableListOf()
                     resumed = mutableListOf()
 
-                    store(
+                    ActivityStore(
                         configureActivity = {
-                            initialContract = TestKey()
+                            it.initialContract = TestKey()
                         },
-                        contracts =  {
+                        fragmentStore = FragmentStore.init {
                             bind(featureFactory<TestKey>(this@activity))
                             bind(featureFactory<TestKeyWithId>(this@activity))
                         }

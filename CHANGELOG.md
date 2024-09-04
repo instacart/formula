@@ -9,6 +9,9 @@
 - Enable fine-grained control of dispatching via `Plugin.defaultDispatcher`, `RuntimeConfig.defaultDispatcher`, `Transition.ExecutionType` and `Effect.Type`.
 - Remove `RxStream` type alias.
 - Replace `implementation` function with a value
+- **Breaking**: Removed `FlowFactory` and `Flow`
+- **Breaking**: Replace `FragmentStoreBuilder` with `FeaturesBuilder`
+- **Breaking**: Rename `FragmentFlowStore` to `FragmentStore`, `FragmentState` to `FragmentOutput`, `FragmentFlowState` to `FragmentState`
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`

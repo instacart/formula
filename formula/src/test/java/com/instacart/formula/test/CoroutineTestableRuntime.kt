@@ -10,7 +10,11 @@ import com.instacart.formula.coroutines.toFlow
 import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,11 +22,13 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -70,20 +76,30 @@ object CoroutinesTestableRuntime : TestableRuntime {
 }
 
 private class FlowRelay : Relay {
-    private val sharedFlow = MutableSharedFlow<Unit>(0, 1)
+    private val sharedFlow = MutableSharedFlow<Unit>(0, 0)
 
     override fun action(): Action<Unit> = FlowAction.fromFlow { sharedFlow }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun triggerEvent() {
-        sharedFlow.tryEmit(Unit)
+        GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withContext(Dispatchers.Unconfined) {
+                sharedFlow.emit(Unit)
+            }
+        }
     }
 }
 
 private class FlowStreamFormulaSubject : FlowFormula<String, Int>(), StreamFormulaSubject {
-    private val sharedFlow = MutableSharedFlow<Int>(0, extraBufferCapacity = 1, BufferOverflow.DROP_OLDEST)
+    private val sharedFlow = MutableSharedFlow<Int>(0, extraBufferCapacity = 0)
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun emitEvent(event: Int) {
-        sharedFlow.tryEmit(event)
+        GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withContext(Dispatchers.Unconfined) {
+                sharedFlow.emit(event)
+            }
+        }
     }
 
     override fun initialValue(input: String): Int = 0
@@ -133,28 +149,13 @@ private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormu
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 private class CoroutineTestRule(
     val testCoroutineScope: TestCoroutineScope = TestCoroutineScope(TestCoroutineDispatcher())
 ) : TestWatcher() {
 
-    override fun starting(description: Description) {
-        Dispatchers.resetMain()
-        Dispatchers.setMain(testCoroutineScope.coroutineContext[CoroutineDispatcher]!!)
-        super.starting(description)
-    }
-
-    override fun apply(base: Statement, description: Description): Statement {
-        var result: Statement? = null
-        testCoroutineScope.runBlockingTest {
-            result = super.apply(base, description)
-        }
-        return result!!
-    }
-
-    override fun finished(description: Description?) {
+    override fun finished(description: Description) {
         super.finished(description)
-        Dispatchers.resetMain()
         testCoroutineScope.cleanupTestCoroutines()
     }
 }
