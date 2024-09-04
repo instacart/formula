@@ -43,11 +43,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
             activity = activity,
             fragmentEnvironment = environment,
             onLifecycleEvent = {
-                store.contracts.onLifecycleEffect(it)
+                store.fragmentStore.onLifecycleEffect(it)
                 store.onFragmentLifecycleEvent?.invoke(it)
             },
             onLifecycleState = delegate::updateFragmentLifecycleState,
-            onFragmentViewStateChanged = store.contracts::onVisibilityChanged
+            onFragmentViewStateChanged = store.fragmentStore::onVisibilityChanged
         )
     }
 
@@ -108,7 +108,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     private fun subscribeToFragmentStateChanges(): Disposable {
         return store
-            .contracts
+            .fragmentStore
             .state(environment)
             .subscribe(delegate.fragmentFlowStateRelay::accept)
     }

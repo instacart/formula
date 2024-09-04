@@ -1,26 +1,27 @@
 package com.instacart.formula.android
 
 import com.instacart.formula.android.internal.FeatureBinding
+import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.MappedFeatureFactory
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
- * A class used by [FragmentFlowStore] to register [fragment keys][FragmentKey] and their
- * feature factories.
+ * Helps to build a [Features] list that binds various fragment keys to their respective
+ * feature factories. Each feature factory has a dependency type that needs to either match
+ * [Dependencies] type defined here or map this root dependency type to the custom type.
  */
-class FragmentStoreBuilder<Component> {
+class FeaturesBuilder<Dependencies> {
     companion object {
-        @PublishedApi
-        internal inline fun <Component> build(
-            init: FragmentStoreBuilder<Component>.() -> Unit
-        ): List<FeatureBinding<Component, *>> {
-            return FragmentStoreBuilder<Component>().apply(init).build()
+        inline fun <Dependencies> build(
+            init: FeaturesBuilder<Dependencies>.() -> Unit
+        ): Features<Dependencies> {
+            return FeaturesBuilder<Dependencies>().apply(init).build()
         }
     }
 
     private val types = mutableSetOf<Class<*>>()
-    private val bindings: MutableList<FeatureBinding<Component, *>> = mutableListOf()
+    private val bindings: MutableList<FeatureBinding<Dependencies, *>> = mutableListOf()
 
     /**
      * Binds a [feature factory][FeatureFactory] for a specific [key][type].
@@ -30,7 +31,7 @@ class FragmentStoreBuilder<Component> {
      */
     fun <Key : FragmentKey> bind(
         type : KClass<Key>,
-        featureFactory: FeatureFactory<Component, Key>,
+        featureFactory: FeatureFactory<Dependencies, Key>,
     ) = apply {
         val binding = FeatureBinding(type.java, featureFactory)
         bind(type.java, binding)
@@ -42,7 +43,7 @@ class FragmentStoreBuilder<Component> {
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
     inline fun <reified Key: FragmentKey> bind(
-        featureFactory: FeatureFactory<Component, Key>
+        featureFactory: FeatureFactory<Dependencies, Key>
     ) = apply {
         bind(Key::class, featureFactory)
     }
@@ -51,11 +52,11 @@ class FragmentStoreBuilder<Component> {
      * A convenience inline function that binds a feature factory for a specific [key][Key].
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
-     * @param toDependencies Maps [Component] to feature factory [dependencies][Dependencies].
+     * @param toDependencies Maps [Dependencies] to feature factory [dependencies][CustomDependencyType].
      */
-    inline fun <Dependencies, reified Key: FragmentKey> bind(
-        featureFactory: FeatureFactory<Dependencies, Key>,
-        noinline toDependencies: (Component) -> Dependencies
+    inline fun <CustomDependencyType, reified Key: FragmentKey> bind(
+        featureFactory: FeatureFactory<CustomDependencyType, Key>,
+        noinline toDependencies: (Dependencies) -> CustomDependencyType
     ) = apply {
         val mapped = MappedFeatureFactory(
             delegate = featureFactory,
@@ -65,11 +66,11 @@ class FragmentStoreBuilder<Component> {
     }
 
     @PublishedApi
-    internal fun build(): List<FeatureBinding<Component, *>> {
-        return bindings
+    internal fun build(): Features<Dependencies> {
+        return Features(bindings)
     }
 
-    private fun bind(type: Class<*>, binding: FeatureBinding<Component, *>) = apply {
+    private fun bind(type: Class<*>, binding: FeatureBinding<Dependencies, *>) = apply {
         if (types.contains(type)) {
             throw IllegalStateException("Binding for $type already exists")
         }

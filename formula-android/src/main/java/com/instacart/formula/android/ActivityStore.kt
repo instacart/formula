@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.disposables.Disposable
  * navigation destination [com.instacart.formula.fragment.FragmentKey] to its state
  * management stream.
  *
- * @param contracts Fragment state management defined for this [Activity].
+ * @param fragmentStore Fragment state management defined for this [Activity].
  * @param streams This provides ability to configure arbitrary RxJava streams that survive
  *                configuration changes. Check [com.instacart.formula.android.StreamConfigurator] for utility methods.
  * @param configureActivity This is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
@@ -18,7 +18,7 @@ import io.reactivex.rxjava3.disposables.Disposable
  * @param onFragmentLifecycleEvent This is callback for when a fragment is added or removed.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    val contracts: FragmentFlowStore,
+    val fragmentStore: FragmentFlowStore = FragmentFlowStore.EMPTY,
     val streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
     val configureActivity: ((Activity) -> Unit)? = null,
     val onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,

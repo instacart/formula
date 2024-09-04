@@ -6,6 +6,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaAppCompatActivity
 import org.junit.Before
 import org.junit.Rule
@@ -25,7 +26,7 @@ class ActivityLifecycleEventTest {
             FormulaAndroid.init(app) {
                 activity<TestActivity> {
                     events = mutableListOf()
-                    store(
+                    ActivityStore(
                         streams = {
                             activityLifecycleState().subscribe {
                                 events.add(it)

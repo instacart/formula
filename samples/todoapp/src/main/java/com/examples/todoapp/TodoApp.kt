@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentEnvironment
+import com.instacart.formula.android.FragmentFlowStore
 
 class TodoApp : Application() {
 
@@ -22,8 +24,8 @@ class TodoApp : Application() {
                 activity<TodoActivity> {
                     val component = TodoAppComponent(this)
 
-                    store(
-                        contracts = contracts(component) {
+                    ActivityStore(
+                        fragmentStore = FragmentFlowStore.init(component) {
                             bind(TaskListFeatureFactory())
                         }
                     )

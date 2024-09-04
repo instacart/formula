@@ -3,7 +3,9 @@ package com.instacart.formula.compose.stopwatch
 import android.app.Application
 import android.util.Log
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentEnvironment
+import com.instacart.formula.android.FragmentFlowStore
 
 class StopwatchApp : Application() {
 
@@ -19,8 +21,8 @@ class StopwatchApp : Application() {
             ),
             activities = {
                 activity<StopwatchActivity> {
-                    store(
-                        contracts = contracts(Unit) {
+                    ActivityStore(
+                        fragmentStore = FragmentFlowStore.init(Unit) {
                             bind(StopwatchFeatureFactory())
                         }
                     )

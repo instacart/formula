@@ -7,9 +7,11 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentFlowState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
+import com.instacart.formula.android.FragmentFlowStore
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
@@ -39,17 +41,17 @@ class FragmentFlowRenderViewTest {
         initFormula = { app ->
             FormulaAndroid.init(app) {
                 activity<TestFragmentActivity> {
-                    store(
-                        configureActivity = {
-                            initialContract = TestKey()
-                            onPreCreated(this)
+                    ActivityStore(
+                        configureActivity = { activity ->
+                            activity.initialContract = TestKey()
+                            onPreCreated(activity)
                         },
                         onRenderFragmentState = { a, state ->
                             lastState = state
 
                             updateThreads.add(Thread.currentThread())
                         },
-                        contracts =  {
+                        fragmentStore = FragmentFlowStore.init {
                             bind(TestFeatureFactory<TestKey> { stateChanges(it) })
                             bind(TestFeatureFactory<TestKeyWithId> { stateChanges(it) })
                         }
