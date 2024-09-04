@@ -4,14 +4,10 @@ import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.fakes.DetailKey
-import com.instacart.formula.android.fakes.FakeAuthFlowFactory
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.NoOpViewFactory
-import com.instacart.formula.android.fakes.TestAccountFragmentKey
-import com.instacart.formula.android.fakes.TestLoginFragmentKey
-import com.instacart.formula.android.fakes.TestSignUpFragmentKey
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,87 +23,15 @@ class FragmentFlowStoreTest {
         var exception: Throwable? = null
         try {
             FragmentFlowStore.init(FakeComponent()) {
-                bind(FakeAuthFlowFactory())
-                bind(FakeAuthFlowFactory())
+                bind(TestFeatureFactory<MainKey>())
+                bind(TestFeatureFactory<MainKey>())
             }
         } catch (t: Throwable) {
             exception = t
         }
         assertThat(exception?.message).isEqualTo(
-            "Binding for class com.instacart.formula.android.fakes.TestLoginFragmentKey already exists"
+            "Binding for class com.instacart.formula.android.fakes.MainKey already exists"
         )
-    }
-
-    @Test fun `component is shared between flow features`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-            }
-
-        val components = appComponent.initialized.map { it.first }
-        assertThat(components).hasSize(2)
-        assertThat(components[0]).isEqualTo(components[1])
-    }
-
-    @Test fun `component is disposed once flow exits`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(2)
-            }
-            .apply {
-                store.onLifecycleEffect(TestSignUpFragmentKey().asRemovedEvent())
-                store.onLifecycleEffect(TestLoginFragmentKey().asRemovedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(0)
-            }
-    }
-
-    @Test fun `component is alive if we enter another feature`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestSignUpFragmentKey().asAddedEvent())
-                store.onLifecycleEffect(TestAccountFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(2)
-            }
-    }
-
-    @Test fun `unsubscribe disposes of component`() {
-        val appComponent = FakeComponent()
-        val store = createStore(appComponent)
-        store
-            .state(FragmentEnvironment())
-            .test()
-            .apply {
-                store.onLifecycleEffect(TestLoginFragmentKey().asAddedEvent())
-            }
-            .apply {
-                assertThat(appComponent.initialized).hasSize(1)
-            }
-            .dispose()
-            .apply {
-                assertThat(appComponent.initialized).hasSize(0)
-            }
     }
 
     @Test fun `subscribed to state until removed from backstack`() {
@@ -257,8 +181,6 @@ class FragmentFlowStoreTest {
 
     fun createStore(component: FakeComponent): FragmentFlowStore {
         return FragmentFlowStore.init(component) {
-            bind(FakeAuthFlowFactory())
-
             bind(TestFeatureFactory<MainKey>())
             bind(TestFeatureFactory<DetailKey>())
         }
