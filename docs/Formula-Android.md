@@ -216,7 +216,7 @@ class MyApp : Application() {
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
                 ActivityStore(
-                    fragmentStore = FragmentFlowStore.init(MyActivityComponent(this)) {
+                    fragmentStore = FragmentStore.init(MyActivityComponent(this)) {
                         bind(CounterFeatureFactory())
                     }
                 )
@@ -360,7 +360,7 @@ val appComponent = AppComponent()
 FormulaAndroid.init(this) {
     activity(MyActivity::class) {
         ActivityStore(
-            fragmentStore = FragmentFlowStore.init(appComponent) {
+            fragmentStore = FragmentStore.init(appComponent) {
                 bind(AuthFlowFactory())
             }
         )

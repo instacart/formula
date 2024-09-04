@@ -14,13 +14,13 @@ import io.reactivex.rxjava3.disposables.Disposable
  *                configuration changes. Check [com.instacart.formula.android.StreamConfigurator] for utility methods.
  * @param configureActivity This is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
  *                          use this callback to inject the activity.
- * @param onRenderFragmentState This is invoked after [FragmentFlowState] has been updated.
+ * @param onRenderFragmentState This is invoked after [FragmentState] has been updated.
  * @param onFragmentLifecycleEvent This is callback for when a fragment is added or removed.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    val fragmentStore: FragmentFlowStore = FragmentFlowStore.EMPTY,
+    val fragmentStore: FragmentStore = FragmentStore.EMPTY,
     val streams: (StreamConfigurator<Activity>.() -> Disposable)? = null,
     val configureActivity: ((Activity) -> Unit)? = null,
-    val onRenderFragmentState: ((Activity, FragmentFlowState) -> Unit)? = null,
+    val onRenderFragmentState: ((Activity, FragmentState) -> Unit)? = null,
     val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null
 )

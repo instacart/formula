@@ -56,7 +56,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
 
-        uiSubscription = delegate.fragmentFlowState().subscribe {
+        uiSubscription = delegate.fragmentState().subscribe {
             renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
@@ -110,7 +110,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         return store
             .fragmentStore
             .state(environment)
-            .subscribe(delegate.fragmentFlowStateRelay::accept)
+            .subscribe(delegate.fragmentStateRelay::accept)
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {

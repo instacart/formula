@@ -27,7 +27,7 @@ package com.instacart.formula.android
  * ```
  *
  * Once we define a [FeatureFactory], we need to [bind][FeaturesBuilder.bind] it to a
- * [FragmentFlowStore]. The fragment flow store will call [initialize] the first time
+ * [FragmentStore]. The fragment flow store will call [initialize] the first time
  * [FormulaFragment] with a new [Key] is attached. It will subscribe to the state management
  * and persist it across configuration changes.
  *

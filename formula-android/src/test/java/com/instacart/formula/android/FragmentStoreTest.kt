@@ -17,12 +17,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class FragmentFlowStoreTest {
+class FragmentStoreTest {
 
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
         try {
-            FragmentFlowStore.init(FakeComponent()) {
+            FragmentStore.init(FakeComponent()) {
                 bind(TestFeatureFactory<MainKey>())
                 bind(TestFeatureFactory<MainKey>())
             }
@@ -93,7 +93,7 @@ class FragmentFlowStoreTest {
             }
         }
 
-        val store = FragmentFlowStore.init(100) {
+        val store = FragmentStore.init(100) {
             bind(myFeatureFactory) {
                 "Dependency: $it"
             }
@@ -117,7 +117,7 @@ class FragmentFlowStoreTest {
         val updates = mutableListOf<Map<FragmentKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
         val disposable = store.state(FragmentEnvironment()).subscribe {
-            val states = it.states.mapKeys { it.key.key }.mapValues { it.value.renderModel }
+            val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
             updates.add(states)
 
             updateThreads.add(Thread.currentThread())
@@ -158,29 +158,29 @@ class FragmentFlowStoreTest {
         assertThat(updateThreads).containsExactly(Thread.currentThread())
     }
 
-    private fun FragmentFlowStore.toStates(): TestObserver<Map<FragmentKey, FragmentState>> {
+    private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
         return state(FragmentEnvironment())
-            .map { it.states.mapKeys { entry -> entry.key.key } }
+            .map { it.outputs.mapKeys { entry -> entry.key.key } }
             .test()
     }
 
-    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentState> {
+    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentOutput> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentState> {
-        val initial = mutableMapOf<FragmentKey, FragmentState>()
+    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentOutput> {
+        val initial = mutableMapOf<FragmentKey, FragmentOutput>()
         return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
-                acc.put(value.first, FragmentState(value.first, value.second!!))
+                acc.put(value.first, FragmentOutput(value.first, value.second!!))
             }
 
             acc
         }
     }
 
-    fun createStore(component: FakeComponent): FragmentFlowStore {
-        return FragmentFlowStore.init(component) {
+    fun createStore(component: FakeComponent): FragmentStore {
+        return FragmentStore.init(component) {
             bind(TestFeatureFactory<MainKey>())
             bind(TestFeatureFactory<DetailKey>())
         }

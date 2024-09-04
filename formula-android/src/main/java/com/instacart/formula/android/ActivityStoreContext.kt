@@ -25,9 +25,9 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun activityLifecycleState(): Observable<Lifecycle.State>
 
     /**
-     * Returns RxJava stream that emits [FragmentFlowStore] state changes.
+     * Returns RxJava stream that emits [FragmentStore] state changes.
      */
-    abstract fun fragmentFlowState(): Observable<FragmentFlowState>
+    abstract fun fragmentState(): Observable<FragmentState>
 
     /**
      * Returns RxJava stream that emits true if fragment with a specific [tag] has
