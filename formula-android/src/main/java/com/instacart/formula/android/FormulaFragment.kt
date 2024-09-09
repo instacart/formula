@@ -17,11 +17,14 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
         @JvmStatic
         fun newInstance(key: FragmentKey): FormulaFragment {
-            return FormulaFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARG_CONTRACT, key)
-                }
+            val fragment = FormulaFragment()
+            fragment.arguments = Bundle().apply {
+                putParcelable(ARG_CONTRACT, key)
             }
+            FormulaAndroid.fragmentEnvironment().fragmentDelegate.onNewInstance(
+                fragmentId = fragment.formulaFragmentId
+            )
+            return fragment
         }
     }
 
@@ -39,26 +42,11 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     private val fragmentDelegate: FragmentEnvironment.FragmentDelegate
         get() = environment.fragmentDelegate
 
-    private var calledNewInstance = false
-
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
 
-    private val lifecycleCallback: FragmentLifecycleCallback?
-        get() = featureView?.lifecycleCallbacks
-
-    override fun setArguments(args: Bundle?) {
-        super.setArguments(args)
-
-        /**
-         * To ensure that we have both fragment key and formula instance id, we need
-         * to wait for arguments to be set.
-         */
-        if (!calledNewInstance) {
-            calledNewInstance = true
-            fragmentDelegate.onNewInstance(formulaFragmentId)
-        }
-    }
+    private val lifecycleCallback: FragmentLifecycleCallback
+        get() = featureView?.lifecycleCallbacks ?: FragmentLifecycleCallback.NO_OP
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
@@ -75,46 +63,46 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         tryToSetState()
 
-        lifecycleCallback?.onViewCreated(view, savedInstanceState)
+        lifecycleCallback.onViewCreated(view, savedInstanceState)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        lifecycleCallback?.onActivityCreated(savedInstanceState)
+        lifecycleCallback.onActivityCreated(savedInstanceState)
     }
 
     override fun onStart() {
         super.onStart()
-        lifecycleCallback?.onStart()
+        lifecycleCallback.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        lifecycleCallback?.onResume()
+        lifecycleCallback.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        lifecycleCallback?.onPause()
+        lifecycleCallback.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-        lifecycleCallback?.onStop()
+        lifecycleCallback.onStop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        lifecycleCallback?.onSaveInstanceState(outState)
+        lifecycleCallback.onSaveInstanceState(outState)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        lifecycleCallback?.onLowMemory()
+        lifecycleCallback.onLowMemory()
     }
 
     override fun onDestroyView() {
-        lifecycleCallback?.onDestroyView()
+        lifecycleCallback.onDestroyView()
         super.onDestroyView()
         featureView = null
     }

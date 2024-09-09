@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
+import java.lang.RuntimeException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -156,6 +157,51 @@ class FragmentStoreTest {
 
         assertThat(updateThreads).hasSize(1)
         assertThat(updateThreads).containsExactly(Thread.currentThread())
+    }
+
+    @Test fun `store returns missing binding event when no feature factory is present`() {
+        val store = FragmentStore.init(FakeComponent()) {
+            bind(TestFeatureFactory<MainKey>())
+        }
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId(
+            instanceId = "random",
+            key = DetailKey(id = 100)
+        )
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        val lastState = observer.values().last()
+        assertThat(lastState.features[fragmentId]).isEqualTo(
+            FeatureEvent.MissingBinding(fragmentId)
+        )
+    }
+
+    @Test fun `store returns failure event when feature factory initialization throws an error`() {
+        val expectedError = RuntimeException("something happened")
+        val store = FragmentStore.init(FakeComponent()) {
+            val featureFactory = object : FeatureFactory<FakeComponent, MainKey> {
+                override fun initialize(dependencies: FakeComponent, key: MainKey): Feature {
+                    throw expectedError
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId(
+            instanceId = "random",
+            key = MainKey(id = 100)
+        )
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        val lastState = observer.values().last()
+        assertThat(lastState.features[fragmentId]).isEqualTo(
+            FeatureEvent.Failure(fragmentId, expectedError)
+        )
     }
 
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
