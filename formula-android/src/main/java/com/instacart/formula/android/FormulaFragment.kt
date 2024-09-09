@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.instacart.formula.android.internal.getFormulaFragmentId
+import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
@@ -18,7 +19,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         @JvmStatic
         fun newInstance(key: FragmentKey): FormulaFragment {
             val fragment = FormulaFragment()
-            fragment.arguments = Bundle().apply {
+            fragment.getOrSetArguments().apply {
                 putParcelable(ARG_CONTRACT, key)
             }
             FormulaAndroid.fragmentEnvironment().fragmentDelegate.onNewInstance(
@@ -45,8 +46,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
 
-    private val lifecycleCallback: FragmentLifecycleCallback
-        get() = featureView?.lifecycleCallbacks ?: FragmentLifecycleCallback.NO_OP
+    private val lifecycleCallback: FragmentLifecycleCallback?
+        get() = featureView?.lifecycleCallbacks
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
@@ -63,46 +64,46 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         super.onViewCreated(view, savedInstanceState)
         tryToSetState()
 
-        lifecycleCallback.onViewCreated(view, savedInstanceState)
+        lifecycleCallback?.onViewCreated(view, savedInstanceState)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        lifecycleCallback.onActivityCreated(savedInstanceState)
+        lifecycleCallback?.onActivityCreated(savedInstanceState)
     }
 
     override fun onStart() {
         super.onStart()
-        lifecycleCallback.onStart()
+        lifecycleCallback?.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        lifecycleCallback.onResume()
+        lifecycleCallback?.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        lifecycleCallback.onPause()
+        lifecycleCallback?.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-        lifecycleCallback.onStop()
+        lifecycleCallback?.onStop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        lifecycleCallback.onSaveInstanceState(outState)
+        lifecycleCallback?.onSaveInstanceState(outState)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        lifecycleCallback.onLowMemory()
+        lifecycleCallback?.onLowMemory()
     }
 
     override fun onDestroyView() {
-        lifecycleCallback.onDestroyView()
+        lifecycleCallback?.onDestroyView()
         super.onDestroyView()
         featureView = null
     }

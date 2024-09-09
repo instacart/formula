@@ -29,36 +29,21 @@ internal class AppManager(
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityCreated(activity)
+            store?.onActivityCreated(activity)
         }
     }
 
     override fun onActivityStarted(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityStarted(activity)
+            store?.onActivityStarted(activity)
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityResumed(activity)
+            store?.onActivityResumed(activity)
         }
     }
 
@@ -74,24 +59,14 @@ internal class AppManager(
     override fun onActivityPaused(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityPaused(activity)
+            store?.onActivityPaused(activity)
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityStopped(activity)
+            store?.onActivityStopped(activity)
         }
     }
 

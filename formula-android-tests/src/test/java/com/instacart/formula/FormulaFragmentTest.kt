@@ -15,6 +15,7 @@ import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
@@ -273,6 +274,37 @@ class FormulaFragmentTest {
         assertThat(currentState).isEqualTo(expected)
         assertThat(updateThreads).hasSize(1)
         assertThat(updateThreads).containsExactly(Thread.currentThread())
+    }
+
+    @Test fun `back callback blocks navigation`() {
+        val key = TestKeyWithId(1)
+        navigateToTaskDetail(id = key.id)
+
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        var onBackPressed = 0
+        sendStateUpdate(key, TestBackCallbackRenderModel(
+            onBackPressed = {
+                onBackPressed += 1
+            },
+            blockBackCallback = true
+        ))
+
+        navigateBack()
+
+        // We blocked navigation so visible fragment should still be details
+        assertThat(onBackPressed).isEqualTo(1)
+        assertVisibleContract(key)
+
+        sendStateUpdate(key, TestBackCallbackRenderModel(
+            onBackPressed = { onBackPressed += 1 },
+            blockBackCallback = false
+        ))
+
+        navigateBack()
+
+        assertThat(onBackPressed).isEqualTo(2)
+        assertVisibleContract(TestKey())
     }
 
     @Test fun `notify fragment environment if setOutput throws an error`() {
