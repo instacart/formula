@@ -18,7 +18,8 @@ class TaskListFormulaTest {
         val repo = TaskRepoFake()
 
         TaskListFormula(repo)
-            .test(TaskListFormula.Input(showToast = showToast))
+            .test()
+            .input(TaskListFormula.Input(showToast = showToast))
             .output {
                 assertThat(items).hasSize(2)
             }

@@ -7,6 +7,6 @@ class StopwatchFormulaTest {
 
     // TODO:
     @Test fun `increment 5 times`() {
-        StopwatchFormula().test(Unit)
+        StopwatchFormula().test().input(Unit)
     }
 }
