@@ -45,11 +45,7 @@ private fun Fragment.getFragmentKey(): FragmentKey {
  */
 private fun Fragment.getFragmentInstanceId(): String {
     return if (this is BaseFormulaFragment<*>) {
-        val arguments = arguments ?: run {
-            Bundle().apply {
-                arguments = this
-            }
-        }
+        val arguments = getOrSetArguments()
         val id = arguments.getString(FormulaFragment.ARG_FORMULA_ID, "")
         if (id.isNullOrBlank()) {
             val initializedId = UUID.randomUUID().toString()
@@ -68,4 +64,12 @@ internal fun Fragment.getFormulaFragmentId(): FragmentId {
         instanceId = getFragmentInstanceId(),
         key = getFragmentKey()
     )
+}
+
+internal fun Fragment.getOrSetArguments(): Bundle {
+    return arguments ?: run {
+        Bundle().apply {
+            arguments = this
+        }
+    }
 }

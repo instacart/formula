@@ -9,6 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
+import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
@@ -28,12 +29,14 @@ class FragmentLifecycleTest {
     private lateinit var activityController: ActivityController<TestFragmentActivity>
     private lateinit var lifecycleCallback: TestFragmentLifecycleCallback
     private lateinit var contract: TestLifecycleKey
+    private lateinit var activityRef: TestFragmentActivity
 
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
             activity<TestFragmentActivity> {
                 ActivityStore(
                     configureActivity = { activity ->
+                        activityRef = activity
                         lifecycleCallback = TestFragmentLifecycleCallback()
                         contract = TestLifecycleKey()
                         activity.initialContract = contract
@@ -83,6 +86,15 @@ class FragmentLifecycleTest {
     @Test fun `save instance state callback`() {
         activityController.saveInstanceState(Bundle())
         assertThat(lifecycleCallback.hasOnSaveInstanceState).isTrue()
+    }
+
+    @Test fun `low memory`() {
+        val fragment = activityRef.supportFragmentManager.fragments
+            .filterIsInstance<FormulaFragment>()
+            .first()
+
+        fragment.onLowMemory()
+        assertThat(lifecycleCallback.hasCalledLowMemory).isTrue()
     }
 
     // Unfortunately, we cannot test destroy view with Robolectric

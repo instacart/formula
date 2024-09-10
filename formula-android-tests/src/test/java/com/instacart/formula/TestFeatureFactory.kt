@@ -8,15 +8,17 @@ import com.instacart.formula.test.TestFragmentActivity
 import io.reactivex.rxjava3.core.Observable
 
 class TestFeatureFactory<Key : FragmentKey>(
-    private val state: (Key) -> Observable<Any>
+    private val applyOutput: (Any) -> Unit = {},
+    private val state: (Key) -> Observable<Any>,
 ) : FeatureFactory<Unit, Key> {
     override fun initialize(dependencies: Unit, key: Key): Feature {
         return Feature(
             state = state(key),
             viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
                 val renderView = object : RenderView<Any> {
-                    override val render: Renderer<Any> = Renderer {
-                        (view.context as TestFragmentActivity).renderCalls.add(Pair(key, it))
+                    override val render: Renderer<Any> = Renderer { value ->
+                        (view.context as TestFragmentActivity).renderCalls.add(Pair(key, value))
+                        applyOutput(value)
                     }
                 }
                 featureView(renderView)

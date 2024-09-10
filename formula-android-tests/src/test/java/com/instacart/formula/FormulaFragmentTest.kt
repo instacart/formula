@@ -6,15 +6,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.BackCallback
+import com.instacart.formula.android.FormulaFragment
+import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
+import com.instacart.formula.test.TestLifecycleKey
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
@@ -29,7 +34,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class FragmentFlowRenderViewTest {
+class FormulaFragmentTest {
 
     class HeadlessFragment : Fragment()
 
@@ -37,9 +42,15 @@ class FragmentFlowRenderViewTest {
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
     private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private var updateThreads = linkedSetOf<Thread>()
+    private val errors = mutableListOf<Throwable>()
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
-            FormulaAndroid.init(app) {
+            val environment = FragmentEnvironment(
+                onScreenError = { _, error ->
+                    errors.add(error)
+                }
+            )
+            FormulaAndroid.init(app, environment) {
                 activity<TestFragmentActivity> {
                     ActivityStore(
                         configureActivity = { activity ->
@@ -53,7 +64,16 @@ class FragmentFlowRenderViewTest {
                         },
                         fragmentStore = FragmentStore.init {
                             bind(TestFeatureFactory<TestKey> { stateChanges(it) })
-                            bind(TestFeatureFactory<TestKeyWithId> { stateChanges(it) })
+                            bind(TestFeatureFactory<TestKeyWithId>(
+                                applyOutput = { output ->
+                                    if (output == "crash") {
+                                        throw IllegalStateException("crashing")
+                                    }
+                                },
+                                state = {
+                                    stateChanges(it)
+                                }
+                            ))
                         }
                     )
                 }
@@ -63,7 +83,8 @@ class FragmentFlowRenderViewTest {
         cleanUp = {
             lastState = null
             updateThreads = linkedSetOf()
-        })
+        }
+    )
 
     private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
 
@@ -253,6 +274,57 @@ class FragmentFlowRenderViewTest {
         assertThat(currentState).isEqualTo(expected)
         assertThat(updateThreads).hasSize(1)
         assertThat(updateThreads).containsExactly(Thread.currentThread())
+    }
+
+    @Test fun `back callback blocks navigation`() {
+        val key = TestKeyWithId(1)
+        navigateToTaskDetail(id = key.id)
+
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        var onBackPressed = 0
+        sendStateUpdate(key, TestBackCallbackRenderModel(
+            onBackPressed = {
+                onBackPressed += 1
+            },
+            blockBackCallback = true
+        ))
+
+        navigateBack()
+
+        // We blocked navigation so visible fragment should still be details
+        assertThat(onBackPressed).isEqualTo(1)
+        assertVisibleContract(key)
+
+        sendStateUpdate(key, TestBackCallbackRenderModel(
+            onBackPressed = { onBackPressed += 1 },
+            blockBackCallback = false
+        ))
+
+        navigateBack()
+
+        assertThat(onBackPressed).isEqualTo(2)
+        assertVisibleContract(TestKey())
+    }
+
+    @Test fun `notify fragment environment if setOutput throws an error`() {
+        val key = TestKeyWithId(1)
+        navigateToTaskDetail(id = key.id)
+
+        val activity = activity()
+        sendStateUpdate(key, "crash")
+        assertThat(activity.renderCalls).isNotEmpty()
+
+        assertThat(errors).hasSize(1)
+    }
+
+    @Test
+    fun toStringContainsTagAndKey() {
+        val fragment = FormulaFragment.newInstance(TestLifecycleKey())
+        val toStringValue = fragment.toString()
+        assertThat(toStringValue).isEqualTo(
+            "test-lifecycle -> TestLifecycleKey(tag=test-lifecycle)"
+        )
     }
 
     private fun navigateBack() {

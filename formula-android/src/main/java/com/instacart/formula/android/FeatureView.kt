@@ -19,5 +19,5 @@ import io.reactivex.rxjava3.core.Observable
 class FeatureView<RenderModel>(
     val view: View,
     val setOutput: (RenderModel) -> Unit,
-    val lifecycleCallbacks: FragmentLifecycleCallback? = null,
+    val lifecycleCallbacks: FragmentLifecycleCallback?,
 )
