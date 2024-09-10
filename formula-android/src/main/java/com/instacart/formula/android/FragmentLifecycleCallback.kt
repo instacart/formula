@@ -10,10 +10,6 @@ import android.view.View
  * [androidx.fragment.app.Fragment.onDestroy] or [androidx.fragment.app.Fragment.onDetach]
  */
 interface FragmentLifecycleCallback {
-    companion object {
-        internal val NO_OP = object : FragmentLifecycleCallback {}
-    }
-
     /**
      * See [androidx.fragment.app.Fragment.onViewCreated]
      */

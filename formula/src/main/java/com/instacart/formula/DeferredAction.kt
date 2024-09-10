@@ -11,11 +11,11 @@ class DeferredAction<Event>(
 ) {
     private var cancelable: Cancelable? = null
 
-    internal var listener: (Event) -> Unit = initial
+    internal var listener: ((Event) -> Unit)? = initial
 
     internal fun start() {
         cancelable = action.start() { message ->
-            listener.invoke(message)
+            listener?.invoke(message)
         }
     }
 

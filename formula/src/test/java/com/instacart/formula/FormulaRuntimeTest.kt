@@ -1352,6 +1352,123 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
+    // TODO: I'm not sure if this is the right behaviro
+    @Test
+    fun `action termination events are ignored`() {
+        val formula = object : Formula<Boolean, Int, Int>() {
+            override fun initialState(input: Boolean): Int = 0
+
+            override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        if (input) {
+                            val action = object : Action<Unit> {
+                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                    return Cancelable {
+                                        send(Unit)
+                                    }
+                                }
+
+                                override fun key(): Any? = null
+                            }
+
+                            action.onEvent {
+                                transition(state + 1)
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = runtime.test(formula)
+        observer.input(true)
+        observer.input(false)
+        observer.input(true)
+        observer.input(false)
+        observer.output { assertThat(this).isEqualTo(0) }
+    }
+
+    @Test
+    fun `action triggers another transition on termination`() {
+        val newRelay = runtime.newRelay()
+        val formula = object : Formula<Boolean, Int, Int>() {
+            override fun initialState(input: Boolean): Int = 0
+
+            override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        newRelay.action().onEvent {
+                            transition(state + 1)
+                        }
+
+                        if (input) {
+                            val action = object : Action<Unit> {
+                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                    return Cancelable {
+                                        newRelay.triggerEvent()
+                                    }
+                                }
+
+                                override fun key(): Any? = null
+                            }
+
+                            action.onEvent {
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = runtime.test(formula)
+        observer.input(true)
+        observer.input(false)
+        observer.input(true)
+        observer.input(false)
+        observer.output { assertThat(this).isEqualTo(2) }
+    }
+
+    @Test
+    fun `action triggers formula termination during termination`() {
+        var terminate = {}
+        val formula = object : Formula<Boolean, Int, Int>() {
+            override fun initialState(input: Boolean): Int = 0
+
+            override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        if (input) {
+                            val action = object : Action<Unit> {
+                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                    return Cancelable {
+                                        terminate()
+                                    }
+                                }
+
+                                override fun key(): Any? = null
+                            }
+
+                            action.onEvent {
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = runtime.test(formula)
+        terminate = { observer.dispose() }
+        observer.input(true)
+        observer.input(false)
+        observer.output { assertThat(this).isEqualTo(0) }
+    }
+
     @Test
     fun `using from observable with input`() {
         val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
