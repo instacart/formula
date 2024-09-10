@@ -9,7 +9,8 @@ class CounterFormulaTest {
     @Test fun `increment 5 times`() {
 
         CounterFormula()
-            .test(Unit)
+            .test()
+            .input(Unit)
             .output { onIncrement(Unit) }
             .output { onIncrement(Unit) }
             .output { onIncrement(Unit) }

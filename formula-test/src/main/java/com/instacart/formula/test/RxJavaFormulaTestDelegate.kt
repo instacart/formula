@@ -13,8 +13,8 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 class RxJavaFormulaTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     override val formula: FormulaT,
     isValidationEnabled: Boolean = true,
-    inspector: Inspector? = null,
-    dispatcher: Dispatcher? = null,
+    inspector: Inspector?,
+    dispatcher: Dispatcher?,
 ) : FormulaTestDelegate<Input, Output, FormulaT> {
     private val runtimeConfig = RuntimeConfig(
         isValidationEnabled = isValidationEnabled,

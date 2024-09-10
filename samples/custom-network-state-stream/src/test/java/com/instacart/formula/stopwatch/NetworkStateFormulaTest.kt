@@ -12,7 +12,8 @@ class NetworkStateFormulaTest {
 
     @Test fun offline() {
         formula(isOnline = false)
-            .test(Unit)
+            .test()
+            .input(Unit)
             .output {
                 assertThat(status).isEqualTo("Network state: OFFLINE")
             }
@@ -20,7 +21,8 @@ class NetworkStateFormulaTest {
 
     @Test fun connected() {
         formula(isOnline = true)
-            .test(Unit)
+            .test()
+            .input(Unit)
             .output {
                 assertThat(status).isEqualTo("Network state: CONNECTED")
             }

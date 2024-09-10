@@ -19,21 +19,5 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     return TestFormulaObserver(delegate)
 }
 
-/**
- * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
- *
- * @param initialInput Input passed to [IFormula].
- */
-fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
-    initialInput: Input,
-    isValidationEnabled: Boolean = true,
-    inspector: Inspector? = null,
-    dispatcher: Dispatcher? = null,
-): TestFormulaObserver<Input, Output, F> {
-    return test(isValidationEnabled, inspector, dispatcher).apply {
-        input(initialInput)
-    }
-}
-
 fun <Event> Action<Event>.test() = TestActionObserver(this)
 
