@@ -49,7 +49,7 @@ class TestActionObserverTest {
         assertThat(cancelableCalled).isEqualTo(1)
     }
 
-    fun multipleValueStream() = object : Action<Int> {
+    private fun multipleValueStream() = object : Action<Int> {
         override fun start(send: (Int) -> Unit): Cancelable? {
             send(1)
             send(2)
