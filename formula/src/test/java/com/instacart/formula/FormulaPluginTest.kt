@@ -75,4 +75,13 @@ class FormulaPluginTest {
         FormulaPlugins.setPlugin(TestPlugin(mainDispatcher = myDispatcher))
         assertThat(FormulaPlugins.mainThreadDispatcher()).isEqualTo(myDispatcher)
     }
+
+    @Test fun `default plugin implementation does nothing on duplicate child key`() {
+        val plugin = object : Plugin {}
+        plugin.onDuplicateChildKey(
+            parentType = Any::class.java,
+            childFormulaType = Any::class.java,
+            key = Unit,
+        )
+    }
 }

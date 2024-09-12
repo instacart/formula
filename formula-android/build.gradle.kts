@@ -31,7 +31,6 @@ dependencies {
     api(libs.rxandroid)
     api(libs.rxrelay)
 
-
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.junit)

@@ -1,6 +1,5 @@
 package com.instacart.formula.android
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.events.FragmentLifecycleEvent
