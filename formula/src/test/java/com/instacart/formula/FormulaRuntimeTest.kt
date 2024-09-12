@@ -1352,7 +1352,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
-    // TODO: I'm not sure if this is the right behaviro
+    // TODO: I'm not sure if this is the right behavior
     @Test
     fun `action termination events are ignored`() {
         val formula = object : Formula<Boolean, Int, Int>() {
