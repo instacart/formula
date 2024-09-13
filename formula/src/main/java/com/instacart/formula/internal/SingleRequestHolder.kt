@@ -7,15 +7,6 @@ package com.instacart.formula.internal
 internal class SingleRequestHolder<T>(val value: T) {
     var requested: Boolean = false
 
-    inline fun requestAccess(errorMessage: () -> String): T {
-        if (requested) {
-            throw IllegalStateException(errorMessage())
-        }
-
-        requested = true
-        return value
-    }
-
     fun reset() {
         requested = false
     }

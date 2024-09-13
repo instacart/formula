@@ -3,7 +3,6 @@ package com.instacart.formula.internal
 import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.IFormula
 import com.instacart.formula.plugin.Inspector
-import java.lang.IllegalStateException
 
 /**
  * Keeps track of child formula managers.
@@ -12,7 +11,7 @@ internal class ChildrenManager(
     private val delegate: FormulaManagerImpl<*, *, *>,
     private val inspector: Inspector?,
 ) {
-    private var children: SingleRequestMap<Any, FormulaManager<*, *>>? = null
+    private val children: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
     private var indexes: MutableMap<Any, Int>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
@@ -26,7 +25,7 @@ internal class ChildrenManager(
     fun prepareForPostEvaluation() {
         indexes?.clear()
 
-        children?.clearUnrequested(this::prepareForTermination)
+        children.clearUnrequested(this::prepareForTermination)
     }
 
     fun terminateChildren(evaluationId: Long): Boolean {
@@ -42,11 +41,11 @@ internal class ChildrenManager(
     }
 
     fun markAsTerminated() {
-        children?.forEachValue { it.markAsTerminated() }
+        children.forEachValue { it.markAsTerminated() }
     }
 
     fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
-        children?.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
+        children.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
     }
 
     fun <ChildInput, ChildOutput> findOrInitChild(
@@ -54,8 +53,8 @@ internal class ChildrenManager(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): FormulaManager<ChildInput, ChildOutput> {
-        val childHolder = childFormulaHolder(key, formula, input)
-        return if (childHolder.requested) {
+        val childManagerEntry = getOrInitChildManager(key, formula, input)
+        return if (childManagerEntry.requested) {
             val logs = duplicateKeyLogs ?: run {
                 val newSet = mutableSetOf<Any>()
                 duplicateKeyLogs = newSet
@@ -76,38 +75,27 @@ internal class ChildrenManager(
                 )
             }
 
-            if (key is IndexedKey) {
-                // This should never happen, but added as safety
-                throw IllegalStateException("Key already indexed (and still duplicate).")
-            }
-
             val index = nextIndex(key)
             val indexedKey = IndexedKey(key, index)
             findOrInitChild(indexedKey, formula, input)
         } else {
-            childHolder.requestAccess {
-                "There already is a child with same key: $key. Override [Formula.key] function."
-            }
+            childManagerEntry.requested = true
+            childManagerEntry.value
         }
     }
 
     private fun prepareForTermination(it: FormulaManager<*, *>) {
-        pendingRemoval = pendingRemoval ?: mutableListOf()
+        val list = pendingRemoval ?: mutableListOf()
+        pendingRemoval = list
         it.markAsTerminated()
-        pendingRemoval?.add(it)
+        list.add(it)
     }
 
-    private fun <ChildInput, ChildOutput>  childFormulaHolder(
+    private fun <ChildInput, ChildOutput> getOrInitChildManager(
         key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>> {
-        val children = children ?: run {
-            val initialized: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
-            this.children = initialized
-            initialized
-        }
-
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation
             FormulaManagerImpl(
@@ -136,7 +124,12 @@ internal class ChildrenManager(
             initialized
         }
 
-        val index = indexes.getOrElse(key) { 0 } + 1
+        val previousIndex = indexes[key]
+        val index = if (previousIndex == null) {
+            0
+        } else {
+            previousIndex + 1
+        }
         indexes[key] = index
         return index
     }

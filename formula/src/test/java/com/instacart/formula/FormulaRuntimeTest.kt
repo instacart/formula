@@ -81,6 +81,7 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
 import com.instacart.formula.types.IncrementFormula
@@ -746,6 +747,32 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test
+    fun `duplicate child formulas are handled by indexing`() {
+        val childFormula = object : StatelessFormula<Int, Int>() {
+            override fun key(input: Int): Any = input
+
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = 1
+                )
+            }
+        }
+
+        val parentFormula = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val childCount = listOf(1, 1, 2, 1, 1).sumOf { key ->
+                    context.child(childFormula, key)
+                }
+                return Evaluation(childCount)
+            }
+        }
+
+        runtime.test(parentFormula).input(Unit).output {
+            assertThat(this).isEqualTo(5)
+        }
+    }
+
+    @Test
     fun `using key to scope listeners within another function`() {
         val formula = UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
         runtime.test(formula, Unit)
@@ -1313,6 +1340,87 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
     }
 
+    @Test
+    fun `child formula termination triggers parent state transition`() {
+        val relay = runtime.newRelay()
+        val childFormula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            relay.triggerEvent()
+                            none()
+                        }
+                    }
+                )
+            }
+        }
+
+        val parentFormula = object : Formula<Boolean, Int, Int>() {
+            override fun initialState(input: Boolean): Int = 0
+
+            override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
+                if (input) {
+                    context.child(childFormula)
+                }
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        relay.action().onEvent {
+                            transition(state + 1)
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = runtime.test(parentFormula)
+        observer.input(true)
+        observer.output { assertThat(this).isEqualTo(0) }
+        observer.input(false)
+        observer.output { assertThat(this).isEqualTo(1) }
+        observer.input(true)
+        observer.input(false)
+        observer.output { assertThat(this).isEqualTo(2) }
+    }
+
+    @Test
+    fun `child formula termination triggers parent termination`() {
+        var terminate = {}
+
+        val childFormula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onTerminate().onEvent {
+                            terminate()
+                            none()
+                        }
+                    }
+                )
+            }
+        }
+
+        val parentFormula = object : StatelessFormula<Boolean, Int>() {
+            override fun Snapshot<Boolean, Unit>.evaluate(): Evaluation<Int> {
+                return if (input) {
+                    context.child(childFormula)
+                    Evaluation(1)
+                } else {
+                    Evaluation(0)
+                }
+            }
+        }
+
+        val observer = runtime.test(parentFormula)
+        terminate = { observer.dispose() }
+        observer.input(true)
+        observer.assertOutputCount(1)
+        observer.input(false)
+        observer.assertOutputCount(1) // Terminated, should not have any more outputs
+    }
 
     // End of child specific test cases
 
@@ -1467,6 +1575,50 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         observer.input(true)
         observer.input(false)
         observer.output { assertThat(this).isEqualTo(0) }
+    }
+
+    @Test fun `action events after full-termination are ignored`() {
+        var sendCallback: (Unit) -> Unit = {}
+
+        val formula = object : Formula<Boolean, Int, Int>() {
+            override fun initialState(input: Boolean): Int = 0
+
+            override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = state,
+                    actions = context.actions {
+                        if (input) {
+                            val action = object : Action<Unit> {
+                                override fun key(): Any? = null
+                                override fun start(send: (Unit) -> Unit): Cancelable? {
+                                    sendCallback = send
+                                    return null
+                                }
+                            }
+                            action.onEvent {
+                                transition(state + 1)
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = runtime.test(formula)
+        observer.input(true)
+
+        // Check that action runs
+        sendCallback(Unit)
+        observer.output { assertThat(this).isEqualTo(1) }
+
+        // Cancel action
+        observer.input(false)
+
+        // Check that send actions are ignored
+        sendCallback(Unit)
+        sendCallback(Unit)
+        sendCallback(Unit)
+        observer.output { assertThat(this).isEqualTo(1) }
     }
 
     @Test

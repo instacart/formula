@@ -11,7 +11,7 @@ import com.instacart.formula.TransitionContext
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
-internal class SnapshotImpl<out Input, State> internal constructor(
+internal class SnapshotImpl<out Input, State>(
     override val input: Input,
     override val state: State,
     listeners: Listeners,

@@ -2,8 +2,6 @@ package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.plugin.Dispatcher
-import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
@@ -12,16 +10,8 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
  */
 class RxJavaFormulaTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     override val formula: FormulaT,
-    isValidationEnabled: Boolean = true,
-    inspector: Inspector?,
-    dispatcher: Dispatcher?,
+    runtimeConfig: RuntimeConfig,
 ) : FormulaTestDelegate<Input, Output, FormulaT> {
-    private val runtimeConfig = RuntimeConfig(
-        isValidationEnabled = isValidationEnabled,
-        inspector = inspector,
-        defaultDispatcher = dispatcher,
-    )
-
     private val inputRelay = BehaviorSubject.create<Input>()
     private val observer = formula
         .toObservable(inputRelay, runtimeConfig)
