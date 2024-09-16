@@ -35,11 +35,12 @@ internal class FragmentFlowRenderView(
 ) {
 
     private var fragmentState: FragmentState? = null
+    private var features: Map<FragmentId, FeatureEvent> = emptyMap()
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
     private val featureProvider = object : FeatureProvider {
         override fun getFeature(id: FragmentId): FeatureEvent? {
-            return fragmentState?.features?.get(id)
+            return features[id]
         }
     }
 
@@ -53,10 +54,7 @@ internal class FragmentFlowRenderView(
             super.onFragmentViewCreated(fm, f, v, savedInstanceState)
 
             visibleFragments.add(f)
-
-            fragmentState?.let {
-                updateVisibleFragments(it)
-            }
+            updateVisibleFragments()
 
             onFragmentViewStateChanged(f.getFormulaFragmentId(), true)
             notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
@@ -93,7 +91,10 @@ internal class FragmentFlowRenderView(
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
             if (FragmentLifecycle.shouldTrack(f)) {
-                onLifecycleEvent(FragmentLifecycle.createAddedEvent(f))
+                val event = FragmentLifecycleEvent.Added(
+                    fragmentId = f.getFormulaFragmentId(),
+                )
+                onLifecycleEvent(event)
             } else {
                 fragmentEnvironment.logger("Ignoring attach event for fragment: $f")
             }
@@ -103,8 +104,12 @@ internal class FragmentFlowRenderView(
             super.onFragmentDetached(fm, f)
 
             // Only trigger detach, when fragment is actually being removed from the backstack
-            if (FragmentLifecycle.shouldTrack(f) && !FragmentLifecycle.isKept(fm, f)) {
-                val event = FragmentLifecycle.createRemovedEvent(f)
+            if (FragmentLifecycle.shouldTrack(f) && f.isRemoving) {
+                val formulaFragment = f as? BaseFormulaFragment<*>
+                val event = FragmentLifecycleEvent.Removed(
+                    fragmentId = f.getFormulaFragmentId(),
+                    lastState = formulaFragment?.currentState(),
+                )
                 onLifecycleEvent(event)
             }
         }
@@ -118,7 +123,8 @@ internal class FragmentFlowRenderView(
         Utils.assertMainThread()
 
         fragmentState = state
-        updateVisibleFragments(state)
+        features = state.features
+        updateVisibleFragments()
     }
 
     fun onBackPressed(): Boolean {
@@ -149,7 +155,8 @@ internal class FragmentFlowRenderView(
         onLifecycleState.invoke(fragment.getFormulaFragmentId(), newState)
     }
 
-    private fun updateVisibleFragments(state: FragmentState) {
+    private fun updateVisibleFragments() {
+        val state = fragmentState ?: return
         visibleFragments.forEachIndices { fragment ->
             if (fragment is BaseFormulaFragment<*>) {
                 state.outputs[fragment.getFormulaFragmentId()]?.let {
