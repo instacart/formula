@@ -99,7 +99,12 @@ internal class AppManager(
     private fun <A : FragmentActivity> findOrInitActivityStore(
         activity: FragmentActivity, savedState: Bundle?
     ): ActivityManager<A> {
-        val key = findOrGenerateActivityKey(activity, savedState) // generate new key
+        if (activityToKeyMap.containsKey(activity)) {
+            throw IllegalStateException("Activity ${activity::class.java.simpleName} was already initialized. Did you call FormulaAndroid.onPreCreate() twice?")
+        }
+
+        val key =  savedState?.getString(BUNDLE_KEY) // Activity recreated, let's use saved key
+            ?: UUID.randomUUID().toString() // New activity, create new key
         activityToKeyMap[activity] = key
 
         val cached = componentMap[key] as? ActivityManager<A>?
@@ -120,14 +125,5 @@ internal class AppManager(
     private fun clearActivityStore(key: String) {
         val component = componentMap.remove(key)
         component?.dispose()
-    }
-
-    /**
-     * Key is persisted across configuration changes.
-     */
-    private fun findOrGenerateActivityKey(activity: Activity, savedState: Bundle?): String {
-        return (activityToKeyMap[activity] // Try the map
-            ?: savedState?.getString(BUNDLE_KEY) // Try the bundle
-            ?: UUID.randomUUID().toString())
     }
 }

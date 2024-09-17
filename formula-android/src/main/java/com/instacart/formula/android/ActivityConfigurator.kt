@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
  */
 class ActivityConfigurator {
     internal class Binding<A : FragmentActivity>(
-        val init: ActivityStoreContext<A>.() -> ActivityStore<A>?
+        val init: ActivityStoreContext<A>.() -> ActivityStore<A>
     )
 
     internal val bindings = mutableMapOf<KClass<*>, Binding<*>>()

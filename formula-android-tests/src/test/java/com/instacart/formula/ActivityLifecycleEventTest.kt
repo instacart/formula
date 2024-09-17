@@ -57,4 +57,12 @@ class ActivityLifecycleEventTest {
         val expected = listOf(INITIALIZED) + lifecycle + lifecycle
         assertThat(events).containsExactlyElementsIn(expected).inOrder()
     }
+
+    @Test fun `calling onPreCreate() twice will throw an exception`() {
+        val activity = scenario.activity()
+        val result = runCatching { FormulaAndroid.onPreCreate(activity, null) }
+        assertThat(result.exceptionOrNull()).hasMessageThat().contains(
+            "Activity TestActivity was already initialized. Did you call FormulaAndroid.onPreCreate() twice?"
+        )
+    }
 }
