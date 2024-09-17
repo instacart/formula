@@ -663,6 +663,79 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
     }
 
+    @Test
+    fun `dispatched event is ignored if listener was disabled before event is processed`() {
+        data class State(
+            val listenerEnabled: Boolean = true,
+            val value: Int = 0,
+        )
+
+        data class Output(
+            val value: Int,
+            val increment: () -> Unit,
+        )
+
+        val disableListenerRelay = runtime.newRelay()
+        val formula = object : Formula<Unit, State, Output>() {
+            override fun initialState(input: Unit): State = State()
+
+            override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+                val increment = if (state.listenerEnabled) {
+                    context.callback {
+                        transition(state.copy(value = state.value.inc()))
+                    }
+                } else {
+                    context.callback { none() }
+                }
+                return Evaluation(
+                    output = Output(
+                        value = state.value,
+                        increment = increment
+                    ),
+                    actions = context.actions {
+                        disableListenerRelay.action().onEvent {
+                            val listener = state.copy(listenerEnabled = false)
+                            transition(listener)
+                        }
+                    }
+                )
+            }
+        }
+
+        val dispatcher = object : Dispatcher {
+            var dispatches = mutableListOf<() -> Unit>()
+
+            override fun isDispatchNeeded(): Boolean {
+                return true
+            }
+
+            override fun dispatch(executable: () -> Unit) {
+                dispatches.add(executable)
+            }
+
+            fun executeAndClear() {
+                val local = dispatches
+                dispatches = mutableListOf()
+                local.forEach { it.invoke() }
+            }
+        }
+        val observer = runtime.test(formula, defaultDispatcher = dispatcher)
+
+        // Initialize formula
+        observer.input(Unit)
+        dispatcher.executeAndClear()
+
+        // First
+        val increment = observer.values().last().increment
+        disableListenerRelay.triggerEvent()
+        increment()
+        increment()
+        increment()
+
+        dispatcher.executeAndClear()
+        observer.output { assertThat(value).isEqualTo(0) }
+    }
+
     @Test fun `dispatching does not affect event order`() {
         var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? = null
         FormulaPlugins.setPlugin(object : Plugin {
