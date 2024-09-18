@@ -8,11 +8,12 @@ import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.fakes.NoOpViewFactory
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
-import java.lang.RuntimeException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -202,6 +203,130 @@ class FragmentStoreTest {
         assertThat(lastState.features[fragmentId]).isEqualTo(
             FeatureEvent.Failure(fragmentId, expectedError)
         )
+    }
+
+    @Test fun `fragment store ignores events after key is removed`() {
+        val stateSubject = PublishSubject.create<Any>()
+
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey> {
+                override fun initialize(dependencies: Any, key: MainKey): Feature {
+                    return Feature(
+                        state = stateSubject,
+                        viewFactory = NoOpViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+        stateSubject.onNext("value")
+
+        // Check that first event was shown
+        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(firstModel).isEqualTo("value")
+
+        // Remove fragment
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Removed(fragmentId = fragmentId)
+        )
+
+        // Check that new events are ignored
+        stateSubject.onNext("new-value")
+
+        // Output should not exist
+        val secondModel = observer.values().last().outputs[fragmentId]
+        assertThat(secondModel).isNull()
+    }
+
+    @Test fun `feature observable error emits on screen error and finishes`() {
+        val stateSubject = PublishSubject.create<Any>()
+
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey> {
+                override fun initialize(dependencies: Any, key: MainKey): Feature {
+                    return Feature(
+                        state = stateSubject,
+                        viewFactory = NoOpViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error ->
+                screenErrors.add(key to error)
+            }
+        )
+        val observer = store.state(environment).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+        stateSubject.onNext("value")
+
+        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(firstModel).isEqualTo("value")
+
+        // Emit error
+        val error = RuntimeException("error")
+        stateSubject.onError(error)
+
+        // Model didn't change
+        val secondModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(secondModel).isEqualTo("value")
+
+        // Store observable didn't crash
+        observer.assertNoErrors()
+
+        assertThat(screenErrors).containsExactly(
+            fragmentId.key to error
+        )
+    }
+
+    @Test fun `fragment store visible output`() {
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey> {
+                override fun initialize(dependencies: Any, key: MainKey): Feature {
+                    return Feature(
+                        state = Observable.just("value"),
+                        viewFactory = NoOpViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        // No visible output yet
+        val firstModel = observer.values().last().visibleOutput()
+        assertThat(firstModel).isNull()
+
+        // Toggle visibility
+        store.onVisibilityChanged(fragmentId, true)
+
+        // Check that visible output is now present
+        val secondModel = observer.values().last().visibleOutput()
+        assertThat(secondModel).isNotNull()
+
+        // Toggle visibility again
+        store.onVisibilityChanged(fragmentId, false)
+
+        // Check that visible output is null again
+        val third = observer.values().last().visibleOutput()
+        assertThat(third).isNull()
     }
 
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {

@@ -53,7 +53,7 @@ class FragmentLifecycleTest {
                             }
                         }
                         bind(featureFactory)
-                    }
+                    },
                 )
             }
         }

@@ -2,6 +2,7 @@ package com.instacart.formula.android.internal
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.FeatureEvent
@@ -18,9 +19,22 @@ internal class FormulaFragmentViewFactory(
     private var factory: ViewFactory<Any>? = null
 
     override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<Any> {
+        val viewFactory = viewFactory()
+        val delegate = environment.fragmentDelegate
+        return delegate.createView(fragmentId, viewFactory, inflater, container)
+    }
+
+    @VisibleForTesting
+    internal fun viewFactory(): ViewFactory<Any> {
+        return factory ?: findViewFactory().apply {
+            factory = this
+        }
+    }
+
+    private fun findViewFactory(): ViewFactory<Any> {
         val key = fragmentId.key
         val featureEvent = featureProvider.getFeature(fragmentId) ?: throw IllegalStateException("Could not find feature for $key.")
-        val viewFactory = factory ?: when (featureEvent) {
+        return when (featureEvent) {
             is FeatureEvent.MissingBinding -> {
                 throw IllegalStateException("Missing feature factory or integration for $key. Please check your FragmentStore configuration.")
             }
@@ -31,8 +45,5 @@ internal class FormulaFragmentViewFactory(
                 featureEvent.feature.viewFactory
             }
         }
-        this.factory = viewFactory
-        val delegate = environment.fragmentDelegate
-        return delegate.createView(fragmentId, viewFactory, inflater, container)
     }
 }

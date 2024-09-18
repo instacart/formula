@@ -94,12 +94,8 @@ internal class FragmentStoreFormula<in Component>(
                             feature = feature,
                         )
                         action.onEvent {
-                            if (state.activeIds.contains(fragmentId)) {
-                                val keyState = FragmentOutput(fragmentId.key, it)
-                                transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))
-                            } else {
-                                none()
-                            }
+                            val keyState = FragmentOutput(fragmentId.key, it)
+                            transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))
                         }
                     }
                 }

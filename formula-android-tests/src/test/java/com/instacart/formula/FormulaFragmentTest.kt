@@ -15,6 +15,7 @@ import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
@@ -43,6 +44,7 @@ class FormulaFragmentTest {
     private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private var updateThreads = linkedSetOf<Thread>()
     private val errors = mutableListOf<Throwable>()
+    private val fragmentLifecycleEvents = mutableListOf<FragmentLifecycleEvent>()
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             val environment = FragmentEnvironment(
@@ -74,6 +76,9 @@ class FormulaFragmentTest {
                                     stateChanges(it)
                                 }
                             ))
+                        },
+                        onFragmentLifecycleEvent = {
+                            fragmentLifecycleEvents.add(it)
                         }
                     )
                 }
@@ -83,6 +88,7 @@ class FormulaFragmentTest {
         cleanUp = {
             lastState = null
             updateThreads = linkedSetOf()
+            fragmentLifecycleEvents.clear()
         }
     )
 
@@ -104,6 +110,11 @@ class FormulaFragmentTest {
         navigateBack()
 
         assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
+
+        assertThat(fragmentLifecycleEvents).hasSize(3)
+        assertThat(fragmentLifecycleEvents[0]).isInstanceOf(FragmentLifecycleEvent.Added::class.java)
+        assertThat(fragmentLifecycleEvents[1]).isInstanceOf(FragmentLifecycleEvent.Added::class.java)
+        assertThat(fragmentLifecycleEvents[2]).isInstanceOf(FragmentLifecycleEvent.Removed::class.java)
     }
 
     @Test fun `navigating forward should have both keys in backstack`() {
