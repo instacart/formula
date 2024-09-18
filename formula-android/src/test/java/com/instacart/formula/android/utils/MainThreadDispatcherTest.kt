@@ -14,12 +14,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 @RunWith(AndroidJUnit4::class)
 class MainThreadDispatcherTest {
 
-    @Test fun `isDispatchNeeded returns false when on main thread`() {
+    @Test
+    fun `isDispatchNeeded returns false when on main thread`() {
         val result = MainThreadDispatcher().isDispatchNeeded()
         Truth.assertThat(result).isFalse()
     }
 
-    @Test fun `isDispatchNeeded returns true when not on main thread`() {
+    @Test
+    fun `isDispatchNeeded returns true when not on main thread`() {
         val latch = CountDownLatch(1)
         val result = AtomicBoolean()
         Executors.newSingleThreadExecutor().execute {
@@ -34,14 +36,16 @@ class MainThreadDispatcherTest {
         }
     }
 
-    @Test fun `if dispatch is called from main thread, executable is executed immediately`() {
+    @Test
+    fun `if dispatch is called from main thread, executable is executed immediately`() {
         val dispatcher = MainThreadDispatcher()
         val loopers = mutableSetOf<Looper?>()
         dispatcher.dispatch { loopers.add(Looper.myLooper()) }
         Truth.assertThat(loopers).containsExactly(Looper.getMainLooper())
     }
 
-    @Test fun `if dispatch is called from background thread, executable is dispatched to main thread`() {
+    @Test
+    fun `if dispatch is called from background thread, executable is dispatched to main thread`() {
         val dispatcher = MainThreadDispatcher()
         val latch = CountDownLatch(1)
 

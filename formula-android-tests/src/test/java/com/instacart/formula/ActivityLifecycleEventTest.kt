@@ -3,28 +3,24 @@ package com.instacart.formula
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State.*
 import androidx.test.core.app.ActivityScenario
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FormulaAppCompatActivity
-import org.junit.Before
+import com.instacart.testutils.android.TestFormulaActivity
+import com.instacart.testutils.android.activity
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ActivityLifecycleEventTest {
-
-    class TestActivity : FormulaAppCompatActivity()
-
     private lateinit var events: MutableList<Lifecycle.State>
 
-    private val formulaRule = TestFormulaRule(
+    @get:Rule
+    val rule = TestFormulaRule(
         initFormula = { app ->
             FormulaAndroid.init(app) {
-                activity<TestActivity> {
+                activity<TestFormulaActivity> {
                     events = mutableListOf()
                     ActivityStore(
                         streams = {
@@ -37,18 +33,9 @@ class ActivityLifecycleEventTest {
             }
         })
 
-    private val activityRule = ActivityScenarioRule(TestActivity::class.java)
-
-    @get:Rule
-    val rule = RuleChain.outerRule(formulaRule).around(activityRule)
-    lateinit var scenario: ActivityScenario<TestActivity>
-
-    @Before
-    fun setup() {
-        scenario = activityRule.scenario
-    }
-
-    @Test fun `full lifecycle`() {
+    @Test
+    fun `full lifecycle`() {
+        val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
         scenario.recreate()
         scenario.close()
 
@@ -58,11 +45,13 @@ class ActivityLifecycleEventTest {
         assertThat(events).containsExactlyElementsIn(expected).inOrder()
     }
 
-    @Test fun `calling onPreCreate() twice will throw an exception`() {
+    @Test
+    fun `calling onPreCreate() twice will throw an exception`() {
+        val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
         val activity = scenario.activity()
         val result = runCatching { FormulaAndroid.onPreCreate(activity, null) }
         assertThat(result.exceptionOrNull()).hasMessageThat().contains(
-            "Activity TestActivity was already initialized. Did you call FormulaAndroid.onPreCreate() twice?"
+            "Activity TestFormulaActivity was already initialized. Did you call FormulaAndroid.onPreCreate() twice?"
         )
     }
 }
