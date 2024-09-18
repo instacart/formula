@@ -17,3 +17,6 @@ include(
     ":samples:stopwatch-compose",
     ":samples:todoapp"
 )
+include(
+    ":test-utils:android"
+)

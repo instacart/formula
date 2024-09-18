@@ -16,6 +16,7 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
     }
 
     publishing {
@@ -40,5 +41,6 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
+    testImplementation(project(":test-utils:android"))
 }
 
