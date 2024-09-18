@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name="com.instacart.testutils.android.TestFragmentActivity"
+            android:launchMode="standard"
+            android:exported="false" />
+
+        <activity
+            android:name="com.instacart.testutils.android.TestActivity"
+            android:launchMode="standard"
+            android:exported="false" />
+    </application>
+</manifest>

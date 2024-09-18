@@ -59,7 +59,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         select: Activity.() -> Observable<Event>
     ): Observable<Event> {
         // TODO: should probably use startedActivity
-        return activityAttachEvents()
+        return attachEventRelay
             .switchMap {
                 val activity = activity
                 if (activity == null) {
@@ -105,8 +105,8 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     fun detachActivity(activity: Activity) {
         if (this.activity == activity) {
             this.activity = null
+            attachEventRelay.accept(false)
         }
-        attachEventRelay.accept(false)
     }
 
     fun updateFragmentLifecycleState(id: FragmentId, newState: Lifecycle.State) {
@@ -120,8 +120,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
         fragmentStateUpdated.accept(contract.tag)
     }
-
-    private fun activityAttachEvents(): Observable<Boolean> = attachEventRelay
 
     private fun fragmentLifecycleState(tag: String): Observable<Lifecycle.State> {
         return fragmentStateUpdated
