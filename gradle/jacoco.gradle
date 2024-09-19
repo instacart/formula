@@ -10,10 +10,12 @@ junitJacoco {
             '**/Manifest*.*',
             '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
             '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
-            '**/com/instacart/formula/test/**/*.*'
+            '**/com/instacart/formula/test/**/*.*',
+            '**/com/instacart/testutils/**/*.*'
     ]
     ignoreProjects = [
-            "samples/*"
+            "samples/*",
+            "test-utils/*"
     ]
     includeNoLocationClasses = true
     includeInstrumentationCoverageInMergedReport = true

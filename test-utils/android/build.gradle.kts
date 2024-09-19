@@ -17,4 +17,5 @@ dependencies {
     implementation(libs.androidx.test.core.ktx)
     implementation(libs.lifecycle.extensions)
     implementation(libs.robolectric)
+    implementation(libs.truth)
 }
