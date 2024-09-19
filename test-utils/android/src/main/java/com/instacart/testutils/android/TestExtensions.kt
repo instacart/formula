@@ -7,7 +7,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.android.FragmentEnvironment
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import org.robolectric.Shadows

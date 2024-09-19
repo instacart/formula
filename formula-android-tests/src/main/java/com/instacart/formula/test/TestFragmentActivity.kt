@@ -2,60 +2,15 @@ package com.instacart.formula.test
 
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
-import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
 import com.instacart.testutils.android.R
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
-    @VisibleForTesting lateinit var initialKey: FragmentKey
     @VisibleForTesting val renderCalls = mutableListOf<Pair<FragmentKey, *>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_activity)
-
-        if (savedInstanceState == null) {
-            val fragment = FormulaFragment.newInstance(initialKey)
-            supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, fragment, initialKey.tag)
-                .addToBackStack(initialKey.tag)
-                .commit()
-        }
-    }
-
-    fun navigateTo(key: FragmentKey, allowStateLoss: Boolean = false) {
-        val entryIndex = supportFragmentManager.backStackEntryCount - 1
-        val fragment = if (entryIndex >= 0) {
-            val entry = supportFragmentManager.getBackStackEntryAt(entryIndex)
-            supportFragmentManager.findFragmentByTag(entry.name)
-        } else {
-            null
-        }
-
-        supportFragmentManager.beginTransaction().apply {
-            if (fragment != null) {
-                remove(fragment)
-            }
-            add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
-            addToBackStack(key.tag)
-        }.apply {
-            if (allowStateLoss) {
-                commitAllowingStateLoss()
-            } else {
-                commit()
-            }
-        }
-    }
-
-    override fun onBackPressed() {
-        if (!FormulaAndroid.onBackPressed(this)) {
-            if (supportFragmentManager.backStackEntryCount > 1) {
-                supportFragmentManager.popBackStackImmediate()
-            } else {
-                finish()
-            }
-        }
     }
 }

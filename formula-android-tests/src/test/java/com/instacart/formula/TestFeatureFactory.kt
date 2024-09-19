@@ -3,10 +3,9 @@ package com.instacart.formula
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
+import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.core.Observable
-import com.instacart.testutils.android.R as TestR
 
 class TestFeatureFactory<Key : FragmentKey>(
     private val applyOutput: (Any) -> Unit = {},
@@ -15,14 +14,9 @@ class TestFeatureFactory<Key : FragmentKey>(
     override fun initialize(dependencies: Unit, key: Key): Feature {
         return Feature(
             state = state(key),
-            viewFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
-                val renderView = object : RenderView<Any> {
-                    override val render: Renderer<Any> = Renderer { value ->
-                        (view.context as TestFragmentActivity).renderCalls.add(Pair(key, value))
-                        applyOutput(value)
-                    }
-                }
-                featureView(renderView)
+            viewFactory = TestViewFactory { view, value ->
+                (view.context as TestFragmentActivity).renderCalls.add(Pair(key, value))
+                applyOutput(value)
             }
         )
     }

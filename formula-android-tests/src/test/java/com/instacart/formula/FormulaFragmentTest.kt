@@ -20,8 +20,10 @@ import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleKey
+import com.instacart.testutils.android.HeadlessFragment
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.get
+import com.instacart.testutils.android.showFragment
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
@@ -38,11 +40,8 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class FormulaFragmentTest {
 
-    class HeadlessFragment : Fragment()
-
     private var lastState: FragmentState? = null
     private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
-    private var onPreCreated: (TestFragmentActivity) -> Unit = {}
     private var updateThreads = linkedSetOf<Thread>()
     private val errors = mutableListOf<Throwable>()
     private val fragmentLifecycleEvents = mutableListOf<FragmentLifecycleEvent>()
@@ -56,10 +55,6 @@ class FormulaFragmentTest {
             FormulaAndroid.init(app, environment) {
                 activity<TestFragmentActivity> {
                     ActivityStore(
-                        configureActivity = { activity ->
-                            activity.initialKey = TestKey()
-                            onPreCreated(activity)
-                        },
                         onRenderFragmentState = { a, state ->
                             lastState = state
 
@@ -100,6 +95,7 @@ class FormulaFragmentTest {
 
     @Before fun setup() {
         scenario = activityRule.scenario
+        scenario.showFragment(TestKey())
     }
 
     @Test fun `add fragment lifecycle event`() {
@@ -257,13 +253,13 @@ class FormulaFragmentTest {
 
         // Pass feature updates on a background thread
         executor.execute {
-            stateChangeRelay.accept(initial to "main-state-1")
-            stateChangeRelay.accept(initial to "main-state-2")
-            stateChangeRelay.accept(initial to "main-state-3")
+            sendStateUpdate(initial, "main-state-1")
+            sendStateUpdate(initial, "main-state-2")
+            sendStateUpdate(initial, "main-state-3")
 
-            stateChangeRelay.accept(keyWithId to "detail-state-1")
-            stateChangeRelay.accept(keyWithId to "detail-state-2")
-            stateChangeRelay.accept(keyWithId to "detail-state-3")
+            sendStateUpdate(keyWithId, "detail-state-1")
+            sendStateUpdate(keyWithId, "detail-state-2")
+            sendStateUpdate(keyWithId, "detail-state-3")
             latch.countDown()
         }
 
@@ -344,9 +340,8 @@ class FormulaFragmentTest {
     }
 
     private fun navigateToTaskDetail(id: Int = 1, allowStateLoss: Boolean = false) {
-        scenario.onActivity {
-            it.navigateTo(TestKeyWithId(id), allowStateLoss = allowStateLoss)
-        }
+        val fragmentKey = TestKeyWithId(id)
+        scenario.showFragment(fragmentKey, allowStateLoss)
     }
 
     private fun assertFragmentViewIsCreated(key: FragmentKey) {
