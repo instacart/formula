@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
+import com.instacart.testutils.android.TestFormulaActivity
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -27,7 +28,7 @@ class FormulaAndroidTest {
 
     @Test fun `crashes if accessed before initialization`() {
         val result = runCatching {
-            FormulaAndroid.onBackPressed(ActivityUpdateTest.TestActivity())
+            FormulaAndroid.onBackPressed(TestFormulaActivity())
         }
         val errorMessage = result.exceptionOrNull()?.message
         Truth.assertThat(errorMessage).isEqualTo(

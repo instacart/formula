@@ -12,6 +12,7 @@ import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleKey
+import com.instacart.testutils.android.activity
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
 import org.junit.Rule

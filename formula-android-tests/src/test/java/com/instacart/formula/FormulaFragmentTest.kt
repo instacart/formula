@@ -6,7 +6,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentState
@@ -21,6 +20,8 @@ import com.instacart.formula.test.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleKey
+import com.instacart.testutils.android.activity
+import com.instacart.testutils.android.get
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Before
