@@ -17,11 +17,9 @@ import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
-import com.instacart.formula.test.TestFragmentActivity
-import com.instacart.formula.test.TestLifecycleKey
 import com.instacart.testutils.android.HeadlessFragment
+import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.activity
-import com.instacart.testutils.android.get
 import com.instacart.testutils.android.showFragment
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -31,7 +29,6 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
-import org.robolectric.annotation.LooperMode
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -44,6 +41,8 @@ class FormulaFragmentTest {
     private var updateThreads = linkedSetOf<Thread>()
     private val errors = mutableListOf<Throwable>()
     private val fragmentLifecycleEvents = mutableListOf<FragmentLifecycleEvent>()
+    private val renderCalls = mutableListOf<Pair<FragmentKey, *>>()
+
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
             val environment = FragmentEnvironment(
@@ -52,7 +51,7 @@ class FormulaFragmentTest {
                 }
             )
             FormulaAndroid.init(app, environment) {
-                activity<TestFragmentActivity> {
+                activity<TestFormulaActivity> {
                     ActivityStore(
                         onRenderFragmentState = { a, state ->
                             lastState = state
@@ -60,9 +59,17 @@ class FormulaFragmentTest {
                             updateThreads.add(Thread.currentThread())
                         },
                         fragmentStore = FragmentStore.init {
-                            bind(TestFeatureFactory<TestKey> { stateChanges(it) })
+                            bind(
+                                featureFactory = TestFeatureFactory<TestKey>(
+                                    render = { key, value ->
+                                        renderCalls.add(key to value)
+                                    },
+                                    state = { stateChanges(it) }
+                                )
+                            )
                             bind(TestFeatureFactory<TestKeyWithId>(
-                                applyOutput = { output ->
+                                render = { key, output ->
+                                    renderCalls.add(key to output)
                                     if (output == "crash") {
                                         throw IllegalStateException("crashing")
                                     }
@@ -87,10 +94,10 @@ class FormulaFragmentTest {
         }
     )
 
-    private val activityRule = ActivityScenarioRule(TestFragmentActivity::class.java)
+    private val activityRule = ActivityScenarioRule(TestFormulaActivity::class.java)
 
     @get:Rule val rule = RuleChain.outerRule(formulaRule).around(activityRule)
-    lateinit var scenario: ActivityScenario<TestFragmentActivity>
+    lateinit var scenario: ActivityScenario<TestFormulaActivity>
 
     @Before fun setup() {
         scenario = activityRule.scenario
@@ -136,17 +143,15 @@ class FormulaFragmentTest {
     }
 
     @Test fun `render model is passed to visible fragment`() {
-        val activity = activity()
         sendStateUpdate(TestKey(), "update")
-        assertThat(activity.renderCalls).containsExactly(TestKey() to "update").inOrder()
+        assertThat(renderCalls).containsExactly(TestKey() to "update").inOrder()
     }
 
     @Test fun `render model is not passed to not visible fragment`() {
         navigateToTaskDetail()
 
-        val activity = activity()
         sendStateUpdate(TestKey(), "update")
-        assertThat(activity.renderCalls).isEqualTo(emptyList<Any>())
+        assertThat(renderCalls).isEqualTo(emptyList<Any>())
     }
 
     @Test fun `visible fragments are updated when navigating`() {
@@ -154,17 +159,15 @@ class FormulaFragmentTest {
 
         val contract = TestKeyWithId(1)
 
-        val activity = activity()
         sendStateUpdate(contract, "update")
-        assertThat(activity.renderCalls).containsExactly(contract to "update").inOrder()
+        assertThat(renderCalls).containsExactly(contract to "update").inOrder()
 
         navigateBack()
 
         sendStateUpdate(contract, "update-two")
-        assertThat(activity.renderCalls).containsExactly(contract to "update").inOrder()
+        assertThat(renderCalls).containsExactly(contract to "update").inOrder()
     }
 
-    @LooperMode(LooperMode.Mode.LEGACY)
     @Test fun `delegates back press to current render model`() {
         navigateToTaskDetail()
 
@@ -318,19 +321,18 @@ class FormulaFragmentTest {
         val key = TestKeyWithId(1)
         navigateToTaskDetail(id = key.id)
 
-        val activity = activity()
         sendStateUpdate(key, "crash")
-        assertThat(activity.renderCalls).isNotEmpty()
+        assertThat(renderCalls).isNotEmpty()
 
         assertThat(errors).hasSize(1)
     }
 
     @Test
     fun toStringContainsTagAndKey() {
-        val fragment = FormulaFragment.newInstance(TestLifecycleKey())
+        val fragment = FormulaFragment.newInstance(TestKey())
         val toStringValue = fragment.toString()
         assertThat(toStringValue).isEqualTo(
-            "test-lifecycle -> TestLifecycleKey(tag=test-lifecycle)"
+            "test key -> TestKey(tag=test key)"
         )
     }
 
@@ -350,20 +352,18 @@ class FormulaFragmentTest {
         }
     }
 
-    private fun activity(): TestFragmentActivity {
+    private fun activity(): TestFormulaActivity {
         return scenario.activity()
     }
 
     private fun activeContracts(): List<FragmentKey> {
-        return scenario.get {
-            lastState!!.activeIds.map { it.key }
-        }
+        return lastState!!.activeIds.map { it.key }
     }
 
     private fun assertVisibleContract(contract: FragmentKey) {
         assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
-        assertThat(scenario.get { lastState?.visibleIds?.lastOrNull()?.key }).isEqualTo(contract)
+        assertThat(lastState?.visibleIds?.lastOrNull()?.key).isEqualTo(contract)
     }
 
     private fun assertNoDuplicates(contract: FragmentKey) {
