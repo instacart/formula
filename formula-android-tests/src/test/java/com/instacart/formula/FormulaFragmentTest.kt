@@ -57,7 +57,7 @@ class FormulaFragmentTest {
                 activity<TestFragmentActivity> {
                     ActivityStore(
                         configureActivity = { activity ->
-                            activity.initialContract = TestKey()
+                            activity.initialKey = TestKey()
                             onPreCreated(activity)
                         },
                         onRenderFragmentState = { a, state ->

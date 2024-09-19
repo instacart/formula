@@ -3,6 +3,7 @@ package com.instacart.formula
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
@@ -15,38 +16,31 @@ import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestFragmentLifecycleCallback
 import com.instacart.formula.test.TestLifecycleKey
+import com.instacart.testutils.android.R as TestR
 import io.reactivex.rxjava3.core.Observable
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
-import org.robolectric.android.controller.ActivityController
 
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleTest {
 
-    private lateinit var activityController: ActivityController<TestFragmentActivity>
     private lateinit var lifecycleCallback: TestFragmentLifecycleCallback
-    private lateinit var contract: TestLifecycleKey
-    private lateinit var activityRef: TestFragmentActivity
 
     @get:Rule val formulaRule = TestFormulaRule(initFormula = { app ->
         FormulaAndroid.init(app) {
             activity<TestFragmentActivity> {
+                lifecycleCallback = TestFragmentLifecycleCallback()
                 ActivityStore(
                     configureActivity = { activity ->
-                        activityRef = activity
-                        lifecycleCallback = TestFragmentLifecycleCallback()
-                        contract = TestLifecycleKey()
-                        activity.initialContract = contract
+                        activity.initialKey = TestLifecycleKey()
                     },
                     fragmentStore = FragmentStore.init {
                         val featureFactory = object : FeatureFactory<Unit, TestLifecycleKey> {
                             override fun initialize(dependencies: Unit, key: TestLifecycleKey): Feature {
                                 return Feature(
                                     state = Observable.empty(),
-                                    viewFactory = ViewFactory.fromLayout(R.layout.test_empty_layout) {
+                                    viewFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
                                         featureView(lifecycleCallback) {}
                                     }
                                 )
@@ -59,18 +53,9 @@ class FragmentLifecycleTest {
         }
     })
 
-    @Before
-    fun setup() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = Intent(context, TestFragmentActivity::class.java)
-        val activityController = Robolectric.buildActivity(TestFragmentActivity::class.java, intent)
-            .setup()
-
-        this.activityController = activityController
-    }
-
     @Test fun `creation callbacks`() {
-        assertThat(contract).isNotNull()
+        ActivityScenario.launch(TestFragmentActivity::class.java)
+
         assertThat(lifecycleCallback.hasOnViewCreated).isTrue()
         assertThat(lifecycleCallback.hasOnActivityCreated).isTrue()
         assertThat(lifecycleCallback.hasOnStart).isTrue()
@@ -78,25 +63,31 @@ class FragmentLifecycleTest {
     }
 
     @Test fun `destroy callbacks`() {
-        activityController.destroy()
+        val scenario = ActivityScenario.launch(TestFragmentActivity::class.java)
+        scenario.close()
+
         assertThat(lifecycleCallback.hasOnPauseEvent).isTrue()
         assertThat(lifecycleCallback.hasOnStop).isTrue()
+        assertThat(lifecycleCallback.hasOnDestroyView).isTrue()
     }
 
     @Test fun `save instance state callback`() {
-        activityController.saveInstanceState(Bundle())
+        val scenario = ActivityScenario.launch(TestFragmentActivity::class.java)
+
+        assertThat(lifecycleCallback.hasOnSaveInstanceState).isFalse()
+        scenario.recreate()
         assertThat(lifecycleCallback.hasOnSaveInstanceState).isTrue()
     }
 
     @Test fun `low memory`() {
-        val fragment = activityRef.supportFragmentManager.fragments
-            .filterIsInstance<FormulaFragment>()
-            .first()
+        val scenario = ActivityScenario.launch(TestFragmentActivity::class.java)
+        scenario.onActivity {
+            val fragment = it.supportFragmentManager.fragments
+                .filterIsInstance<FormulaFragment>()
+                .first()
 
-        fragment.onLowMemory()
+            fragment.onLowMemory()
+        }
         assertThat(lifecycleCallback.hasCalledLowMemory).isTrue()
     }
-
-    // Unfortunately, we cannot test destroy view with Robolectric
-    // https://github.com/robolectric/robolectric/issues/1945
 }

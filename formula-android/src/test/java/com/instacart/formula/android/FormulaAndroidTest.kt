@@ -1,8 +1,6 @@
 package com.instacart.formula.android
 
-import android.app.Activity
 import android.app.Application
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State.CREATED
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Lifecycle.State.INITIALIZED
@@ -11,9 +9,9 @@ import androidx.lifecycle.Lifecycle.State.STARTED
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
+import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.test.runActivityUpdateTest
 import com.instacart.testutils.android.TestActivity
 import com.instacart.testutils.android.TestFormulaActivity
@@ -37,7 +35,7 @@ class FormulaAndroidTest {
                 FormulaAndroid.init(context) {}
             }
             val error = result.exceptionOrNull()?.message
-            Truth.assertThat(error).isEqualTo("can only initialize the store once.")
+            assertThat(error).isEqualTo("can only initialize the store once.")
         } finally {
             FormulaAndroid.reset()
         }
@@ -49,7 +47,7 @@ class FormulaAndroidTest {
             FormulaAndroid.onBackPressed(TestFormulaActivity())
         }
         val errorMessage = result.exceptionOrNull()?.message
-        Truth.assertThat(errorMessage).isEqualTo(
+        assertThat(errorMessage).isEqualTo(
             "Need to call FormulaAndroid.init() from your Application."
         )
     }
@@ -98,21 +96,17 @@ class FormulaAndroidTest {
 
     @Test
     fun `activity lifecycle state emits all events`() {
-        var events: MutableList<Lifecycle.State> = mutableListOf()
         withFormulaAndroid(
             configure = {
                 activity<TestFormulaActivity> {
-                    events = mutableListOf()
-                    ActivityStore(
-                        streams = {
-                            activityLifecycleState().subscribe {
-                                events.add(it)
-                            }
-                        }
-                    )
+                    ActivityStore()
                 }
             }
-        ) {
+        ) { interactor ->
+            val activityLifecycleEvents = interactor
+                .selectEvents { it.activityLifecycleState() }
+                .test()
+
             val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
             scenario.recreate()
             scenario.close()
@@ -120,7 +114,7 @@ class FormulaAndroidTest {
             val lifecycle = listOf(CREATED, STARTED, RESUMED, STARTED, CREATED, DESTROYED)
             // We expect two full lifecycles
             val expected = listOf(INITIALIZED) + lifecycle + lifecycle
-            assertThat(events).containsExactlyElementsIn(expected).inOrder()
+            assertThat(activityLifecycleEvents.values()).containsExactlyElementsIn(expected).inOrder()
         }
     }
 
@@ -164,6 +158,26 @@ class FormulaAndroidTest {
             updateRelay.assertHasObservers(true)
             scenario.close()
             updateRelay.assertHasObservers(false)
+        }
+    }
+
+    @Test
+    fun `activity results are emitted`() {
+        withFormulaAndroid(
+            configure = {
+                activity<TestFormulaActivity> { ActivityStore() }
+            }
+        ) { interactor ->
+            val activityResultEvents = interactor
+                .selectEvents { it.activityResults() }
+                .test()
+
+            val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
+            FormulaAndroid.onActivityResult(scenario.activity(), 1, 2, null)
+
+            activityResultEvents.assertValues(
+                ActivityResult(1, 2, null)
+            )
         }
     }
 }

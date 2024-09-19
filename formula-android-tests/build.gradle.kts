@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.lifecycle.extensions)
     implementation(libs.androidx.test.core.ktx)
+    implementation(project(":test-utils:android"))
 
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.androidx.test.rules)
@@ -34,5 +35,4 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
-    testImplementation(project(":test-utils:android"))
 }

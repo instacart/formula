@@ -3,13 +3,13 @@ package com.instacart.formula.test
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.R
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FormulaAppCompatActivity
+import com.instacart.testutils.android.R
 
 class TestFragmentActivity : FormulaAppCompatActivity() {
-    @VisibleForTesting lateinit var initialContract: FragmentKey
+    @VisibleForTesting lateinit var initialKey: FragmentKey
     @VisibleForTesting val renderCalls = mutableListOf<Pair<FragmentKey, *>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,10 +17,10 @@ class TestFragmentActivity : FormulaAppCompatActivity() {
         setContentView(R.layout.test_activity)
 
         if (savedInstanceState == null) {
-            val fragment = FormulaFragment.newInstance(initialContract)
+            val fragment = FormulaFragment.newInstance(initialKey)
             supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, fragment, initialContract.tag)
-                .addToBackStack(initialContract.tag)
+                .add(R.id.activity_content, fragment, initialKey.tag)
+                .addToBackStack(initialKey.tag)
                 .commit()
         }
     }
