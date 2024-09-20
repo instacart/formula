@@ -7,7 +7,7 @@ import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
-import com.instacart.formula.android.fakes.NoOpViewFactory
+import com.instacart.testutils.android.NoOpViewFactory
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.subjects.PublishSubject

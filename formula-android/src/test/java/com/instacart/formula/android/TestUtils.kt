@@ -1,6 +1,6 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.android.fakes.NoOpViewFactory
+import com.instacart.testutils.android.NoOpViewFactory
 import io.reactivex.rxjava3.core.Observable
 
 object TestUtils {

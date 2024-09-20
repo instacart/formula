@@ -45,8 +45,8 @@ fun executeOnBackgroundThread(action: () -> Unit) {
 
 fun withFormulaAndroid(
     environment: FragmentEnvironment = FragmentEnvironment(),
-    configure: ActivityConfigurator.() -> Unit = {},
-    continuation: () -> Unit,
+    configure: TestActivityConfigurator.() -> Unit = {},
+    continuation: (FormulaAndroidInteractor) -> Unit,
 ) {
     val errors = mutableListOf<Throwable>()
     RxJavaPlugins.reset()
@@ -54,8 +54,14 @@ fun withFormulaAndroid(
 
     try {
         val context = ApplicationProvider.getApplicationContext<Application>()
-        FormulaAndroid.init(context, environment, configure)
-        continuation()
+        val interactor = FormulaAndroidInteractor()
+        FormulaAndroid.init(context, environment) {
+            val testActivityConfigurator = TestActivityConfigurator(this) {
+                interactor.onActivityContextInitialized(it)
+            }
+            configure(testActivityConfigurator)
+        }
+        continuation(interactor)
     } finally {
         RxJavaPlugins.reset()
         FormulaAndroid.reset()
