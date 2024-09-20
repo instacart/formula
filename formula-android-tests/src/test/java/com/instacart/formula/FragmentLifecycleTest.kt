@@ -6,7 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentStore
-import com.instacart.formula.test.TestFragmentLifecycleCallback
+import com.instacart.testutils.android.TestFragmentLifecycleCallback
 import com.instacart.formula.test.TestLifecycleKey
 import com.instacart.testutils.android.NoOpFeatureFactory
 import com.instacart.testutils.android.TestFormulaActivity

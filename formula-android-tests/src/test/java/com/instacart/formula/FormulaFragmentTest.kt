@@ -1,7 +1,6 @@
 package com.instacart.formula
 
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -16,7 +15,7 @@ import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.test.TestBackCallbackRenderModel
-import com.instacart.formula.test.TestKey
+import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.formula.test.TestFragmentActivity
 import com.instacart.formula.test.TestLifecycleKey

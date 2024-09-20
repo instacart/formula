@@ -1,4 +1,4 @@
-package com.instacart.formula.test
+package com.instacart.testutils.android
 
 import android.os.Bundle
 import android.view.View

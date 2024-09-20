@@ -5,7 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.test.TestKey
+import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.testutils.android.FormulaAndroidInteractor
 import com.instacart.testutils.android.NoOpFeatureFactory
@@ -15,7 +15,6 @@ import com.instacart.testutils.android.withFormulaAndroid
 import io.reactivex.rxjava3.observers.TestObserver
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.LooperMode
 
 @RunWith(AndroidJUnit4::class)
 class FragmentLifecycleStateTest {

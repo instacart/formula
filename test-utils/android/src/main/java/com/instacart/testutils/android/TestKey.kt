@@ -1,4 +1,4 @@
-package com.instacart.formula.test
+package com.instacart.testutils.android
 
 import com.instacart.formula.android.FragmentKey
 import kotlinx.parcelize.Parcelize
