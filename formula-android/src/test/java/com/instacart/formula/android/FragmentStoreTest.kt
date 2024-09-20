@@ -7,7 +7,7 @@ import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
-import com.instacart.testutils.android.NoOpViewFactory
+import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -213,7 +213,7 @@ class FragmentStoreTest {
                 override fun initialize(dependencies: Any, key: MainKey): Feature {
                     return Feature(
                         state = stateSubject,
-                        viewFactory = NoOpViewFactory(),
+                        viewFactory = TestViewFactory(),
                     )
                 }
             }
@@ -252,7 +252,7 @@ class FragmentStoreTest {
                 override fun initialize(dependencies: Any, key: MainKey): Feature {
                     return Feature(
                         state = stateSubject,
-                        viewFactory = NoOpViewFactory(),
+                        viewFactory = TestViewFactory(),
                     )
                 }
             }
@@ -297,7 +297,7 @@ class FragmentStoreTest {
                 override fun initialize(dependencies: Any, key: MainKey): Feature {
                     return Feature(
                         state = Observable.just("value"),
-                        viewFactory = NoOpViewFactory(),
+                        viewFactory = TestViewFactory(),
                     )
                 }
             }
@@ -364,7 +364,7 @@ class FragmentStoreTest {
         override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature {
             return Feature(
                 state = dependencies.state(key),
-                viewFactory = NoOpViewFactory()
+                viewFactory = TestViewFactory()
             )
         }
     }
