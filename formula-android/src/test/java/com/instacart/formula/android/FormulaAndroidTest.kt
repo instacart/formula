@@ -13,6 +13,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.test.runActivityUpdateTest
+import com.instacart.formula.android.test.runFeatureFactoryLifecycleTest
 import com.instacart.testutils.android.TestActivity
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentActivity
@@ -27,7 +28,6 @@ class FormulaAndroidTest {
 
     @Test
     fun `crashes if initialized twice`() {
-
         try {
             val result = runCatching {
                 val context = ApplicationProvider.getApplicationContext<Application>()
@@ -178,6 +178,45 @@ class FormulaAndroidTest {
             activityResultEvents.assertValues(
                 ActivityResult(1, 2, null)
             )
+        }
+    }
+
+    @Test
+    fun `feature factory lifecycle events`() {
+        runFeatureFactoryLifecycleTest {
+            assertThat(lifecycleCallback.hasOnViewCreated).isTrue()
+            assertThat(lifecycleCallback.hasOnActivityCreated).isTrue()
+            assertThat(lifecycleCallback.hasOnStart).isTrue()
+            assertThat(lifecycleCallback.hasOnResume).isTrue()
+
+            scenario.close()
+
+            assertThat(lifecycleCallback.hasOnPauseEvent).isTrue()
+            assertThat(lifecycleCallback.hasOnStop).isTrue()
+            assertThat(lifecycleCallback.hasOnDestroyView).isTrue()
+        }
+    }
+
+    @Test
+    fun `feature factory save instance event`() {
+        runFeatureFactoryLifecycleTest {
+            assertThat(lifecycleCallback.hasOnSaveInstanceState).isFalse()
+            scenario.recreate()
+            assertThat(lifecycleCallback.hasOnSaveInstanceState).isTrue()
+        }
+    }
+
+    @Test
+    fun `feature factory low memory event`() {
+        runFeatureFactoryLifecycleTest {
+            scenario.onActivity {
+                val fragment = it.supportFragmentManager.fragments
+                    .filterIsInstance<FormulaFragment>()
+                    .first()
+
+                fragment.onLowMemory()
+            }
+            assertThat(lifecycleCallback.hasCalledLowMemory).isTrue()
         }
     }
 }
