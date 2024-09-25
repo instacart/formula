@@ -12,6 +12,7 @@
 - **Breaking**: Removed `FlowFactory` and `Flow`
 - **Breaking**: Replace `FragmentStoreBuilder` with `FeaturesBuilder`
 - **Breaking**: Rename `FragmentFlowStore` to `FragmentStore`, `FragmentState` to `FragmentOutput`, `FragmentFlowState` to `FragmentState`
+- **Breaking**: Making `FeatureFactory` into an abstract class and modifying the `initialize` API to use `Params` wrapper type
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`

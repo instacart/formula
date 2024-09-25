@@ -87,8 +87,8 @@ class FragmentStoreTest {
     }
 
     @Test fun `bind feature factory with to dependencies defined`() {
-        val myFeatureFactory = object : FeatureFactory<String, MainKey> {
-            override fun initialize(dependencies: String, key: MainKey): Feature {
+        val myFeatureFactory = object : FeatureFactory<String, MainKey>() {
+            override fun Params.initialize(): Feature {
                 return TestUtils.feature(
                     stateValue = dependencies
                 )
@@ -182,8 +182,8 @@ class FragmentStoreTest {
     @Test fun `store returns failure event when feature factory initialization throws an error`() {
         val expectedError = RuntimeException("something happened")
         val store = FragmentStore.init(FakeComponent()) {
-            val featureFactory = object : FeatureFactory<FakeComponent, MainKey> {
-                override fun initialize(dependencies: FakeComponent, key: MainKey): Feature {
+            val featureFactory = object : FeatureFactory<FakeComponent, MainKey>() {
+                override fun Params.initialize(): Feature {
                     throw expectedError
                 }
             }
@@ -209,8 +209,8 @@ class FragmentStoreTest {
         val stateSubject = PublishSubject.create<Any>()
 
         val store = FragmentStore.init {
-            val featureFactory = object : FeatureFactory<Any, MainKey> {
-                override fun initialize(dependencies: Any, key: MainKey): Feature {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
                     return Feature(
                         state = stateSubject,
                         viewFactory = TestViewFactory(),
@@ -248,8 +248,8 @@ class FragmentStoreTest {
         val stateSubject = PublishSubject.create<Any>()
 
         val store = FragmentStore.init {
-            val featureFactory = object : FeatureFactory<Any, MainKey> {
-                override fun initialize(dependencies: Any, key: MainKey): Feature {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
                     return Feature(
                         state = stateSubject,
                         viewFactory = TestViewFactory(),
@@ -293,8 +293,8 @@ class FragmentStoreTest {
 
     @Test fun `fragment store visible output`() {
         val store = FragmentStore.init {
-            val featureFactory = object : FeatureFactory<Any, MainKey> {
-                override fun initialize(dependencies: Any, key: MainKey): Feature {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
                     return Feature(
                         state = Observable.just("value"),
                         viewFactory = TestViewFactory(),
@@ -360,8 +360,8 @@ class FragmentStoreTest {
     private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
     private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 
-    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT> {
-        override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature {
+    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
+        override fun Params.initialize(): Feature {
             return Feature(
                 state = dependencies.state(key),
                 viewFactory = TestViewFactory()
