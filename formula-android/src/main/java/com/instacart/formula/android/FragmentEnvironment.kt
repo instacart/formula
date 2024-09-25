@@ -30,7 +30,7 @@ data class FragmentEnvironment(
             dependencies: DependenciesT,
             key: KeyT,
         ): Feature {
-            return factory.initialize(dependencies, key)
+            return factory.initialize(dependencies, fragmentId, key)
         }
 
         /**
