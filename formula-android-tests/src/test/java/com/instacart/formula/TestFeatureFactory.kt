@@ -9,9 +9,8 @@ import io.reactivex.rxjava3.core.Observable
 class TestFeatureFactory<Key : FragmentKey>(
     private val render: (FragmentKey, Any) -> Unit = { _, _ -> },
     private val state: (Key) -> Observable<Any>,
-
-) : FeatureFactory<Unit, Key> {
-    override fun initialize(dependencies: Unit, key: Key): Feature {
+) : FeatureFactory<Unit, Key>() {
+    override fun Params.initialize(): Feature {
         return Feature(
             state = state(key),
             viewFactory = TestViewFactory { _, value ->
