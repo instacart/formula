@@ -1,6 +1,5 @@
 package com.instacart.formula.test
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.junit.Test
@@ -9,8 +8,24 @@ class TestFormulaTest {
     @Test fun `assert running count is zero when formula is not running`() {
         val formula = TestSimpleFormula()
         formula.implementation.assertRunningCount(0)
-        formula.test().input(SimpleFormula.Input())
+
+        val observer = formula.test()
+        observer.input(SimpleFormula.Input())
         formula.implementation.assertRunningCount(1)
+
+        observer.dispose()
+        formula.implementation.assertRunningCount(0)
+    }
+
+    @Test
+    fun `assert running count throws an exception when count does not match`() {
+        val formula = TestSimpleFormula()
+        val result = runCatching {
+            formula.implementation.assertRunningCount(5)
+        }
+        assertThat(result.exceptionOrNull()).hasMessageThat().contains(
+            "Expected 5 running formulas, but there were 0 instead"
+        )
     }
 
     @Test fun `emits initial output when subscribed`() {

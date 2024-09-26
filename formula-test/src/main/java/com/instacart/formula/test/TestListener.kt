@@ -17,8 +17,8 @@ class TestListener<Event> : Listener<Event> {
 
     fun assertTimesCalled(times: Int) {
         val timesCalled = values.size
-        assert(timesCalled == times) {
-            "Expected: $times, was: $timesCalled"
+        if (timesCalled != times) {
+            throw AssertionError("Expected: $times, was: $timesCalled")
         }
     }
 }

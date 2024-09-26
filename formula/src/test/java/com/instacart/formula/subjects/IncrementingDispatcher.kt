@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class IncrementingDispatcher : Dispatcher {
     val count = AtomicInteger(0)
+    val isDispatchNeededCalled = AtomicInteger(0)
 
     override fun dispatch(executable: () -> Unit) {
         count.incrementAndGet()
@@ -13,6 +14,7 @@ class IncrementingDispatcher : Dispatcher {
     }
 
     override fun isDispatchNeeded(): Boolean {
+        isDispatchNeededCalled.getAndIncrement()
         return true
     }
 

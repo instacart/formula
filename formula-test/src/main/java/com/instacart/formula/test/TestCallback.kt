@@ -8,8 +8,8 @@ class TestCallback : () -> Unit {
     }
 
     fun assertTimesCalled(times: Int) {
-        assert(invocationCount == times) {
-            "Expected: $times, was: $invocationCount"
+        if (invocationCount != times) {
+            throw AssertionError("Expected: $times, was: $invocationCount")
         }
     }
 }

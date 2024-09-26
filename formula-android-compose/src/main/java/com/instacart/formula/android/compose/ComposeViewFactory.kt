@@ -24,6 +24,7 @@ abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> 
         return FeatureView(
             view = view,
             setOutput = outputRelay::accept,
+            lifecycleCallbacks = null,
         )
     }
 

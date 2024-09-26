@@ -6,7 +6,7 @@ import com.instacart.formula.android.FragmentId
  * Models when a fragment key is attached and detached. Provides a way to indicate
  * when to initialize state stream and when to destroy it.
  */
-sealed class FragmentLifecycleEvent() {
+sealed class FragmentLifecycleEvent {
 
     abstract val fragmentId: FragmentId
 

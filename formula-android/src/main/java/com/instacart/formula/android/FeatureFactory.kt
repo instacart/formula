@@ -35,10 +35,23 @@ package com.instacart.formula.android
  * @param Key a type of fragment key that is used to identify this feature.
  *
  */
-interface FeatureFactory<in Dependencies, in Key : FragmentKey> {
+abstract class FeatureFactory<in Dependencies, in Key : FragmentKey> {
+
+    inner class Params(
+        val dependencies: @UnsafeVariance Dependencies,
+        val fragmentId: FragmentId,
+        val key: @UnsafeVariance Key,
+    )
+
+    /**
+     * Initializes the [Feature] using [Params] provided.
+     */
+    abstract fun Params.initialize(): Feature
 
     /**
      * Initializes state observable and a view factory for a specific [key].
      */
-    fun initialize(dependencies: Dependencies, key: Key): Feature
+    fun initialize(dependencies: Dependencies, fragmentId: FragmentId, key: Key): Feature {
+        return Params(dependencies, fragmentId, key).initialize()
+    }
 }

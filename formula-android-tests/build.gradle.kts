@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
 }
@@ -10,19 +10,6 @@ apply {
 
 android {
     namespace = "com.instacart.formula"
-    defaultConfig {
-        applicationId = "com.instacart.formula"
-        versionCode = 1
-        versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
 
     testOptions {
         unitTests {
@@ -39,6 +26,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.lifecycle.extensions)
     implementation(libs.androidx.test.core.ktx)
+    implementation(project(":test-utils:android"))
 
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.androidx.test.rules)

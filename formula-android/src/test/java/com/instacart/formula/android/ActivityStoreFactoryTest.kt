@@ -26,4 +26,14 @@ class ActivityStoreFactoryTest {
         val store = factory.init(mock<FakeActivity>())!!
         assertThat(store.stateSubscription.isDisposed).isFalse()
     }
+
+    @Test fun `returns null if no binding for activity is found`() {
+        val factory = ActivityStoreFactory(
+            environment = FragmentEnvironment(),
+            activities = {}
+        )
+
+        val store = factory.init(mock<FakeActivity>())
+        assertThat(store).isNull()
+    }
 }

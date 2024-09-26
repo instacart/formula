@@ -8,10 +8,11 @@ import com.instacart.formula.android.FragmentKey
 internal class MappedFeatureFactory<Component, Dependencies, Key : FragmentKey>(
     private val delegate: FeatureFactory<Dependencies, Key>,
     private val toDependencies: (Component) -> Dependencies,
-) : FeatureFactory<Component, Key> {
-    override fun initialize(dependencies: Component, key: Key): Feature {
+) : FeatureFactory<Component, Key>() {
+    override fun Params.initialize(): Feature {
         return delegate.initialize(
             dependencies = toDependencies(dependencies),
+            fragmentId = fragmentId,
             key = key,
         )
     }

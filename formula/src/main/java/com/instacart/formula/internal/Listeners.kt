@@ -1,31 +1,26 @@
 package com.instacart.formula.internal
 
-import java.lang.IllegalStateException
+import com.instacart.formula.Transition
 
 internal class Listeners {
     private var listeners: SingleRequestMap<Any, ListenerImpl<*, *, *>>? = null
     private var indexes: MutableMap<Any, Int>? = null
 
-    private fun duplicateKeyErrorMessage(key: Any): String {
-        return "Listener $key is already defined. Unexpected issue."
-    }
-
-    fun <Input, State, Event> initOrFindListener(key: Any, useIndex: Boolean): ListenerImpl<Input, State, Event> {
-        val currentHolder = listenerHolder<Input, State, Event>(key)
-        return if (currentHolder.requested && useIndex) {
-            if (key is IndexedKey) {
-                // This should never happen, but added as safety
-                throw IllegalStateException("Key already indexed (and still duplicate).")
-            }
-
+    fun <Input, State, Event> initOrFindListener(
+        key: Any,
+        useIndex: Boolean,
+        transition: Transition<Input, State, Event>
+    ): ListenerImpl<Input, State, Event> {
+        val currentHolder = listenerHolder(key, transition)
+        return if (!currentHolder.requested) {
+            currentHolder.requested = true
+            currentHolder.value as ListenerImpl<Input, State, Event>
+        } else if (useIndex) {
             val index = nextIndex(key)
             val indexedKey = IndexedKey(key, index)
-            initOrFindListener(indexedKey, useIndex)
+            initOrFindListener(indexedKey, useIndex, transition)
         } else {
-            currentHolder
-                .requestAccess {
-                    duplicateKeyErrorMessage(currentHolder.value.key)
-                } as ListenerImpl<Input, State, Event>
+            throw IllegalStateException("Listener $key is already defined. Unexpected issue.")
         }
     }
 
@@ -61,18 +56,26 @@ internal class Listeners {
             initialized
         }
 
-        val index = indexes.getOrElse(key) { 0 } + 1
+        val previousIndex = indexes[key]
+        val index = if (previousIndex == null) {
+            0
+        } else {
+            previousIndex + 1
+        }
         indexes[key] = index
         return index
     }
 
-    private fun <Input, State, Event> listenerHolder(key: Any): SingleRequestHolder<ListenerImpl<*, *, *>> {
+    private fun <Input, State, Event> listenerHolder(
+        key: Any,
+        transition: Transition<Input, State, Event>
+    ): SingleRequestHolder<ListenerImpl<*, *, *>> {
         val listeners = listeners ?: run {
             val initialized: SingleRequestMap<Any, ListenerImpl<*, *, *>> = mutableMapOf()
             this.listeners = initialized
             initialized
         }
 
-        return listeners.findOrInit(key) { ListenerImpl<Input, State, Event>(key) }
+        return listeners.findOrInit(key) { ListenerImpl(key, transition) }
     }
 }

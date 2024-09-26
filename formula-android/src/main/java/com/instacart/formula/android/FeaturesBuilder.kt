@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
  */
 class FeaturesBuilder<Dependencies> {
     companion object {
-        inline fun <Dependencies> build(
+        fun <Dependencies> build(
             init: FeaturesBuilder<Dependencies>.() -> Unit
         ): Features<Dependencies> {
             return FeaturesBuilder<Dependencies>().apply(init).build()

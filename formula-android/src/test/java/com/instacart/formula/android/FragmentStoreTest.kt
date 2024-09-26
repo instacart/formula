@@ -7,8 +7,10 @@ import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.FragmentLifecycleEvent
-import com.instacart.formula.android.fakes.NoOpViewFactory
+import com.instacart.testutils.android.TestViewFactory
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
+import io.reactivex.rxjava3.subjects.PublishSubject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
@@ -85,8 +87,8 @@ class FragmentStoreTest {
     }
 
     @Test fun `bind feature factory with to dependencies defined`() {
-        val myFeatureFactory = object : FeatureFactory<String, MainKey> {
-            override fun initialize(dependencies: String, key: MainKey): Feature {
+        val myFeatureFactory = object : FeatureFactory<String, MainKey>() {
+            override fun Params.initialize(): Feature {
                 return TestUtils.feature(
                     stateValue = dependencies
                 )
@@ -158,6 +160,175 @@ class FragmentStoreTest {
         assertThat(updateThreads).containsExactly(Thread.currentThread())
     }
 
+    @Test fun `store returns missing binding event when no feature factory is present`() {
+        val store = FragmentStore.init(FakeComponent()) {
+            bind(TestFeatureFactory<MainKey>())
+        }
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId(
+            instanceId = "random",
+            key = DetailKey(id = 100)
+        )
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        val lastState = observer.values().last()
+        assertThat(lastState.features[fragmentId]).isEqualTo(
+            FeatureEvent.MissingBinding(fragmentId)
+        )
+    }
+
+    @Test fun `store returns failure event when feature factory initialization throws an error`() {
+        val expectedError = RuntimeException("something happened")
+        val store = FragmentStore.init(FakeComponent()) {
+            val featureFactory = object : FeatureFactory<FakeComponent, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    throw expectedError
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId(
+            instanceId = "random",
+            key = MainKey(id = 100)
+        )
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        val lastState = observer.values().last()
+        assertThat(lastState.features[fragmentId]).isEqualTo(
+            FeatureEvent.Failure(fragmentId, expectedError)
+        )
+    }
+
+    @Test fun `fragment store ignores events after key is removed`() {
+        val stateSubject = PublishSubject.create<Any>()
+
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    return Feature(
+                        state = stateSubject,
+                        viewFactory = TestViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+        stateSubject.onNext("value")
+
+        // Check that first event was shown
+        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(firstModel).isEqualTo("value")
+
+        // Remove fragment
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Removed(fragmentId = fragmentId)
+        )
+
+        // Check that new events are ignored
+        stateSubject.onNext("new-value")
+
+        // Output should not exist
+        val secondModel = observer.values().last().outputs[fragmentId]
+        assertThat(secondModel).isNull()
+    }
+
+    @Test fun `feature observable error emits on screen error and finishes`() {
+        val stateSubject = PublishSubject.create<Any>()
+
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    return Feature(
+                        state = stateSubject,
+                        viewFactory = TestViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error ->
+                screenErrors.add(key to error)
+            }
+        )
+        val observer = store.state(environment).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+        stateSubject.onNext("value")
+
+        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(firstModel).isEqualTo("value")
+
+        // Emit error
+        val error = RuntimeException("error")
+        stateSubject.onError(error)
+
+        // Model didn't change
+        val secondModel = observer.values().last().outputs[fragmentId]?.renderModel
+        assertThat(secondModel).isEqualTo("value")
+
+        // Store observable didn't crash
+        observer.assertNoErrors()
+
+        assertThat(screenErrors).containsExactly(
+            fragmentId.key to error
+        )
+    }
+
+    @Test fun `fragment store visible output`() {
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    return Feature(
+                        state = Observable.just("value"),
+                        viewFactory = TestViewFactory(),
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+        val observer = store.state(FragmentEnvironment()).test()
+        val fragmentId = FragmentId("", MainKey(1))
+        store.onLifecycleEffect(
+            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+        )
+
+        // No visible output yet
+        val firstModel = observer.values().last().visibleOutput()
+        assertThat(firstModel).isNull()
+
+        // Toggle visibility
+        store.onVisibilityChanged(fragmentId, true)
+
+        // Check that visible output is now present
+        val secondModel = observer.values().last().visibleOutput()
+        assertThat(secondModel).isNotNull()
+
+        // Toggle visibility again
+        store.onVisibilityChanged(fragmentId, false)
+
+        // Check that visible output is null again
+        val third = observer.values().last().visibleOutput()
+        assertThat(third).isNull()
+    }
+
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
         return state(FragmentEnvironment())
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
@@ -189,11 +360,11 @@ class FragmentStoreTest {
     private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
     private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
 
-    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT> {
-        override fun initialize(dependencies: FakeComponent, key: FragmentKeyT): Feature {
+    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
+        override fun Params.initialize(): Feature {
             return Feature(
                 state = dependencies.state(key),
-                viewFactory = NoOpViewFactory()
+                viewFactory = TestViewFactory()
             )
         }
     }

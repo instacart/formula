@@ -28,7 +28,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         assertNoErrors() // Check after interaction
     }
 
-    inline fun output(assert: Output.() -> Unit) = apply {
+    fun output(assert: Output.() -> Unit) = apply {
         ensureFormulaIsRunning()
         assertNoErrors() // Check before interaction
         assert(values().last())
@@ -39,8 +39,9 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         ensureFormulaIsRunning()
         assertNoErrors()
         val size = values().size
-        assert(size == count) {
-            "Expected: $count, was: $size"
+
+        if (size != count) {
+            throw AssertionError("Expected: $count, was: $size")
         }
     }
 

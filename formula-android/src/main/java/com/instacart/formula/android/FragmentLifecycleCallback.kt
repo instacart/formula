@@ -10,7 +10,6 @@ import android.view.View
  * [androidx.fragment.app.Fragment.onDestroy] or [androidx.fragment.app.Fragment.onDetach]
  */
 interface FragmentLifecycleCallback {
-
     /**
      * See [androidx.fragment.app.Fragment.onViewCreated]
      */

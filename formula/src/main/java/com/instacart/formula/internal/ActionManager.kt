@@ -1,6 +1,7 @@
 package com.instacart.formula.internal
 
 import com.instacart.formula.DeferredAction
+import com.instacart.formula.Evaluation
 import com.instacart.formula.plugin.Inspector
 import kotlin.reflect.KClass
 
@@ -12,18 +13,21 @@ internal class ActionManager(
     private val loggingType: KClass<*>,
     private val inspector: Inspector?,
 ) {
-    companion object {
-        val NO_OP: (Any?) -> Unit = {}
-    }
-
+    /**
+     * Currently running actions
+     */
     private var running: LinkedHashSet<DeferredAction<*>>? = null
-    private var actions: Set<DeferredAction<*>>? = null
 
-    private var startListInvalidated: Boolean = false
-    private var scheduledToStart: MutableList<DeferredAction<*>>? = null
+    /**
+     * Action list provided by [Evaluation.actions]
+     */
+    private var actions: Set<DeferredAction<*>> = emptySet()
 
-    private var removeListInvalidated: Boolean = false
-    private var scheduledForRemoval: MutableList<DeferredAction<*>>? = null
+    private var recomputeCheckToStartList: Boolean = false
+    private var checkToStartActionList: MutableList<DeferredAction<*>>? = null
+
+    private var recomputeCheckToRemoveList: Boolean = false
+    private var checkToRemoveActionList: MutableList<DeferredAction<*>>? = null
 
     /**
      * After evaluation, we might have a new list of actions that we need
@@ -33,28 +37,26 @@ internal class ActionManager(
     fun prepareForPostEvaluation(new: Set<DeferredAction<*>>) {
         actions = new
 
-        startListInvalidated = true
-        removeListInvalidated = true
+        recomputeCheckToStartList = true
+        recomputeCheckToRemoveList = true
     }
 
     /**
      * Returns true if there was a transition while terminating streams.
      */
     fun terminateOld(evaluationId: Long): Boolean {
-        prepareStoppedActionList()
+        recomputeCheckToRemoveActionListIfNeeded()
 
-        if (scheduledForRemoval.isNullOrEmpty()) {
-            return false
-        }
+        val runningActionList = running ?: return false
+        val scheduled = checkToRemoveActionList?.takeIf { it.isNotEmpty() } ?: return false
 
-        val actions = actions ?: emptyList()
-        val iterator = scheduledForRemoval?.iterator()
-        while (iterator?.hasNext() == true) {
+        val iterator = scheduled.iterator()
+        while (iterator.hasNext()) {
             val action = iterator.next()
             iterator.remove()
 
             if (!actions.contains(action)) {
-                running?.remove(action)
+                runningActionList.remove(action)
                 finishAction(action)
 
                 if (manager.isTerminated()) {
@@ -70,22 +72,20 @@ internal class ActionManager(
     }
 
     fun startNew(evaluationId: Long): Boolean {
-        prepareNewActionList()
+        recomputeCheckToStartActionListIfNeeded()
 
-        val scheduled = scheduledToStart ?: return false
-        if (scheduled.isEmpty()) {
-            return false
-        }
+        val scheduled = checkToStartActionList?.takeIf { it.isNotEmpty() } ?: return false
 
         val iterator = scheduled.iterator()
         while (iterator.hasNext()) {
             val action = iterator.next()
             iterator.remove()
 
-            if (!isRunning(action)) {
+            val runningActions = getOrInitRunningActions()
+            if (!runningActions.contains(action)) {
                 inspector?.onActionStarted(loggingType, action)
 
-                getOrInitRunningActions().add(action)
+                runningActions.add(action)
                 action.start()
 
                 if (manager.isTerminated()) {
@@ -109,55 +109,44 @@ internal class ActionManager(
         }
     }
 
-    private fun prepareNewActionList() {
-        if (!startListInvalidated) {
-            return
-        }
+    private fun recomputeCheckToStartActionListIfNeeded() {
+        if (recomputeCheckToStartList) {
+            recomputeCheckToStartList = false
 
-        startListInvalidated = false
-        scheduledToStart?.clear()
-
-        val actionList = actions ?: emptyList()
-        if (!actionList.isEmpty()) {
-            if (scheduledToStart == null) {
-                scheduledToStart = mutableListOf()
-            }
-            scheduledToStart?.addAll(actionList)
-            for (action in actionList) {
-                if (!isRunning(action)) {
-                    val list = scheduledToStart ?: mutableListOf<DeferredAction<*>>().apply {
-                        scheduledToStart = this
-                    }
-                    list.add(action)
-                }
+            checkToStartActionList?.clear()
+            val list = checkToStartActionList
+            if (actions.isEmpty()) {
+                list?.clear()
+            } else if (list != null) {
+                list.clear()
+                list.addAll(actions)
+            } else {
+                checkToStartActionList = ArrayList(actions)
             }
         }
     }
 
-    private fun prepareStoppedActionList() {
-        if (!removeListInvalidated) {
-            return
-        }
-        removeListInvalidated = false
+    private fun recomputeCheckToRemoveActionListIfNeeded() {
+        if (recomputeCheckToRemoveList) {
+            recomputeCheckToRemoveList = false
 
-        scheduledForRemoval?.clear()
-        if (!running.isNullOrEmpty()) {
-            if (scheduledForRemoval == null) {
-                scheduledForRemoval = mutableListOf()
+            val list = checkToRemoveActionList
+            val runningList = running?.takeIf { it.isNotEmpty() }
+            if (runningList == null) {
+                list?.clear()
+            } else if (list != null) {
+                list.clear()
+                list.addAll(runningList)
+            } else {
+                checkToRemoveActionList = ArrayList(runningList)
             }
-
-            scheduledForRemoval?.addAll(running ?: emptyList())
         }
-    }
-
-    private fun isRunning(update: DeferredAction<*>): Boolean {
-        return running?.contains(update) ?: false
     }
 
     private fun finishAction(action: DeferredAction<*>) {
         inspector?.onActionFinished(loggingType, action)
         action.tearDown()
-        action.listener = NO_OP
+        action.listener = null
     }
 
     private fun getOrInitRunningActions(): LinkedHashSet<DeferredAction<*>> {

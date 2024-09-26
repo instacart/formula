@@ -8,24 +8,25 @@ import com.instacart.formula.plugin.Dispatcher
  * Note: this class is not a data class because equality is based on instance and not [key].
  */
 @PublishedApi
-internal class ListenerImpl<Input, State, EventT>(val key: Any) : Listener<EventT> {
+internal class ListenerImpl<Input, State, EventT>(
+    private val key: Any,
+    private var transition: Transition<Input, State, EventT>
+) : Listener<EventT> {
 
     @Volatile private var manager: FormulaManagerImpl<Input, State, *>? = null
     @Volatile private var snapshotImpl: SnapshotImpl<Input, State>? = null
     @Volatile private var executionType: Transition.ExecutionType? = null
-
-    private lateinit var transition: Transition<Input, State, EventT>
 
     override fun invoke(event: EventT) {
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
 
         when (val type = executionType) {
-            is Transition.Batched -> handleBatched(type, event)
-            Transition.Immediate -> executeWithDispatcher(Dispatcher.None, event)
-            Transition.Background -> executeWithDispatcher(Dispatcher.Background, event)
+            is Transition.Batched -> handleBatched(manager, type, event)
+            Transition.Immediate -> executeWithDispatcher(manager, Dispatcher.None, event)
+            Transition.Background -> executeWithDispatcher(manager, Dispatcher.Background, event)
             // If transition does not specify dispatcher, we use the default one.
-            else -> executeWithDispatcher(manager.defaultDispatcher, event)
+            else -> executeWithDispatcher(manager, manager.defaultDispatcher, event)
         }
     }
 
@@ -50,17 +51,22 @@ internal class ListenerImpl<Input, State, EventT>(val key: Any) : Listener<Event
         snapshotImpl?.dispatch(transition, event)
     }
 
-    private fun handleBatched(type: Transition.Batched, event: EventT) {
-        val manager = manager ?: return
-
+    private fun handleBatched(
+        manager: FormulaManagerImpl<Input, State, *>,
+        type: Transition.Batched,
+        event: EventT,
+    ) {
         manager.batchManager.add(type, event) {
             val deferredTransition = DeferredTransition(this, event)
             manager.onPendingTransition(deferredTransition)
         }
     }
 
-    private fun executeWithDispatcher(dispatcher: Dispatcher, event: EventT) {
-        val manager = manager ?: return
+    private fun executeWithDispatcher(
+        manager: FormulaManagerImpl<Input, State, *>,
+        dispatcher: Dispatcher,
+        event: EventT,
+    ) {
         manager.queue.postUpdate(dispatcher) {
             val deferredTransition = DeferredTransition(this, event)
             manager.onPendingTransition(deferredTransition)

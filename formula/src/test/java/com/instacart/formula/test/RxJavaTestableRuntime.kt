@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
+import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.rxjava3.ObservableFormula
@@ -18,12 +19,14 @@ object RxJavaTestableRuntime : TestableRuntime {
         formula: F,
         inspector: Inspector?,
         defaultDispatcher: Dispatcher?,
+        isValidationEnabled: Boolean,
     ): TestFormulaObserver<Input, Output, F> {
-        val delegate = RxJavaFormulaTestDelegate(
-            formula = formula,
+        val runtimeConfig = RuntimeConfig(
+            isValidationEnabled = isValidationEnabled,
             inspector = inspector,
-            dispatcher = defaultDispatcher,
+            defaultDispatcher = defaultDispatcher
         )
+        val delegate = RxJavaFormulaTestDelegate(formula, runtimeConfig)
         return TestFormulaObserver(delegate)
     }
 

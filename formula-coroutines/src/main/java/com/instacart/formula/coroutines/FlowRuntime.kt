@@ -20,7 +20,7 @@ object FlowRuntime {
         formula: IFormula<Input, Output>,
         config: RuntimeConfig?,
     ): Flow<Output> {
-        return callbackFlow<Output> {
+        val callbackFlow = callbackFlow {
             val runtime = FormulaRuntime(
                 formula = formula,
                 onOutput = this::trySendBlocking,
@@ -33,6 +33,7 @@ object FlowRuntime {
             awaitClose {
                 runtime.terminate()
             }
-        }.distinctUntilChanged()
+        }
+        return callbackFlow.distinctUntilChanged()
     }
 }

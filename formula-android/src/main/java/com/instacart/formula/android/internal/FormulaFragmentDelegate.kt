@@ -8,12 +8,7 @@ import com.instacart.formula.android.ViewFactory
 internal object FormulaFragmentDelegate {
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
         val appManager = FormulaAndroid.appManagerOrThrow()
-
-        val activity = fragment.activity ?: run {
-            fragmentEnvironment().logger("FormulaFragment has no activity attached: ${fragment.getFragmentKey()}")
-            return null
-        }
-
+        val activity = fragment.requireActivity()
         val viewFactory = appManager.findStore(activity)?.viewFactory(fragment) ?: run {
             // Log view factory is missing
             if (activity.isDestroyed) {

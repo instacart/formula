@@ -27,6 +27,10 @@ class TestActionObserver<Event>(private val action: Action<Event>) {
      * provide a [Cancelable].
      */
     fun cancel() {
-        cancelation!!.cancel()
+        val cancelable = cancelation ?: run {
+            throw IllegalStateException("Action did not return a cancelable.")
+        }
+
+        cancelable.cancel()
     }
 }

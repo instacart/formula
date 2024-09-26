@@ -29,36 +29,21 @@ internal class AppManager(
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityCreated(activity)
+            store?.onActivityCreated(activity)
         }
     }
 
     override fun onActivityStarted(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityStarted(activity)
+            store?.onActivityStarted(activity)
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityResumed(activity)
+            store?.onActivityResumed(activity)
         }
     }
 
@@ -74,24 +59,14 @@ internal class AppManager(
     override fun onActivityPaused(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityPaused(activity)
+            store?.onActivityPaused(activity)
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
         if (activity is FragmentActivity) {
             val store: ActivityManager<FragmentActivity>? = findStore(activity)
-            if (store == null) {
-                // TODO log missing store
-                return
-            }
-
-            store.onActivityStopped(activity)
+            store?.onActivityStopped(activity)
         }
     }
 
@@ -124,7 +99,12 @@ internal class AppManager(
     private fun <A : FragmentActivity> findOrInitActivityStore(
         activity: FragmentActivity, savedState: Bundle?
     ): ActivityManager<A> {
-        val key = findOrGenerateActivityKey(activity, savedState) // generate new key
+        if (activityToKeyMap.containsKey(activity)) {
+            throw IllegalStateException("Activity ${activity::class.java.simpleName} was already initialized. Did you call FormulaAndroid.onPreCreate() twice?")
+        }
+
+        val key =  savedState?.getString(BUNDLE_KEY) // Activity recreated, let's use saved key
+            ?: UUID.randomUUID().toString() // New activity, create new key
         activityToKeyMap[activity] = key
 
         val cached = componentMap[key] as? ActivityManager<A>?
@@ -145,14 +125,5 @@ internal class AppManager(
     private fun clearActivityStore(key: String) {
         val component = componentMap.remove(key)
         component?.dispose()
-    }
-
-    /**
-     * Key is persisted across configuration changes.
-     */
-    private fun findOrGenerateActivityKey(activity: Activity, savedState: Bundle?): String {
-        return (activityToKeyMap[activity] // Try the map
-            ?: savedState?.getString(BUNDLE_KEY) // Try the bundle
-            ?: UUID.randomUUID().toString())
     }
 }

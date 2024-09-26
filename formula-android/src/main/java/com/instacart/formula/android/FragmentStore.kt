@@ -17,15 +17,15 @@ class FragmentStore @PublishedApi internal constructor(
     companion object {
         val EMPTY = init {  }
 
-        inline fun init(
-            crossinline init: FeaturesBuilder<Unit>.() -> Unit
+        fun init(
+            init: FeaturesBuilder<Unit>.() -> Unit
         ): FragmentStore {
             return init(Unit, init)
         }
 
-        inline fun <Component> init(
+        fun <Component> init(
             rootComponent: Component,
-            crossinline init: FeaturesBuilder<Component>.() -> Unit
+            init: FeaturesBuilder<Component>.() -> Unit
         ): FragmentStore {
             val features = FeaturesBuilder.build(init)
             return init(rootComponent, features)

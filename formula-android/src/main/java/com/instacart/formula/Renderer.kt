@@ -12,23 +12,11 @@ package com.instacart.formula
  * renderText("three")
  * ```
  */
-class Renderer<in RenderModel> private constructor(
+class Renderer<in RenderModel>(
     private val renderFunction: (RenderModel) -> Unit
 ) : (RenderModel) -> Unit {
 
     companion object {
-
-        /**
-         * Creates a render function that does nothing.
-         */
-        fun <T> empty() = create<T> { }
-
-        /**
-         * Creates a render function.
-         */
-        operator fun <RenderModel> invoke(render: (RenderModel) -> Unit): Renderer<RenderModel> {
-            return Renderer(renderFunction = render)
-        }
 
         /**
          * Creates a render function.

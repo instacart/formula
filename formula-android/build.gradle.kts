@@ -16,6 +16,7 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
     }
 
     publishing {
@@ -31,7 +32,6 @@ dependencies {
     api(libs.rxandroid)
     api(libs.rxrelay)
 
-
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.junit)
@@ -41,5 +41,6 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
+    testImplementation(project(":test-utils:android"))
 }
 

@@ -44,9 +44,15 @@ object CoroutinesTestableRuntime : TestableRuntime {
         formula: F,
         inspector: Inspector?,
         defaultDispatcher: Dispatcher?,
+        isValidationEnabled: Boolean,
     ): TestFormulaObserver<Input, Output, F> {
         val scope = coroutineTestRule.testCoroutineScope
-        val delegate = CoroutineTestDelegate(scope, formula, inspector, defaultDispatcher)
+        val runtimeConfig = RuntimeConfig(
+            isValidationEnabled = isValidationEnabled,
+            inspector = inspector,
+            defaultDispatcher = defaultDispatcher
+        )
+        val delegate = CoroutineTestDelegate(scope, formula, runtimeConfig)
         return TestFormulaObserver(delegate)
     }
 
@@ -112,17 +118,11 @@ private class FlowStreamFormulaSubject : FlowFormula<String, Int>(), StreamFormu
 private class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     private val scope: CoroutineScope,
     override val formula: FormulaT,
-    private val inspector: Inspector?,
-    private val dispatcher: Dispatcher?,
+    private val runtimeConfig: RuntimeConfig,
 ): FormulaTestDelegate<Input, Output, FormulaT> {
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
-    private val runtimeConfig = RuntimeConfig(
-        isValidationEnabled = true,
-        inspector = inspector,
-        defaultDispatcher = dispatcher,
-    )
     private val inputFlow = MutableSharedFlow<Input>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val formulaFlow = formula.toFlow(inputFlow, runtimeConfig)
         .onEach { values.add(it) }

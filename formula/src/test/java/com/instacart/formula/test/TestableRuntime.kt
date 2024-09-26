@@ -19,6 +19,7 @@ interface TestableRuntime {
         formula: F,
         inspector: Inspector? = null,
         defaultDispatcher: Dispatcher? = null,
+        isValidationEnabled: Boolean = true,
     ): TestFormulaObserver<Input, Output, F>
 
     /**

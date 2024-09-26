@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.instacart.formula.android.internal.getFormulaFragmentId
+import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
 class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
@@ -17,11 +18,14 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
         @JvmStatic
         fun newInstance(key: FragmentKey): FormulaFragment {
-            return FormulaFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARG_CONTRACT, key)
-                }
+            val fragment = FormulaFragment()
+            fragment.getOrSetArguments().apply {
+                putParcelable(ARG_CONTRACT, key)
             }
+            FormulaAndroid.fragmentEnvironment().fragmentDelegate.onNewInstance(
+                fragmentId = fragment.formulaFragmentId
+            )
+            return fragment
         }
     }
 
@@ -39,26 +43,11 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
     private val fragmentDelegate: FragmentEnvironment.FragmentDelegate
         get() = environment.fragmentDelegate
 
-    private var calledNewInstance = false
-
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
 
     private val lifecycleCallback: FragmentLifecycleCallback?
         get() = featureView?.lifecycleCallbacks
-
-    override fun setArguments(args: Bundle?) {
-        super.setArguments(args)
-
-        /**
-         * To ensure that we have both fragment key and formula instance id, we need
-         * to wait for arguments to be set.
-         */
-        if (!calledNewInstance) {
-            calledNewInstance = true
-            fragmentDelegate.onNewInstance(formulaFragmentId)
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {

@@ -24,7 +24,7 @@ internal class ActivityStoreFactory internal constructor(
             ?: return null
 
         val activityDelegate = ActivityStoreContextImpl<A>()
-        return initializer.init.invoke(activityDelegate)?.let { store ->
+        return initializer.init.invoke(activityDelegate).let { store ->
             ActivityManager(
                 environment = environment,
                 delegate = activityDelegate,

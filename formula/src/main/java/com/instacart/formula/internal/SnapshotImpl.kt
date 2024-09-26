@@ -11,7 +11,7 @@ import com.instacart.formula.TransitionContext
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
-internal class SnapshotImpl<out Input, State> internal constructor(
+internal class SnapshotImpl<out Input, State>(
     override val input: Input,
     override val state: State,
     listeners: Listeners,
@@ -64,7 +64,7 @@ internal class SnapshotImpl<out Input, State> internal constructor(
         transition: Transition<Input, State, Event>
     ): Listener<Event> {
         ensureNotRunning()
-        val listener = listeners.initOrFindListener<Input, State, Event>(key, useIndex)
+        val listener = listeners.initOrFindListener(key, useIndex, transition)
         listener.setDependencies(delegate, this, executionType, transition)
         return listener
     }

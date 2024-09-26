@@ -1,6 +1,3 @@
-import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
-import com.android.build.gradle.internal.lint.LintModelWriterTask
-
 plugins {
   id("java-library")
   id("kotlin")
@@ -21,4 +18,5 @@ dependencies {
   testImplementation(libs.lint.core)
   testImplementation(libs.lint.tests)
   testImplementation(libs.junit)
+  testImplementation(libs.truth)
 }
