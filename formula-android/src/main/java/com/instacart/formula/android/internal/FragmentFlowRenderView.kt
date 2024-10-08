@@ -16,6 +16,7 @@ import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ViewFactory
+import com.instacart.formula.android.getFormulaFragmentId
 import java.util.LinkedList
 
 /**

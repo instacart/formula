@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.internal.FormulaFragmentDelegate
-import com.instacart.formula.android.internal.getFormulaFragmentId
 import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
