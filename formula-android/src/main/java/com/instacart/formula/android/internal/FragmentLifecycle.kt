@@ -19,7 +19,7 @@ internal object FragmentLifecycle {
     }
 }
 
-private fun Fragment.getFragmentKey(): FragmentKey {
+internal fun Fragment.getFragmentKey(): FragmentKey {
     val fragment = this as? BaseFormulaFragment<*>
     return fragment?.getFragmentKey() ?: EmptyFragmentKey(tag.orEmpty())
 }
@@ -28,7 +28,7 @@ private fun Fragment.getFragmentKey(): FragmentKey {
  * Gets a persisted across configuration changes fragment identifier or initializes
  * one if it doesn't exist.
  */
-private fun Fragment.getFragmentInstanceId(): String {
+internal fun Fragment.getFragmentInstanceId(): String {
     return if (this is BaseFormulaFragment<*>) {
         val arguments = getOrSetArguments()
         val id = arguments.getString(FormulaFragment.ARG_FORMULA_ID, "")
@@ -40,13 +40,6 @@ private fun Fragment.getFragmentInstanceId(): String {
     } else {
         ""
     }
-}
-
-internal fun Fragment.getFormulaFragmentId(): FragmentId {
-    return FragmentId(
-        instanceId = getFragmentInstanceId(),
-        key = getFragmentKey()
-    )
 }
 
 internal fun Fragment.getOrSetArguments(): Bundle {
