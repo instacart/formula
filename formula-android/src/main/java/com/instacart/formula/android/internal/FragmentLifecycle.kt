@@ -29,16 +29,12 @@ internal fun Fragment.getFragmentKey(): FragmentKey {
  * one if it doesn't exist.
  */
 internal fun Fragment.getFragmentInstanceId(): String {
-    return if (this is BaseFormulaFragment<*>) {
-        val arguments = getOrSetArguments()
-        val id = arguments.getString(FormulaFragment.ARG_FORMULA_ID, "")
-        id.ifBlank {
-            val initializedId = UUID.randomUUID().toString()
-            arguments.putString(FormulaFragment.ARG_FORMULA_ID, initializedId)
-            initializedId
-        }
-    } else {
-        ""
+    val arguments = getOrSetArguments()
+    val id = arguments.getString(FormulaFragment.ARG_FORMULA_ID, "")
+    return id.ifBlank {
+        val initializedId = UUID.randomUUID().toString()
+        arguments.putString(FormulaFragment.ARG_FORMULA_ID, initializedId)
+        initializedId
     }
 }
 
