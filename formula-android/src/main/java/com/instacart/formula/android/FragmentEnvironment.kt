@@ -15,13 +15,6 @@ data class FragmentEnvironment(
     open class FragmentDelegate {
 
         /**
-         * Called when new instance of [FormulaFragment] is created.
-         */
-        open fun onNewInstance(
-            fragmentId: FragmentId
-        ) = Unit
-
-        /**
          * Instantiates the feature.
          */
         open fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
