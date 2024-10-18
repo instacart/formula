@@ -34,6 +34,12 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
         state: State
     ): State = state
 
+    // TODO:
+    open fun onStateChanged(
+        oldState: State,
+        newState: State,
+    ): State = newState
+
     /**
      * The primary purpose of evaluate is to create an [output][Evaluation.output]. A
      * [snapshot][Snapshot] which contains current [Input], current [State] and

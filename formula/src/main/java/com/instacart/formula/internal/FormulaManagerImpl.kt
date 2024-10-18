@@ -95,6 +95,8 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (result is Transition.Result.Stateful) {
             val old = state
             if (state != result.state) {
+                formula.onStateChanged(state, result.state)
+
                 state = result.state
 
                 globalEvaluationId += 1
