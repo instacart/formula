@@ -57,6 +57,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
 
         uiSubscription = delegate.fragmentState().subscribe {
+            store.onPreRenderFragmentState?.invoke(activity, it)
             renderView.render(it)
             store.onRenderFragmentState?.invoke(activity, it)
         }
