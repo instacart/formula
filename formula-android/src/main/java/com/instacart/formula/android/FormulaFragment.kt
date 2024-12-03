@@ -17,14 +17,9 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
 
         @JvmStatic
         fun newInstance(key: FragmentKey): FormulaFragment {
-            val fragment = FormulaFragment()
-            fragment.getOrSetArguments().apply {
-                putParcelable(ARG_CONTRACT, key)
+            return FormulaFragment().apply {
+                getOrSetArguments().putParcelable(ARG_CONTRACT, key)
             }
-            FormulaAndroid.fragmentEnvironment().fragmentDelegate.onNewInstance(
-                fragmentId = fragment.formulaFragmentId
-            )
-            return fragment
         }
     }
 
