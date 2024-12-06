@@ -32,10 +32,9 @@ data class FragmentEnvironment(
         open fun createView(
             fragmentId: FragmentId,
             viewFactory: ViewFactory<Any>,
-            inflater: LayoutInflater,
-            container: ViewGroup?,
+            params: ViewFactory.Params,
         ): FeatureView<Any> {
-            return viewFactory.create(inflater, container)
+            return viewFactory.create(params)
         }
 
         /**
