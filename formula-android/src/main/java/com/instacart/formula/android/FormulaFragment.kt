@@ -48,7 +48,12 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
             // No view factory, no view
             return null
         }
-        val featureView = viewFactory.create(inflater, container).apply {
+        val params = ViewFactory.Params(
+            context = requireContext(),
+            inflater = inflater,
+            container = container,
+        )
+        val featureView = viewFactory.create(params).apply {
             featureView = this
         }
         return featureView.view

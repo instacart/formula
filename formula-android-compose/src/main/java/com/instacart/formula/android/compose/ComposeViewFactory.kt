@@ -13,8 +13,8 @@ import com.jakewharton.rxrelay3.BehaviorRelay
 
 abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> {
 
-    override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel> {
-        val view = ComposeView(inflater.context)
+    override fun create(params: ViewFactory.Params): FeatureView<RenderModel> {
+        val view = ComposeView(params.context)
         // Based-on: https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views#compose-in-fragments
         view.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
