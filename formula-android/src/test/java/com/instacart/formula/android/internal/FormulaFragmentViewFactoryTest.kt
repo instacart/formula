@@ -46,7 +46,7 @@ class FormulaFragmentViewFactoryTest {
             timesCalled += 1
             val feature = Feature(
                 state = Observable.empty(),
-                viewFactory = ViewFactory { _, _ ->
+                viewFactory = ViewFactory { _ ->
                     error("should not be called")
                 }
             )

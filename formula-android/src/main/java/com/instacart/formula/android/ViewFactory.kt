@@ -1,5 +1,6 @@
 package com.instacart.formula.android
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
@@ -45,11 +46,17 @@ fun interface ViewFactory<RenderModel> {
         }
     }
 
+    class Params(
+        val context: Context,
+        val inflater: LayoutInflater,
+        val container: ViewGroup?,
+    )
+
     /**
      * This method is called from [FormulaFragment.onCreateView] function. Use it to
      * instantiate an Android view instance and return a [FeatureView] which knows how to
      * bind the state management to view rendering. Usually, you should use [LayoutViewFactory]
      * or [ViewFactory.fromLayout] instead of implementing this method directly.
      */
-    fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel>
+    fun create(params: Params): FeatureView<RenderModel>
 }

@@ -1,7 +1,5 @@
 package com.instacart.formula.android.internal
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.ViewFactory
@@ -18,10 +16,10 @@ internal class FormulaFragmentViewFactory(
 
     private var factory: ViewFactory<Any>? = null
 
-    override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<Any> {
+    override fun create(params: ViewFactory.Params): FeatureView<Any> {
         val viewFactory = viewFactory()
         val delegate = environment.fragmentDelegate
-        return delegate.createView(fragmentId, viewFactory, inflater, container)
+        return delegate.createView(fragmentId, viewFactory, params)
     }
 
     @VisibleForTesting

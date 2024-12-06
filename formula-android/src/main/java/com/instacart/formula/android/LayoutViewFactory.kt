@@ -1,7 +1,5 @@
 package com.instacart.formula.android
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import com.instacart.formula.android.views.InflatedViewInstance
 
@@ -32,8 +30,8 @@ abstract class LayoutViewFactory<RenderModel>(@LayoutRes private val layoutId: I
 
     abstract fun ViewInstance.create(): FeatureView<RenderModel>
 
-    override fun create(inflater: LayoutInflater, container: ViewGroup?): FeatureView<RenderModel> {
-        val view = inflater.inflate(layoutId, container, false)
+    override fun create(params: ViewFactory.Params): FeatureView<RenderModel> {
+        val view = params.inflater.inflate(layoutId, params.container, false)
         return InflatedViewInstance(view).create()
     }
 }
