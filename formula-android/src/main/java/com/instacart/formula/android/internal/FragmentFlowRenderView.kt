@@ -105,7 +105,7 @@ internal class FragmentFlowRenderView(
             super.onFragmentDetached(fm, f)
 
             // Only trigger detach, when fragment is actually being removed from the backstack
-            if (FragmentLifecycle.shouldTrack(f) && f.isRemoving) {
+            if (FragmentLifecycle.shouldTrack(f) && f.isRemoving && !activity.isChangingConfigurations) {
                 val formulaFragment = f as? BaseFormulaFragment<*>
                 val event = FragmentLifecycleEvent.Removed(
                     fragmentId = f.getFormulaFragmentId(),
@@ -135,13 +135,6 @@ internal class FragmentFlowRenderView(
             return state is BackCallback && state.onBackPressed()
         }
         return false
-    }
-
-    /**
-     * This method must be invoked in [android.app.Activity.onDestroy]
-     */
-    fun dispose() {
-        activity.supportFragmentManager.unregisterFragmentLifecycleCallbacks(callback)
     }
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
