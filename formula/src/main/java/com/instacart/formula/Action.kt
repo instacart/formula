@@ -79,6 +79,11 @@ interface Action<Event> {
         }
     }
 
+    interface Emitter<Event> {
+        fun onEvent(event: Event)
+        fun onError(throwable: Throwable)
+    }
+
     /**
      * Formula runtime calls this method to initialize an [Action] the first time it is returned
      * by the [evaluation][Evaluation]. We use [key] to identify unique actions and Formula
@@ -91,10 +96,9 @@ interface Action<Event> {
      * to clean up such as remove subscriptions to RxJava observables, Kotlin Flows, event buses,
      * etc.
      *
-     * @param send Use this listener to send events back to [Formula].
-     *             Note: you need to call this on the main thread.
+     * @param emitter Use this listener to send events back to [Formula].
      */
-    fun start(send: (Event) -> Unit): Cancelable?
+    fun start(emitter: Emitter<Event>): Cancelable?
 
     /**
      * An identifier used to distinguish between different types of actions.
@@ -109,8 +113,8 @@ internal class StartEventAction<Data>(
     private val data: Data
 ) : Action<Data> {
 
-    override fun start(send: (Data) -> Unit): Cancelable? {
-        send(data)
+    override fun start(emitter: Action.Emitter<Data>): Cancelable? {
+        emitter.onEvent(data)
         return null
     }
 
@@ -121,9 +125,9 @@ internal class StartEventAction<Data>(
  * Emits an event when [Formula] is terminated.
  */
 internal object TerminateEventAction : Action<Unit> {
-    override fun start(send: (Unit) -> Unit): Cancelable {
+    override fun start(emitter: Action.Emitter<Unit>): Cancelable {
         return Cancelable {
-            send(Unit)
+            emitter.onEvent(Unit)
         }
     }
 
