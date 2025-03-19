@@ -1,5 +1,7 @@
 package com.instacart.formula.plugin
 
+import com.instacart.formula.Action
+import com.instacart.formula.Effect
 import kotlin.reflect.KClass
 
 interface Plugin {
@@ -21,6 +23,13 @@ interface Plugin {
         childFormulaType: Class<*>,
         key: Any,
     ) = Unit
+
+    /**
+     * Notified when [Action] has an unhandled error.
+     */
+    fun onUnhandledActionError(formulaType: Class<*>, error: Throwable) {
+        throw error
+    }
 
     /**
      * Dispatcher for the main thread. It will be used to execute

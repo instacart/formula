@@ -1545,9 +1545,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(emitter: Action.Emitter<Unit>): Cancelable? {
                                     return Cancelable {
-                                        send(Unit)
+                                        emitter.onEvent(Unit)
                                     }
                                 }
 
@@ -1587,7 +1587,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(emitter: Action.Emitter<Unit>): Cancelable {
                                     return Cancelable {
                                         newRelay.triggerEvent()
                                     }
@@ -1625,7 +1625,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(emitter: Action.Emitter<Unit>): Cancelable {
                                     return Cancelable {
                                         terminate()
                                     }
@@ -1663,8 +1663,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                         if (input) {
                             val action = object : Action<Unit> {
                                 override fun key(): Any? = null
-                                override fun start(send: (Unit) -> Unit): Cancelable? {
-                                    sendCallback = send
+                                override fun start(emitter: Action.Emitter<Unit>): Cancelable? {
+                                    sendCallback = emitter::onEvent
                                     return null
                                 }
                             }
@@ -2360,4 +2360,3 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
     }
 }
-
