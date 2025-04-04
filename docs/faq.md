@@ -60,7 +60,7 @@ class TaskDetailFormula @Inject constructor(
     }
 }
 ```
-which the render model and then stores it in the `State`, we would store the fetched task from the RxAction in
+which creates the render model and then stores it in the `State`, we would store the fetched task from the RxAction in
 the state and then construct the render model in the `evaluation` function itself:
 ```
 class TaskDetailFormula @Inject constructor(
@@ -92,7 +92,7 @@ class TaskDetailFormula @Inject constructor(
             output = renderModel,
             actions = context.actions {
                 RxAction.fromObservable { repo.fetchTask(input.taskId) }.onEvent { task ->
-                   transition(state.copy(task = renderModel))
+                   transition(state.copy(task = task))
                 }
             }
         )
