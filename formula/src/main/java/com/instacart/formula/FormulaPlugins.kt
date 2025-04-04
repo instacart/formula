@@ -30,6 +30,15 @@ object FormulaPlugins {
        plugin?.onDuplicateChildKey(parentFormulaType, childFormulaType, key)
     }
 
+    internal fun onUnhandledActionError(formulaType: Class<*>, error: Throwable) {
+        val plugin = plugin
+        if (plugin == null) {
+            throw error
+        } else {
+            plugin.onUnhandledActionError(formulaType, error)
+        }
+    }
+
     fun mainThreadDispatcher(): Dispatcher {
         return plugin?.mainThreadDispatcher() ?: Dispatcher.None
     }

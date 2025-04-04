@@ -3,15 +3,20 @@ package com.instacart.formula.coroutines
 import app.cash.turbine.test
 import com.google.common.truth.Truth
 import com.instacart.formula.Evaluation
+import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
+import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.test.CountingInspector
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class FlowRuntimeTest {
+
+
 
     @Test
     fun `toFlow with unit input and no config`() {
@@ -132,5 +137,43 @@ class FlowRuntimeTest {
             }
         }
         inspector.assertEvaluationCount(1)
+    }
+
+    @Test fun `flow action throws error`() {
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        FlowAction.fromFlow<Unit> {
+                            flow { throw IllegalStateException("crashed") }
+                        }.onEvent {
+                            none()
+                        }
+                    }
+                )
+            }
+        }
+
+        try {
+            val errors = mutableListOf<Throwable>()
+            val plugin = object : Plugin {
+                override fun onUnhandledActionError(formulaType: Class<*>, error: Throwable) {
+                    errors.add(error)
+                }
+            }
+
+            FormulaPlugins.setPlugin(plugin)
+
+            runTest {
+                formula.toFlow(Unit).test {
+                    awaitItem() // Initial event
+                }
+
+                Truth.assertThat(errors).hasSize(1)
+            }
+        } finally {
+            FormulaPlugins.setPlugin(null)
+        }
     }
 }

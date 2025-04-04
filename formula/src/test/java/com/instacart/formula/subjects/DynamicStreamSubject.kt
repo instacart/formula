@@ -46,7 +46,7 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
 
         private fun action(key: String): Action<Unit> {
             return object : Action<Unit> {
-                override fun start(send: (Unit) -> Unit): Cancelable? {
+                override fun start(emitter: Action.Emitter<Unit>): Cancelable? {
                     running.add(key)
                     return Cancelable {
                         running.remove(key)

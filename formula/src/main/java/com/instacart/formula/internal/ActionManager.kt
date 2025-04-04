@@ -86,6 +86,8 @@ internal class ActionManager(
                 inspector?.onActionStarted(loggingType, action)
 
                 runningActions.add(action)
+
+                action.formulaType = loggingType.java
                 action.start()
 
                 if (manager.isTerminated()) {

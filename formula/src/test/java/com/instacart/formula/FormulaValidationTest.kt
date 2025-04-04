@@ -60,7 +60,7 @@ class FormulaValidationTest {
                     output = 0,
                     context.actions {
                         val action = object : Action<Unit> {
-                            override fun start(send: (Unit) -> Unit): Cancelable? {
+                            override fun start(emitter: Action.Emitter<Unit>): Cancelable? {
                                 return null
                             }
 

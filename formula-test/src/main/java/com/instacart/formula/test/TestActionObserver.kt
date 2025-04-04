@@ -6,9 +6,22 @@ import java.lang.AssertionError
 
 class TestActionObserver<Event>(private val action: Action<Event>) {
     private val values = mutableListOf<Event>()
-    private val cancelation = action.start { values.add(it) }
+    private val errors = mutableListOf<Throwable>()
+    private val cancelation = action.start(
+        object : Action.Emitter<Event> {
+            override fun onEvent(event: Event) {
+                values.add(event)
+            }
+
+            override fun onError(throwable: Throwable) {
+                errors.add(throwable)
+            }
+        }
+    )
 
     fun values(): List<Event> = values
+
+    fun errors(): List<Throwable> = errors
 
     fun assertValues(vararg expected: Event) {
         if (expected.size != values.size) {
