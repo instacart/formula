@@ -33,6 +33,8 @@ class CoroutineActionTest {
         }
 
         val observer = action.test()
+        observer.assertValues()
+
         dispatcher.scheduler.advanceUntilIdle()
         observer.assertValues("Result")
     }
@@ -47,6 +49,8 @@ class CoroutineActionTest {
         assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
+        observer.assertValues()
+
         dispatcher.scheduler.advanceUntilIdle()
         observer.assertValues("Result")
     }
@@ -76,6 +80,8 @@ class CoroutineActionTest {
             throw RuntimeException("My error")
         }
         val observer = action.test()
+        observer.assertValues()
+
         dispatcher.scheduler.advanceUntilIdle()
         val value = observer.values()[0].exceptionOrNull()
         assertThat(value).hasMessageThat().isEqualTo("My error")
@@ -90,6 +96,8 @@ class CoroutineActionTest {
         assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
+        observer.assertValues()
+
         dispatcher.scheduler.advanceUntilIdle()
         val value = observer.values()[0].exceptionOrNull()
         assertThat(value).hasMessageThat().isEqualTo("My error")
@@ -105,8 +113,12 @@ class CoroutineActionTest {
         assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
+        observer.assertValues()
+
         dispatcher.scheduler.advanceTimeBy(500)
         observer.cancel()
+
+        dispatcher.scheduler.advanceUntilIdle()
         observer.assertValues()
     }
 }
