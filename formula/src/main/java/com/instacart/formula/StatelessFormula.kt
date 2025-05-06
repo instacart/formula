@@ -10,7 +10,7 @@ package com.instacart.formula
  * @param Output A data class returned by this formula that contains data and event
  * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).
  */
-abstract class StatelessFormula<Input, Output> : IFormula<Input, Output> {
+abstract class StatelessFormula<in Input, Output> : IFormula<Input, Output> {
 
     // Implements the common API used by the runtime.
     final override val implementation = object : Formula<Input, Unit, Output>() {

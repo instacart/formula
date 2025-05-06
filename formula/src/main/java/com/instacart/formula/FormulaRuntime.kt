@@ -217,13 +217,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 while (shouldRun) {
                     val localInputId = inputId
                     isRunning = true
-                    inspector?.onRunStarted(true)
 
-                    val currentInput = requireInput()
-                    runFormula(manager, currentInput)
-                    isRunning = false
-
-                    inspector?.onRunFinished()
+                    try {
+                        inspector?.onRunStarted(true)
+                        val currentInput = requireInput()
+                        runFormula(manager, currentInput)
+                    } finally {
+                        isRunning = false
+                        inspector?.onRunFinished()
+                    }
 
                     /**
                      * If termination happened during runFormula() execution, let's perform

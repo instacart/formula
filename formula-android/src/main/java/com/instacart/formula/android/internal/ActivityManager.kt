@@ -84,7 +84,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
         uiSubscription?.dispose()
         uiSubscription = null
 
-        fragmentRenderView?.dispose()
         fragmentRenderView = null
 
         delegate.detachActivity(activity)
