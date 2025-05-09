@@ -27,29 +27,6 @@ class ActivityStoreContextTest {
         context = ActivityStoreContextImpl()
     }
 
-    @Test fun `select activity events only runs when activity is attached`() {
-        val fakeEvents = context.selectActivityEvents { fakeEvents() }
-
-        fakeEvents
-            .test()
-            .apply {
-                fakeEventRelay.accept("missed")
-            }
-            .assertEmpty()
-            .apply {
-                val activity = createFakeActivity()
-                context.attachActivity(activity)
-
-                fakeEventRelay.accept("first")
-                fakeEventRelay.accept("second")
-
-                context.detachActivity(activity)
-
-                fakeEventRelay.accept("third")
-            }
-            .assertValues("first", "second")
-    }
-
     @Test fun `send drops events if activity is not started`() {
         val activity = createFakeActivity()
         context.attachActivity(activity)

@@ -16,7 +16,6 @@ import io.reactivex.rxjava3.core.Observable
  */
 internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityStoreContext<Activity>() {
 
-    private val attachEventRelay = BehaviorRelay.createDefault(false)
     private val startedRelay = PublishRelay.create<Unit>()
 
     private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
@@ -55,21 +54,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         return isFragmentResumed(key.tag)
     }
 
-    override fun <Event : Any> selectActivityEvents(
-        select: Activity.() -> Observable<Event>
-    ): Observable<Event> {
-        // TODO: should probably use startedActivity
-        return attachEventRelay
-            .switchMap {
-                val activity = activity
-                if (activity == null) {
-                    Observable.empty<Event>()
-                } else {
-                    select(activity)
-                }
-            }
-    }
-
     override fun send(effect: Activity.() -> Unit) {
         // We allow emitting effects only after activity has started
         if (Utils.isMainThread()) {
@@ -94,7 +78,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     fun attachActivity(activity: Activity) {
         hasStarted = false
         this.activity = activity
-        attachEventRelay.accept(true)
     }
 
     fun onActivityStarted(activity: Activity) {
@@ -105,7 +88,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     fun detachActivity(activity: Activity) {
         if (this.activity == activity) {
             this.activity = null
-            attachEventRelay.accept(false)
         }
     }
 
