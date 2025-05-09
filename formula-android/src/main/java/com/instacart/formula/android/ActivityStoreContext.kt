@@ -54,15 +54,6 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun isFragmentResumed(key: FragmentKey): Observable<Boolean>
 
     /**
-     * This enables you to select specific events from the activity.
-     *
-     * @param Event Type of event
-     */
-    abstract fun <Event : Any> selectActivityEvents(
-        select: Activity.() -> Observable<Event>
-    ): Observable<Event>
-
-    /**
      * Performs an [effect] on the current activity instance. If there is no activity connected,
      * it will do nothing.
      */
