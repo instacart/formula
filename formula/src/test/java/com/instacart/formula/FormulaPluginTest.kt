@@ -84,4 +84,22 @@ class FormulaPluginTest {
             key = Unit,
         )
     }
+
+    @Test fun `onUnhandledActionError throws error when no plugin is set`() {
+        val error = RuntimeException()
+        val result = runCatching {
+            FormulaPlugins.onUnhandledActionError(String::class.java, error)
+        }
+
+        assertThat(result.exceptionOrNull()).isEqualTo(error)
+    }
+
+    @Test fun `onUnhandledActionError throws error when default plugin implementation is used`() {
+        val error = RuntimeException()
+        FormulaPlugins.setPlugin(object : Plugin { })
+        val result = runCatching {
+            FormulaPlugins.onUnhandledActionError(String::class.java, error)
+        }
+        assertThat(result.exceptionOrNull()).isEqualTo(error)
+    }
 }

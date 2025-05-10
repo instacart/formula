@@ -9,14 +9,24 @@ class DeferredAction<Event>(
     // We use event listener for equality because it provides better equality performance
     private val initial: (Event) -> Unit
 ) {
-    private var cancelable: Cancelable? = null
+    // Set before [start] is called
+    internal lateinit var formulaType: Class<*>
 
+    private var cancelable: Cancelable? = null
     internal var listener: ((Event) -> Unit)? = initial
 
     internal fun start() {
-        cancelable = action.start() { message ->
-            listener?.invoke(message)
+        val emitter = object : Action.Emitter<Event> {
+            override fun onEvent(event: Event) {
+                listener?.invoke(event)
+            }
+
+            override fun onError(throwable: Throwable) {
+                FormulaPlugins.onUnhandledActionError(formulaType, throwable)
+            }
         }
+
+        cancelable = action.start(emitter)
     }
 
     internal fun tearDown() {

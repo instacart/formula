@@ -2,11 +2,13 @@ package com.instacart.formula.coroutines
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,10 +57,14 @@ interface FlowAction<Event> : Action<Event> {
     fun flow(): Flow<Event>
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun start(send: (Event) -> Unit): Cancelable? {
+    override fun start(emitter: Action.Emitter<Event>): Cancelable? {
         val job = GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
             withContext(Dispatchers.Unconfined) {
-                flow().collect { send(it) }
+                flow().catch {
+                    if (it !is CancellationException) {
+                        emitter.onError(it)
+                    }
+                }.collect { emitter.onEvent(it) }
             }
         }
         return Cancelable(job::cancel)
