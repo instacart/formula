@@ -1,6 +1,7 @@
 package com.instacart.formula.coroutines
 
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth
+import com.instacart.formula.action.CoroutineAction
 import com.instacart.formula.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -10,23 +11,26 @@ import org.junit.Test
 
 class CoroutineActionTest {
 
-    @Test fun launch() {
+    @Test
+    fun launch() {
         val action = CoroutineAction.launch { "Result" }
-        assertThat(action.key()).isNull()
+        Truth.assertThat(action.key()).isNull()
 
         val observer = action.test()
         observer.assertValues("Result")
     }
 
-    @Test fun `launch - key`() {
+    @Test
+    fun `launch - key`() {
         val action = CoroutineAction.launch("key") { "Result" }
-        assertThat(action.key()).isEqualTo("key")
+        Truth.assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
         observer.assertValues("Result")
     }
 
-    @Test fun `launch - dispatcher`() {
+    @Test
+    fun `launch - dispatcher`() {
         val dispatcher = StandardTestDispatcher()
         val action = CoroutineAction.launch(coroutineDispatcher = dispatcher) {
             delay(1000)
@@ -40,14 +44,15 @@ class CoroutineActionTest {
         observer.assertValues("Result")
     }
 
-    @Test fun `launch - key, dispatcher`() {
+    @Test
+    fun `launch - key, dispatcher`() {
         val dispatcher = StandardTestDispatcher()
         val action = CoroutineAction.launch("key", dispatcher) {
             delay(1000)
             "Result"
         }
 
-        assertThat(action.key()).isEqualTo("key")
+        Truth.assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
         observer.assertValues()
@@ -56,25 +61,28 @@ class CoroutineActionTest {
         observer.assertValues("Result")
     }
 
-    @Test fun launchCatching() {
+    @Test
+    fun launchCatching() {
         val action = CoroutineAction.launchCatching { throw RuntimeException("My error") }
-        assertThat(action.key()).isNull()
+        Truth.assertThat(action.key()).isNull()
 
         val observer = action.test()
         val value = observer.values()[0].exceptionOrNull()
-        assertThat(value).hasMessageThat().isEqualTo("My error")
+        Truth.assertThat(value).hasMessageThat().isEqualTo("My error")
     }
 
-    @Test fun `launchCatching - key`() {
+    @Test
+    fun `launchCatching - key`() {
         val action = CoroutineAction.launchCatching("key") { throw RuntimeException("My error") }
-        assertThat(action.key()).isEqualTo("key")
+        Truth.assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
         val value = observer.values()[0].exceptionOrNull()
-        assertThat(value).hasMessageThat().isEqualTo("My error")
+        Truth.assertThat(value).hasMessageThat().isEqualTo("My error")
     }
 
-    @Test fun `launchCatching - dispatcher`() {
+    @Test
+    fun `launchCatching - dispatcher`() {
         val dispatcher = StandardTestDispatcher()
         val action = CoroutineAction.launchCatching(dispatcher) {
             delay(1000)
@@ -85,33 +93,35 @@ class CoroutineActionTest {
 
         dispatcher.scheduler.advanceUntilIdle()
         val value = observer.values()[0].exceptionOrNull()
-        assertThat(value).hasMessageThat().isEqualTo("My error")
+        Truth.assertThat(value).hasMessageThat().isEqualTo("My error")
     }
 
-    @Test fun `launchCatching - key, dispatcher`() {
+    @Test
+    fun `launchCatching - key, dispatcher`() {
         val dispatcher = StandardTestDispatcher()
         val action = CoroutineAction.launchCatching("key", dispatcher) {
             delay(1000)
             throw RuntimeException("My error")
         }
-        assertThat(action.key()).isEqualTo("key")
+        Truth.assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
         observer.assertValues()
 
         dispatcher.scheduler.advanceUntilIdle()
         val value = observer.values()[0].exceptionOrNull()
-        assertThat(value).hasMessageThat().isEqualTo("My error")
+        Truth.assertThat(value).hasMessageThat().isEqualTo("My error")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    @Test fun `launchCatching - cancellation`() {
+    @Test
+    fun `launchCatching - cancellation`() {
         val dispatcher = StandardTestDispatcher()
         val action = CoroutineAction.launchCatching("key", dispatcher) {
             delay(1000)
             throw RuntimeException("My error")
         }
-        assertThat(action.key()).isEqualTo("key")
+        Truth.assertThat(action.key()).isEqualTo("key")
 
         val observer = action.test()
         observer.assertValues()
@@ -126,12 +136,12 @@ class CoroutineActionTest {
     @Test
     fun `fromFlow - default key is null`() {
         val action = CoroutineAction.fromFlow { flowOf("") }
-        assertThat(action.key()).isNull()
+        Truth.assertThat(action.key()).isNull()
     }
 
     @Test
     fun `fromFlow - specified key`() {
         val action = CoroutineAction.fromFlow("unique-key") { flowOf("") }
-        assertThat(action.key()).isEqualTo("unique-key")
+        Truth.assertThat(action.key()).isEqualTo("unique-key")
     }
 }

@@ -1,4 +1,4 @@
-package com.instacart.formula.coroutines
+package com.instacart.formula.action
 
 import com.instacart.formula.Action
 import kotlinx.coroutines.CoroutineDispatcher

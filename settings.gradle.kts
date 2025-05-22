@@ -5,7 +5,6 @@ include(
     ":formula-android-tests",
     ":formula-lint",
     ":formula-rxjava3",
-    ":formula-coroutines",
     ":formula-test",
 )
 include(

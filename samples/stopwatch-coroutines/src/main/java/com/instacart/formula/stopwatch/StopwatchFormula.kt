@@ -3,7 +3,7 @@ package com.instacart.formula.stopwatch
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.coroutines.CoroutineAction
+import com.instacart.formula.action.CoroutineAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
