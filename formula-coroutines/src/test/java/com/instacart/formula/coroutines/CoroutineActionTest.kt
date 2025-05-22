@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Test
 
@@ -120,5 +121,17 @@ class CoroutineActionTest {
 
         dispatcher.scheduler.advanceUntilIdle()
         observer.assertValues()
+    }
+
+    @Test
+    fun `fromFlow - default key is null`() {
+        val action = CoroutineAction.fromFlow { flowOf("") }
+        assertThat(action.key()).isNull()
+    }
+
+    @Test
+    fun `fromFlow - specified key`() {
+        val action = CoroutineAction.fromFlow("unique-key") { flowOf("") }
+        assertThat(action.key()).isEqualTo("unique-key")
     }
 }

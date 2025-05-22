@@ -1,5 +1,8 @@
 package com.instacart.formula
 
+import com.instacart.formula.action.StartEventAction
+import com.instacart.formula.action.TerminateEventAction
+
 /**
  * A deferred action returned by [evaluation][Formula.evaluate] that will run for any new unique
  * value of [key] and will be be cleaned up if [key] changes or if [Action] is
@@ -100,32 +103,4 @@ interface Action<Event> {
      * An identifier used to distinguish between different types of actions.
      */
     fun key(): Any?
-}
-
-/**
- * Emits an event as soon as [Action] is initialized.
- */
-internal class StartEventAction<Data>(
-    private val data: Data
-) : Action<Data> {
-
-    override fun start(send: (Data) -> Unit): Cancelable? {
-        send(data)
-        return null
-    }
-
-    override fun key(): Any? = data
-}
-
-/**
- * Emits an event when [Formula] is terminated.
- */
-internal object TerminateEventAction : Action<Unit> {
-    override fun start(send: (Unit) -> Unit): Cancelable {
-        return Cancelable {
-            send(Unit)
-        }
-    }
-
-    override fun key(): Any = Unit
 }
