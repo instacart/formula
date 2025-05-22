@@ -11,7 +11,7 @@ abstract class FlowFormula<Input : Any, Output : Any> : ActionFormula<Input, Out
     abstract fun flow(input: Input): Flow<Output>
 
     final override fun action(input: Input): Action<Output> {
-        return FlowAction.fromFlow {
+        return CoroutineAction.fromFlow {
             flow(input)
         }
     }

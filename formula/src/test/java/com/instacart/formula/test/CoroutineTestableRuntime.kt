@@ -3,12 +3,11 @@ package com.instacart.formula.test
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.coroutines.CoroutineAction
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.coroutines.FlowAction
 import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow
 import com.instacart.formula.plugin.Dispatcher
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -25,14 +24,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withContext
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
 
 
 object CoroutinesTestableRuntime : TestableRuntime {
@@ -65,13 +60,13 @@ object CoroutinesTestableRuntime : TestableRuntime {
     }
 
     override fun <T : Any> emitEvents(events: List<T>): Action<T> {
-        return FlowAction.fromFlow {
+        return CoroutineAction.fromFlow {
             toFlow(events)
         }
     }
 
     override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
-        return FlowAction.fromFlow(key = key) {
+        return CoroutineAction.fromFlow(key = key) {
             toFlow(events)
         }
     }
@@ -84,7 +79,7 @@ object CoroutinesTestableRuntime : TestableRuntime {
 private class FlowRelay : Relay {
     private val sharedFlow = MutableSharedFlow<Unit>(0, 0)
 
-    override fun action(): Action<Unit> = FlowAction.fromFlow { sharedFlow }
+    override fun action(): Action<Unit> = CoroutineAction.fromFlow { sharedFlow }
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun triggerEvent() {

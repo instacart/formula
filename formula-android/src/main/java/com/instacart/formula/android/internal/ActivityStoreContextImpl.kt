@@ -65,10 +65,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun startedActivity(): Activity? = activity.takeIf { hasStarted }
-
-    fun activityStartedEvents(): Observable<Unit> = startedRelay
-
     fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.accept(state)
 
     fun onActivityResult(result: ActivityResult) {
@@ -102,6 +98,10 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
         fragmentStateUpdated.accept(contract.tag)
     }
+
+    internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }
+
+    internal fun activityStartedEvents(): Observable<Unit> = startedRelay
 
     private fun fragmentLifecycleState(tag: String): Observable<Lifecycle.State> {
         return fragmentStateUpdated
