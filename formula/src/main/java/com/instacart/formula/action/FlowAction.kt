@@ -1,11 +1,10 @@
-package com.instacart.formula.coroutines
+package com.instacart.formula.action
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect

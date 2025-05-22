@@ -3,7 +3,6 @@ package com.instacart.formula.rxjava3
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.plugin.Inspector
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.FormulaDisposableHelper

@@ -3,7 +3,7 @@ package com.instacart.formula.test
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.coroutines.CoroutineAction
+import com.instacart.formula.action.CoroutineAction
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow

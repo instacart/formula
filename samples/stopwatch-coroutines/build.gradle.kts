@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":formula-coroutines"))
+    implementation(project(":formula"))
     implementation(project(":formula-android"))
 
     implementation(libs.kotlin)
