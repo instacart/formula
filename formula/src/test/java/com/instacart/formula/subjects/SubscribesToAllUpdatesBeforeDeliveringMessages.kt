@@ -12,7 +12,10 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
     fun test(runtime: TestableRuntime) = runtime.test(TestFormula(runtime), Unit)
 
     class TestFormula(runtime: TestableRuntime) : Formula<Unit, Int, Int>() {
-        private val initial = RxAction.fromObservable { Observable.just(Unit, Unit, Unit, Unit) }
+        private val initial = RxAction.fromObservable {
+            Observable.just(Unit, Unit, Unit, Unit)
+        }
+        
         private val incrementRelay = runtime.newRelay()
 
         override fun initialState(input: Unit): Int = 0
@@ -22,7 +25,9 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
                 output = state,
                 actions = context.actions {
                     initial.onEvent {
-                        transition { incrementRelay.triggerEvent() }
+                        transition {
+                            incrementRelay.triggerEvent()
+                        }
                     }
 
                     incrementRelay.action().onEvent {

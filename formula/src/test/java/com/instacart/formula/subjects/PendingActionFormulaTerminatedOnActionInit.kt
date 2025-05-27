@@ -15,11 +15,14 @@ class PendingActionFormulaTerminatedOnActionInit(runtime: TestableRuntime) {
 
     private val inspector = CountingInspector()
     private var observer: TestFormulaObserver<Unit, Int, ParentFormula>? = null
-    private val actionFormula = ActionFormula(terminateAction = {
-        observer?.dispose()
-    })
+    private val actionFormula = ActionFormula(
+        terminateAction = {
+            observer?.dispose()
+        }
+    )
 
-    val test = runtime.test(ParentFormula(actionFormula), inspector).apply {
+    private val formula = ParentFormula(actionFormula)
+    val test = runtime.test(formula, inspector).apply {
         observer = this
     }
 

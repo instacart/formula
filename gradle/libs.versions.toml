@@ -3,7 +3,7 @@ android-gradle = "8.9.0"
 dokka-gradle = "1.9.10"
 
 kotlin = "1.9.10"
-coroutines = "1.5.2"
+coroutines = "1.9.0"
 compose = "1.4.3"
 # We keep compiler version separate to support Kotlin updates
 compose-compiler = "1.5.3"
