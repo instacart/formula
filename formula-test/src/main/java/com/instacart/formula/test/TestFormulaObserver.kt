@@ -23,6 +23,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
      */
     fun input(value: Input) = apply {
         started = true
+        
         assertNoErrors() // Check before interaction
         delegate.input(value)
         assertNoErrors() // Check after interaction

@@ -5,7 +5,6 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
