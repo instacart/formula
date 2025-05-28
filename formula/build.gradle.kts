@@ -9,7 +9,7 @@ apply {
 
 dependencies {
     implementation(libs.kotlin)
-    implementation(libs.coroutines)
+    api(libs.coroutines)
 
     testImplementation(project(":formula-test"))
     testImplementation(project(":formula-rxjava3"))
