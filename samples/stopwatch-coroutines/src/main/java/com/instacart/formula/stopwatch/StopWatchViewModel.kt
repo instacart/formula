@@ -2,7 +2,7 @@ package com.instacart.formula.stopwatch
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.instacart.formula.coroutines.toFlow
+import com.instacart.formula.toFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.shareIn
 

@@ -14,6 +14,7 @@
 - **Breaking**: Rename `FragmentFlowStore` to `FragmentStore`, `FragmentState` to `FragmentOutput`, `FragmentFlowState` to `FragmentState`
 - **Breaking**: Making `FeatureFactory` into an abstract class and modifying the `initialize` API to use `Params` wrapper type
 - **Breaking**: Move factory functions from `FlowAction` to `Action`
+- **Breaking**: Move coroutines logic into `formula` and removed `formula-coroutines` module
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`

@@ -5,7 +5,7 @@ import com.instacart.formula.ActionFormula
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.coroutines.toFlow
+import com.instacart.formula.toFlow
 import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
