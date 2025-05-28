@@ -7,7 +7,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Adapter which allows to run a suspend function as an [Action].
@@ -24,11 +23,12 @@ class LaunchCoroutineAction<Result> @PublishedApi internal constructor(
     override fun start(
         send: (Result) -> Unit,
     ): Cancelable {
-        val job = GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            withContext(dispatcher) {
-                val result = block()
-                send(result)
-            }
+        val job = GlobalScope.launch(
+            context = dispatcher,
+            start = CoroutineStart.UNDISPATCHED,
+        ) {
+            val result = block()
+            send(result)
         }
         return Cancelable(job::cancel)
     }
