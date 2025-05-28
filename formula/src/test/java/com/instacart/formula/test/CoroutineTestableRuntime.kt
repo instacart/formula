@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionFormula
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Inspector
@@ -39,24 +38,12 @@ object CoroutinesTestableRuntime : TestableRuntime {
         return FlowRelay()
     }
 
-    override fun streamFormula(): StreamFormulaSubject {
-        return FlowStreamFormulaSubject()
-    }
-
     override fun <T : Any> emitEvents(events: List<T>): Action<T> {
         return Action.fromFlow {
-            toFlow(events)
+            flow {
+                events.forEach { emit(it) }
+            }
         }
-    }
-
-    override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
-        return Action.fromFlow(key = key) {
-            toFlow(events)
-        }
-    }
-
-    private fun <T> toFlow(events: List<T>) = flow {
-        events.forEach { emit(it) }
     }
 }
 
@@ -71,24 +58,6 @@ private class FlowRelay : Relay {
 
     override fun triggerEvent() {
         runBlocking { sharedFlow.emit(Unit) }
-    }
-}
-
-private class FlowStreamFormulaSubject : ActionFormula<String, Int>(), StreamFormulaSubject {
-    private val sharedFlow = MutableSharedFlow<Int>(
-        replay = 0,
-        extraBufferCapacity = Int.MAX_VALUE,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
-
-    override fun emitEvent(event: Int) {
-        runBlocking { sharedFlow.emit(event) }
-    }
-
-    override fun initialValue(input: String): Int = 0
-
-    override fun action(input: String): Action<Int> {
-        return Action.fromFlow { sharedFlow }
     }
 }
 

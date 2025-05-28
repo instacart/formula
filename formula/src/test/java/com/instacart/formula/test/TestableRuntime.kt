@@ -34,18 +34,10 @@ interface TestableRuntime {
 
     fun newRelay(): Relay
 
-    fun streamFormula(): StreamFormulaSubject
-
     fun <T : Any> emitEvents(events: List<T>): Action<T>
-
-    fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T>
 }
 
 interface Relay {
     fun action(): Action<Unit>
     fun triggerEvent()
-}
-
-interface StreamFormulaSubject : IFormula<String, Int> {
-    fun emitEvent(event: Int)
 }
