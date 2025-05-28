@@ -22,7 +22,7 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
         defaultDispatcher = dispatcher,
     )
 
-    val delegate = RxJavaFormulaTestDelegate(this, runtimeConfig)
+    val delegate = CoroutineTestDelegate(this, runtimeConfig)
     return TestFormulaObserver(delegate)
 }
 
