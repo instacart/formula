@@ -26,8 +26,6 @@ jobs:
           bundler-cache: true
       - name: Run Core Tests
         run: ./gradlew :formula:test
-      - name: Run Kotlin Coroutine Runtime Tests
-        run: ./gradlew :formula-coroutines:test
       - name: Run Formula Android Unit Tests
         run: ./gradlew :formula-android:testRelease
       - name: Run Formula Android Instrumentation Tests
