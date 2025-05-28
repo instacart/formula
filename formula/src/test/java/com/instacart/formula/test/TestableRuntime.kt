@@ -4,13 +4,11 @@ import com.instacart.formula.Action
 import com.instacart.formula.IFormula
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
-import org.junit.rules.TestRule
 
 /**
  * Used to support running tests for various runtimes such as RxJava or Coroutines.
  */
 interface TestableRuntime {
-    val rule: TestRule
 
     /**
      * Creates a [TestFormulaObserver]

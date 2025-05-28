@@ -117,7 +117,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     val rule = RuleChain
         .outerRule(TestName())
         .around(ClearPluginsRule())
-        .around(runtime.rule)
 
     @Test fun `state change triggers an evaluation`() {
         val formula = EventCallbackFormula()

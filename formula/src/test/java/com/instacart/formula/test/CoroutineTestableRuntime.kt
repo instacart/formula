@@ -17,13 +17,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
-
 
 object CoroutinesTestableRuntime : TestableRuntime {
-
-    override val rule: TestRule = RuleChain.emptyRuleChain()
 
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F,

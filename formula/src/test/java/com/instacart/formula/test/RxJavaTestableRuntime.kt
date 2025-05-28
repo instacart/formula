@@ -9,11 +9,8 @@ import com.instacart.formula.rxjava3.ObservableFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
 
 object RxJavaTestableRuntime : TestableRuntime {
-    override val rule: TestRule = RuleChain.emptyRuleChain()
 
     override fun <Input : Any, Output : Any, F : IFormula<Input, Output>> test(
         formula: F,
