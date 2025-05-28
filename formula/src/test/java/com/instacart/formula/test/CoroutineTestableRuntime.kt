@@ -1,11 +1,10 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionFormula
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.coroutines.CoroutineAction
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.coroutines.FlowFormula
 import com.instacart.formula.coroutines.toFlow
 import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineStart
@@ -13,7 +12,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -51,13 +49,13 @@ object CoroutinesTestableRuntime : TestableRuntime {
     }
 
     override fun <T : Any> emitEvents(events: List<T>): Action<T> {
-        return CoroutineAction.fromFlow {
+        return Action.fromFlow {
             toFlow(events)
         }
     }
 
     override fun <T : Any> emitEvents(key: Any?, events: List<T>): Action<T> {
-        return CoroutineAction.fromFlow(key = key) {
+        return Action.fromFlow(key = key) {
             toFlow(events)
         }
     }
@@ -74,14 +72,14 @@ private class FlowRelay : Relay {
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    override fun action(): Action<Unit> = CoroutineAction.fromFlow { sharedFlow }
+    override fun action(): Action<Unit> = Action.fromFlow { sharedFlow }
 
     override fun triggerEvent() {
         runBlocking { sharedFlow.emit(Unit) }
     }
 }
 
-private class FlowStreamFormulaSubject : FlowFormula<String, Int>(), StreamFormulaSubject {
+private class FlowStreamFormulaSubject : ActionFormula<String, Int>(), StreamFormulaSubject {
     private val sharedFlow = MutableSharedFlow<Int>(
         replay = 0,
         extraBufferCapacity = Int.MAX_VALUE,
@@ -94,8 +92,8 @@ private class FlowStreamFormulaSubject : FlowFormula<String, Int>(), StreamFormu
 
     override fun initialValue(input: String): Int = 0
 
-    override fun flow(input: String): Flow<Int> {
-        return sharedFlow
+    override fun action(input: String): Action<Int> {
+        return Action.fromFlow { sharedFlow }
     }
 }
 
