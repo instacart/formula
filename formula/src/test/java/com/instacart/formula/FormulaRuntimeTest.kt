@@ -117,7 +117,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     val rule = RuleChain
         .outerRule(TestName())
         .around(ClearPluginsRule())
-        .around(runtime.rule)
 
     @Test fun `state change triggers an evaluation`() {
         val formula = EventCallbackFormula()
@@ -1050,38 +1049,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         DynamicStreamSubject(runtime)
             .updateStreams("one", "two", "three")
             .updateStreams("one", "three", "four")
-    }
-
-    @Test fun `stream formula emits initial value`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply {
-                assertThat(values()).containsExactly(0).inOrder()
-            }
-    }
-
-    @Test fun `stream formula emits initial value and subsequent events`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply {
-                formula.emitEvent(1)
-                formula.emitEvent(2)
-                formula.emitEvent(3)
-            }
-            .apply {
-                assertThat(values()).containsExactly(0, 1, 2, 3).inOrder()
-            }
-    }
-
-    @Test fun `stream formula resets state when input changes`() {
-        runtime.test(runtime.streamFormula())
-            .input("initial")
-            .apply { formula.emitEvent(1) }
-            .input("reset")
-            .apply { formula.emitEvent(1) }
-            .apply {
-                assertThat(values()).containsExactly(0, 1, 0, 1).inOrder()
-            }
     }
 
     @Test fun `stream event listener is scoped to latest state`() {

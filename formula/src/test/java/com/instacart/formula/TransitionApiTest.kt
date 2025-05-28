@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.DelegateTransitionContext
 import com.instacart.formula.internal.toResult
