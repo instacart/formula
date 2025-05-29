@@ -7,48 +7,58 @@ import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ActivityStoreContext
-import com.jakewharton.rxrelay3.BehaviorRelay
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 /**
  * Implementation of [ActivityStoreContext].
  */
 internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityStoreContext<Activity>() {
 
-    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
-    private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
-
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
+    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
 
-    private val lifecycleStates = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
-    private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
-    internal val fragmentStateRelay: BehaviorRelay<FragmentState> = BehaviorRelay.create()
+    private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
+    private val fragmentStateUpdated = MutableSharedFlow<String>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    private val activityResultRelay = MutableSharedFlow<ActivityResult>(
+        extraBufferCapacity = Int.MAX_VALUE,
+    )
+    internal val fragmentStateRelay = MutableSharedFlow<FragmentState>(replay = 1)
 
-    override fun activityLifecycleState(): Observable<Lifecycle.State> = lifecycleStates
+    override fun activityLifecycleState(): StateFlow<Lifecycle.State> = lifecycleStates
 
-    override fun activityResults(): Observable<ActivityResult> = activityResultRelay
+    override fun activityResults(): Flow<ActivityResult> = activityResultRelay
 
-    override fun fragmentState(): Observable<FragmentState> = fragmentStateRelay
+    override fun fragmentState(): Flow<FragmentState> = fragmentStateRelay
 
-    override fun isFragmentStarted(tag: String): Observable<Boolean> {
+    override fun isFragmentStarted(tag: String): Flow<Boolean> {
         return fragmentLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.STARTED) }
             .distinctUntilChanged()
     }
 
-    override fun isFragmentStarted(key: FragmentKey): Observable<Boolean> {
+    override fun isFragmentStarted(key: FragmentKey): Flow<Boolean> {
         return isFragmentStarted(key.tag)
     }
 
-    override fun isFragmentResumed(tag: String): Observable<Boolean> {
+    override fun isFragmentResumed(tag: String): Flow<Boolean> {
         return fragmentLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.RESUMED) }
             .distinctUntilChanged()
     }
 
-    override fun isFragmentResumed(key: FragmentKey): Observable<Boolean> {
+    override fun isFragmentResumed(key: FragmentKey): Flow<Boolean> {
         return isFragmentResumed(key.tag)
     }
 
@@ -63,10 +73,12 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.accept(state)
+    fun onLifecycleStateChanged(state: Lifecycle.State) {
+        lifecycleStates.tryEmit(state)
+    }
 
     fun onActivityResult(result: ActivityResult) {
-        activityResultRelay.accept(result)
+        activityResultRelay.tryEmit(result)
     }
 
     fun attachActivity(activity: Activity) {
@@ -93,15 +105,15 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
             fragmentLifecycleStates[contract.tag] = newState
         }
 
-        fragmentStateUpdated.accept(contract.tag)
+        fragmentStateUpdated.tryEmit(contract.tag)
     }
 
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }
 
-    private fun fragmentLifecycleState(tag: String): Observable<Lifecycle.State> {
+    private fun fragmentLifecycleState(tag: String): Flow<Lifecycle.State> {
         return fragmentStateUpdated
             .filter { it == tag }
-            .startWithItem(tag)
+            .onStart { emit(tag) }
             .map {
                 fragmentLifecycleStates[tag] ?: Lifecycle.State.DESTROYED
             }

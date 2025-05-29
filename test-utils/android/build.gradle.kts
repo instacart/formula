@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(project(":formula-android"))
+    api(libs.rxrelay)
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
