@@ -1,13 +1,9 @@
 package com.instacart.formula.test
 
-import com.instacart.formula.Action
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.rxjava3.RxAction
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
 
 object RxJavaTestableRuntime : TestableRuntime {
 
@@ -25,17 +21,4 @@ object RxJavaTestableRuntime : TestableRuntime {
         val delegate = RxJavaFormulaTestDelegate(formula, runtimeConfig)
         return TestFormulaObserver(delegate)
     }
-
-    override fun newRelay(): Relay {
-        return RxRelay()
-    }
 }
-
-private class RxRelay : Relay {
-    private val relay = PublishRelay.create<Unit>()
-
-    override fun action() = RxAction.fromObservable { relay }
-
-    override fun triggerEvent() = relay.accept(Unit)
-}
-

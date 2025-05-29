@@ -31,8 +31,6 @@ interface TestableRuntime {
     ): TestFormulaObserver<Input, Output, F> {
         return test(formula, inspector, dispatcher).input(input)
     }
-
-    fun newRelay(): Relay
 }
 
 interface Relay {

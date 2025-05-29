@@ -4,11 +4,10 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.FlowRelay
 
-class StateTransitionTimingFormula(
-    runtime: TestableRuntime
-): Formula<Unit, List<StateTransitionTimingFormula.State>, StateTransitionTimingFormula.Output>() {
+class StateTransitionTimingFormula
+    : Formula<Unit, List<StateTransitionTimingFormula.State>, StateTransitionTimingFormula.Output>() {
 
     enum class State {
         INTERNAL,
@@ -20,7 +19,7 @@ class StateTransitionTimingFormula(
         val onStateTransition: Listener<Unit>,
     )
 
-    private val relay = runtime.newRelay()
+    private val relay = FlowRelay()
 
     override fun initialState(input: Unit): List<State> = emptyList()
 
