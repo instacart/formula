@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.batch.StateBatchScheduler
@@ -82,17 +81,14 @@ import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.TestableRuntime
-import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
 import com.instacart.formula.types.IncrementFormula
 import com.instacart.formula.types.InputIdentityFormula
-import com.instacart.formula.types.OnDataActionFormula
 import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Ignore
 import org.junit.Rule
@@ -156,7 +152,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `state change is performed before transition side-effects`() {
         // TODO: not sure if this test is very clear.
-        val formula = StateTransitionTimingFormula(runtime)
+        val formula = StateTransitionTimingFormula()
         val expectedStates = listOf(
             StateTransitionTimingFormula.State.INTERNAL,
             StateTransitionTimingFormula.State.EXTERNAL
@@ -334,7 +330,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `multiple event updates`() {
-        runtime.test(StartStopFormula(runtime), Unit)
+        runtime.test(StartStopFormula(), Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerEvent() }
             .apply { formula.incrementEvents.triggerEvent() }
@@ -347,7 +343,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `no state changes after event stream is removed`() {
-        runtime.test(StartStopFormula(runtime), Unit)
+        runtime.test(StartStopFormula(), Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerEvent() }
             .output { stopListening() }
@@ -677,7 +673,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             val increment: () -> Unit,
         )
 
-        val disableListenerRelay = runtime.newRelay()
+        val disableListenerRelay = FlowRelay()
         val formula = object : Formula<Unit, State, Output>() {
             override fun initialState(input: Unit): State = State()
 
@@ -867,7 +863,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     // Stream test cases
 
     @Test fun `stream event triggers a state change`() {
-        val formula = StartStopFormula(runtime)
+        val formula = StartStopFormula()
         runtime.test(formula, Unit)
             .output { this.startListening() }
             .output { assertThat(state).isEqualTo(0) }
@@ -918,13 +914,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `subscribes to updates before delivering messages`() {
         SubscribesToAllUpdatesBeforeDeliveringMessages
             .test(runtime)
-            .output {
-                assertThat(this).isEqualTo(4)
-            }
-            // TODO: RxJava does not have stack-overflow protections and runs in a straight-forward way.
-            // TODO: On other hand, Coroutines runtime uses event loop to avoid stack overflow.
-            // TODO: This potentially leads to less efficient formula execution with coroutines.
-//            .assertOutputCount(1)
+            .output { assertThat(this).isEqualTo(4) }
     }
 
     @Test
@@ -1387,7 +1377,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child formula termination triggers parent state transition`() {
-        val relay = runtime.newRelay()
+        val relay = FlowRelay()
         val childFormula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
                 return Evaluation(
@@ -1545,7 +1535,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `action triggers another transition on termination`() {
-        val newRelay = runtime.newRelay()
+        val newRelay = FlowRelay()
         val formula = object : Formula<Boolean, Int, Int>() {
             override fun initialState(input: Boolean): Int = 0
 
@@ -1891,7 +1881,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         })
 
-        val formula = StartStopFormula(runtime)
+        val formula = StartStopFormula()
         val localInspector = TestInspector()
         val subject = runtime.test(formula, Unit, localInspector)
         subject.output { startListening() }
@@ -1974,7 +1964,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         })
 
-        val formula = StartStopFormula(runtime)
+        val formula = StartStopFormula()
         val subject = runtime.test(formula, Unit)
         subject.dispose()
 
@@ -2115,7 +2105,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val plugin = TestDispatcherPlugin(defaultDispatcher = globalDispatcher)
         FormulaPlugins.setPlugin(plugin)
 
-        val relay = runtime.newRelay()
+        val relay = FlowRelay()
         val formula = object : Formula<Unit, Int, Int>() {
             override fun initialState(input: Unit): Int = 0
 
@@ -2143,7 +2133,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val childFormulaCount = 100
 
         val batchScheduler = StateBatchScheduler()
-        val relay = runtime.newRelay()
+        val relay = FlowRelay()
 
         val childFormula = IncrementActionFormula(
             incrementRelay = relay,
@@ -2185,7 +2175,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val childFormulaCount = 100
 
         val batchScheduler = StateBatchScheduler()
-        val relay = runtime.newRelay()
+        val relay = FlowRelay()
 
         val childFormula = IncrementActionFormula(
             incrementRelay = relay,
@@ -2220,8 +2210,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val childFormulaCount = 100
 
         val batchScheduler = TestStateBatchScheduler()
-        val incrementRelay = runtime.newRelay()
-        val sleepRelay = runtime.newRelay()
+        val incrementRelay = FlowRelay()
+        val sleepRelay = FlowRelay()
 
         val childFormula = IncrementActionFormula(
             incrementRelay = incrementRelay,
@@ -2285,7 +2275,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val childFormulaCount = 3
 
         val batchScheduler = StateBatchScheduler()
-        val relay = runtime.newRelay()
+        val relay = FlowRelay()
 
         val childFormula = IncrementActionFormula(
             incrementRelay = relay,

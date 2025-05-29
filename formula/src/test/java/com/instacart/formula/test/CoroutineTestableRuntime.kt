@@ -21,8 +21,4 @@ object CoroutinesTestableRuntime : TestableRuntime {
         val delegate = CoroutineTestDelegate(formula, runtimeConfig)
         return TestFormulaObserver(delegate)
     }
-
-    override fun newRelay(): Relay {
-        return FlowRelay()
-    }
 }
