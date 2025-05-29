@@ -33,8 +33,6 @@ interface TestableRuntime {
     }
 
     fun newRelay(): Relay
-
-    fun <T : Any> emitEvents(events: List<T>): Action<T>
 }
 
 interface Relay {

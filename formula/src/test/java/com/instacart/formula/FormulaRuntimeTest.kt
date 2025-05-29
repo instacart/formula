@@ -76,6 +76,7 @@ import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunct
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.CountingInspector
+import com.instacart.formula.test.FlowRelay
 import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
@@ -91,6 +92,8 @@ import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -872,11 +875,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             .output { assertThat(state).isEqualTo(1) }
     }
 
-    @Test fun `stream triggers only a side-effect`() {
+    @Test fun `action triggers only side-effects with no state change`() {
         val eventCallback = TestEventCallback<String>()
-        val events = listOf("a", "b")
         val formula = OnlyUpdateFormula<Unit> {
-            runtime.emitEvents(events).onEvent {
+            Action.fromFlow { flowOf("a", "b") }.onEvent {
                 transition {
                     eventCallback(it)
                 }
@@ -1053,7 +1055,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `stream event listener is scoped to latest state`() {
         val events = listOf("a", "b")
-        val formula = EventFormula(runtime, events)
+        val formula = EventFormula(events)
 
         val inspector = CountingInspector()
         val expectedStates = listOf(1, 2)
@@ -1067,7 +1069,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test fun `stream events are captured in order`() {
         val inspector = CountingInspector()
         val events = listOf("first", "second", "third", "third")
-        val formula = EventFormula(runtime, events)
+        val formula = EventFormula(events)
         runtime.test(formula, Unit, inspector).apply {
             assertThat(formula.capturedEvents()).isEqualTo(events)
         }
@@ -1079,7 +1081,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
-        val formula = EventFormula(runtime, events)
+        val formula = EventFormula(events)
         runtime.test(formula, Unit, inspector)
             .apply {
                 assertThat(values()).containsExactly(eventCount).inOrder()
@@ -1093,7 +1095,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
-        val eventsFormula = EventFormula(runtime, events)
+        val eventsFormula = EventFormula(events)
         val parent = HasChildFormula(eventsFormula)
 
         runtime.test(parent, Unit, inspector)

@@ -29,12 +29,6 @@ object RxJavaTestableRuntime : TestableRuntime {
     override fun newRelay(): Relay {
         return RxRelay()
     }
-
-    override fun <T : Any> emitEvents(events: List<T>): Action<T> {
-        return RxAction.fromObservable {
-            Observable.fromIterable(events)
-        }
-    }
 }
 
 private class RxRelay : Relay {
