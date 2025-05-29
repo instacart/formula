@@ -5,7 +5,6 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.toObservable
 
 /**
  * A utility to help test functions that require [FormulaContext] or [Snapshot].
@@ -34,7 +33,8 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
             return Evaluation(output = output())
         }
     }
-    val observer = formula.toObservable(input).test()
+    val observer = formula.test()
+    observer.input(input)
     observer.assertNoErrors()
     observer.dispose()
     return observer.values().last()

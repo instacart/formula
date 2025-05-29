@@ -9,9 +9,8 @@ apply {
 
 dependencies {
     implementation(libs.kotlin)
-    api(project(":formula-rxjava3"))
+    api(project(":formula"))
 
     testImplementation(libs.truth)
     testImplementation(libs.junit)
-    testImplementation(libs.rxrelays)
 }
