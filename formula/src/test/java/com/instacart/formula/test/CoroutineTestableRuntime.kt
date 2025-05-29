@@ -11,10 +11,9 @@ object CoroutinesTestableRuntime : TestableRuntime {
         formula: F,
         inspector: Inspector?,
         defaultDispatcher: Dispatcher?,
-        isValidationEnabled: Boolean,
     ): TestFormulaObserver<Input, Output, F> {
         val runtimeConfig = RuntimeConfig(
-            isValidationEnabled = isValidationEnabled,
+            isValidationEnabled = true,
             inspector = inspector,
             defaultDispatcher = defaultDispatcher
         )
