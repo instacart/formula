@@ -76,7 +76,6 @@ import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
 import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.FlowRelay
-import com.instacart.formula.test.RxJavaTestableRuntime
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestFormulaObserver
@@ -107,7 +106,6 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         @JvmStatic
         @Parameterized.Parameters(name = "{1}")
         fun runtimes() = listOf(
-            arrayOf(RxJavaTestableRuntime, "RxJava"),
             arrayOf(CoroutinesTestableRuntime, "Coroutines"),
         )
     }
