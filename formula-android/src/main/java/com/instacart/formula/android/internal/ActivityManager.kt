@@ -9,10 +9,17 @@ import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ViewFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Activity manager connects [ActivityStore] and the [Activity].
  */
+@OptIn(DelicateCoroutinesApi::class)
 internal class ActivityManager<Activity : FragmentActivity>(
     private val environment: FragmentEnvironment,
     private val delegate: ActivityStoreContextImpl<Activity>,
@@ -20,7 +27,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 ) {
 
     internal val stateSubscription: Disposable
-    private var uiSubscription: Disposable? = null
+    private var updateUiJob: Job? = null
     private var fragmentRenderView: FragmentFlowRenderView? = null
 
     init {
@@ -56,10 +63,15 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
 
-        uiSubscription = delegate.fragmentState().subscribe {
-            store.onPreRenderFragmentState?.invoke(activity, it)
-            renderView.render(it)
-            store.onRenderFragmentState?.invoke(activity, it)
+        updateUiJob = GlobalScope.launch(
+            context = Dispatchers.Main.immediate,
+            start = CoroutineStart.UNDISPATCHED,
+        ) {
+            delegate.fragmentState().collect {
+                store.onPreRenderFragmentState?.invoke(activity, it)
+                renderView.render(it)
+                store.onRenderFragmentState?.invoke(activity, it)
+            }
         }
     }
 
@@ -81,8 +93,8 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onActivityDestroyed(activity: Activity) {
-        uiSubscription?.dispose()
-        uiSubscription = null
+        updateUiJob?.cancel()
+        updateUiJob = null
 
         fragmentRenderView = null
 
@@ -110,7 +122,9 @@ internal class ActivityManager<Activity : FragmentActivity>(
         return store
             .fragmentStore
             .state(environment)
-            .subscribe(delegate.fragmentStateRelay::accept)
+            .subscribe { newState ->
+                delegate.fragmentStateRelay.emitBlocking(newState)
+            }
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
