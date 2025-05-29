@@ -17,7 +17,6 @@ interface TestableRuntime {
         formula: F,
         inspector: Inspector? = null,
         defaultDispatcher: Dispatcher? = null,
-        isValidationEnabled: Boolean = true,
     ): TestFormulaObserver<Input, Output, F>
 
     /**
@@ -31,10 +30,6 @@ interface TestableRuntime {
     ): TestFormulaObserver<Input, Output, F> {
         return test(formula, inspector, dispatcher).input(input)
     }
-
-    fun newRelay(): Relay
-
-    fun <T : Any> emitEvents(events: List<T>): Action<T>
 }
 
 interface Relay {

@@ -8,11 +8,11 @@ import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
 import com.instacart.formula.subjects.StartStopFormula.Output
 import com.instacart.formula.subjects.StartStopFormula.State
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.FlowRelay
 
-class StartStopFormula(runtime: TestableRuntime) : Formula<Unit, State, Output>() {
+class StartStopFormula : Formula<Unit, State, Output>() {
 
-    val incrementEvents = runtime.newRelay()
+    val incrementEvents = FlowRelay()
 
     data class State(
         val listenForEvents: Boolean = false,
