@@ -1,8 +1,6 @@
 package com.instacart.formula.android
 
 import android.view.View
-import com.instacart.formula.Cancelable
-import io.reactivex.rxjava3.core.Observable
 
 /**
  * Feature view provides [FormulaFragment] with the root Android view which will be returned as
