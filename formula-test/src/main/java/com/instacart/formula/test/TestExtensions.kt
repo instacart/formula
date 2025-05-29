@@ -33,7 +33,9 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
             return Evaluation(output = output())
         }
     }
-    val observer = formula.test()
+
+    // TODO: enabling validation is a breaking behavior.
+    val observer = formula.test(isValidationEnabled = false)
     observer.input(input)
     observer.assertNoErrors()
     observer.dispose()
