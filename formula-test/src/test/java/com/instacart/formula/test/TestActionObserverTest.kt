@@ -1,11 +1,9 @@
 package com.instacart.formula.test
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import org.junit.Test
-import java.lang.IllegalStateException
 
 class TestActionObserverTest {
 
