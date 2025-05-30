@@ -92,7 +92,7 @@ internal class ActionManager(
                 inspector?.onActionStarted(loggingType, action)
 
                 runningActions.add(action)
-                action.start()
+                action.start(manager.scope)
 
                 if (manager.isTerminated()) {
                     return false

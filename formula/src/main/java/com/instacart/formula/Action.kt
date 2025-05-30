@@ -6,6 +6,7 @@ import com.instacart.formula.action.StartEventAction
 import com.instacart.formula.action.TerminateEventAction
 import com.instacart.formula.internal.runCatchingCoroutines
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
@@ -197,7 +198,10 @@ interface Action<Event> {
      * @param send Use this listener to send events back to [Formula].
      *             Note: you need to call this on the main thread.
      */
-    fun start(send: (Event) -> Unit): Cancelable?
+    fun start(
+        scope: CoroutineScope,
+        send: (Event) -> Unit,
+    ): Cancelable?
 
     /**
      * An identifier used to distinguish between different types of actions.

@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import kotlinx.coroutines.CoroutineScope
+
 /**
  * An action combined with event listener.
  */
@@ -13,8 +15,8 @@ class DeferredAction<Event>(
 
     internal var listener: ((Event) -> Unit)? = initial
 
-    internal fun start() {
-        cancelable = action.start() { message ->
+    internal fun start(scope: CoroutineScope) {
+        cancelable = action.start(scope) { message ->
             listener?.invoke(message)
         }
     }

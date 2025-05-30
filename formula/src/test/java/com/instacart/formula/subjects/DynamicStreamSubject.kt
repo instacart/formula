@@ -7,6 +7,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestableRuntime
+import kotlinx.coroutines.CoroutineScope
 
 class DynamicStreamSubject(runtime: TestableRuntime) {
     private val subject = runtime.test(TestFormula())
@@ -46,7 +47,7 @@ class DynamicStreamSubject(runtime: TestableRuntime) {
 
         private fun action(key: String): Action<Unit> {
             return object : Action<Unit> {
-                override fun start(send: (Unit) -> Unit): Cancelable? {
+                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable? {
                     running.add(key)
                     return Cancelable {
                         running.remove(key)

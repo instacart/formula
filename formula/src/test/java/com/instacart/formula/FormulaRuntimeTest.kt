@@ -88,6 +88,7 @@ import com.instacart.formula.types.OnEventFormula
 import com.instacart.formula.types.OnInitActionFormula
 import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Ignore
 import org.junit.Rule
@@ -1505,7 +1506,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
                                     return Cancelable {
                                         send(Unit)
                                     }
@@ -1547,7 +1548,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
                                     return Cancelable {
                                         newRelay.triggerEvent()
                                     }
@@ -1585,7 +1586,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(send: (Unit) -> Unit): Cancelable {
+                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
                                     return Cancelable {
                                         terminate()
                                     }
@@ -1623,7 +1624,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                         if (input) {
                             val action = object : Action<Unit> {
                                 override fun key(): Any? = null
-                                override fun start(send: (Unit) -> Unit): Cancelable? {
+                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable? {
                                     sendCallback = send
                                     return null
                                 }

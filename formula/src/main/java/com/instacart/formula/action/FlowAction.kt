@@ -3,11 +3,12 @@ package com.instacart.formula.action
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A Formula [Action] that is created from a [Flow].
@@ -21,9 +22,8 @@ internal class FlowAction<Event>(
 
     override fun key(): Any? = key
 
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun start(send: (Event) -> Unit): Cancelable {
-        val job = GlobalScope.launch(
+    override fun start(scope: CoroutineScope, send: (Event) -> Unit): Cancelable {
+        val job = scope.launch(
             context = dispatcher,
             start = CoroutineStart.UNDISPATCHED,
         ) {
