@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
+    implementation(libs.coroutines.rx3)
 
     api(libs.rxandroid)
     api(libs.rxrelay)

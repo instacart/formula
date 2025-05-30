@@ -19,6 +19,8 @@ internal class FragmentStoreFormula<in Component>(
     private val component: Component,
     private val bindings: List<FeatureBinding<Component, *>>,
 ) : Formula<FragmentEnvironment, FragmentState, FragmentState>(){
+
+    // TODO: probably don't need relays for this!!
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
     private val hiddenContractEvents = PublishRelay.create<FragmentId>()
