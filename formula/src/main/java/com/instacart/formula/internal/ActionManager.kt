@@ -3,6 +3,7 @@ package com.instacart.formula.internal
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Evaluation
 import com.instacart.formula.plugin.Inspector
+import kotlinx.coroutines.isActive
 import kotlin.reflect.KClass
 
 /**
@@ -80,6 +81,11 @@ internal class ActionManager(
         while (iterator.hasNext()) {
             val action = iterator.next()
             iterator.remove()
+
+            if (!manager.scope.isActive) {
+                // Cannot start any new actions if coroutine scope is not active anymore.
+                return false
+            }
 
             val runningActions = getOrInitRunningActions()
             if (!runningActions.contains(action)) {

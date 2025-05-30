@@ -44,31 +44,20 @@ private fun <Input : Any, Output : Any> start(
 ): Flow<Output> {
     val callbackFlow = callbackFlow {
         val runtime = FormulaRuntime(
+            scope = this,
             formula = formula,
             onOutput = this::trySendBlocking,
             onError = this::close,
             config = config ?: RuntimeConfig(),
         )
 
-        val inputJob = applyInputs(runtime, input)
+        launch {
+            input.collect(runtime::onInput)
+        }
 
         awaitClose {
-            inputJob.cancel()
             runtime.terminate()
         }
     }
     return callbackFlow.distinctUntilChanged()
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-private fun <Input : Any> applyInputs(
-    runtime: FormulaRuntime<Input, *>,
-    input: Flow<Input>
-): Job {
-    return GlobalScope.launch(
-        context = Dispatchers.Unconfined,
-        start = CoroutineStart.UNDISPATCHED,
-    ) {
-        input.collect(runtime::onInput)
-    }
 }

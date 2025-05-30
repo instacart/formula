@@ -41,7 +41,7 @@ class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input
     }
 
     override fun input(input: Input) {
-        runBlocking { inputFlow.emit(input) }
+        inputFlow.tryEmit(input)
     }
 
     override fun assertNoErrors() {
@@ -52,10 +52,6 @@ class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input
     }
 
     override fun dispose() {
-        // To run job cancellation synchronously.
-        runBlocking {
-            job.cancel()
-            job.join()
-        }
+        job.cancel()
     }
 }

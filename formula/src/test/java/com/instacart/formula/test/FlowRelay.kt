@@ -15,6 +15,6 @@ class FlowRelay : Relay {
     override fun action(): Action<Unit> = Action.fromFlow { sharedFlow }
 
     override fun triggerEvent() {
-        runBlocking { sharedFlow.emit(Unit) }
+        sharedFlow.tryEmit(Unit)
     }
 }
