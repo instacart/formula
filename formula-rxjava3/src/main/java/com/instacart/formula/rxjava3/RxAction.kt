@@ -18,6 +18,7 @@ interface RxAction<Event : Any> : Action<Event> {
          * ```
          * RxAction.fromObservable { locationManager.updates() }.onEvent { event ->
          *   transition()
+         * }
          * ```
          */
         fun <Event : Any> fromObservable(
@@ -33,6 +34,7 @@ interface RxAction<Event : Any> : Action<Event> {
          * ```
          * RxAction.fromObservable(itemId) { repo.fetchItem(itemId) }.onEvent { event ->
          *   transition()
+         * }
          * ```
          *
          * @param key Used to distinguish this [Action] from other actions.
@@ -56,7 +58,7 @@ interface RxAction<Event : Any> : Action<Event> {
 private data class RxActionImpl<Event : Any>(
     private val key: Any?,
     private val factory: () -> Observable<Event>
-): RxAction<Event> {
+) : RxAction<Event> {
     override fun observable(): Observable<Event> {
         return factory()
     }
