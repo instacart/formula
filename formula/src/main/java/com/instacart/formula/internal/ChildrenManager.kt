@@ -99,6 +99,7 @@ internal class ChildrenManager(
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation
             FormulaManagerImpl(
+                scope = delegate.scope,
                 queue = delegate.queue,
                 batchManager = delegate.batchManager,
                 delegate = delegate,

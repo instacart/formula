@@ -1,13 +1,9 @@
 package com.instacart.formula
 
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -44,31 +40,22 @@ private fun <Input : Any, Output : Any> start(
 ): Flow<Output> {
     val callbackFlow = callbackFlow {
         val runtime = FormulaRuntime(
+            scope = this,
             formula = formula,
-            onOutput = this::trySendBlocking,
+            onOutput = this::trySend,
             onError = this::close,
             config = config ?: RuntimeConfig(),
         )
 
-        val inputJob = applyInputs(runtime, input)
+        launch {
+            input.collect(runtime::onInput)
+        }
 
         awaitClose {
-            inputJob.cancel()
             runtime.terminate()
         }
     }
-    return callbackFlow.distinctUntilChanged()
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-private fun <Input : Any> applyInputs(
-    runtime: FormulaRuntime<Input, *>,
-    input: Flow<Input>
-): Job {
-    return GlobalScope.launch(
-        context = Dispatchers.Unconfined,
-        start = CoroutineStart.UNDISPATCHED,
-    ) {
-        input.collect(runtime::onInput)
-    }
+    return callbackFlow
+        .buffer(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        .distinctUntilChanged()
 }

@@ -3,7 +3,6 @@ package com.instacart.formula.test
 import com.instacart.formula.Action
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.runBlocking
 
 class FlowRelay : Relay {
     private val sharedFlow = MutableSharedFlow<Unit>(
@@ -15,6 +14,6 @@ class FlowRelay : Relay {
     override fun action(): Action<Unit> = Action.fromFlow { sharedFlow }
 
     override fun triggerEvent() {
-        runBlocking { sharedFlow.emit(Unit) }
+        sharedFlow.tryEmit(Unit)
     }
 }

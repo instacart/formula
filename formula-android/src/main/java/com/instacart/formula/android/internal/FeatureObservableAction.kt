@@ -6,6 +6,7 @@ import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentId
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineScope
 
 class FeatureObservableAction(
     private val fragmentEnvironment: FragmentEnvironment,
@@ -15,7 +16,7 @@ class FeatureObservableAction(
 
     override fun key(): Any = fragmentId
 
-    override fun start(send: (Any) -> Unit): Cancelable {
+    override fun start(scope: CoroutineScope, send: (Any) -> Unit): Cancelable {
         val observable = feature.stateObservable.onErrorResumeNext {
             fragmentEnvironment.onScreenError(fragmentId.key, it)
             Observable.empty()
