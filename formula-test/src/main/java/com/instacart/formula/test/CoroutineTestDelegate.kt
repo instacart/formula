@@ -11,7 +11,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @OptIn(DelicateCoroutinesApi::class)
 class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
@@ -41,7 +40,7 @@ class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input
     }
 
     override fun input(input: Input) {
-        runBlocking { inputFlow.emit(input) }
+        inputFlow.tryEmit(input)
     }
 
     override fun assertNoErrors() {
@@ -52,10 +51,6 @@ class CoroutineTestDelegate<Input : Any, Output : Any, FormulaT : IFormula<Input
     }
 
     override fun dispose() {
-        // To run job cancellation synchronously.
-        runBlocking {
-            job.cancel()
-            job.join()
-        }
+        job.cancel()
     }
 }

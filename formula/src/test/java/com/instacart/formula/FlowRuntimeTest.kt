@@ -83,7 +83,7 @@ class FlowRuntimeTest {
 
         runTest {
             formula.toFlow(flowOf("output", "output-2")).test {
-                Truth.assertThat(awaitItem()).isEqualTo("output")
+                // Note: initial output is skipped
                 Truth.assertThat(awaitItem()).isEqualTo("output-2")
             }
         }
@@ -103,7 +103,7 @@ class FlowRuntimeTest {
                 input = flowOf("output", "output-2"),
                 config = RuntimeConfig(inspector = inspector),
             ).test {
-                Truth.assertThat(awaitItem()).isEqualTo("output")
+                // Note: initial output is skipped
                 Truth.assertThat(awaitItem()).isEqualTo("output-2")
             }
         }

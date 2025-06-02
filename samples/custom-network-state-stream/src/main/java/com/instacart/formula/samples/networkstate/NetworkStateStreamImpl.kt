@@ -7,10 +7,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import com.instacart.formula.Cancelable
+import kotlinx.coroutines.CoroutineScope
 
 class NetworkStateStreamImpl(private val application: Application) : NetworkStateStream {
-
-    override fun start(send: (NetworkState) -> Unit): Cancelable? {
+    override fun start(scope: CoroutineScope, send: (NetworkState) -> Unit): Cancelable? {
         // Broadcast receiver setup
         val action = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         val receiver = object : BroadcastReceiver() {
