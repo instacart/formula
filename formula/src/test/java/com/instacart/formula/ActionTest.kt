@@ -31,7 +31,7 @@ class ActionTest {
     @Test
     fun `launch - dispatcher`() {
         val dispatcher = StandardTestDispatcher()
-        val action = Action.launch(coroutineDispatcher = dispatcher) {
+        val action = Action.launch(context = dispatcher) {
             delay(1000)
             "Result"
         }

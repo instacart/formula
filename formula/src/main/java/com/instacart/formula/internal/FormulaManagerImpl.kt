@@ -9,6 +9,8 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.plugin.Dispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.isActive
 import java.util.LinkedList
 import kotlin.reflect.KClass
 
@@ -20,6 +22,7 @@ import kotlin.reflect.KClass
  * a state change, it will rerun [Formula.evaluate].
  */
 internal class FormulaManagerImpl<Input, State, Output>(
+    val scope: CoroutineScope,
     val queue: SynchronizedUpdateQueue,
     val batchManager: BatchManager,
     private val delegate: ManagerDelegate,

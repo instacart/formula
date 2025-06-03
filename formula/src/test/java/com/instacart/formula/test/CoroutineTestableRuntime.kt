@@ -17,7 +17,6 @@ object CoroutinesTestableRuntime : TestableRuntime {
             inspector = inspector,
             defaultDispatcher = defaultDispatcher
         )
-        val delegate = CoroutineTestDelegate(formula, runtimeConfig)
-        return TestFormulaObserver(delegate)
+        return TestFormulaObserver(runtimeConfig, formula)
     }
 }

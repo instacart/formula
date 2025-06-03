@@ -6,6 +6,7 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
+import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference
  * Takes a [Formula] and creates an Observable<Output> from it.
  */
 class FormulaRuntime<Input : Any, Output : Any>(
+    private val scope: CoroutineScope,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
@@ -94,7 +96,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun onInput(input: Input) {
-        synchronizedUpdateQueue.postUpdate(defaultDispatcher) { onInputInternal(input) }
+        synchronizedUpdateQueue.postUpdate(defaultDispatcher) {
+            onInputInternal(input)
+        }
     }
 
     private fun onInputInternal(input: Input) {
@@ -353,6 +357,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
+            scope = scope,
             queue = synchronizedUpdateQueue,
             batchManager = batchManager,
             delegate = this,

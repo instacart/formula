@@ -3,6 +3,7 @@ package com.instacart.formula.rxjava3
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Adapter which maps RxJava types to [Action] type. Take a look
@@ -48,7 +49,7 @@ interface RxAction<Event : Any> : Action<Event> {
 
     fun observable(): Observable<Event>
 
-    override fun start(send: (Event) -> Unit): Cancelable? {
+    override fun start(scope: CoroutineScope, send: (Event) -> Unit): Cancelable? {
         val disposable = observable().subscribe(send)
         return Cancelable(disposable::dispose)
     }
@@ -57,7 +58,7 @@ interface RxAction<Event : Any> : Action<Event> {
 private data class RxActionImpl<Event : Any>(
     private val key: Any?,
     private val factory: () -> Observable<Event>
-): RxAction<Event> {
+) : RxAction<Event> {
     override fun observable(): Observable<Event> {
         return factory()
     }

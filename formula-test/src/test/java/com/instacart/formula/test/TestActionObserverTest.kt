@@ -3,6 +3,7 @@ package com.instacart.formula.test
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
+import kotlinx.coroutines.CoroutineScope
 import org.junit.Test
 
 class TestActionObserverTest {
@@ -36,7 +37,7 @@ class TestActionObserverTest {
     @Test fun `cancel invokes cancelable`() {
         var cancelableCalled = 0
         val action = object : Action<String> {
-            override fun start(send: (String) -> Unit): Cancelable {
+            override fun start(scope: CoroutineScope, send: (String) -> Unit): Cancelable {
                 return Cancelable { cancelableCalled += 1 }
             }
 
@@ -48,7 +49,7 @@ class TestActionObserverTest {
     }
 
     private fun multipleValueStream() = object : Action<Int> {
-        override fun start(send: (Int) -> Unit): Cancelable? {
+        override fun start(scope: CoroutineScope, send: (Int) -> Unit): Cancelable? {
             send(1)
             send(2)
             return null
