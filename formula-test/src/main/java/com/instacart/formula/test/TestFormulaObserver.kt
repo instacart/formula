@@ -1,21 +1,49 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
+import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.toFlow
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 
+@OptIn(DelicateCoroutinesApi::class)
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
-    private val delegate: FormulaTestDelegate<Input, Output, FormulaT>,
+    private val runtimeConfig: RuntimeConfig,
+    val formula: FormulaT,
 ) {
+
+    private val values = mutableListOf<Output>()
+    private val errors = mutableListOf<Throwable>()
+
+    private val inputFlow = MutableSharedFlow<Input>(
+        replay = 1,
+        extraBufferCapacity = Int.MAX_VALUE,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    private val job = GlobalScope.launch(
+        context = Dispatchers.Unconfined,
+        start = CoroutineStart.UNDISPATCHED,
+    ) {
+        formula.toFlow(inputFlow, runtimeConfig)
+            .catch { errors.add(it) }
+            .collect { values.add(it) }
+    }
 
     private var started: Boolean = false
 
-    val formula: FormulaT = delegate.formula
-
     init {
-        delegate.assertNoErrors()
+        assertNoErrors()
     }
 
     fun values(): List<Output> {
-        return delegate.values()
+        return values.toList()
     }
 
     /**
@@ -25,7 +53,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         started = true
         
         assertNoErrors() // Check before interaction
-        delegate.input(value)
+        inputFlow.tryEmit(value)
         assertNoErrors() // Check after interaction
     }
 
@@ -47,11 +75,14 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     }
 
     fun assertNoErrors() = apply {
-        delegate.assertNoErrors()
+        val error = errors.lastOrNull()
+        if (error != null) {
+            throw error
+        }
     }
 
     fun dispose() = apply {
-        delegate.dispose()
+        job.cancel()
     }
 
     @PublishedApi

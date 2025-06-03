@@ -22,8 +22,7 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
         defaultDispatcher = dispatcher,
     )
 
-    val delegate = CoroutineTestDelegate(this, runtimeConfig)
-    return TestFormulaObserver(delegate)
+    return TestFormulaObserver(runtimeConfig, this)
 }
 
 fun <Event> Action<Event>.test() = TestActionObserver(this)
