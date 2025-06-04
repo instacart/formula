@@ -2,12 +2,16 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import java.lang.AssertionError
 
-class TestActionObserver<Event>(private val action: Action<Event>) {
+class TestActionObserver<Event>(
+    private val action: Action<Event>,
+    private val scope: CoroutineScope,
+) {
     private val values = mutableListOf<Event>()
-    private val cancelation = action.start(GlobalScope) { values.add(it) }
+    private val cancelation = action.start(scope) { values.add(it) }
 
     fun values(): List<Event> = values
 
