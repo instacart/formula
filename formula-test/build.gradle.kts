@@ -9,6 +9,7 @@ apply {
 
 dependencies {
     implementation(libs.kotlin)
+    api(libs.coroutines.test)
     api(project(":formula"))
 
     testImplementation(libs.truth)
