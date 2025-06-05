@@ -2,7 +2,6 @@ package com.instacart.formula.action
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +24,8 @@ internal class FlowAction<Event>(
     override fun start(scope: CoroutineScope, send: (Event) -> Unit): Cancelable {
         val job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             withContext(context) {
-                factory().collect {
+                val flow = factory()
+                flow.collect {
                     send(it)
                 }
             }

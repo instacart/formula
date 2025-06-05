@@ -1,12 +1,15 @@
 package com.instacart.formula
 
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.launch
 
 fun <Output : Any> IFormula<Unit, Output>.toFlow(
@@ -27,35 +30,75 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
     config: RuntimeConfig? = null,
 ): Flow<Output> {
     return start(
-        input = input,
+        inputFlow = input,
         formula = this,
         config = config,
     )
 }
 
 private fun <Input : Any, Output : Any> start(
-    input: Flow<Input>,
+    inputFlow: Flow<Input>,
     formula: IFormula<Input, Output>,
     config: RuntimeConfig?,
 ): Flow<Output> {
-    val callbackFlow = callbackFlow {
-        val runtime = FormulaRuntime(
-            scope = this,
-            formula = formula,
-            onOutput = this::trySend,
-            onError = this::close,
-            config = config ?: RuntimeConfig(),
-        )
+    val flow = flow<Output> {
+        val channel = Channel<Output>(capacity = Channel.CONFLATED)
+        coroutineScope {
+            val scope = this
+            val runtime = FormulaRuntime(
+                scope = scope,
+                formula = formula,
+                onOutput = channel::trySend,
+                onError = channel::close,
+                config = config ?: RuntimeConfig(),
+            )
 
-        launch {
-            input.collect(runtime::onInput)
-        }
+            // Input producer scope launch can be problematic?
+            // TODO: launching input
+            launch {
+//                val inputChannel = input.produceIn(this)
+//                while (true) {
+//                    val input = inputChannel.receive()
+//                    runtime.onInput()
+//
+//                }
 
-        awaitClose {
-            runtime.terminate()
+                inputFlow.conflate().collect {
+                    runtime.onInput(it)
+                }
+            }
+
+            try {
+                while (true) {
+                    val output = channel.receive()
+                    emit(output)
+                }
+            } finally {
+                runtime.terminate()
+            }
         }
     }
-    return callbackFlow
-        .buffer(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        .distinctUntilChanged()
+    return flow.distinctUntilChanged()
+
+
+//    val callbackFlow = callbackFlow {
+//        val runtime = FormulaRuntime(
+//            scope = this,
+//            formula = formula,
+//            onOutput = this::trySend,
+//            onError = this::close,
+//            config = config ?: RuntimeConfig(),
+//        )
+//
+//        launch(context = Dispatchers.Unconfined, start = CoroutineStart.UNDISPATCHED) {
+//            input.collect(runtime::onInput)
+//        }
+//
+//        awaitClose {
+//            runtime.terminate()
+//        }
+//    }
+//    return callbackFlow
+//        .buffer(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+//        .distinctUntilChanged()
 }
