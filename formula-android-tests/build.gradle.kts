@@ -24,13 +24,14 @@ dependencies {
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
-    implementation(libs.lifecycle.extensions)
     implementation(libs.androidx.test.core.ktx)
+    implementation(libs.lifecycle.extensions)
     implementation(project(":test-utils:android"))
 
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.coroutines.rx3)
     testImplementation(libs.espresso.core)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
