@@ -24,14 +24,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private var fragmentRenderView: FragmentFlowRenderView? = null
 
     init {
-        stateSubscription = if (store.streams != null) {
-            val disposables = CompositeDisposable()
-            disposables.add(subscribeToFragmentStateChanges())
-            disposables.add(store.streams.invoke(StreamConfiguratorIml(delegate)))
-            disposables
-        } else {
-            subscribeToFragmentStateChanges()
-        }
+        stateSubscription = subscribeToFragmentStateChanges()
     }
 
     fun onPreCreate(activity: Activity) {
