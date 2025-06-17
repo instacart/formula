@@ -4,20 +4,17 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FragmentOutput
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
 
 @PublishedApi
-internal class FragmentStoreFormula<in Component>(
-    private val component: Component,
-    private val bindings: List<FeatureBinding<Component, *>>,
+internal class FragmentStoreFormula(
+    private val featureComponent: FeatureComponent<*>,
 ) : Formula<FragmentEnvironment, FragmentState, FragmentState>(){
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
@@ -58,7 +55,7 @@ internal class FragmentStoreFormula<in Component>(
                         }
                         is FragmentLifecycleEvent.Added -> {
                             if (!state.activeIds.contains(fragmentId)) {
-                                val feature = initFeature(input, fragmentId)
+                                val feature = featureComponent.init(input, fragmentId)
                                 val updated = state.copy(
                                     activeIds = state.activeIds.plus(fragmentId),
                                     features = state.features.plus(feature.id to feature)
@@ -101,31 +98,5 @@ internal class FragmentStoreFormula<in Component>(
                 }
             }
         )
-    }
-
-    private fun initFeature(
-        environment: FragmentEnvironment,
-        fragmentId: FragmentId,
-    ): FeatureEvent {
-        val initialized = try {
-            bindings.firstNotNullOfOrNull { binding ->
-                if (binding.type.isInstance(fragmentId.key)) {
-                    val featureFactory = binding.feature as FeatureFactory<Component, FragmentKey>
-                    val feature = environment.fragmentDelegate.initializeFeature(
-                        fragmentId = fragmentId,
-                        factory = featureFactory,
-                        dependencies = component,
-                        key = fragmentId.key,
-                    )
-                    FeatureEvent.Init(fragmentId, feature)
-                } else {
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            FeatureEvent.Failure(fragmentId, e)
-        }
-
-        return initialized ?: FeatureEvent.MissingBinding(fragmentId)
     }
 }

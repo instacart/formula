@@ -2,6 +2,7 @@ package com.instacart.formula.android
 
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.internal.FeatureComponent
 import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.FragmentStoreFormula
 import com.instacart.formula.android.utils.MainThreadDispatcher
@@ -12,7 +13,7 @@ import io.reactivex.rxjava3.core.Observable
  * A FragmentStore is responsible for managing the state of multiple [FragmentKey] instances.
  */
 class FragmentStore @PublishedApi internal constructor(
-    private val formula: FragmentStoreFormula<*>,
+    private val formula: FragmentStoreFormula,
 ) {
     companion object {
         val EMPTY = init {  }
@@ -35,7 +36,8 @@ class FragmentStore @PublishedApi internal constructor(
             component: Component,
             features: Features<Component>
         ): FragmentStore {
-            val formula = FragmentStoreFormula(component, features.bindings)
+            val featureComponent = FeatureComponent(component, features.bindings)
+            val formula = FragmentStoreFormula(featureComponent)
             return FragmentStore(formula)
         }
     }
@@ -44,8 +46,8 @@ class FragmentStore @PublishedApi internal constructor(
         formula.onLifecycleEffect(event)
     }
 
-    internal fun onVisibilityChanged(contract: FragmentId, visible: Boolean) {
-        formula.onVisibilityChanged(contract, visible)
+    internal fun onVisibilityChanged(fragmentId: FragmentId, visible: Boolean) {
+        formula.onVisibilityChanged(fragmentId, visible)
     }
 
     internal fun state(environment: FragmentEnvironment): Observable<FragmentState> {
