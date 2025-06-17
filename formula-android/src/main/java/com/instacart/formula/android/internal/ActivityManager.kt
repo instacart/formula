@@ -100,6 +100,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     fun dispose() {
         stateSubscription.dispose()
+        store.onCleared?.invoke()
     }
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {

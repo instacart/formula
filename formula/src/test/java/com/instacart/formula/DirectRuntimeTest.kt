@@ -1,11 +1,9 @@
 package com.instacart.formula
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.Try
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.types.InputIdentityFormula
-import kotlinx.coroutines.test.TestScope
 import org.junit.Test
 
 /**
@@ -21,7 +19,6 @@ class DirectRuntimeTest {
         val onOutput = TestEventCallback<Int>()
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
-            scope = TestScope(),
             formula = root,
             onOutput = onOutput,
             onError = onError,
@@ -40,7 +37,6 @@ class DirectRuntimeTest {
         val onOutput = TestEventCallback<Int>()
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
-            scope = TestScope(),
             formula = root,
             onOutput = onOutput,
             onError = onError,
@@ -60,7 +56,6 @@ class DirectRuntimeTest {
         val onOutput = TestEventCallback<Int>()
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
-            scope = TestScope(),
             formula = root,
             onOutput = onOutput,
             onError = onError,
@@ -80,7 +75,6 @@ class DirectRuntimeTest {
         val onOutput = TestEventCallback<Int>()
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
-            scope = TestScope(),
             formula = root,
             onOutput = onOutput,
             onError = onError,
@@ -96,7 +90,6 @@ class DirectRuntimeTest {
         val onOutput = TestEventCallback<Int>()
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
-            scope = TestScope(),
             formula = root,
             onOutput = onOutput,
             onError = onError,

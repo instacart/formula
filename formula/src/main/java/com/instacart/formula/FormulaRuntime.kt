@@ -7,20 +7,29 @@ import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Takes a [Formula] and creates an Observable<Output> from it.
  */
 class FormulaRuntime<Input : Any, Output : Any>(
-    private val scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     private val formula: IFormula<Input, Output>,
     private val onOutput: (Output) -> Unit,
     private val onError: (Throwable) -> Unit,
     config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
+    private val scope = CoroutineScope(
+        context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
+    )
+
     private val isValidationEnabled = config.isValidationEnabled
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
@@ -145,6 +154,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private fun terminateInternal() {
         if (isRuntimeTerminated) return
         isRuntimeTerminated = true
+        scope.cancel()
 
         manager?.apply {
             markAsTerminated()

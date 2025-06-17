@@ -1,29 +1,54 @@
 package com.instacart.formula.rxjava3
 
+import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
-import com.instacart.formula.toFlow
 import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.rx3.asFlow
-import kotlinx.coroutines.rx3.asObservable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
 
 fun <Output : Any> IFormula<Unit, Output>.toObservable(
     config: RuntimeConfig? = null,
 ): Observable<Output> {
-    return toFlow(config).asObservable()
+    return toObservable(Unit, config)
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
     input: Input,
     config: RuntimeConfig? = null,
 ): Observable<Output> {
-    return toFlow(input, config).asObservable()
+    return toObservable(Observable.just(input), config)
 }
 
 fun <Input : Any, Output : Any> IFormula<Input, Output>.toObservable(
     input: Observable<Input>,
     config: RuntimeConfig? = null,
 ): Observable<Output> {
-    val inputFlow = input.asFlow()
-    return toFlow(inputFlow, config).asObservable()
+    return start(this, input, config)
+}
+
+fun <Input : Any, Output : Any> start(
+    formula: IFormula<Input, Output>,
+    input: Observable<Input>,
+    config: RuntimeConfig?,
+): Observable<Output> {
+    return Observable.create { emitter ->
+        val runtime = FormulaRuntime(
+            coroutineContext = Dispatchers.Unconfined,
+            formula = formula,
+            onOutput = emitter::onNext,
+            onError = emitter::onError,
+            config = config ?: RuntimeConfig(),
+        )
+
+        val disposables = CompositeDisposable()
+        disposables.add(input.subscribe(runtime::onInput, emitter::onError))
+        disposables.add(runtimeDisposable(runtime))
+        emitter.setDisposable(disposables)
+    }.distinctUntilChanged()
+}
+
+private fun runtimeDisposable(runtime: FormulaRuntime<*, *>): Disposable {
+    return Disposable.fromRunnable(runtime::terminate)
 }

@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -40,7 +41,7 @@ private fun <Input : Any, Output : Any> start(
 ): Flow<Output> {
     val callbackFlow = callbackFlow {
         val runtime = FormulaRuntime(
-            scope = this,
+            coroutineContext = coroutineContext,
             formula = formula,
             onOutput = this::trySend,
             onError = this::close,
@@ -56,6 +57,6 @@ private fun <Input : Any, Output : Any> start(
         }
     }
     return callbackFlow
-        .buffer(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        .conflate()
         .distinctUntilChanged()
 }
