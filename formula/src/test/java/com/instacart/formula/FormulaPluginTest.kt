@@ -1,6 +1,5 @@
 package com.instacart.formula
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.ErrorAction
 import com.instacart.formula.internal.ClearPluginsRule
@@ -118,6 +117,24 @@ class FormulaPluginTest {
 
             assertThat(plugin.errors).containsExactly(
                 FormulaError.ActionError(myFormula.type().java, exception)
+            )
+        }
+    }
+
+    @Test fun `formula error is propaged to global error handler`() {
+        val error = IllegalStateException("something went wrong")
+        val formula = object : StatelessFormula<Unit, Unit>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                throw error
+            }
+        }
+
+        val plugin = TestPlugin()
+        withPlugin(plugin) {
+            runCatching { formula.test().input(Unit) }
+
+            assertThat(plugin.errors).containsExactly(
+                FormulaError.Unhandled(formula.type().java, error)
             )
         }
     }

@@ -20,10 +20,10 @@ class DirectRuntimeTest {
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
             formula = root,
-            onOutput = onOutput,
-            onError = onError,
             config = RuntimeConfig()
         )
+        runtime.setOnOutput(onOutput)
+        runtime.setOnError(onError)
 
         val result = Try {
             runtime.requireInput()
@@ -38,10 +38,10 @@ class DirectRuntimeTest {
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
             formula = root,
-            onOutput = onOutput,
-            onError = onError,
             config = RuntimeConfig()
         )
+        runtime.setOnOutput(onOutput)
+        runtime.setOnError(onError)
 
         val result = Try {
             runtime.requireManager()
@@ -57,10 +57,10 @@ class DirectRuntimeTest {
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
             formula = root,
-            onOutput = onOutput,
-            onError = onError,
             config = RuntimeConfig()
         )
+        runtime.setOnOutput(onOutput)
+        runtime.setOnError(onError)
 
         runtime.onInput(0)
         runtime.terminate()
@@ -76,10 +76,10 @@ class DirectRuntimeTest {
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
             formula = root,
-            onOutput = onOutput,
-            onError = onError,
             config = RuntimeConfig()
         )
+        runtime.setOnOutput(onOutput)
+        runtime.setOnError(onError)
 
         runtime.terminate()
     }
@@ -91,15 +91,14 @@ class DirectRuntimeTest {
         val onError = TestEventCallback<Throwable>()
         val runtime = FormulaRuntime(
             formula = root,
-            onOutput = onOutput,
-            onError = onError,
             config = RuntimeConfig()
         )
+        runtime.setOnOutput(onOutput)
+        runtime.setOnError(onError)
 
         runtime.onInput(0)
         runtime.terminate()
         runtime.terminate()
         runtime.terminate()
     }
-
 }

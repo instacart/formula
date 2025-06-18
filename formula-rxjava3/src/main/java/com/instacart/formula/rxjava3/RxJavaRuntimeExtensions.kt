@@ -6,7 +6,6 @@ import com.instacart.formula.RuntimeConfig
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
-import kotlinx.coroutines.Dispatchers
 
 fun <Output : Any> IFormula<Unit, Output>.toObservable(
     config: RuntimeConfig? = null,
@@ -35,12 +34,11 @@ fun <Input : Any, Output : Any> start(
 ): Observable<Output> {
     return Observable.create { emitter ->
         val runtime = FormulaRuntime(
-            coroutineContext = Dispatchers.Unconfined,
             formula = formula,
-            onOutput = emitter::onNext,
-            onError = emitter::onError,
             config = config ?: RuntimeConfig(),
         )
+        runtime.setOnOutput(emitter::onNext)
+        runtime.setOnError(emitter::onError)
 
         val disposables = CompositeDisposable()
         disposables.add(input.subscribe(runtime::onInput, emitter::onError))

@@ -31,7 +31,7 @@ internal class FlowAction<Event>(
                         emitter.onEvent(it)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 if (e !is CancellationException) {
                     emitter.onError(e)
                 }

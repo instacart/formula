@@ -5,6 +5,7 @@ import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.batch.StateBatchScheduler
 import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
+import com.instacart.formula.internal.TestDispatcher
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.plugin.Dispatcher
@@ -699,23 +700,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val dispatcher = object : Dispatcher {
-            var dispatches = mutableListOf<() -> Unit>()
-
-            override fun isDispatchNeeded(): Boolean {
-                return true
-            }
-
-            override fun dispatch(executable: () -> Unit) {
-                dispatches.add(executable)
-            }
-
-            fun executeAndClear() {
-                val local = dispatches
-                dispatches = mutableListOf()
-                local.forEach { it.invoke() }
-            }
-        }
+        val dispatcher = TestDispatcher()
         val observer = runtime.test(formula, defaultDispatcher = dispatcher)
 
         // Initialize formula
