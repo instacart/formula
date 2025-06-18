@@ -12,14 +12,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.test.runActivityUpdateTest
 import com.instacart.formula.android.test.runFeatureFactoryLifecycleTest
 import com.instacart.testutils.android.TestActivity
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentActivity
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.withFormulaAndroid
-import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -115,49 +113,6 @@ class FormulaAndroidTest {
             // We expect two full lifecycles
             val expected = listOf(INITIALIZED) + lifecycle + lifecycle
             assertThat(activityLifecycleEvents.values()).containsExactlyElementsIn(expected).inOrder()
-        }
-    }
-
-    @Test
-    fun `all updates except the last are dropped if they are emitted before Activity onStarted is called`() {
-        runActivityUpdateTest(
-            initialUpdates = Observable.just("one", "two", "three")
-        ) { _, interactor ->
-            // Only last update is received while others are dropped.
-            val updates = interactor.currentUpdates()
-            assertThat(updates).containsExactly("three")
-        }
-    }
-
-    @Test
-    fun `activity updates are emitted`() {
-        runActivityUpdateTest { _, interactor ->
-            interactor.publish("update-1")
-            interactor.publish("update-2")
-
-            val updates = interactor.currentUpdates()
-            assertThat(updates).containsExactly("update-1", "update-2").inOrder()
-        }
-    }
-
-    @Test
-    fun `last activity update is emitted after configuration changes`() {
-        runActivityUpdateTest { scenario, updateRelay ->
-            updateRelay.publish("update-1")
-            updateRelay.publish("update-2")
-            scenario.recreate()
-
-            val updates = updateRelay.currentUpdates()
-            assertThat(updates).containsExactly("update-2").inOrder()
-        }
-    }
-
-    @Test
-    fun `activity updates observable is disposed when activity is finished`() {
-        runActivityUpdateTest { scenario, updateRelay ->
-            updateRelay.assertHasObservers(true)
-            scenario.close()
-            updateRelay.assertHasObservers(false)
         }
     }
 

@@ -16,8 +16,6 @@ import io.reactivex.rxjava3.core.Observable
  */
 internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityStoreContext<Activity>() {
 
-    private val startedRelay = PublishRelay.create<Unit>()
-
     private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
     private val fragmentStateUpdated: PublishRelay<String> = PublishRelay.create()
 
@@ -78,7 +76,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     fun onActivityStarted(activity: Activity) {
         hasStarted = true
-        startedRelay.accept(Unit)
     }
 
     fun detachActivity(activity: Activity) {
@@ -100,8 +97,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     }
 
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }
-
-    internal fun activityStartedEvents(): Observable<Unit> = startedRelay
 
     private fun fragmentLifecycleState(tag: String): Observable<Lifecycle.State> {
         return fragmentStateUpdated
