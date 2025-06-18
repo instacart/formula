@@ -16,6 +16,8 @@ import com.jakewharton.rxrelay3.PublishRelay
 internal class FragmentStoreFormula(
     private val featureComponent: FeatureComponent<*>,
 ) : Formula<FragmentEnvironment, FragmentState, FragmentState>(){
+
+    // TODO: probably don't need relays for this!!
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
     private val hiddenContractEvents = PublishRelay.create<FragmentId>()
