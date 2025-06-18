@@ -93,6 +93,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     fun dispose() {
         stateSubscription.dispose()
+        store.fragmentStore.dispose()
         store.onCleared?.invoke()
     }
 
