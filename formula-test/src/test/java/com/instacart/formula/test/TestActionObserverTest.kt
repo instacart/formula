@@ -47,7 +47,10 @@ class TestActionObserverTest {
     @Test fun `cancel invokes cancelable`() = runTest {
         var cancelableCalled = 0
         val action = object : Action<String> {
-            override fun start(scope: CoroutineScope, send: (String) -> Unit): Cancelable {
+            override fun start(
+                scope: CoroutineScope,
+                emitter: Action.Emitter<String>
+            ): Cancelable {
                 return Cancelable { cancelableCalled += 1 }
             }
 
@@ -61,9 +64,9 @@ class TestActionObserverTest {
     }
 
     private fun multipleValueStream() = object : Action<Int> {
-        override fun start(scope: CoroutineScope, send: (Int) -> Unit): Cancelable? {
-            send(1)
-            send(2)
+        override fun start(scope: CoroutineScope, emitter: Action.Emitter<Int>): Cancelable? {
+            emitter.onEvent(1)
+            emitter.onEvent(2)
             return null
         }
 

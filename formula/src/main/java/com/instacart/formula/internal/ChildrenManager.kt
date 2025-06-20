@@ -69,7 +69,7 @@ internal class ChildrenManager(
              */
             if (logs.add(key)) {
                 FormulaPlugins.onDuplicateChildKey(
-                    parentFormulaType = delegate.loggingType.java,
+                    parentFormulaType = delegate.formulaType.java,
                     childFormulaType = formula.type().java,
                     key = key,
                 )
@@ -105,7 +105,7 @@ internal class ChildrenManager(
                 delegate = delegate,
                 formula = implementation,
                 initialInput = input,
-                loggingType = formula::class,
+                formulaType = formula.type(),
                 inspector = inspector,
                 defaultDispatcher = delegate.defaultDispatcher,
             )

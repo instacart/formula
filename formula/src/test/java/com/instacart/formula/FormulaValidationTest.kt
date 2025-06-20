@@ -63,7 +63,7 @@ class FormulaValidationTest {
                         val action = object : Action<Unit> {
                             override fun start(
                                 scope: CoroutineScope,
-                                send: (Unit) -> Unit
+                                emitter: Action.Emitter<Unit>
                             ): Cancelable? {
                                 return null
                             }

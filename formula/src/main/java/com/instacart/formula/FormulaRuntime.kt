@@ -373,7 +373,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             delegate = this,
             formula = implementation,
             initialInput = initialInput,
-            loggingType = formula::class,
+            formulaType = formula.type(),
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
         )

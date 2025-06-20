@@ -14,6 +14,11 @@ interface Plugin {
     }
 
     /**
+     * Notified when an error is thrown in a formula.
+     */
+    fun onError(error: FormulaError) = Unit
+
+    /**
      * Notified when there is a duplicate child key detected.
      */
     fun onDuplicateChildKey(
