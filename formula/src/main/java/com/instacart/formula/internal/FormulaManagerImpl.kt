@@ -127,8 +127,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * and can emit the last produced [Output].
      */
     override fun run(input: Input): Evaluation<Output> {
-        // TODO: assert main thread.
-
         var result: Evaluation<Output>? = null
         isRunning = true
         try {

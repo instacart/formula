@@ -23,6 +23,9 @@ object FormulaPlugins {
         }
     }
 
+    /**
+     * Notified when there is an error in the formula.
+     */
     fun onError(error: FormulaError) {
         plugin?.onError(error)
     }

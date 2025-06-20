@@ -27,7 +27,7 @@ internal class LaunchCoroutineAction<Result>(
                 try {
                     val result = block()
                     emitter.onEvent(result)
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     if (e !is CancellationException) {
                         emitter.onError(e)
                     }
