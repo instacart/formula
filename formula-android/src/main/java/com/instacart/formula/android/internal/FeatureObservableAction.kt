@@ -16,13 +16,13 @@ class FeatureObservableAction(
 
     override fun key(): Any = fragmentId
 
-    override fun start(scope: CoroutineScope, send: (Any) -> Unit): Cancelable {
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<Any>): Cancelable {
         val observable = feature.stateObservable.onErrorResumeNext {
             fragmentEnvironment.onScreenError(fragmentId.key, it)
             Observable.empty()
         }
 
-        val disposable = observable.subscribe(send)
+        val disposable = observable.subscribe(emitter::onEvent, emitter::onError)
         return Cancelable(disposable::dispose)
     }
 }

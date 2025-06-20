@@ -10,6 +10,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -165,6 +166,17 @@ class ActionTest {
     }
 
     @Test
+    fun `launch - error is emitted`() = runTest {
+        val runtimeException = RuntimeException("Test exception")
+        val result = kotlin.runCatching {
+            Action.launch<Unit> { throw runtimeException }.test {}
+        }
+        assertThat(result.exceptionOrNull()).hasMessageThat().isEqualTo(
+            "Expected no errors, but got: [java.lang.RuntimeException: Test exception]"
+        )
+    }
+
+    @Test
     fun `fromFlow - default key is null`() {
         val action = Action.fromFlow { flowOf("") }
         assertThat(action.key()).isNull()
@@ -193,6 +205,22 @@ class ActionTest {
             sharedFlow.forceEmit(2)
             assertValues(1, 2)
         }
+    }
+
+    @Test
+    fun `fromFlow - error is emitted`() = runTest {
+        val exception = RuntimeException("Test exception")
+        val action = Action.fromFlow<Unit> {
+            flow {
+                throw exception
+            }
+        }
+        val result = runCatching {
+            action.test {}
+        }
+        assertThat(result.exceptionOrNull()).hasMessageThat().isEqualTo(
+            "Expected no errors, but got: [java.lang.RuntimeException: Test exception]"
+        )
     }
 
     @OptIn(DelicateCoroutinesApi::class)

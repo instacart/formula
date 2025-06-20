@@ -1506,9 +1506,12 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
+                                override fun start(
+                                    scope: CoroutineScope,
+                                    emitter: Action.Emitter<Unit>
+                                ): Cancelable {
                                     return Cancelable {
-                                        send(Unit)
+                                        emitter.onEvent(Unit)
                                     }
                                 }
 
@@ -1548,7 +1551,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
+                                override fun start(
+                                    scope: CoroutineScope,
+                                    emitter: Action.Emitter<Unit>
+                                ): Cancelable {
                                     return Cancelable {
                                         newRelay.triggerEvent()
                                     }
@@ -1586,7 +1592,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                     actions = context.actions {
                         if (input) {
                             val action = object : Action<Unit> {
-                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
+                                override fun start(
+                                    scope: CoroutineScope,
+                                    emitter: Action.Emitter<Unit>
+                                ): Cancelable {
                                     return Cancelable {
                                         terminate()
                                     }
@@ -1624,8 +1633,12 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                         if (input) {
                             val action = object : Action<Unit> {
                                 override fun key(): Any? = null
-                                override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable? {
-                                    sendCallback = send
+
+                                override fun start(
+                                    scope: CoroutineScope,
+                                    emitter: Action.Emitter<Unit>
+                                ): Cancelable? {
+                                    sendCallback = emitter::onEvent
                                     return null
                                 }
                             }

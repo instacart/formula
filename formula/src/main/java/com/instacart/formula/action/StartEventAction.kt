@@ -11,8 +11,8 @@ internal class StartEventAction<Data>(
     private val data: Data
 ) : Action<Data> {
 
-    override fun start(scope: CoroutineScope, send: (Data) -> Unit): Cancelable? {
-        send(data)
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<Data>): Cancelable? {
+        emitter.onEvent(data)
         return null
     }
 

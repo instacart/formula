@@ -6,16 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineScope
 
 class NetworkStateStreamImpl(private val application: Application) : NetworkStateStream {
-    override fun start(scope: CoroutineScope, send: (NetworkState) -> Unit): Cancelable? {
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<NetworkState>): Cancelable {
         // Broadcast receiver setup
         val action = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                send(getNetworkState(application))
+                emitter.onEvent(getNetworkState(application))
             }
         }
 
@@ -23,7 +24,7 @@ class NetworkStateStreamImpl(private val application: Application) : NetworkStat
         application.registerReceiver(receiver, action, null, null);
 
         // Emit initial state
-        send(getNetworkState(application))
+        emitter.onEvent(getNetworkState(application))
 
         return Cancelable {
             // Unregister

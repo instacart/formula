@@ -4,14 +4,12 @@ import com.instacart.formula.DeferredAction
 import com.instacart.formula.Evaluation
 import com.instacart.formula.plugin.Inspector
 import kotlinx.coroutines.isActive
-import kotlin.reflect.KClass
 
 /**
  * Handles [DeferredAction] changes.
  */
 internal class ActionManager(
     private val manager: FormulaManagerImpl<*, *, *>,
-    private val loggingType: KClass<*>,
     private val inspector: Inspector?,
 ) {
     /**
@@ -89,10 +87,10 @@ internal class ActionManager(
 
             val runningActions = getOrInitRunningActions()
             if (!runningActions.contains(action)) {
-                inspector?.onActionStarted(loggingType, action)
+                inspector?.onActionStarted(manager.formulaType, action)
 
                 runningActions.add(action)
-                action.start(manager.scope)
+                action.start(manager.scope, manager.formulaType.java)
 
                 if (manager.isTerminated()) {
                     return false
@@ -150,7 +148,7 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        inspector?.onActionFinished(loggingType, action)
+        inspector?.onActionFinished(manager.formulaType, action)
         action.tearDown()
         action.listener = null
     }

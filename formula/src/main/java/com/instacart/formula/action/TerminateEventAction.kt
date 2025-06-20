@@ -8,9 +8,9 @@ import kotlinx.coroutines.CoroutineScope
  * Emits an event when [Formula] is terminated.
  */
 internal object TerminateEventAction : Action<Unit> {
-    override fun start(scope: CoroutineScope, send: (Unit) -> Unit): Cancelable {
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<Unit>): Cancelable? {
         return Cancelable {
-            send(Unit)
+            emitter.onEvent(Unit)
         }
     }
 
