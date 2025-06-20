@@ -177,6 +177,19 @@ class ActionTest {
     }
 
     @Test
+    fun `launch - cancellation does not emit an error`() = runTest {
+        val action = Action.launch {
+            delay(500)
+        }
+        val result = kotlin.runCatching {
+            action.test {
+                cancel()
+            }
+        }
+        assertThat(result.exceptionOrNull()).isNull()
+    }
+
+    @Test
     fun `fromFlow - default key is null`() {
         val action = Action.fromFlow { flowOf("") }
         assertThat(action.key()).isNull()
@@ -221,6 +234,20 @@ class ActionTest {
         assertThat(result.exceptionOrNull()).hasMessageThat().isEqualTo(
             "Expected no errors, but got: [java.lang.RuntimeException: Test exception]"
         )
+    }
+
+    @Test
+    fun `fromFlow - cancellation does not emit an error`() = runTest {
+        val action = Action.fromFlow<Unit> {
+            flow { delay(500) }
+        }
+
+        val result = kotlin.runCatching {
+            action.test {
+                cancel()
+            }
+        }
+        assertThat(result.exceptionOrNull()).isNull()
     }
 
     @OptIn(DelicateCoroutinesApi::class)
