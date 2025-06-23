@@ -8,10 +8,10 @@ import com.instacart.formula.StatelessFormula
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.TestFormulaObserver
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
 
-class PendingActionFormulaTerminatedOnActionInit(runtime: TestableRuntime) {
+class PendingActionFormulaTerminatedOnActionInit() {
 
     private val inspector = CountingInspector()
     private var observer: TestFormulaObserver<Unit, Int, ParentFormula>? = null
@@ -22,7 +22,7 @@ class PendingActionFormulaTerminatedOnActionInit(runtime: TestableRuntime) {
     )
 
     private val formula = ParentFormula(actionFormula)
-    val test = runtime.test(formula, inspector).apply {
+    val test = formula.test(inspector = inspector).apply {
         observer = this
     }
 

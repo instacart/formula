@@ -2,7 +2,7 @@ package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth
 import com.instacart.formula.subjects.SleepFormula.SleepEvent
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 
-class MultiThreadRobot(val runtime: TestableRuntime) {
+class MultiThreadRobot() {
     class NamedThreadFactory(private val name: String): ThreadFactory {
         override fun newThread(r: Runnable): Thread {
             return Thread(r, name)
@@ -18,7 +18,7 @@ class MultiThreadRobot(val runtime: TestableRuntime) {
     }
 
     private val threadFormula = SleepFormula()
-    private val observer = runtime.test(threadFormula, "initial-key")
+    private val observer = threadFormula.test().input("initial-key")
 
     // Manage executors and update completion
     private val executorMap = mutableMapOf<String, Executor>()

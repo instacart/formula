@@ -5,6 +5,7 @@ import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.batch.StateBatchScheduler
 import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
+import com.instacart.formula.internal.TestDispatcher
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.Try
 import com.instacart.formula.plugin.Dispatcher
@@ -73,13 +74,12 @@ import com.instacart.formula.subjects.UniqueListenersWithinLoop
 import com.instacart.formula.subjects.UseInputFormula
 import com.instacart.formula.subjects.UsingKeyToScopeCallbacksWithinAnotherFunction
 import com.instacart.formula.subjects.UsingKeyToScopeChildFormula
-import com.instacart.formula.test.CoroutinesTestableRuntime
 import com.instacart.formula.test.CountingInspector
 import com.instacart.formula.test.FlowRelay
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestEventCallback
 import com.instacart.formula.test.TestFormulaObserver
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import com.instacart.formula.types.ActionDelegateFormula
 import com.instacart.formula.types.IncrementActionFormula
 import com.instacart.formula.types.IncrementFormula
@@ -95,21 +95,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.TestName
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import kotlin.reflect.KClass
 
-@RunWith(Parameterized::class)
-class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{1}")
-        fun runtimes() = listOf(
-            arrayOf(CoroutinesTestableRuntime, "Coroutines"),
-        )
-    }
+class FormulaRuntimeTest {
 
     @get:Rule
     val rule = RuleChain
@@ -118,7 +108,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `state change triggers an evaluation`() {
         val formula = EventCallbackFormula()
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { changeState("state 1") }
             .output { changeState("state 2") }
             .apply {
@@ -129,7 +119,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `state change is ignored if value is the same as last value`() {
         val formula = EventCallbackFormula()
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { changeState("state 1") }
             .output { changeState("state 1") }
             .apply {
@@ -140,7 +130,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `state can be a null value`() {
         val formula = NullableStateFormula()
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { assertThat(state).isNull() }
             .output { updateState("new state") }
             .output { assertThat(state).isEqualTo("new state") }
@@ -157,14 +147,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             StateTransitionTimingFormula.State.EXTERNAL
         )
 
-        runtime.test(formula, Unit).output { onStateTransition() }.output {
+        formula.test().input(Unit).output { onStateTransition() }.output {
             assertThat(events).isEqualTo(expectedStates)
         }
     }
 
     @Test fun `input change invokes onInputChanged`() {
         val formula = UseInputFormula<String>()
-        runtime.test(formula)
+        formula.test()
             .input("first")
             .input("second")
             .apply {
@@ -179,7 +169,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula)
+        formula.test()
             .input(1)
             .input(2)
             .input(3)
@@ -195,7 +185,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula)
+        formula.test()
             .input(1)
             .input(1)
             .apply {
@@ -205,7 +195,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `input change happens while formula is running`() {
-        val robot = InputChangeWhileFormulaRunningRobot(runtime, eventCount = 3)
+        val robot = InputChangeWhileFormulaRunningRobot(eventCount = 3)
 
         // Start formula
         robot.test.input(0)
@@ -247,7 +237,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        observer = runtime.test(root)
+        observer = root.test()
         observer.input(0)
         observer.output { assertThat(this).isEqualTo(1) }
 
@@ -281,7 +271,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        observer = runtime.test(root)
+        observer = root.test()
         observer.input(0)
 
         // No output since formula exited before producing an output
@@ -317,7 +307,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        observer = runtime.test(root)
+        observer = root.test()
         observer.input(0)
 
         // No output since formula exited before producing an output
@@ -329,7 +319,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `multiple event updates`() {
-        runtime.test(StartStopFormula(), Unit)
+        StartStopFormula().test().input(Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerEvent() }
             .apply { formula.incrementEvents.triggerEvent() }
@@ -342,7 +332,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `no state changes after event stream is removed`() {
-        runtime.test(StartStopFormula(), Unit)
+        StartStopFormula().test().input(Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerEvent() }
             .output { stopListening() }
@@ -356,7 +346,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `each child event handler should be scoped to latest state`() {
-        runtime.test(MultipleChildEvents.formula(), Unit)
+        MultipleChildEvents.formula().test().input(Unit)
             .output { child.incrementAndMessage() }
             .output { child.incrementAndMessage() }
             .output { child.incrementAndMessage() }
@@ -366,7 +356,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `transition after no re-evaluation pass`() {
         val sideEffectCallback = TestCallback()
-        runtime.test(TransitionAfterNoEvaluationPass.formula(sideEffectCallback), Unit)
+        TransitionAfterNoEvaluationPass.formula(sideEffectCallback).test().input(Unit)
             .output { triggerSideEffect() }
             .output { triggerSideEffect() }
             .assertOutputCount(1)
@@ -378,7 +368,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `child transition after no re-evaluation pass`() {
         val sideEffectCallback = TestCallback()
-        runtime.test(ChildTransitionAfterNoEvaluationPass.formula(sideEffectCallback), Unit)
+        ChildTransitionAfterNoEvaluationPass.formula(sideEffectCallback).test().input(Unit)
             .output { child.triggerSideEffect() }
             .output { child.triggerSideEffect() }
             .assertOutputCount(1)
@@ -391,7 +381,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `nested child transition after no re-evaluation pass`() {
 
         val sideEffectCallback = TestCallback()
-        runtime.test(NestedChildTransitionAfterNoEvaluationPass.formula(sideEffectCallback), Unit)
+        NestedChildTransitionAfterNoEvaluationPass.formula(sideEffectCallback).test().input(Unit)
             .output { child.child.triggerSideEffect() }
             .output { child.child.triggerSideEffect() }
             .assertOutputCount(1)
@@ -403,7 +393,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `runtime emits messages`() {
         val messageHandler = TestEventCallback<Int>()
-        runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = messageHandler))
+        MessageFormula().test().input(MessageFormula.Input(messageHandler = messageHandler))
             .output { triggerMessage() }
             .assertOutputCount(1) // no state change, so no re-evaluation
             .apply {
@@ -414,7 +404,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `message after no re-evaluation pass`() {
         val messageHandler = TestEventCallback<Int>()
-        runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = messageHandler))
+        MessageFormula().test().input(MessageFormula.Input(messageHandler = messageHandler))
             .output { triggerMessage() }
             .output { triggerMessage() }
             .assertOutputCount(1)
@@ -425,7 +415,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child message with no parent state change`() {
-        runtime.test(ChildMessageNoParentStateChange.formula(), Unit)
+        ChildMessageNoParentStateChange.formula().test().input(Unit)
             .output { child.triggerMessage() }
             .assertOutputCount(1)  // no state change, so no re-evaluation
     }
@@ -433,7 +423,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `child message with parent state change`() {
         val inspector = CountingInspector()
-        runtime.test(ChildMessageWithParentStateChange.formula(), Unit, inspector)
+        ChildMessageWithParentStateChange.formula().test(inspector = inspector).input(Unit)
             .output { child.triggerMessage() }
             .assertOutputCount(2)
             .output { assertThat(state).isEqualTo(1) }
@@ -446,7 +436,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `immediate child transition triggers parent state change`() {
         val formula = ParentTransitionOnChildActionStart.formula(eventNumber = 3)
         val inspector = CountingInspector()
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .output { assertThat(state).isEqualTo(3) }
 
         // TODO: run count could be reduced to 1 with inline effect execution
@@ -461,7 +451,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         // Nest it within HasChildFormula
         val formula = HasChildFormula(parentTransitionFormula)
         val inspector = CountingInspector()
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .output { assertThat(child.state).isEqualTo(3) }
 
 
@@ -474,20 +464,18 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `child action triggers parent event on start`() {
         val increments = listOf(1, 1, 1, 1, 1, 1)
-        runtime.test(
-            formula = ChildActionFiresParentEventOnStart.formula(runChildOnStart = true, increments),
-            input = Unit,
-        )
+        ChildActionFiresParentEventOnStart.formula(runChildOnStart = true, increments).test()
+            .input(value = Unit)
             .output { assertThat(value).isEqualTo(6) }
             .apply {
                 // Efficiently we emit only emit 2 values
                 assertThat(values()).hasSize(1)
             }
 
-        runtime.test(
-            formula = ChildActionFiresParentEventOnStart.formula(runChildOnStart = false, increments),
-            input = Unit,
-        )
+        ChildActionFiresParentEventOnStart.formula(
+            runChildOnStart = false,
+            increments
+        ).test().input(value = Unit)
             .output { assertThat(value).isEqualTo(0) }
             .output { showChild(true) }
             .output { assertThat(value).isEqualTo(6) }
@@ -502,7 +490,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val eventNumber = 4
         val formula = ParallelChildFormulaFiresEventOnStart.formula(eventNumber)
         val inspector = CountingInspector()
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .apply {
                 inspector.assertActionsStarted(1)
                 inspector.assertStateTransitions(IncrementFormula::class, 4)
@@ -512,7 +500,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `side effect triggers parent state transition`() {
-        runtime.test(ChildMessageTriggersEventTransitionInParent.formula(), Unit)
+        ChildMessageTriggersEventTransitionInParent.formula().test().input(Unit)
             .output { child.triggerSideEffect() }
             .output {
                 assertThat(count).isEqualTo(1)
@@ -523,7 +511,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `child start action triggers self and parent state changes`() {
         val inspector = CountingInspector()
         val formula = CombinedParentAndChildStateChange.formula()
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .output {
                 assertThat(state).isEqualTo(1)
                 assertThat(child).isEqualTo(1)
@@ -538,7 +526,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `child event triggers self and parent state changes`() {
         val inspector = CountingInspector()
         val formula = CombinedParentAndChildStateChangeOnEvent.formula()
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .output { child.onEvent() }
             .output {
                 assertThat(state).isEqualTo(1)
@@ -554,7 +542,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val inspector = CountingInspector()
         val onEvent = TestEventCallback<EffectOrderFormula.Event>()
         val initialInput = EffectOrderFormula.Input(onEvent = onEvent)
-        runtime.test(EffectOrderFormula(), initialInput, inspector)
+        EffectOrderFormula().test(inspector = inspector).input(initialInput)
             .output { triggerEvent() }
             .output { triggerEvent() }
 
@@ -572,7 +560,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child state is reset after toggle`() {
-        runtime.test(ChildStateResetAfterToggle.formula(), Unit)
+        ChildStateResetAfterToggle.formula().test().input(Unit)
             .output { child!!.incrementAndMessage() }
             .output { child!!.incrementAndMessage() }
             .output { assertThat(child!!.state).isEqualTo(2) }
@@ -584,7 +572,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `multiple listeners using the same render model`() {
-        runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = {}))
+        MessageFormula().test().input(MessageFormula.Input(messageHandler = {}))
             .output {
                 incrementAndMessage()
                 incrementAndMessage()
@@ -597,7 +585,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `multiple event listeners using the same render model`() {
-        runtime.test(EventCallbackFormula(), Unit)
+        EventCallbackFormula().test().input(Unit)
             .output {
                 changeState("one")
                 changeState("two")
@@ -611,7 +599,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val formula = OptionalChildFormula(MessageFormula()) {
             MessageFormula.Input(messageHandler = onEvent<Int> { none() })
         }
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output {
                 val cachedChild = child!!
                 toggleChild()
@@ -625,7 +613,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `listeners are equal across render model changes`() {
-        runtime.test(MessageFormula(), MessageFormula.Input(messageHandler = {}))
+        MessageFormula().test().input(MessageFormula.Input(messageHandler = {}))
             .output { incrementAndMessage() }
             .output { incrementAndMessage() }
             .assertOutputCount(3)
@@ -636,7 +624,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `event listeners are equal across render model changes`() {
-        runtime.test(EventCallbackFormula(), Unit)
+        EventCallbackFormula().test().input(Unit)
             .output {
                 changeState("one")
                 changeState("two")
@@ -649,7 +637,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `removed listener is disabled`() {
-        runtime.test(OptionalCallbackFormula(), Unit)
+        OptionalCallbackFormula().test().input(Unit)
             .output {
                 listener?.invoke()
                 toggleCallback()
@@ -699,24 +687,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val dispatcher = object : Dispatcher {
-            var dispatches = mutableListOf<() -> Unit>()
-
-            override fun isDispatchNeeded(): Boolean {
-                return true
-            }
-
-            override fun dispatch(executable: () -> Unit) {
-                dispatches.add(executable)
-            }
-
-            fun executeAndClear() {
-                val local = dispatches
-                dispatches = mutableListOf()
-                local.forEach { it.invoke() }
-            }
-        }
-        val observer = runtime.test(formula, defaultDispatcher = dispatcher)
+        val dispatcher = TestDispatcher()
+        val observer = formula.test(dispatcher = dispatcher)
 
         // Initialize formula
         observer.input(Unit)
@@ -733,8 +705,10 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         observer.output { assertThat(value).isEqualTo(0) }
     }
 
-    @Test fun `dispatching does not affect event order`() {
-        var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? = null
+    @Test
+    fun `dispatching does not affect event order`() {
+        var observer: TestFormulaObserver<Unit, OptionalCallbackFormula.Output, OptionalCallbackFormula>? =
+            null
         FormulaPlugins.setPlugin(object : Plugin {
             override fun backgroundThreadDispatcher(): Dispatcher {
                 return object : Dispatcher {
@@ -754,7 +728,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val root = OptionalCallbackFormula(
             incrementExecutionType = Transition.Background
         )
-        observer = runtime.test(root, Unit)
+        observer = root.test().input(Unit)
         observer.output { listener?.invoke() }
 
         // Increment was processed before listener removal
@@ -763,7 +737,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `listeners are not the same after removing then adding it again`() {
-        runtime.test(OptionalCallbackFormula(), Unit)
+        OptionalCallbackFormula().test().input(Unit)
             .output {
                 toggleCallback()
                 toggleCallback()
@@ -775,7 +749,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `removed event listener is disabled`() {
-        runtime.test(OptionalEventCallbackFormula(), Unit)
+        OptionalEventCallbackFormula().test().input(Unit)
             .output {
                 listener?.invoke(1)
                 toggleListener()
@@ -788,7 +762,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `event listeners are not the same after removing then adding it again`() {
-        runtime.test(OptionalEventCallbackFormula(), Unit)
+        OptionalEventCallbackFormula().test().input(Unit)
             .output {
                 toggleListener()
                 toggleListener()
@@ -800,19 +774,19 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `reusable function returns unique listeners`() {
-        val subject = ReusableFunctionCreatesUniqueListeners.test(runtime)
+        val subject = ReusableFunctionCreatesUniqueListeners.test()
         subject.output { assertThat(firstListener).isNotEqualTo(secondListener) }
     }
 
     @Test
     fun `creating listener within a loop returns a unique listener`() {
-        val subject = UniqueListenersWithinLoop.test(runtime)
+        val subject = UniqueListenersWithinLoop.test()
         subject.output { assertThat(listeners).containsNoDuplicates() }
     }
 
     @Test
     fun `duplicate listener keys are handled by indexing`() {
-        val subject = DuplicateListenerKeysHandledByIndexing.test(runtime)
+        val subject = DuplicateListenerKeysHandledByIndexing.test()
         subject.output { assertThat(listeners).containsNoDuplicates() }
     }
 
@@ -837,7 +811,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(parentFormula).input(Unit).output {
+        parentFormula.test().input(Unit).output {
             assertThat(this).isEqualTo(5)
         }
     }
@@ -845,14 +819,15 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `using key to scope listeners within another function`() {
         val formula = UsingKeyToScopeCallbacksWithinAnotherFunction.TestFormula()
-        runtime.test(formula, Unit)
+        formula.test()
+            .input(Unit)
             .assertOutputCount(1)
     }
 
     @Test
     fun `remove item from a list using a key block for each item`() {
         KeyUsingListFormula
-            .test(runtime, items = listOf("one", "two", "three"))
+            .test(items = listOf("one", "two", "three"))
             .output {
                 items[1].onDeleteSelected()
             }
@@ -863,7 +838,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `stream event triggers a state change`() {
         val formula = StartStopFormula()
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { this.startListening() }
             .output { assertThat(state).isEqualTo(0) }
             .apply { formula.incrementEvents.triggerEvent() }
@@ -880,13 +855,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(formula, Unit)
+        val observer = formula.test().input(Unit)
         assertThat(observer.values()).containsExactly(Unit).inOrder()
         assertThat(eventCallback.values()).containsExactly("a", "b").inOrder()
     }
 
     @Test fun `stream is disposed when evaluation does not contain it`() {
-        DynamicStreamSubject(runtime)
+        DynamicStreamSubject()
             .updateStreams(keys = arrayOf("1"))
             .assertRunning(keys = arrayOf("1"))
             .updateStreams(keys = emptyArray())
@@ -894,7 +869,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `stream is removed when formula is removed`() {
-        DynamicStreamSubject(runtime)
+        DynamicStreamSubject()
             .updateStreams(keys = arrayOf("1"))
             .assertRunning(keys = arrayOf("1"))
             .dispose()
@@ -902,7 +877,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `stream is reset when key changes`() {
-        DynamicStreamSubject(runtime)
+        DynamicStreamSubject()
             .updateStreams("1")
             .assertRunning("1")
             .updateStreams("2")
@@ -912,13 +887,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `subscribes to updates before delivering messages`() {
         SubscribesToAllUpdatesBeforeDeliveringMessages
-            .test(runtime)
+            .test()
             .output { assertThat(this).isEqualTo(4) }
     }
 
     @Test
     fun `multiple child worker updates`() {
-        ChildStreamEvents(runtime)
+        ChildStreamEvents()
             .startListening()
             .incrementBy(3)
             .assertCurrentValue(3)
@@ -926,7 +901,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `child worker is removed`() {
-        ChildStreamEvents(runtime)
+        ChildStreamEvents()
             .startListening()
             .incrementBy(2)
             .stopListening()
@@ -935,7 +910,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     }
 
     @Test fun `parent updates a child and self in a single action`() {
-        val robot = ParentUpdateChildAndSelfOnEventRobot(runtime)
+        val robot = ParentUpdateChildAndSelfOnEventRobot()
         robot.start()
         robot.subject.output { onAction() }
         robot.subject.output {
@@ -946,7 +921,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula calls an event listener from a transition`() {
-        val robot = NestedCallbackCallRobot(runtime)
+        val robot = NestedCallbackCallRobot()
         robot.start()
         robot.subject.output { onAction() }
         robot.subject.output { assertThat(value).isEqualTo(1) }
@@ -954,7 +929,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula calls own event listener which starts multiple transitions`() {
-        val robot = MultiChildIndirectStateChangeRobot(runtime)
+        val robot = MultiChildIndirectStateChangeRobot()
         robot.start()
         robot.subject.output { onAction() }
         robot.subject.output {
@@ -966,8 +941,9 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `action runAgain`() {
         val inspector = CountingInspector()
-        runtime
-            .test(RunAgainActionFormula(), Unit, inspector)
+        RunAgainActionFormula()
+            .test(inspector = inspector)
+            .input(Unit)
             .output {
                 assertThat(actionExecuted).isEqualTo(1)
                 assertThat(nullableActionExecuted).isEqualTo(0)
@@ -999,14 +975,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `init message executed once`() {
-        StreamInitMessageDeliveredOnce.test(runtime).apply {
+        StreamInitMessageDeliveredOnce.test().apply {
             assertThat(formula.timesInitializedCalled).isEqualTo(1)
         }
     }
 
     @Test
     fun `input changed message`() {
-        runtime.test(StreamInputFormula())
+        StreamInputFormula().test()
             .input(0)
             .input(1)
             .input(2)
@@ -1017,7 +993,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `events api ignores duplicate inputs`() {
-        runtime.test(StreamInputFormula())
+        StreamInputFormula().test()
             .input(0)
             .input(0)
             .input(0)
@@ -1029,7 +1005,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `remove all streams`() {
-        DynamicStreamSubject(runtime)
+        DynamicStreamSubject()
             .updateStreams("one", "two", "three")
             .removeAll()
             .assertRunning(keys = emptyArray())
@@ -1037,41 +1013,44 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `switch one stream`() {
-        DynamicStreamSubject(runtime)
+        DynamicStreamSubject()
             .updateStreams("one", "two", "three")
             .updateStreams("one", "three", "four")
     }
 
-    @Test fun `stream event listener is scoped to latest state`() {
+    @Test
+    fun `stream event listener is scoped to latest state`() {
         val events = listOf("a", "b")
         val formula = EventFormula(events)
 
         val inspector = CountingInspector()
         val expectedStates = listOf(1, 2)
-        runtime.test(formula, Unit, inspector).apply {
+        formula.test(inspector = inspector).input(Unit).apply {
             assertThat(formula.capturedStates()).isEqualTo(expectedStates)
         }
         inspector.assertRunCount(1)
         inspector.assertEvaluationCount(3)
     }
 
-    @Test fun `stream events are captured in order`() {
+    @Test
+    fun `stream events are captured in order`() {
         val inspector = CountingInspector()
         val events = listOf("first", "second", "third", "third")
         val formula = EventFormula(events)
-        runtime.test(formula, Unit, inspector).apply {
+        formula.test(inspector = inspector).input(Unit).apply {
             assertThat(formula.capturedEvents()).isEqualTo(events)
         }
         inspector.assertRunCount(1)
         inspector.assertEvaluationCount(5)
     }
 
-    @Test fun `stream event listeners can handle at least 100k events`() {
+    @Test
+    fun `stream event listeners can handle at least 100k events`() {
         val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
         val formula = EventFormula(events)
-        runtime.test(formula, Unit, inspector)
+        formula.test(inspector = inspector).input(Unit)
             .apply {
                 assertThat(values()).containsExactly(eventCount).inOrder()
             }
@@ -1080,14 +1059,15 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         inspector.assertEvaluationCount(100001)
     }
 
-    @Test fun `child formula within multiple events on start`() {
+    @Test
+    fun `child formula within multiple events on start`() {
         val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
         val eventsFormula = EventFormula(events)
         val parent = HasChildFormula(eventsFormula)
 
-        runtime.test(parent, Unit, inspector)
+        parent.test(inspector = inspector).input(Unit)
             .output { assertThat(child).isEqualTo(100000) }
 
         inspector.assertRunCount(1)
@@ -1107,7 +1087,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .assertOutputCount(1)
     }
 
@@ -1123,7 +1103,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula, Unit).assertOutputCount(1)
+        formula.test().input(Unit).assertOutputCount(1)
     }
 
     @Test
@@ -1137,7 +1117,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -1152,7 +1132,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula, Unit).assertOutputCount(1)
+        formula.test().input(Unit).assertOutputCount(1)
     }
 
     @Test
@@ -1172,7 +1152,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula, Unit).apply {
+        formula.test().input(Unit).apply {
             assertThat(executed).isEqualTo(2)
         }
     }
@@ -1190,7 +1170,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula, 1).apply {
+        formula.test().input(1).apply {
             assertThat(executed).isEqualTo(2)
         }
     }
@@ -1206,13 +1186,13 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
     fun `terminate formula with multiple pending actions on first action init`() {
-        val robot = PendingActionFormulaTerminatedOnActionInit(runtime)
+        val robot = PendingActionFormulaTerminatedOnActionInit()
         // Starts the formula
         robot.test.input(Unit)
 
@@ -1225,7 +1205,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `disposing formula triggers terminate message`() {
-        runtime.test(TerminateFormula(), Unit)
+        TerminateFormula().test().input(Unit)
             .apply {
                 assertThat(formula.timesTerminateCalled).isEqualTo(0)
             }
@@ -1239,7 +1219,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `removing child formula triggers terminate message`() {
         val terminateFormula = TerminateFormula()
         val formula = OptionalChildFormula(terminateFormula)
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .apply {
                 assertThat(terminateFormula.timesTerminateCalled).isEqualTo(0)
             }
@@ -1262,7 +1242,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        runtime.test(formula)
+        formula.test()
             .input(1)
             .input(2)
             .input(3)
@@ -1280,14 +1260,14 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test fun `child state change triggers parent formula evaluation`() {
         val childFormula = EventCallbackFormula()
         val formula = HasChildFormula(childFormula)
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { child.changeState("new state") }
             .output { assertThat(child.state).isEqualTo("new state") }
     }
 
     @Test fun `child formula input change triggers an evaluation`() {
         val formula = DelegateFormula("default")
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { changeChildInput("first") }
             .output { changeChildInput("second") }
             .apply {
@@ -1298,7 +1278,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `parent removes child when child emits a message`() {
-        ChildRemovedOnMessage(runtime)
+        ChildRemovedOnMessage()
             .assertChildIsVisible(true)
             .closeByChildMessage()
             .assertChildIsVisible(false)
@@ -1306,7 +1286,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test fun `parent removes all child formulas`() {
         val formula = DynamicParentFormula()
-        runtime.test(formula, Unit)
+        formula.test().input(Unit)
             .output { addChild(TestKey("1")) }
             .output { addChild(TestKey("2")) }
             .output { addChild(TestKey("3")) }
@@ -1323,7 +1303,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test fun `child formulas with duplicate key are supported`() {
         val result = Try {
             val formula = DynamicParentFormula()
-            runtime.test(formula, Unit)
+            formula.test().input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
@@ -1348,7 +1328,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val result = Try {
             val formula = DynamicParentFormula()
-            runtime.test(formula, Unit)
+            formula.test().input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
@@ -1369,7 +1349,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         val terminateFormula = TerminateFormula()
         val formula = OptionalChildFormula(HasChildFormula(terminateFormula))
 
-        runtime.test(formula, Unit).output { toggleChild() }.apply {
+        formula.test().input(Unit).output { toggleChild() }.apply {
             assertThat(terminateFormula.timesTerminateCalled).isEqualTo(1)
         }
     }
@@ -1409,7 +1389,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(parentFormula)
+        val observer = parentFormula.test()
         observer.input(true)
         observer.output { assertThat(this).isEqualTo(0) }
         observer.input(false)
@@ -1448,7 +1428,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(parentFormula)
+        val observer = parentFormula.test()
         terminate = { observer.dispose() }
         observer.input(true)
         observer.assertOutputCount(1)
@@ -1469,12 +1449,12 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 return Evaluation(Unit)
             }
         }
-        runtime.test(formula, Unit).dispose()
+        formula.test().input(Unit).dispose()
         assertThat(terminateFormula.timesTerminateCalled).isEqualTo(10)
     }
 
     @Test fun `nested termination with input changed`() {
-        runtime.test(NestedTerminationWithInputChanged())
+        NestedTerminationWithInputChanged().test()
             .input(false)
             .input(true)
             .input(false)
@@ -1486,7 +1466,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `canceling terminate stream does not emit terminate message`() {
         val terminateCallback = TestCallback()
-        runtime.test(RemovingTerminateStreamSendsNoMessagesFormula())
+        RemovingTerminateStreamSendsNoMessagesFormula().test()
             .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback))
             .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null))
             .apply {
@@ -1527,7 +1507,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(formula)
+        val observer = formula.test()
         observer.input(true)
         observer.input(false)
         observer.input(true)
@@ -1572,7 +1552,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(formula)
+        val observer = formula.test()
         observer.input(true)
         observer.input(false)
         observer.input(true)
@@ -1613,7 +1593,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(formula)
+        val observer = formula.test()
         terminate = { observer.dispose() }
         observer.input(true)
         observer.input(false)
@@ -1651,7 +1631,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val observer = runtime.test(formula)
+        val observer = formula.test()
         observer.input(true)
 
         // Check that action runs
@@ -1671,7 +1651,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `using from observable with input`() {
         val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
-        runtime.test(FromObservableWithInputFormula())
+        FromObservableWithInputFormula().test()
             .input(FromObservableWithInputFormula.Input("1", onItem = onItem))
             .input(FromObservableWithInputFormula.Input("2", onItem = onItem))
             .apply {
@@ -1689,20 +1669,21 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 throw java.lang.IllegalStateException("crashed")
             }
         }
-        val error = Try { runtime.test(formula, Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
         assertThat(error?.message).isEqualTo("crashed")
     }
 
     @Test
     fun `errored child formula can fail in isolation when evaluation throws`() {
-        val childFormula = object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
-            override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
-                if (input.index == 1) throw RuntimeException()
-                return Evaluation(output = input.index)
+        val childFormula =
+            object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
+                override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
+                    if (input.index == 1) throw RuntimeException()
+                    return Evaluation(output = input.index)
+                }
             }
-        }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        runtime.test(formula, 0)
+        formula.test().input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
                 assertThat(errors).hasSize(1)
@@ -1711,26 +1692,28 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `errored child formula can fail in isolation when action throws`() {
-        val childFormula = object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
-            override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = input.index,
-                    actions = context.actions {
-                        Action.onInit().onEvent {
-                            if (input.index == 1) throw RuntimeException()
-                            transition(Unit) {}
+        val childFormula =
+            object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
+                override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
+                    return Evaluation(
+                        output = input.index,
+                        actions = context.actions {
+                            Action.onInit().onEvent {
+                                if (input.index == 1) throw RuntimeException()
+                                transition(Unit) {}
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
-        }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        runtime.test(formula, 0)
+        formula.test().input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
                 assertThat(errors).hasSize(1)
             }
     }
+
     @Test
     fun `errored child event listener disabled`() {
         val indexToExecutionCount = mutableMapOf<Int, Int>()
@@ -1744,11 +1727,11 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 HasChildrenFormula.ChildParamsInput(
                     index = params.index,
                     run = params.index,
-                    value = callback { transition { listener(params.index) }}
+                    value = callback { transition { listener(params.index) } }
                 )
             },
         )
-        runtime.test(formula, 0)
+        formula.test().input(0)
             .output {
                 childOutputs.forEach { it.listener() }
                 childOutputs[1].errorToggle()
@@ -1767,7 +1750,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(100)
-        runtime.test(formula, Unit, inspector).output {
+        formula.test(inspector = inspector).input(Unit).output {
             assertThat(this).isEqualTo(100)
         }
         inspector.assertRunCount(1)
@@ -1778,7 +1761,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `initialize 250 levels nested formula`() {
         val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(250)
-        runtime.test(formula, Unit, inspector).output {
+        formula.test(inspector = inspector).input(Unit).output {
             assertThat(this).isEqualTo(250)
         }
         inspector.assertRunCount(1)
@@ -1790,7 +1773,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     fun `initialize 500 levels nested formula`() {
         val inspector = CountingInspector()
         val formula = ExtremelyNestedFormula.nested(500)
-        runtime.test(formula, Unit, inspector).output {
+        formula.test(inspector = inspector).input(Unit).output {
             assertThat(this).isEqualTo(500)
         }
         inspector.assertRunCount(1)
@@ -1800,18 +1783,18 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
     @Test
     fun `mixing listener use with key use`() {
         val formula = MixingCallbackUseWithKeyUse.ParentFormula()
-        runtime.test(formula, Unit).assertOutputCount(1)
+        formula.test().input(Unit).assertOutputCount(1)
     }
 
     @Test
     fun `nested keys are allowed`() {
-        val subject = runtime.test(NestedKeyFormula(), Unit)
+        val subject = NestedKeyFormula().test().input(Unit)
         subject.assertNoErrors()
     }
 
     @Test
     fun `use key to scope child formula`() {
-        val subject = runtime.test(UsingKeyToScopeChildFormula(), Unit)
+        val subject = UsingKeyToScopeChildFormula().test().input(Unit)
         subject.output {
             assertThat(children).containsExactly(
                 "value 1", "value 2"
@@ -1821,7 +1804,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula key is used to reset root formula state`() {
-        RootFormulaKeyTestSubject(runtime)
+        RootFormulaKeyTestSubject()
             .assertValue(0)
             .increment()
             .increment()
@@ -1832,7 +1815,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula multi-thread handoff to executing thread`() {
-        with(MultiThreadRobot(runtime)) {
+        with(MultiThreadRobot()) {
             thread("thread-a", 50)
             thread("thread-b", 10)
             awaitCompletion()
@@ -1850,7 +1833,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula multi-threaded events fired at the same time`() {
-        with(MultiThreadRobot(runtime)) {
+        with(MultiThreadRobot()) {
             thread("a", 25)
             thread("b", 25)
             thread("c", 25)
@@ -1867,7 +1850,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
     @Test
     fun `formula multi-threaded input after termination`() {
-        with(MultiThreadRobot(runtime)) {
+        with(MultiThreadRobot()) {
             thread("a", 25)
             awaitCompletion()
 
@@ -1895,7 +1878,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val formula = StartStopFormula()
         val localInspector = TestInspector()
-        val subject = runtime.test(formula, Unit, localInspector)
+        val subject = formula.test(inspector = localInspector).input(Unit)
         subject.output { startListening() }
         subject.output { stopListening() }
         subject.dispose()
@@ -1924,7 +1907,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         }
     }
 
-    @Test fun `input changed inspector event`() {
+    @Test
+    fun `input changed inspector event`() {
         val localInspector = TestInspector()
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
@@ -1941,7 +1925,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 )
             }
         }
-        val subject = runtime.test(formula, 0, localInspector)
+        val subject = formula.test(inspector = localInspector).input(0)
         subject.input(1)
 
         for (inspector in listOf(globalInspector, localInspector)) {
@@ -1977,7 +1961,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         })
 
         val formula = StartStopFormula()
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         subject.dispose()
 
         assertThat(globalInspector.events).isNotEmpty()
@@ -2002,7 +1986,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         plugin.mainDispatcher.assertCalled(1)
         plugin.backgroundDispatcher.assertCalled(0)
     }
@@ -2026,7 +2010,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         plugin.mainDispatcher.assertCalled(0)
         plugin.backgroundDispatcher.assertCalled(1)
     }
@@ -2056,7 +2040,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         plugin.mainDispatcher.assertCalled(1)
         plugin.backgroundDispatcher.assertCalled(1)
     }
@@ -2067,7 +2051,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         FormulaPlugins.setPlugin(plugin)
 
         val formula = IncrementFormula()
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         globalDispatcher.assertCalled(1) // Input
         subject.output { onIncrement() }
         globalDispatcher.assertCalled(2) // Input + event
@@ -2080,7 +2064,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
 
         val formulaDispatcher = IncrementingDispatcher()
         val formula = IncrementFormula()
-        val subject = runtime.test(formula, Unit, dispatcher = formulaDispatcher)
+        val subject = formula.test(dispatcher = formulaDispatcher).input(Unit)
         globalDispatcher.assertCalled(0)
         formulaDispatcher.assertCalled(1) // Input
         subject.output { onIncrement() }
@@ -2094,7 +2078,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         FormulaPlugins.setPlugin(plugin)
 
         val formula = IncrementFormula(executionType = Transition.Immediate)
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         globalDispatcher.assertCalled(1) // Initial for input
         subject.output { onIncrement() }
         globalDispatcher.assertCalled(1) // Initial for input
@@ -2106,7 +2090,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
         FormulaPlugins.setPlugin(plugin)
 
         val formula = EventCallbackFormula(executionType = Transition.Immediate)
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         globalDispatcher.assertCalled(1) // Initial for input
         subject.output { this.changeState("new state") }
         globalDispatcher.assertCalled(1)
@@ -2132,7 +2116,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 )
             }
         }
-        val subject = runtime.test(formula, Unit)
+        val subject = formula.test().input(Unit)
         globalDispatcher.assertCalled(1) // Once for input
         plugin.backgroundDispatcher.assertCalled(0)
         relay.triggerEvent()
@@ -2165,7 +2149,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject = runtime.test(rootFormula, Unit)
+        val subject = rootFormula.test().input(Unit)
         batchScheduler.performUpdate {
             relay.triggerEvent()
 
@@ -2207,8 +2191,8 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject1 = runtime.test(rootFormula, Unit)
-        val subject2 = runtime.test(rootFormula, Unit)
+        val subject1 = rootFormula.test().input(Unit)
+        val subject2 = rootFormula.test().input(Unit)
 
         // Update
         batchScheduler.performUpdate { relay.triggerEvent() }
@@ -2250,7 +2234,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
                 )
             }
         }
-        val subject = runtime.test(rootFormula, Unit)
+        val subject = rootFormula.test().input(Unit)
 
         val countDownLatch = CountDownLatch(1)
         // Start sleep
@@ -2307,7 +2291,7 @@ class FormulaRuntimeTest(val runtime: TestableRuntime, val name: String) {
             }
         }
 
-        val subject = runtime.test(rootFormula, Unit, localInspector)
+        val subject = rootFormula.test(inspector = localInspector).input(Unit)
         batchScheduler.performUpdate { relay.triggerEvent() }
 
         // Inspect!
