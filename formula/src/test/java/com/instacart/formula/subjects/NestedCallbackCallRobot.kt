@@ -3,10 +3,11 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.test.TestableRuntime
 
-class NestedCallbackCallRobot(runtime: TestableRuntime) {
-    val subject = runtime.test(Parent())
+import com.instacart.formula.test.test
+
+class NestedCallbackCallRobot() {
+    val subject = Parent().test()
 
     fun start() = apply {
         subject.input(Unit)

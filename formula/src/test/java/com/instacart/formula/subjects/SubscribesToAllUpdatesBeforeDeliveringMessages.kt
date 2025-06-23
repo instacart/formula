@@ -4,15 +4,13 @@ import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.test.FlowRelay
-import com.instacart.formula.test.TestableRuntime
-import io.reactivex.rxjava3.core.Observable
+import com.instacart.formula.test.test
 import kotlinx.coroutines.flow.flowOf
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
-    fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
+    fun test() = TestFormula().test().input(Unit)
 
     class TestFormula : Formula<Unit, Int, Int>() {
         private val initial = Action.fromFlow {

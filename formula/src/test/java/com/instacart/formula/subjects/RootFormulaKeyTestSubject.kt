@@ -6,12 +6,12 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.invoke
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 
-class RootFormulaKeyTestSubject(runtime: TestableRuntime) {
+class RootFormulaKeyTestSubject() {
 
     private var input: Int = 0
-    private val subject = runtime.test(MyFormula, input)
+    private val subject = MyFormula.test().input(input)
 
     fun increment() = apply {
         subject.output { this.increment() }

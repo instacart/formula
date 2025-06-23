@@ -5,9 +5,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestEventCallback
-import com.instacart.formula.test.TestableRuntime
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 
 class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Unit, Int, Int>() {
 

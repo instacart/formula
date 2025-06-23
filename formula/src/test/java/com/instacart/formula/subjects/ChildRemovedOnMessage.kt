@@ -2,9 +2,9 @@ package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth
 import com.instacart.formula.invoke
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 
-class ChildRemovedOnMessage(runtime: TestableRuntime) {
+class ChildRemovedOnMessage {
     private val formula = OptionalChildFormula(
         child = MessageFormula(),
         childInput = { state ->
@@ -14,7 +14,7 @@ class ChildRemovedOnMessage(runtime: TestableRuntime) {
                 }
             )
         })
-    private val subject = runtime.test(formula, Unit)
+    private val subject = formula.test().input(Unit)
 
     fun assertChildIsVisible(visible: Boolean) = apply {
         subject.output {
