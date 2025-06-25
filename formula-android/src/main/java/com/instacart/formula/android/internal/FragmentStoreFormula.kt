@@ -11,9 +11,13 @@ import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.FragmentOutput
 import kotlinx.coroutines.flow.MutableSharedFlow
+import com.instacart.formula.android.RxJavaFeature
+import com.instacart.formula.android.StateFlowFeature
+import kotlinx.coroutines.CoroutineDispatcher
 
 @PublishedApi
 internal class FragmentStoreFormula(
+    private val asyncDispatcher: CoroutineDispatcher,
     private val environment: FragmentEnvironment,
 ) : Formula<Unit, FragmentState, FragmentState>(){
 
@@ -77,11 +81,24 @@ internal class FragmentStoreFormula(
                     val fragmentId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
-                        val action = FeatureObservableAction(
-                            fragmentEnvironment = environment,
-                            fragmentId = fragmentId,
-                            feature = feature,
-                        )
+                        val action = when (feature) {
+                            is RxJavaFeature -> {
+                                FeatureObservableAction(
+                                    fragmentEnvironment = environment,
+                                    fragmentId = fragmentId,
+                                    feature = feature,
+                                )
+                            }
+                            is StateFlowFeature -> {
+                                StateFlowFeatureAction(
+                                    asyncDispatcher = asyncDispatcher,
+                                    fragmentEnvironment = environment,
+                                    fragmentId = fragmentId,
+                                    feature = feature,
+                                )
+                            }
+                        }
+
                         action.onEvent {
                             val keyState = FragmentOutput(fragmentId.key, it)
                             transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))

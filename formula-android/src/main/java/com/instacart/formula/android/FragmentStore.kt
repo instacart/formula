@@ -9,6 +9,8 @@ import com.instacart.formula.android.internal.getViewFactory
 import com.instacart.formula.android.utils.MainThreadDispatcher
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 /**
  * A FragmentStore is responsible for managing the state of multiple [FragmentKey] instances.
@@ -25,9 +27,14 @@ class FragmentStore @PublishedApi internal constructor(
         private var environment: FragmentEnvironment? = null
         private var onPreRenderFragmentState: ((FragmentState) -> Unit)? = null
         private var onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null
+        private var asyncCoroutineDispatcher = Dispatchers.Default
 
         fun setFragmentEnvironment(environment: FragmentEnvironment) = apply {
             this.environment = environment
+        }
+
+        fun setAsyncCoroutineDispatcher(dispatcher: CoroutineDispatcher) = apply {
+            asyncCoroutineDispatcher = dispatcher
         }
         
         fun setOnPreRenderFragmentState(callback: ((FragmentState) -> Unit)?): Builder = apply {
@@ -59,7 +66,10 @@ class FragmentStore @PublishedApi internal constructor(
             val fragmentEnvironment = environment ?: FragmentEnvironment()
             return FragmentStore(
                 environment = fragmentEnvironment,
-                formula = FragmentStoreFormula(fragmentEnvironment),
+                formula = FragmentStoreFormula(
+                    asyncDispatcher = asyncCoroutineDispatcher,
+                    environment = fragmentEnvironment,
+                ),
                 featureComponent = FeatureComponent(component, features.bindings),
                 onPreRenderFragmentState = onPreRenderFragmentState,
                 onFragmentLifecycleEvent = onFragmentLifecycleEvent
