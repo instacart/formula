@@ -2,13 +2,8 @@ package com.instacart.formula.stopwatch
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.instacart.formula.toFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.shareIn
+import com.instacart.formula.runAsStateFlow
 
-class StopWatchViewModel(private val formula: StopwatchFormula = StopwatchFormula()) : ViewModel() {
-
-    val renderModelFlow by lazy {
-        formula.toFlow().shareIn(viewModelScope, SharingStarted.Eagerly, 1)
-    }
+class StopWatchViewModel(formula: StopwatchFormula = StopwatchFormula()) : ViewModel() {
+    val viewOutputs = formula.runAsStateFlow(viewModelScope)
 }
