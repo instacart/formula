@@ -8,6 +8,8 @@ import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.FragmentOutput
+import com.instacart.formula.android.RxJavaFeature
+import com.instacart.formula.android.StateFlowFeature
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.rxjava3.RxAction
 import com.jakewharton.rxrelay3.PublishRelay
@@ -85,11 +87,22 @@ internal class FragmentStoreFormula(
                     val fragmentId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
-                        val action = FeatureObservableAction(
-                            fragmentEnvironment = input,
-                            fragmentId = fragmentId,
-                            feature = feature,
-                        )
+                        val action = when (feature) {
+                            is RxJavaFeature -> {
+                                FeatureObservableAction(
+                                    fragmentEnvironment = input,
+                                    fragmentId = fragmentId,
+                                    feature = feature,
+                                )
+                            }
+                            is StateFlowFeature -> {
+                                StateFlowFeatureAction(
+                                    fragmentEnvironment = input,
+                                    fragmentId = fragmentId,
+                                    feature = feature,
+                                )
+                            }
+                        }
                         action.onEvent {
                             val keyState = FragmentOutput(fragmentId.key, it)
                             transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))

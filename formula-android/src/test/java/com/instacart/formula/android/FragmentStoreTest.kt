@@ -11,6 +11,7 @@ import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
@@ -288,6 +289,36 @@ class FragmentStoreTest {
 
         assertThat(screenErrors).containsExactly(
             fragmentId.key to error
+        )
+    }
+
+    @Test fun `state flow feature`() {
+        val stateFlow = MutableStateFlow(0)
+        val store = FragmentStore.init {
+            bind(object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    return Feature(TestViewFactory()) {
+                        stateFlow
+                    }
+                }
+            })
+        }
+
+        val observer = store.toStates()
+        
+        // Add fragment key
+        val key = MainKey(1)
+        val fragmentId = FragmentId("", key)
+        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId = fragmentId))
+
+        stateFlow.tryEmit(1)
+        stateFlow.tryEmit(2)
+
+        observer.assertValues(
+            expectedState(),
+            expectedState(key to 0),
+            expectedState(key to 1),
+            expectedState(key to 2),
         )
     }
 
