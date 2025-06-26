@@ -1,5 +1,7 @@
 package com.instacart.formula.rxjava3
 
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
@@ -28,5 +30,15 @@ class RxActionTest {
             relay.accept("b")
             assertValues("a")
         }
+    }
+
+    @Test fun `fromObservable emits error`() = runTest {
+        val error = RuntimeException("Test exception")
+        val result = kotlin.runCatching {
+            RxAction.fromObservable { Observable.error<String>(error) }.test {}
+        }
+        assertThat(result.exceptionOrNull()).hasMessageThat().isEqualTo(
+            "Expected no errors, but got: [java.lang.RuntimeException: Test exception]"
+        )
     }
 }

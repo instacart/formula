@@ -17,8 +17,8 @@ it will also contain event listeners that will be invoked when user interacts wi
 ```kotlin
 data class CounterRenderModel(
   val count: String,
-  val onDecrement: Listener<Unit>,
-  val onIncrement: Listener<Unit>,
+  val onDecrement: () -> Unit,
+  val onIncrement: () -> Unit,
 )
 ```
 
@@ -132,58 +132,14 @@ Now that we defined our state management, let's connect it to our `RenderView`.
 
 #### Using Formula
 Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
-convert `Formula` to an RxJava 3 `Observable` by using `start` extension function.
+convert `Formula` to an RxJava 3 `Observable` by using `toObservable` extension function.
 ```kotlin
 val formula = CounterFormula()
 val state: Observable<CounterRenderModel> = formula.toObservable(input = Unit)
 ```
 
-Ideally, it would be placed within a surface that survives configuration changes such as Android Components ViewModel. 
-In this example, we will use Formula Android module. For using Formula with AndroidX ViewModel, take
-a look at [AndroidX Guide](using_android_view_model.md).
- 
-Let's first define our Activity.
-```kotlin
-class MyActivity : FormulaAppCompatActivity() {
-  private lateinit var counterRenderView: CounterRenderView
-
-  override fun onCreate(state: Bundle?) {
-    super.onCreate(state)
-    setContentView(R.string.my_screen)
-        
-    counterRenderView = CounterRenderView(findViewById(R.id.counter))
-  }
-  
-  fun render(model: CounterRenderModel) {
-    counterRenderView.render(model)
-  }
-}
-```
-
-Now, let's connect` CounterFormula` to `MyActivity.render` function.
-```kotlin
-class MyApp : Application() {
-    
-  override fun onCreate() {
-    super.onCreate()
-        
-    FormulaAndroid.init(this) {
-      activity<MyActivity> {
-        ActivityStore(
-          streams = {
-            val formula = CounterFormula()
-            update(formula.toObservable(), MyActivity::render)
-          }
-        )
-      }
-    }
-  }
-}
-```
-
-And that's it. You can see the full <a href="https://github.com/instacart/formula/tree/master/samples/counter" target="_blank">sample here</a>.
-
-To learn more about Formula Android module see [Formula Android Guide](Formula-Android.md). 
+Ideally, it would be placed within a surface that survives configuration changes such as [Android Components ViewModel](using_android_view_model.md). You can 
+see the full <a href="https://github.com/instacart/formula/tree/master/samples/counter" target="_blank">sample here</a>.
 
 ### Download
 Add the library to your list of dependencies:

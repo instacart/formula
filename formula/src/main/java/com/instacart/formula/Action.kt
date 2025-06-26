@@ -178,6 +178,11 @@ interface Action<Event> {
         }
     }
 
+    interface Emitter<Event> {
+        fun onEvent(event: Event)
+        fun onError(throwable: Throwable)
+    }
+
     /**
      * Formula runtime calls this method to initialize an [Action] the first time it is returned
      * by the [evaluation][Evaluation]. We use [key] to identify unique actions and Formula
@@ -190,12 +195,11 @@ interface Action<Event> {
      * to clean up such as remove subscriptions to RxJava observables, Kotlin Flows, event buses,
      * etc.
      *
-     * @param send Use this listener to send events back to [Formula].
-     *             Note: you need to call this on the main thread.
+     * @param emitter Use emitter to send events back to [Formula].
      */
     fun start(
         scope: CoroutineScope,
-        send: (Event) -> Unit,
+        emitter: Emitter<Event>,
     ): Cancelable?
 
     /**

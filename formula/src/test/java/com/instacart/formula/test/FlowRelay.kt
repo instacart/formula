@@ -4,16 +4,16 @@ import com.instacart.formula.Action
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class FlowRelay : Relay {
+class FlowRelay {
     private val sharedFlow = MutableSharedFlow<Unit>(
         replay = 0,
         extraBufferCapacity = Int.MAX_VALUE,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    override fun action(): Action<Unit> = Action.fromFlow { sharedFlow }
+    fun action(): Action<Unit> = Action.fromFlow { sharedFlow }
 
-    override fun triggerEvent() {
+    fun triggerEvent() {
         sharedFlow.tryEmit(Unit)
     }
 }

@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.ListInspector
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
 import kotlin.reflect.KClass
@@ -20,6 +21,13 @@ object FormulaPlugins {
             local == null -> global
             else -> ListInspector(listOf(global, local))
         }
+    }
+
+    /**
+     * Notified when there is an error in the formula.
+     */
+    fun onError(error: FormulaError) {
+        plugin?.onError(error)
     }
 
     fun onDuplicateChildKey(

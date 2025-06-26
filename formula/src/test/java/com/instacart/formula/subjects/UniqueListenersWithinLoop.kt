@@ -4,11 +4,11 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 
 object UniqueListenersWithinLoop {
 
-    fun test(runtime: TestableRuntime) = runtime.test(TestFormula(), Unit)
+    fun test() = TestFormula().test().input(Unit)
 
     data class TestOutput(
         val listeners: List<Listener<Unit>>,

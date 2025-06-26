@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -15,10 +16,19 @@ class DeferredAction<Event>(
 
     internal var listener: ((Event) -> Unit)? = initial
 
-    internal fun start(scope: CoroutineScope) {
-        cancelable = action.start(scope) { message ->
-            listener?.invoke(message)
+    internal fun start(scope: CoroutineScope, formulaType: Class<*>) {
+        val emitter = object : Action.Emitter<Event> {
+            override fun onEvent(event: Event) {
+                listener?.invoke(event)
+            }
+
+            override fun onError(throwable: Throwable) {
+                val error = FormulaError.ActionError(formulaType, throwable)
+                FormulaPlugins.onError(error)
+            }
         }
+
+        cancelable = action.start(scope, emitter)
     }
 
     internal fun tearDown() {

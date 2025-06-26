@@ -1,32 +1,19 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
+import com.instacart.formula.actions.ErrorAction
 import com.instacart.formula.internal.ClearPluginsRule
+import com.instacart.formula.internal.TestPlugin
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Plugin
+import com.instacart.formula.plugin.withPlugin
 import com.instacart.formula.subjects.IncrementingDispatcher
+import com.instacart.formula.test.test
 import org.junit.Rule
 import org.junit.Test
 
 class FormulaPluginTest {
-
-    private class TestPlugin(
-        private val mainDispatcher: Dispatcher? = null,
-        private val backgroundDispatcher: Dispatcher? = null,
-        private val defaultDispatcher: Dispatcher? = null,
-    ) : Plugin {
-        override fun mainThreadDispatcher(): Dispatcher? {
-            return mainDispatcher ?: super.mainThreadDispatcher()
-        }
-
-        override fun backgroundThreadDispatcher(): Dispatcher? {
-            return backgroundDispatcher ?: super.backgroundThreadDispatcher()
-        }
-
-        override fun defaultDispatcher(): Dispatcher? {
-            return defaultDispatcher ?: super.defaultDispatcher()
-        }
-    }
 
     @get:Rule
     val rule = ClearPluginsRule()
@@ -83,5 +70,31 @@ class FormulaPluginTest {
             childFormulaType = Any::class.java,
             key = Unit,
         )
+    }
+
+    @Test fun `plugin is notified when action error occurs`() {
+        val plugin = TestPlugin()
+
+        withPlugin(plugin) {
+            val exception = IllegalStateException("expected exception")
+            val myFormula = object : StatelessFormula<Unit, Unit>() {
+                override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                    return Evaluation(
+                        output = Unit,
+                        actions = context.actions {
+                            ErrorAction(exception).onEvent {
+                                none()
+                            }
+                        }
+                    )
+                }
+            }
+
+            myFormula.test().input(Unit)
+
+            assertThat(plugin.errors).containsExactly(
+                FormulaError.ActionError(myFormula.type().java, exception)
+            )
+        }
     }
 }

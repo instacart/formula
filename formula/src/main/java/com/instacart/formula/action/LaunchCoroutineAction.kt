@@ -2,6 +2,7 @@ package com.instacart.formula.action
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
@@ -20,14 +21,17 @@ internal class LaunchCoroutineAction<Result>(
 
     override fun key(): Any? = key
 
-    override fun start(
-        scope: CoroutineScope,
-        send: (Result) -> Unit,
-    ): Cancelable {
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<Result>): Cancelable {
         val job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             withContext(context) {
-                val result = block()
-                send(result)
+                try {
+                    val result = block()
+                    emitter.onEvent(result)
+                } catch (e: Throwable) {
+                    if (e !is CancellationException) {
+                        emitter.onError(e)
+                    }
+                }
             }
         }
         return Cancelable(job::cancel)

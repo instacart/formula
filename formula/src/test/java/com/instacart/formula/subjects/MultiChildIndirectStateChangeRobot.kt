@@ -4,11 +4,11 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
 
-class MultiChildIndirectStateChangeRobot(runtime: TestableRuntime) {
-    val subject = runtime.test(Parent())
+class MultiChildIndirectStateChangeRobot {
+    val subject = Parent().test()
 
     fun start() = apply {
         subject.input(Unit)

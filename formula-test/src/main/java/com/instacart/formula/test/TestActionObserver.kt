@@ -3,7 +3,6 @@ package com.instacart.formula.test
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import java.lang.AssertionError
 
 class TestActionObserver<Event>(
@@ -11,11 +10,29 @@ class TestActionObserver<Event>(
     private val scope: CoroutineScope,
 ) {
     private val values = mutableListOf<Event>()
-    private val cancelation = action.start(scope) { values.add(it) }
+    private val errors = mutableListOf<Throwable>()
+    private val cancelable = action.start(
+        scope = scope,
+        emitter = object : Action.Emitter<Event> {
+            override fun onEvent(event: Event) {
+                values.add(event)
+            }
+
+            override fun onError(throwable: Throwable) {
+                errors.add(throwable)
+            }
+        }
+    )
+
+    init {
+        assertNoErrors()
+    }
 
     fun values(): List<Event> = values
 
     fun assertValues(vararg expected: Event) {
+        assertNoErrors()
+
         if (expected.size != values.size) {
             throw AssertionError("Value count differs; expected: ${expected.size}, was: ${values.size}")
         }
@@ -32,10 +49,20 @@ class TestActionObserver<Event>(
      * provide a [Cancelable].
      */
     fun cancel() {
-        val cancelable = cancelation ?: run {
+        assertNoErrors()
+
+        val cancelable = cancelable ?: run {
             throw IllegalStateException("Action did not return a cancelable.")
         }
 
         cancelable.cancel()
+
+        assertNoErrors()
+    }
+
+    private fun assertNoErrors() {
+        if (errors.isNotEmpty()) {
+            throw AssertionError("Expected no errors, but got: $errors")
+        }
     }
 }

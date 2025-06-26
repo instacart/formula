@@ -6,6 +6,7 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -22,8 +23,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 class FormulaRuntime<Input : Any, Output : Any>(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     private val formula: IFormula<Input, Output>,
-    private val onOutput: (Output) -> Unit,
-    private val onError: (Throwable) -> Unit,
     config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
     private val scope = CoroutineScope(
@@ -100,14 +99,26 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private var pendingOutput = AtomicReference<Output>()
     private var isEmitting = AtomicBoolean(false)
 
-    private fun isKeyValid(input: Input): Boolean {
-        return this.input == null || key == formula.key(input)
+    @Volatile private var output: Output? = null
+    @Volatile private var onOutput: ((Output) -> Unit)? = null
+    @Volatile private var onError: ((Throwable) -> Unit)? = null
+
+    fun setOnOutput(onOutput: (Output) -> Unit) {
+        this.onOutput = onOutput
     }
 
-    fun onInput(input: Input) {
-        synchronizedUpdateQueue.postUpdate(defaultDispatcher) {
+    fun setOnError(onError: (Throwable) -> Unit) {
+        this.onError = onError
+    }
+
+    fun onInput(input: Input, dispatcher: Dispatcher? = null) {
+        synchronizedUpdateQueue.postUpdate(dispatcher ?: defaultDispatcher) {
             onInputInternal(input)
         }
+    }
+
+    private fun isKeyValid(input: Input): Boolean {
+        return this.input == null || key == formula.key(input)
     }
 
     private fun onInputInternal(input: Input) {
@@ -149,6 +160,16 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     fun terminate() {
         synchronizedUpdateQueue.postUpdate(defaultDispatcher, this::terminateInternal)
+    }
+
+    /**
+     * Returns an [Output] value or throws an exception if it's not available yet. The two reasons
+     * why output would not be available are:
+     * - [onInput] was never called or not finished running. Use [Dispatcher.None] to ensure it executes immediately.
+     * - There was an error during formula evaluation.
+     */
+    fun requireOutput(): Output {
+        return output ?: throw IllegalStateException("Output is not available yet")
     }
 
     private fun terminateInternal() {
@@ -274,7 +295,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
             val manager = requireManager()
             manager.markAsTerminated()
-            onError(e)
+
+            onError?.invoke(e)
+
             manager.let(this::terminateManager)
         }
     }
@@ -285,6 +308,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
         val result = manager.run(currentInput)
         pendingOutput.set(result.output)
+        output = result.output
 
         if (isValidationEnabled) {
             try {
@@ -329,7 +353,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         while (output != null) {
             if (isEmitting.compareAndSet(false, true)) {
                 if (!isRuntimeTerminated && manager?.isTerminated() != true) {
-                    onOutput(output)
+                    onOutput?.invoke(output)
                 }
 
                 // If it is still our output, we try to clear it
@@ -373,7 +397,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             delegate = this,
             formula = implementation,
             initialInput = initialInput,
-            loggingType = formula::class,
+            formulaType = formula.type(),
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
         )

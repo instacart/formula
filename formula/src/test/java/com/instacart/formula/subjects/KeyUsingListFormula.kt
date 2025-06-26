@@ -4,12 +4,12 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 
 class KeyUsingListFormula :
     Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.Output>() {
     companion object {
-        fun test(runtime: TestableRuntime, items: List<String>) = runtime.test(KeyUsingListFormula(), Input(items))
+        fun test(items: List<String>) = KeyUsingListFormula().test().input(Input(items))
     }
 
     data class State(val items: List<String>)

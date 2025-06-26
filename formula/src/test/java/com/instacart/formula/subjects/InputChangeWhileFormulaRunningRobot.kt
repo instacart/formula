@@ -4,10 +4,10 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestFormulaObserver
-import com.instacart.formula.test.TestableRuntime
+import com.instacart.formula.test.test
 import com.instacart.formula.types.OnStartActionFormula
 
-class InputChangeWhileFormulaRunningRobot(runtime: TestableRuntime, eventCount: Int) {
+class InputChangeWhileFormulaRunningRobot(eventCount: Int) {
     private var input: Int = 0
 
     private var observer: TestFormulaObserver<Int, Int, Parent>? = null
@@ -19,7 +19,7 @@ class InputChangeWhileFormulaRunningRobot(runtime: TestableRuntime, eventCount: 
         }
     )
 
-    val test = runtime.test(parent).apply {
+    val test = parent.test().apply {
         observer = this
     }
 

@@ -49,8 +49,8 @@ interface RxAction<Event : Any> : Action<Event> {
 
     fun observable(): Observable<Event>
 
-    override fun start(scope: CoroutineScope, send: (Event) -> Unit): Cancelable? {
-        val disposable = observable().subscribe(send)
+    override fun start(scope: CoroutineScope, emitter: Action.Emitter<Event>): Cancelable? {
+        val disposable = observable().subscribe(emitter::onEvent, emitter::onError)
         return Cancelable(disposable::dispose)
     }
 }
