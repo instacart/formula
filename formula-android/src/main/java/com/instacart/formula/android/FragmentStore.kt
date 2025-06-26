@@ -1,13 +1,17 @@
 package com.instacart.formula.android
 
-import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
 import com.instacart.formula.android.internal.Features
-import com.instacart.formula.android.internal.FragmentStoreFormula
-import com.instacart.formula.android.utils.MainThreadDispatcher
-import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.IllegalStateException
 
 /**
@@ -15,7 +19,6 @@ import java.lang.IllegalStateException
  */
 class FragmentStore @PublishedApi internal constructor(
     private val featureComponent: FeatureComponent<*>,
-    private val formula: FragmentStoreFormula,
 ) {
     companion object {
         val EMPTY = init {  }
@@ -39,47 +42,102 @@ class FragmentStore @PublishedApi internal constructor(
             features: Features<Component>
         ): FragmentStore {
             val featureComponent = FeatureComponent(component, features.bindings)
-            val formula = FragmentStoreFormula()
-            return FragmentStore(featureComponent, formula)
+            return FragmentStore(featureComponent)
         }
     }
 
     private lateinit var environment: FragmentEnvironment
     private val features = mutableMapOf<FragmentId, FeatureEvent>()
+    private val disposables = mutableMapOf<FragmentId, Disposable>()
+    private val stateFlow = MutableStateFlow(FragmentState())
 
-    internal fun onLifecycleEffect(event: FragmentLifecycleEvent) {
+    internal fun onLifecycleEffect(environment: FragmentEnvironment, event: FragmentLifecycleEvent) {
         val fragmentId = event.fragmentId
         when (event) {
             is FragmentLifecycleEvent.Added -> {
                 if (!features.contains(fragmentId)) {
-                    val feature = featureComponent.init(environment, fragmentId)
-                    features[fragmentId] = feature
+                    val featureEvent = featureComponent.init(environment, fragmentId)
+                    features[fragmentId] = featureEvent
 
-                    formula.fragmentAdded(feature)
+                    stateFlow.update { state ->
+                        if (!state.activeIds.contains(featureEvent.id)) {
+                            state.copy(
+                                activeIds = state.activeIds.plus(featureEvent.id),
+                            )
+                        } else {
+                            state
+                        }
+                    }
+
+                    if (featureEvent is FeatureEvent.Init) {
+                        val observable = featureEvent.feature.stateObservable.onErrorResumeNext {
+                            environment.onScreenError(fragmentId.key, it)
+                            Observable.empty()
+                        }
+
+                        val disposable = observable.subscribe { update ->
+                            stateFlow.update { state ->
+                                if (state.activeIds.contains(fragmentId)) {
+                                    val keyState = FragmentOutput(fragmentId.key, update)
+                                    state.copy(outputs = state.outputs.plus(fragmentId to keyState))
+                                } else {
+                                    state
+                                }
+                            }
+                        }
+                        disposables[fragmentId] = disposable
+                    }
                 }
             }
             is FragmentLifecycleEvent.Removed -> {
                 features.remove(fragmentId)
-                formula.fragmentRemoved(fragmentId)
+
+                // Cancel running feature job.
+                disposables.remove(fragmentId)?.dispose()
+
+                stateFlow.update { state ->
+                    state.copy(
+                        activeIds = state.activeIds.minus(fragmentId),
+                        outputs = state.outputs.minus(fragmentId),
+                    )
+                }
             }
         }
     }
 
     internal fun onVisibilityChanged(fragmentId: FragmentId, visible: Boolean) {
         if (visible) {
-            formula.fragmentVisible(fragmentId)
+            stateFlow.update { state ->
+                if (state.visibleIds.contains(fragmentId)) {
+                    state
+                } else {
+                    state.copy(visibleIds = state.visibleIds.plus(fragmentId))
+                }
+            }
         } else {
-            formula.fragmentHidden(fragmentId)
+            stateFlow.update { state ->
+                state.copy(visibleIds = state.visibleIds.minus(fragmentId))
+            }
         }
     }
 
-    internal fun state(environment: FragmentEnvironment): Observable<FragmentState> {
-        this.environment = environment
+    internal fun state(): Observable<FragmentState> {
+        return Observable.create { emitter ->
+            val job = GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                withContext(Dispatchers.Main.immediate) {
+                    stateFlow.collect { emitter.onNext(it) }
+                }
+            }
 
-        val config = RuntimeConfig(
-            defaultDispatcher = MainThreadDispatcher(),
-        )
-        return formula.toObservable(environment, config)
+            emitter.setCancellable { job.cancel() }
+        }
+    }
+
+    fun dispose() {
+        for (entry in disposables) {
+            entry.value.dispose()
+        }
+        disposables.clear()
     }
 
     internal fun getViewFactory(fragmentId: FragmentId): ViewFactory<Any>? {

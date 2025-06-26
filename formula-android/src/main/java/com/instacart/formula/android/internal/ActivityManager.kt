@@ -20,7 +20,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
 
     internal val stateSubscription: Disposable = store
         .fragmentStore
-        .state(environment)
+        .state()
         .subscribe(delegate.fragmentStateRelay::accept)
 
     private var uiSubscription: Disposable? = null
@@ -36,7 +36,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
             fragmentStore = store.fragmentStore,
             fragmentEnvironment = environment,
             onLifecycleEvent = {
-                store.fragmentStore.onLifecycleEffect(it)
+                store.fragmentStore.onLifecycleEffect(environment, it)
                 store.onFragmentLifecycleEvent?.invoke(it)
             },
             onLifecycleState = delegate::updateFragmentLifecycleState,
@@ -92,6 +92,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun dispose() {
+        store.fragmentStore.dispose()
         stateSubscription.dispose()
         store.onCleared?.invoke()
     }

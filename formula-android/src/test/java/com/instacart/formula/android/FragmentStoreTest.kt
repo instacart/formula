@@ -41,16 +41,17 @@ class FragmentStoreTest {
         val detail = DetailKey(1)
 
         val component = FakeComponent()
+        val environment = FragmentEnvironment()
         val store = createStore(component)
         store
             .toStates()
             .apply {
-                store.onLifecycleEffect(master.asAddedEvent())
-                store.onLifecycleEffect(detail.asAddedEvent())
+                store.onLifecycleEffect(environment, master.asAddedEvent())
+                store.onLifecycleEffect(environment, detail.asAddedEvent())
 
                 component.updateRelay.accept(master to "main-update")
-                store.onLifecycleEffect(detail.asRemovedEvent())
-                store.onLifecycleEffect(master.asRemovedEvent())
+                store.onLifecycleEffect(environment, detail.asRemovedEvent())
+                store.onLifecycleEffect(environment, master.asRemovedEvent())
 
                 component.updateRelay.accept(master to "main-update-2")
             }
@@ -68,11 +69,12 @@ class FragmentStoreTest {
 
         val component = FakeComponent()
         val store = createStore(component)
+        val environment = FragmentEnvironment()
         store.toStates()
             .apply {
-                store.onLifecycleEffect(MainKey(1).asAddedEvent())
-                store.onLifecycleEffect(DetailKey(1).asAddedEvent())
-                store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+                store.onLifecycleEffect(environment, MainKey(1).asAddedEvent())
+                store.onLifecycleEffect(environment, DetailKey(1).asAddedEvent())
+                store.onLifecycleEffect(environment, DetailKey(2).asAddedEvent())
             }
             .assertValues(
                 expectedState(),
@@ -101,8 +103,9 @@ class FragmentStoreTest {
             }
         }
 
+        val environment = FragmentEnvironment()
         store.toStates()
-            .apply { store.onLifecycleEffect(MainKey(1).asAddedEvent()) }
+            .apply { store.onLifecycleEffect(environment, MainKey(1).asAddedEvent()) }
             .assertValues(
                 expectedState(),
                 expectedState(MainKey(1) to "Dependency: 100")
@@ -118,7 +121,8 @@ class FragmentStoreTest {
 
         val updates = mutableListOf<Map<FragmentKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
-        val disposable = store.state(FragmentEnvironment()).subscribe {
+        val environment = FragmentEnvironment()
+        val disposable = store.state().subscribe {
             val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
             updates.add(states)
 
@@ -126,8 +130,8 @@ class FragmentStoreTest {
         }
 
         // Add couple of features
-        store.onLifecycleEffect(MainKey(1).asAddedEvent())
-        store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+        store.onLifecycleEffect(environment, MainKey(1).asAddedEvent())
+        store.onLifecycleEffect(environment, DetailKey(2).asAddedEvent())
 
         // Pass feature updates on a background thread
         executor.execute {
@@ -164,12 +168,14 @@ class FragmentStoreTest {
         val store = FragmentStore.init(FakeComponent()) {
             bind(TestFeatureFactory<MainKey>())
         }
-        val observer = store.state(FragmentEnvironment()).test()
+        val environment = FragmentEnvironment()
+        val observer = store.state().test()
         val fragmentId = FragmentId(
             instanceId = "random",
             key = DetailKey(id = 100)
         )
         store.onLifecycleEffect(
+            environment,
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
@@ -190,12 +196,13 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId(
             instanceId = "random",
             key = MainKey(id = 100)
         )
         store.onLifecycleEffect(
+            FragmentEnvironment(),
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
@@ -220,9 +227,11 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val environment = FragmentEnvironment()
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
+            environment,
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
         stateSubject.onNext("value")
@@ -233,6 +242,7 @@ class FragmentStoreTest {
 
         // Remove fragment
         store.onLifecycleEffect(
+            environment,
             FragmentLifecycleEvent.Removed(fragmentId = fragmentId)
         )
 
@@ -265,9 +275,10 @@ class FragmentStoreTest {
                 screenErrors.add(key to error)
             }
         )
-        val observer = store.state(environment).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
+            environment,
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
         stateSubject.onNext("value")
@@ -304,9 +315,11 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val environment = FragmentEnvironment()
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
+            environment,
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
@@ -336,7 +349,7 @@ class FragmentStoreTest {
         val environment = FragmentEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
         )
-        val observer = store.state(environment).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId("test", MainKey(1))
         store.getViewFactory(fragmentId)
 
@@ -353,10 +366,10 @@ class FragmentStoreTest {
         val environment = FragmentEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
         )
-        val observer = store.state(environment).test()
+        val observer = store.state().test()
         
         val fragmentId = FragmentId("test", MainKey(1))
-        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        store.onLifecycleEffect(environment, FragmentLifecycleEvent.Added(fragmentId))
         store.getViewFactory(fragmentId)
 
         assertThat(screenErrors).hasSize(1)
@@ -379,10 +392,10 @@ class FragmentStoreTest {
         val environment = FragmentEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
         )
-        val observer = store.state(environment).test()
+        val observer = store.state().test()
 
         val fragmentId = FragmentId("test", MainKey(1))
-        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        store.onLifecycleEffect(environment, FragmentLifecycleEvent.Added(fragmentId))
         store.getViewFactory(fragmentId)
 
         assertThat(screenErrors).hasSize(1)
@@ -409,15 +422,15 @@ class FragmentStoreTest {
         val environment = FragmentEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
         )
-        val observer = store.state(environment).test()
+        val observer = store.state().test()
 
         val fragmentId = FragmentId("test", MainKey(1))
-        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        store.onLifecycleEffect(environment, FragmentLifecycleEvent.Added(fragmentId))
         assertThat(store.getViewFactory(fragmentId)).isEqualTo(viewFactory)
     }
 
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
-        return state(FragmentEnvironment())
+        return state()
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
             .test()
     }
