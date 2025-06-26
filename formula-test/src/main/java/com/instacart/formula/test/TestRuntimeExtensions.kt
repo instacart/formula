@@ -1,6 +1,7 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
+import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
@@ -9,12 +10,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.coroutines.coroutineContext
@@ -23,6 +20,9 @@ import kotlin.coroutines.coroutineContext
  * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
  *
  * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
+ *
+ * @param isValidationEnabled A boolean that validates inputs and outputs by
+ * running [Formula.evaluate] twice.
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     isValidationEnabled: Boolean = true,
@@ -30,12 +30,15 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     dispatcher: Dispatcher? = null,
 ): TestFormulaObserver<Input, Output, F> {
     val runtimeConfig = RuntimeConfig(
-        isValidationEnabled = isValidationEnabled,
         inspector = inspector,
         defaultDispatcher = dispatcher,
     )
 
-    return TestFormulaObserver(runtimeConfig, this)
+    return TestFormulaObserver(
+        runtimeConfig = runtimeConfig,
+        formula = this,
+        isValidationEnabled = isValidationEnabled,
+    )
 }
 
 suspend fun <Event> Action<Event>.test(

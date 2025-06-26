@@ -83,15 +83,17 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.toFlow(
     )
 }
 
-private fun <Input : Any, Output : Any> start(
+fun <Input : Any, Output : Any> start(
     input: Flow<Input>,
     formula: IFormula<Input, Output>,
     config: RuntimeConfig?,
+    isValidationEnabled: Boolean = false,
 ): Flow<Output> {
     val callbackFlow = callbackFlow {
         val runtime = formula.asRuntime(coroutineContext, config)
         runtime.setOnOutput(this::trySend)
         runtime.setOnError(this::close)
+        runtime.setValidationEnabled(isValidationEnabled)
 
         launch {
             input.collect(runtime::onInput)
