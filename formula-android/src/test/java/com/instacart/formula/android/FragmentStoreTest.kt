@@ -328,6 +328,93 @@ class FragmentStoreTest {
         val third = observer.values().last().visibleOutput()
         assertThat(third).isNull()
     }
+    
+    @Test fun `getViewFactory with no feature`() {
+        val store = FragmentStore.init {} 
+        
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error -> screenErrors.add(key to error) }
+        )
+        val observer = store.state(environment).test()
+        val fragmentId = FragmentId("test", MainKey(1))
+        store.getViewFactory(fragmentId)
+
+        assertThat(screenErrors).hasSize(1)
+        assertThat(screenErrors.last().first).isEqualTo(MainKey(1))
+        assertThat(screenErrors.last().second).hasMessageThat().contains("Could not find feature for ${fragmentId.key}")
+    }
+    
+    @Test fun `getViewFactory with missing binding`() {
+        val store = FragmentStore.init {}
+
+
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error -> screenErrors.add(key to error) }
+        )
+        val observer = store.state(environment).test()
+        
+        val fragmentId = FragmentId("test", MainKey(1))
+        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        store.getViewFactory(fragmentId)
+
+        assertThat(screenErrors).hasSize(1)
+        assertThat(screenErrors.last().first).isEqualTo(MainKey(1))
+        assertThat(screenErrors.last().second).hasMessageThat().contains("Missing feature factory or integration for ${fragmentId.key}. Please check your FragmentStore configuration") 
+    }
+
+    @Test fun `getViewFactory with feature initialization error`() {
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    throw RuntimeException("Feature initialization error")
+                }
+            }
+            bind(featureFactory)
+        }
+
+
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error -> screenErrors.add(key to error) }
+        )
+        val observer = store.state(environment).test()
+
+        val fragmentId = FragmentId("test", MainKey(1))
+        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        store.getViewFactory(fragmentId)
+
+        assertThat(screenErrors).hasSize(1)
+        assertThat(screenErrors.last().first).isEqualTo(MainKey(1))
+        assertThat(screenErrors.last().second).hasMessageThat().contains("Feature failed to initialize: ${fragmentId.key}")
+    }
+
+    @Test fun `getViewFactory returns valid view factory`() {
+        val viewFactory = TestViewFactory<Any>()
+        val store = FragmentStore.init {
+            val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                override fun Params.initialize(): Feature {
+                    return Feature(
+                        state = Observable.empty(),
+                        viewFactory = viewFactory
+                    )
+                }
+            }
+            bind(featureFactory)
+        }
+
+
+        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
+        val environment = FragmentEnvironment(
+            onScreenError = { key, error -> screenErrors.add(key to error) }
+        )
+        val observer = store.state(environment).test()
+
+        val fragmentId = FragmentId("test", MainKey(1))
+        store.onLifecycleEffect(FragmentLifecycleEvent.Added(fragmentId))
+        assertThat(store.getViewFactory(fragmentId)).isEqualTo(viewFactory)
+    }
 
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
         return state(FragmentEnvironment())

@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.internal.FormulaFragmentDelegate
 import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
@@ -31,6 +30,8 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         getFormulaFragmentId()
     }
 
+    internal lateinit var fragmentStore: FragmentStore
+
     private val environment: FragmentEnvironment
         get() = FormulaAndroid.fragmentEnvironment()
 
@@ -44,7 +45,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         get() = featureView?.lifecycleCallbacks
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val viewFactory = FormulaFragmentDelegate.viewFactory(this) ?: run {
+        val viewFactory = fragmentStore.getViewFactory(formulaFragmentId) ?: run {
             // No view factory, no view
             return null
         }
@@ -53,9 +54,13 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
             inflater = inflater,
             container = container,
         )
-        val featureView = viewFactory.create(params).apply {
-            featureView = this
-        }
+
+        val featureView = environment.fragmentDelegate.createView(
+            fragmentId = formulaFragmentId,
+            viewFactory = viewFactory,
+            params = params,
+        )
+        this.featureView = featureView
         return featureView.view
     }
 
