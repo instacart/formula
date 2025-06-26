@@ -332,7 +332,7 @@ class FragmentStoreTest {
         val third = observer.values().last().visibleOutput()
         assertThat(third).isNull()
     }
-
+    
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
         return state()
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
