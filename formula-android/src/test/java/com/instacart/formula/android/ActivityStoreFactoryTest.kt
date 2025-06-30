@@ -15,7 +15,6 @@ class ActivityStoreFactoryTest {
 
     @Test fun `initialized store is live`() {
         val factory = ActivityStoreFactory(
-            environment = FragmentEnvironment(),
             activities = {
                 activity(FakeActivity::class) {
                     ActivityStore()
@@ -29,7 +28,6 @@ class ActivityStoreFactoryTest {
 
     @Test fun `returns null if no binding for activity is found`() {
         val factory = ActivityStoreFactory(
-            environment = FragmentEnvironment(),
             activities = {}
         )
 

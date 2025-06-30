@@ -20,7 +20,7 @@ class ViewFactoryTest {
             configure = {
                 activity<TestFormulaActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentStore.init {
+                        fragmentStore = FragmentStore.Builder().build {
                             val featureFactory = NoOpFeatureFactory(
                                 viewFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
                                     featureView {  }

@@ -15,6 +15,7 @@ import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
+import com.instacart.formula.android.FragmentStore
 import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.getFormulaFragmentId
 import java.util.LinkedList
@@ -29,7 +30,7 @@ import java.util.LinkedList
  */
 internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
-    private val fragmentEnvironment: FragmentEnvironment,
+    private val store: FragmentStore,
     private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
     private val onLifecycleState: (FragmentId, Lifecycle.State) -> Unit,
     private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
@@ -38,6 +39,9 @@ internal class FragmentFlowRenderView(
     private var fragmentState: FragmentState? = null
     private var features: Map<FragmentId, FeatureEvent> = emptyMap()
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
+
+    private val environment: FragmentEnvironment
+        get() = store.environment
 
     private val featureProvider = object : FeatureProvider {
         override fun getFeature(id: FragmentId): FeatureEvent? {
@@ -91,13 +95,18 @@ internal class FragmentFlowRenderView(
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
+            if (f is FormulaFragment) {
+                f.environment = environment
+            }
+
             if (FragmentLifecycle.shouldTrack(f)) {
                 val event = FragmentLifecycleEvent.Added(
                     fragmentId = f.getFormulaFragmentId(),
                 )
+
                 onLifecycleEvent(event)
             } else {
-                fragmentEnvironment.logger("Ignoring attach event for fragment: $f")
+                environment.logger("Ignoring attach event for fragment: $f")
             }
         }
 
@@ -139,7 +148,7 @@ internal class FragmentFlowRenderView(
 
     fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
         return FormulaFragmentViewFactory(
-            environment = fragmentEnvironment,
+            environment = environment,
             fragmentId = fragment.getFormulaFragmentId(),
             featureProvider = featureProvider,
         )

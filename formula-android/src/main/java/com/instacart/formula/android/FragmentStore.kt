@@ -13,33 +13,44 @@ import io.reactivex.rxjava3.core.Observable
  * A FragmentStore is responsible for managing the state of multiple [FragmentKey] instances.
  */
 class FragmentStore @PublishedApi internal constructor(
+    val environment: FragmentEnvironment,
     private val formula: FragmentStoreFormula,
 ) {
-    companion object {
-        val EMPTY = init {  }
 
-        fun init(
-            init: FeaturesBuilder<Unit>.() -> Unit
-        ): FragmentStore {
-            return init(Unit, init)
+    class Builder {
+        private var environment: FragmentEnvironment? = null
+
+        fun setFragmentEnvironment(environment: FragmentEnvironment) = apply {
+            this.environment = environment
         }
 
-        fun <Component> init(
+        fun build(
+            init: FeaturesBuilder<Unit>.() -> Unit
+        ): FragmentStore {
+            return build(Unit, init)
+        }
+
+        fun <Component> build(
             rootComponent: Component,
             init: FeaturesBuilder<Component>.() -> Unit
         ): FragmentStore {
             val features = FeaturesBuilder.build(init)
-            return init(rootComponent, features)
+            return build(rootComponent, features)
         }
 
-        fun <Component> init(
+        fun <Component> build(
             component: Component,
             features: Features<Component>
         ): FragmentStore {
             val featureComponent = FeatureComponent(component, features.bindings)
-            val formula = FragmentStoreFormula(featureComponent)
-            return FragmentStore(formula)
+            val fragmentEnvironment = environment ?: FragmentEnvironment()
+            val formula = FragmentStoreFormula(fragmentEnvironment, featureComponent)
+            return FragmentStore(fragmentEnvironment, formula)
         }
+    }
+
+    companion object {
+        val EMPTY = Builder().build {  }
     }
 
     internal fun onLifecycleEffect(event: FragmentLifecycleEvent) {
@@ -50,10 +61,10 @@ class FragmentStore @PublishedApi internal constructor(
         formula.onVisibilityChanged(fragmentId, visible)
     }
 
-    internal fun state(environment: FragmentEnvironment): Observable<FragmentState> {
+    internal fun state(): Observable<FragmentState> {
         val config = RuntimeConfig(
             defaultDispatcher = MainThreadDispatcher(),
         )
-        return formula.toObservable(environment, config)
+        return formula.toObservable(config)
     }
 }

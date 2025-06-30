@@ -3,18 +3,15 @@ package com.instacart.formula.android.internal
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.ViewFactory
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * Activity manager connects [ActivityStore] and the [Activity].
  */
 internal class ActivityManager<Activity : FragmentActivity>(
-    private val environment: FragmentEnvironment,
     private val delegate: ActivityStoreContextImpl<Activity>,
     private val store: ActivityStore<Activity>
 ) {
@@ -34,7 +31,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         // Initialize render view
         fragmentRenderView = FragmentFlowRenderView(
             activity = activity,
-            fragmentEnvironment = environment,
+            store = store.fragmentStore,
             onLifecycleEvent = {
                 store.fragmentStore.onLifecycleEffect(it)
                 store.onFragmentLifecycleEvent?.invoke(it)
@@ -103,7 +100,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private fun subscribeToFragmentStateChanges(): Disposable {
         return store
             .fragmentStore
-            .state(environment)
+            .state()
             .subscribe(delegate.fragmentStateRelay::accept)
     }
 

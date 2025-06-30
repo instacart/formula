@@ -24,7 +24,7 @@ fun runFeatureFactoryLifecycleTest(
         configure = {
             activity<TestFormulaActivity> {
                 ActivityStore(
-                    fragmentStore = FragmentStore.init {
+                    fragmentStore = FragmentStore.Builder().build {
                         val featureFactory = NoOpFeatureFactory<TestKey>(
                             viewFactory = TestViewFactory(lifecycleCallback)
                         )
