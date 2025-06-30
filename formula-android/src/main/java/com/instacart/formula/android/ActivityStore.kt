@@ -11,16 +11,10 @@ import com.instacart.formula.android.events.FragmentLifecycleEvent
  * @param fragmentStore Fragment state management defined for this [Activity].
  * @param configureActivity This is invoked as part of [com.instacart.formula.FormulaAndroid.onPreCreate]. You can
  *                          use this callback to inject the activity.
- * @param onPreRenderFragmentState This is invoked before [FragmentState] is applied.
- * @param onRenderFragmentState This is invoked after [FragmentState] has been applied.
- * @param onFragmentLifecycleEvent This is callback for when a fragment is added or removed.
  * @param onCleared This is invoked when the activity store should be disposed of.
  */
 class ActivityStore<Activity : FragmentActivity>(
     val fragmentStore: FragmentStore = FragmentStore.EMPTY,
     val configureActivity: ((Activity) -> Unit)? = null,
-    val onPreRenderFragmentState: ((Activity, FragmentState) -> Unit)? = null,
-    val onRenderFragmentState: ((Activity, FragmentState) -> Unit)? = null,
-    val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
     val onCleared: (() -> Unit)? = null,
 )

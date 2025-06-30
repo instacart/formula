@@ -7,7 +7,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.internal.AppManager
 import java.lang.IllegalStateException
@@ -16,16 +15,12 @@ object FormulaAndroid {
 
     private var application: Application? = null
     private var appManager: AppManager? = null
-    private var fragmentEnvironment: FragmentEnvironment? = null
 
     /**
      * Initializes Formula Android integration. Should be called within [Application.onCreate].
-     *
-     * @param fragmentEnvironment Environment model that configures various event listeners.
      */
     fun init(
         application: Application,
-        fragmentEnvironment: FragmentEnvironment = FragmentEnvironment(),
         activities: ActivityConfigurator.() -> Unit
     ) {
         // Should we allow re-initialization?
@@ -33,13 +28,12 @@ object FormulaAndroid {
             throw IllegalStateException("can only initialize the store once.")
         }
 
-        val factory = ActivityStoreFactory(fragmentEnvironment, activities)
+        val factory = ActivityStoreFactory(activities)
         val appManager = AppManager(factory)
         application.registerActivityLifecycleCallbacks(appManager)
 
         this.application = application
         this.appManager = appManager
-        this.fragmentEnvironment = fragmentEnvironment
     }
 
     /**
@@ -90,10 +84,6 @@ object FormulaAndroid {
 
     internal fun appManagerOrThrow(): AppManager {
         return ensureInitialized(appManager)
-    }
-
-    internal fun fragmentEnvironment(): FragmentEnvironment {
-        return ensureInitialized(fragmentEnvironment)
     }
 
     private fun <T : Any> ensureInitialized(variable: T?): T {

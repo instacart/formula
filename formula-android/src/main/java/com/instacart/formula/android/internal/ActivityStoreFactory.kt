@@ -7,15 +7,13 @@ import kotlin.reflect.KClass
 
 internal class ActivityStoreFactory internal constructor(
     private val bindings: Map<KClass<*>, ActivityConfigurator.Binding<*>>,
-    private val environment: FragmentEnvironment
 ) {
     companion object {
         operator fun invoke(
-            environment: FragmentEnvironment,
             activities: ActivityConfigurator.() -> Unit
         ): ActivityStoreFactory {
             val bindings = ActivityConfigurator().apply(activities).bindings
-            return ActivityStoreFactory(bindings, environment)
+            return ActivityStoreFactory(bindings)
         }
     }
 
@@ -26,7 +24,6 @@ internal class ActivityStoreFactory internal constructor(
         val activityDelegate = ActivityStoreContextImpl<A>()
         return initializer.init.invoke(activityDelegate).let { store ->
             ActivityManager(
-                environment = environment,
                 delegate = activityDelegate,
                 store = store
             )

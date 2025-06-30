@@ -14,8 +14,9 @@ import com.jakewharton.rxrelay3.PublishRelay
 
 @PublishedApi
 internal class FragmentStoreFormula(
+    private val environment: FragmentEnvironment,
     private val featureComponent: FeatureComponent<*>,
-) : Formula<FragmentEnvironment, FragmentState, FragmentState>(){
+) : Formula<Unit, FragmentState, FragmentState>(){
     private val lifecycleEvents = PublishRelay.create<FragmentLifecycleEvent>()
     private val visibleContractEvents = PublishRelay.create<FragmentId>()
     private val hiddenContractEvents = PublishRelay.create<FragmentId>()
@@ -36,9 +37,9 @@ internal class FragmentStoreFormula(
         }
     }
 
-    override fun initialState(input: FragmentEnvironment): FragmentState = FragmentState()
+    override fun initialState(input: Unit): FragmentState = FragmentState()
 
-    override fun Snapshot<FragmentEnvironment, FragmentState>.evaluate(): Evaluation<FragmentState> {
+    override fun Snapshot<Unit, FragmentState>.evaluate(): Evaluation<FragmentState> {
         return Evaluation(
             output = state,
             actions = context.actions {
@@ -55,7 +56,7 @@ internal class FragmentStoreFormula(
                         }
                         is FragmentLifecycleEvent.Added -> {
                             if (!state.activeIds.contains(fragmentId)) {
-                                val feature = featureComponent.init(input, fragmentId)
+                                val feature = featureComponent.init(environment, fragmentId)
                                 val updated = state.copy(
                                     activeIds = state.activeIds.plus(fragmentId),
                                     features = state.features.plus(feature.id to feature)
@@ -86,7 +87,7 @@ internal class FragmentStoreFormula(
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
                         val action = FeatureObservableAction(
-                            fragmentEnvironment = input,
+                            fragmentEnvironment = environment,
                             fragmentId = fragmentId,
                             feature = feature,
                         )

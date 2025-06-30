@@ -7,7 +7,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.FragmentEnvironment
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import org.robolectric.Shadows
 import java.util.concurrent.CountDownLatch
@@ -43,7 +42,6 @@ fun executeOnBackgroundThread(action: () -> Unit) {
 }
 
 fun withFormulaAndroid(
-    environment: FragmentEnvironment = FragmentEnvironment(),
     configure: TestActivityConfigurator.() -> Unit = {},
     continuation: (FormulaAndroidInteractor) -> Unit,
 ) {
@@ -54,7 +52,7 @@ fun withFormulaAndroid(
     try {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val interactor = FormulaAndroidInteractor()
-        FormulaAndroid.init(context, environment) {
+        FormulaAndroid.init(context) {
             val testActivityConfigurator = TestActivityConfigurator(this) {
                 interactor.onActivityContextInitialized(it)
             }

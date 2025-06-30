@@ -12,19 +12,21 @@ class StopwatchApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        val fragmentEnvironment = FragmentEnvironment(
+            onScreenError = { _, error ->
+                Log.e("StopwatchApp", "fragment crashed", error)
+            }
+        )
         FormulaAndroid.init(
             application = this,
-            fragmentEnvironment = FragmentEnvironment(
-                onScreenError = { key, error ->
-                    Log.e("StopwatchApp", "fragment crashed", error)
-                }
-            ),
             activities = {
                 activity<StopwatchActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentStore.init(Unit) {
-                            bind(StopwatchFeatureFactory())
-                        }
+                        fragmentStore = FragmentStore.Builder()
+                            .setFragmentEnvironment(fragmentEnvironment)
+                            .build {
+                                bind(StopwatchFeatureFactory())
+                            }
                     )
                 }
             }

@@ -50,38 +50,40 @@ class FormulaFragmentTest {
                     errors.add(error)
                 }
             )
-            FormulaAndroid.init(app, environment) {
+            FormulaAndroid.init(app) {
                 activity<TestFormulaActivity> {
                     ActivityStore(
-                        onRenderFragmentState = { a, state ->
-                            lastState = state
-
-                            updateThreads.add(Thread.currentThread())
-                        },
-                        fragmentStore = FragmentStore.init {
-                            bind(
-                                featureFactory = TestFeatureFactory<TestKey>(
-                                    render = { key, value ->
-                                        renderCalls.add(key to value)
-                                    },
-                                    state = { stateChanges(it) }
+                        fragmentStore = FragmentStore.Builder()
+                            .setFragmentEnvironment(environment)
+                            .setOnPreRenderFragmentState {
+                                lastState = it
+                                updateThreads.add(Thread.currentThread())
+                            }
+                            .setOnFragmentLifecycleEvent {
+                                fragmentLifecycleEvents.add(it)
+                            }
+                            .build {
+                                bind(
+                                    featureFactory = TestFeatureFactory<TestKey>(
+                                        render = { key, value ->
+                                            renderCalls.add(key to value)
+                                        },
+                                        state = { stateChanges(it) }
+                                    )
                                 )
-                            )
-                            bind(TestFeatureFactory<TestKeyWithId>(
-                                render = { key, output ->
-                                    renderCalls.add(key to output)
-                                    if (output == "crash") {
-                                        throw IllegalStateException("crashing")
+                                bind(
+                                    TestFeatureFactory<TestKeyWithId>(
+                                    render = { key, output ->
+                                        renderCalls.add(key to output)
+                                        if (output == "crash") {
+                                            throw IllegalStateException("crashing")
+                                        }
+                                    },
+                                    state = {
+                                        stateChanges(it)
                                     }
-                                },
-                                state = {
-                                    stateChanges(it)
-                                }
-                            ))
-                        },
-                        onFragmentLifecycleEvent = {
-                            fragmentLifecycleEvents.add(it)
-                        }
+                                ))
+                            },
                     )
                 }
 
