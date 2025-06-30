@@ -26,16 +26,13 @@ import java.util.LinkedList
  * NOTE: Initialize this class before calling [FragmentActivity.super.onCreate]
  *
  * [activity] activity within which the [FragmentFlowRenderView] lives.
- * [onLifecycleEvent] fragment lifecycle events that should be passed to the [com.instacart.formula.android.FragmentStore]
  */
 internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
     private val store: FragmentStore,
-    private val onLifecycleEvent: (FragmentLifecycleEvent) -> Unit,
     private val onLifecycleState: (FragmentId, Lifecycle.State) -> Unit,
     private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
 ) {
-
     private var fragmentState: FragmentState? = null
     private var features: Map<FragmentId, FeatureEvent> = emptyMap()
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
@@ -104,7 +101,7 @@ internal class FragmentFlowRenderView(
                     fragmentId = f.getFormulaFragmentId(),
                 )
 
-                onLifecycleEvent(event)
+                store.onLifecycleEvent(event)
             } else {
                 environment.logger("Ignoring attach event for fragment: $f")
             }
@@ -120,7 +117,7 @@ internal class FragmentFlowRenderView(
                     fragmentId = f.getFormulaFragmentId(),
                     lastState = formulaFragment?.currentState(),
                 )
-                onLifecycleEvent(event)
+                store.onLifecycleEvent(event)
             }
         }
     }
@@ -131,6 +128,8 @@ internal class FragmentFlowRenderView(
 
     fun render(state: FragmentState) {
         Utils.assertMainThread()
+
+        store.onPreRenderFragmentState?.invoke(state)
 
         fragmentState = state
         features = state.features

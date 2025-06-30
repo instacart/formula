@@ -32,10 +32,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
         fragmentRenderView = FragmentFlowRenderView(
             activity = activity,
             store = store.fragmentStore,
-            onLifecycleEvent = {
-                store.fragmentStore.onLifecycleEffect(it)
-                store.onFragmentLifecycleEvent?.invoke(it)
-            },
             onLifecycleState = delegate::updateFragmentLifecycleState,
             onFragmentViewStateChanged = store.fragmentStore::onVisibilityChanged
         )
@@ -47,9 +43,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
 
         uiSubscription = delegate.fragmentState().subscribe {
-            store.onPreRenderFragmentState?.invoke(activity, it)
             renderView.render(it)
-            store.onRenderFragmentState?.invoke(activity, it)
         }
     }
 
