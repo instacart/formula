@@ -24,7 +24,7 @@ class FragmentLifecycleStateTest {
             configure = {
                 activity<TestFormulaActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentStore.init {
+                        fragmentStore = FragmentStore.Builder().build {
                             bind(NoOpFeatureFactory<TestKey>())
                             bind(NoOpFeatureFactory<TestKeyWithId>())
                         }

@@ -13,21 +13,24 @@ class TodoApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        val fragmentEnvironment = FragmentEnvironment(
+            onScreenError = { _, error ->
+                Log.e("TodoApp", "fragment crashed", error)
+            }
+        )
+
         FormulaAndroid.init(
             application = this,
-            fragmentEnvironment = FragmentEnvironment(
-                onScreenError = { _, error ->
-                    Log.e("TodoApp", "fragment crashed", error)
-                }
-            ),
             activities = {
                 activity<TodoActivity> {
                     val component = TodoAppComponent(this)
 
                     ActivityStore(
-                        fragmentStore = FragmentStore.init(component) {
-                            bind(TaskListFeatureFactory())
-                        }
+                        fragmentStore = FragmentStore.Builder()
+                            .setFragmentEnvironment(fragmentEnvironment)
+                            .build(component) {
+                                bind(TaskListFeatureFactory())
+                            }
                     )
                 }
             }

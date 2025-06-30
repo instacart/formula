@@ -50,7 +50,7 @@ class FormulaFragmentTest {
                     errors.add(error)
                 }
             )
-            FormulaAndroid.init(app, environment) {
+            FormulaAndroid.init(app) {
                 activity<TestFormulaActivity> {
                     ActivityStore(
                         onRenderFragmentState = { a, state ->
@@ -58,7 +58,7 @@ class FormulaFragmentTest {
 
                             updateThreads.add(Thread.currentThread())
                         },
-                        fragmentStore = FragmentStore.init {
+                        fragmentStore = FragmentStore.Builder().setFragmentEnvironment(environment).build {
                             bind(
                                 featureFactory = TestFeatureFactory<TestKey>(
                                     render = { key, value ->

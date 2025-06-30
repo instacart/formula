@@ -24,7 +24,7 @@ class FragmentStoreTest {
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
         try {
-            FragmentStore.init(FakeComponent()) {
+            FragmentStore.Builder().build(FakeComponent()) {
                 bind(TestFeatureFactory<MainKey>())
                 bind(TestFeatureFactory<MainKey>())
             }
@@ -95,7 +95,7 @@ class FragmentStoreTest {
             }
         }
 
-        val store = FragmentStore.init(100) {
+        val store = FragmentStore.Builder().build(100) {
             bind(myFeatureFactory) {
                 "Dependency: $it"
             }
@@ -118,7 +118,7 @@ class FragmentStoreTest {
 
         val updates = mutableListOf<Map<FragmentKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
-        val disposable = store.state(FragmentEnvironment()).subscribe {
+        val disposable = store.state().subscribe {
             val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
             updates.add(states)
 
@@ -161,10 +161,10 @@ class FragmentStoreTest {
     }
 
     @Test fun `store returns missing binding event when no feature factory is present`() {
-        val store = FragmentStore.init(FakeComponent()) {
+        val store = FragmentStore.Builder().build(FakeComponent()) {
             bind(TestFeatureFactory<MainKey>())
         }
-        val observer = store.state(FragmentEnvironment()).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId(
             instanceId = "random",
             key = DetailKey(id = 100)
@@ -181,7 +181,7 @@ class FragmentStoreTest {
 
     @Test fun `store returns failure event when feature factory initialization throws an error`() {
         val expectedError = RuntimeException("something happened")
-        val store = FragmentStore.init(FakeComponent()) {
+        val store = FragmentStore.Builder().build(FakeComponent()) {
             val featureFactory = object : FeatureFactory<FakeComponent, MainKey>() {
                 override fun Params.initialize(): Feature {
                     throw expectedError
@@ -190,7 +190,7 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId(
             instanceId = "random",
             key = MainKey(id = 100)
@@ -208,7 +208,7 @@ class FragmentStoreTest {
     @Test fun `fragment store ignores events after key is removed`() {
         val stateSubject = PublishSubject.create<Any>()
 
-        val store = FragmentStore.init {
+        val store = FragmentStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -220,7 +220,7 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
@@ -247,25 +247,29 @@ class FragmentStoreTest {
     @Test fun `feature observable error emits on screen error and finishes`() {
         val stateSubject = PublishSubject.create<Any>()
 
-        val store = FragmentStore.init {
-            val featureFactory = object : FeatureFactory<Any, MainKey>() {
-                override fun Params.initialize(): Feature {
-                    return Feature(
-                        state = stateSubject,
-                        viewFactory = TestViewFactory(),
-                    )
-                }
-            }
-            bind(featureFactory)
-        }
-
         val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
         val environment = FragmentEnvironment(
             onScreenError = { key, error ->
                 screenErrors.add(key to error)
             }
         )
-        val observer = store.state(environment).test()
+
+        val store = FragmentStore.Builder()
+            .setFragmentEnvironment(environment)
+            .build {
+                val featureFactory = object : FeatureFactory<Any, MainKey>() {
+                    override fun Params.initialize(): Feature {
+                        return Feature(
+                            state = stateSubject,
+                            viewFactory = TestViewFactory(),
+                        )
+                    }
+                }
+                bind(featureFactory)
+            }
+
+
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
@@ -292,7 +296,7 @@ class FragmentStoreTest {
     }
 
     @Test fun `fragment store visible output`() {
-        val store = FragmentStore.init {
+        val store = FragmentStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -304,7 +308,7 @@ class FragmentStoreTest {
             bind(featureFactory)
         }
 
-        val observer = store.state(FragmentEnvironment()).test()
+        val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
         store.onLifecycleEffect(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
@@ -330,7 +334,7 @@ class FragmentStoreTest {
     }
 
     private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
-        return state(FragmentEnvironment())
+        return state()
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
             .test()
     }
@@ -351,7 +355,7 @@ class FragmentStoreTest {
     }
 
     fun createStore(component: FakeComponent): FragmentStore {
-        return FragmentStore.init(component) {
+        return FragmentStore.Builder().build(component) {
             bind(TestFeatureFactory<MainKey>())
             bind(TestFeatureFactory<DetailKey>())
         }
