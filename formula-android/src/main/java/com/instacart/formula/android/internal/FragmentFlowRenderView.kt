@@ -13,10 +13,8 @@ import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.BackCallback
-import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.FragmentStore
-import com.instacart.formula.android.ViewFactory
 import com.instacart.formula.android.getFormulaFragmentId
 import java.util.LinkedList
 
@@ -34,19 +32,13 @@ internal class FragmentFlowRenderView(
     private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
 ) {
     private var fragmentState: FragmentState? = null
-    private var features: Map<FragmentId, FeatureEvent> = emptyMap()
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
     private val environment: FragmentEnvironment
         get() = store.environment
 
-    private val featureProvider = object : FeatureProvider {
-        override fun getFeature(id: FragmentId): FeatureEvent? {
-            return features[id]
-        }
-    }
-
     private val callback = object : FragmentManager.FragmentLifecycleCallbacks() {
+
         override fun onFragmentViewCreated(
             fm: FragmentManager,
             f: Fragment,
@@ -93,7 +85,7 @@ internal class FragmentFlowRenderView(
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
             if (f is FormulaFragment) {
-                f.environment = environment
+                f.fragmentStore = store
             }
 
             if (FragmentLifecycle.shouldTrack(f)) {
@@ -132,7 +124,6 @@ internal class FragmentFlowRenderView(
         store.onPreRenderFragmentState?.invoke(state)
 
         fragmentState = state
-        features = state.features
         updateVisibleFragments()
     }
 
@@ -143,14 +134,6 @@ internal class FragmentFlowRenderView(
             return state is BackCallback && state.onBackPressed()
         }
         return false
-    }
-
-    fun viewFactory(fragment: FormulaFragment): ViewFactory<Any> {
-        return FormulaFragmentViewFactory(
-            environment = environment,
-            fragmentId = fragment.getFormulaFragmentId(),
-            featureProvider = featureProvider,
-        )
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
