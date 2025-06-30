@@ -15,15 +15,27 @@ import io.reactivex.rxjava3.core.Observable
 class FragmentStore @PublishedApi internal constructor(
     val environment: FragmentEnvironment,
     private val formula: FragmentStoreFormula,
+    internal val onPreRenderFragmentState: ((FragmentState) -> Unit)? = null,
+    private val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
 ) {
 
     class Builder {
         private var environment: FragmentEnvironment? = null
+        private var onPreRenderFragmentState: ((FragmentState) -> Unit)? = null
+        private var onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null
 
         fun setFragmentEnvironment(environment: FragmentEnvironment) = apply {
             this.environment = environment
         }
+        
+        fun setOnPreRenderFragmentState(callback: ((FragmentState) -> Unit)?): Builder = apply {
+            this.onPreRenderFragmentState = callback
+        }
 
+        fun setOnFragmentLifecycleEvent(callback: ((FragmentLifecycleEvent) -> Unit)?): Builder = apply {
+            this.onFragmentLifecycleEvent = callback
+        }
+        
         fun build(
             init: FeaturesBuilder<Unit>.() -> Unit
         ): FragmentStore {
@@ -45,7 +57,12 @@ class FragmentStore @PublishedApi internal constructor(
             val featureComponent = FeatureComponent(component, features.bindings)
             val fragmentEnvironment = environment ?: FragmentEnvironment()
             val formula = FragmentStoreFormula(fragmentEnvironment, featureComponent)
-            return FragmentStore(fragmentEnvironment, formula)
+            return FragmentStore(
+                environment = fragmentEnvironment,
+                formula = formula,
+                onPreRenderFragmentState = onPreRenderFragmentState,
+                onFragmentLifecycleEvent = onFragmentLifecycleEvent
+            )
         }
     }
 
@@ -53,8 +70,9 @@ class FragmentStore @PublishedApi internal constructor(
         val EMPTY = Builder().build {  }
     }
 
-    internal fun onLifecycleEffect(event: FragmentLifecycleEvent) {
+    internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         formula.onLifecycleEffect(event)
+        onFragmentLifecycleEvent?.invoke(event)
     }
 
     internal fun onVisibilityChanged(fragmentId: FragmentId, visible: Boolean) {

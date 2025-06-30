@@ -45,12 +45,12 @@ class FragmentStoreTest {
         store
             .toStates()
             .apply {
-                store.onLifecycleEffect(master.asAddedEvent())
-                store.onLifecycleEffect(detail.asAddedEvent())
+                store.onLifecycleEvent(master.asAddedEvent())
+                store.onLifecycleEvent(detail.asAddedEvent())
 
                 component.updateRelay.accept(master to "main-update")
-                store.onLifecycleEffect(detail.asRemovedEvent())
-                store.onLifecycleEffect(master.asRemovedEvent())
+                store.onLifecycleEvent(detail.asRemovedEvent())
+                store.onLifecycleEvent(master.asRemovedEvent())
 
                 component.updateRelay.accept(master to "main-update-2")
             }
@@ -70,9 +70,9 @@ class FragmentStoreTest {
         val store = createStore(component)
         store.toStates()
             .apply {
-                store.onLifecycleEffect(MainKey(1).asAddedEvent())
-                store.onLifecycleEffect(DetailKey(1).asAddedEvent())
-                store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+                store.onLifecycleEvent(MainKey(1).asAddedEvent())
+                store.onLifecycleEvent(DetailKey(1).asAddedEvent())
+                store.onLifecycleEvent(DetailKey(2).asAddedEvent())
             }
             .assertValues(
                 expectedState(),
@@ -102,7 +102,7 @@ class FragmentStoreTest {
         }
 
         store.toStates()
-            .apply { store.onLifecycleEffect(MainKey(1).asAddedEvent()) }
+            .apply { store.onLifecycleEvent(MainKey(1).asAddedEvent()) }
             .assertValues(
                 expectedState(),
                 expectedState(MainKey(1) to "Dependency: 100")
@@ -126,8 +126,8 @@ class FragmentStoreTest {
         }
 
         // Add couple of features
-        store.onLifecycleEffect(MainKey(1).asAddedEvent())
-        store.onLifecycleEffect(DetailKey(2).asAddedEvent())
+        store.onLifecycleEvent(MainKey(1).asAddedEvent())
+        store.onLifecycleEvent(DetailKey(2).asAddedEvent())
 
         // Pass feature updates on a background thread
         executor.execute {
@@ -169,7 +169,7 @@ class FragmentStoreTest {
             instanceId = "random",
             key = DetailKey(id = 100)
         )
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
@@ -195,7 +195,7 @@ class FragmentStoreTest {
             instanceId = "random",
             key = MainKey(id = 100)
         )
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
@@ -222,7 +222,7 @@ class FragmentStoreTest {
 
         val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
         stateSubject.onNext("value")
@@ -232,7 +232,7 @@ class FragmentStoreTest {
         assertThat(firstModel).isEqualTo("value")
 
         // Remove fragment
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Removed(fragmentId = fragmentId)
         )
 
@@ -271,7 +271,7 @@ class FragmentStoreTest {
 
         val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
         stateSubject.onNext("value")
@@ -310,7 +310,7 @@ class FragmentStoreTest {
 
         val observer = store.state().test()
         val fragmentId = FragmentId("", MainKey(1))
-        store.onLifecycleEffect(
+        store.onLifecycleEvent(
             FragmentLifecycleEvent.Added(fragmentId = fragmentId)
         )
 
