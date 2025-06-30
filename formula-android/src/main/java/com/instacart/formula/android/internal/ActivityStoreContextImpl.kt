@@ -10,6 +10,8 @@ import com.instacart.formula.android.ActivityStoreContext
 import com.jakewharton.rxrelay3.BehaviorRelay
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Implementation of [ActivityStoreContext].
@@ -22,11 +24,11 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
 
-    private val lifecycleStates = BehaviorRelay.createDefault<Lifecycle.State>(Lifecycle.State.INITIALIZED)
+    private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
     private val activityResultRelay: PublishRelay<ActivityResult> = PublishRelay.create()
     internal val fragmentStateRelay: BehaviorRelay<FragmentState> = BehaviorRelay.create()
 
-    override fun activityLifecycleState(): Observable<Lifecycle.State> = lifecycleStates
+    override val activityLifecycleState: StateFlow<Lifecycle.State> = lifecycleStates
 
     override fun activityResults(): Observable<ActivityResult> = activityResultRelay
 
@@ -63,7 +65,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.accept(state)
+    fun onLifecycleStateChanged(state: Lifecycle.State) = lifecycleStates.tryEmit(state)
 
     fun onActivityResult(result: ActivityResult) {
         activityResultRelay.accept(result)

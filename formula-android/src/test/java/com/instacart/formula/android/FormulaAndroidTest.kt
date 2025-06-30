@@ -18,6 +18,7 @@ import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentActivity
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.withFormulaAndroid
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -101,18 +102,18 @@ class FormulaAndroidTest {
                 }
             }
         ) { interactor ->
-            val activityLifecycleEvents = interactor
-                .selectEvents { it.activityLifecycleState() }
-                .test()
+            runTest {
+                val activityLifecycleEvents = interactor.collectEvents(this) { it.activityLifecycleState }
 
-            val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
-            scenario.recreate()
-            scenario.close()
+                val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
+                scenario.recreate()
+                scenario.close()
 
-            val lifecycle = listOf(CREATED, STARTED, RESUMED, STARTED, CREATED, DESTROYED)
-            // We expect two full lifecycles
-            val expected = listOf(INITIALIZED) + lifecycle + lifecycle
-            assertThat(activityLifecycleEvents.values()).containsExactlyElementsIn(expected).inOrder()
+                val lifecycle = listOf(CREATED, STARTED, RESUMED, STARTED, CREATED, DESTROYED)
+                // We expect two full lifecycles
+                val expected = listOf(INITIALIZED) + lifecycle + lifecycle
+                assertThat(activityLifecycleEvents).containsExactlyElementsIn(expected).inOrder()
+            }
         }
     }
 

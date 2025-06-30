@@ -4,6 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * This class provides context within which you can create [ActivityStore]. It provides
@@ -15,14 +16,14 @@ import io.reactivex.rxjava3.core.Observable
 abstract class ActivityStoreContext<out Activity : FragmentActivity> {
 
     /**
+     * Provides the current Activity lifecycle state [Lifecycle.State].
+     */
+    abstract val activityLifecycleState: StateFlow<Lifecycle.State>
+
+    /**
      * Events for [FragmentActivity.onActivityResult].
      */
     abstract fun activityResults(): Observable<ActivityResult>
-
-    /**
-     * Returns RxJava stream that emits Activity lifecycle state [Lifecycle.State].
-     */
-    abstract fun activityLifecycleState(): Observable<Lifecycle.State>
 
     /**
      * Returns RxJava stream that emits [FragmentStore] state changes.

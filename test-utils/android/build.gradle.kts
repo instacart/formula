@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(project(":formula-android"))
 
+    api(libs.coroutines.test)
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.test.core.ktx)
