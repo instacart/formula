@@ -2,11 +2,11 @@ package com.instacart.formula.android.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.ViewFactory
-import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> {
 
@@ -15,18 +15,16 @@ abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> 
         // Based-on: https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views#compose-in-fragments
         view.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
-        val outputRelay = MutableStateFlow(
-            value = initialModel(),
-        )
+        val outputState = mutableStateOf(initialModel())
         view.setContent {
-            val model = outputRelay.collectAsState().value
+            val model = outputState.value
             if (model != null) {
                 Content(model)
             }
         }
         return FeatureView(
             view = view,
-            setOutput = outputRelay::tryEmit,
+            setOutput = { outputState.value = it },
             lifecycleCallbacks = null,
         )
     }

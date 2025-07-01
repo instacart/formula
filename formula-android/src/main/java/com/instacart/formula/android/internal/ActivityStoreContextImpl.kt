@@ -27,14 +27,18 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
 
     private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
+
     private val fragmentStateUpdated = MutableSharedFlow<String>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        extraBufferCapacity = Int.MAX_VALUE,
     )
+
     private val activityResultRelay = MutableSharedFlow<ActivityResult>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
-    internal val fragmentStateRelay = MutableSharedFlow<FragmentState>(replay = 1)
+    internal val fragmentStateRelay = MutableSharedFlow<FragmentState>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     override fun activityLifecycleState(): StateFlow<Lifecycle.State> = lifecycleStates
 
