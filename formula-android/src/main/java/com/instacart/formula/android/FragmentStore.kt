@@ -5,6 +5,7 @@ import com.instacart.formula.android.events.FragmentLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
 import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.FragmentStoreFormula
+import com.instacart.formula.android.internal.getViewFactory
 import com.instacart.formula.android.utils.MainThreadDispatcher
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
@@ -14,6 +15,7 @@ import io.reactivex.rxjava3.core.Observable
  */
 class FragmentStore @PublishedApi internal constructor(
     val environment: FragmentEnvironment,
+    private val featureComponent: FeatureComponent<*>,
     private val formula: FragmentStoreFormula,
     internal val onPreRenderFragmentState: ((FragmentState) -> Unit)? = null,
     private val onFragmentLifecycleEvent: ((FragmentLifecycleEvent) -> Unit)? = null,
@@ -54,12 +56,11 @@ class FragmentStore @PublishedApi internal constructor(
             component: Component,
             features: Features<Component>
         ): FragmentStore {
-            val featureComponent = FeatureComponent(component, features.bindings)
             val fragmentEnvironment = environment ?: FragmentEnvironment()
-            val formula = FragmentStoreFormula(fragmentEnvironment, featureComponent)
             return FragmentStore(
                 environment = fragmentEnvironment,
-                formula = formula,
+                formula = FragmentStoreFormula(fragmentEnvironment),
+                featureComponent = FeatureComponent(component, features.bindings),
                 onPreRenderFragmentState = onPreRenderFragmentState,
                 onFragmentLifecycleEvent = onFragmentLifecycleEvent
             )
@@ -70,13 +71,34 @@ class FragmentStore @PublishedApi internal constructor(
         val EMPTY = Builder().build {  }
     }
 
+    private val features = mutableMapOf<FragmentId, FeatureEvent>()
+
     internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
-        formula.onLifecycleEffect(event)
+        val fragmentId = event.fragmentId
+        when (event) {
+            is FragmentLifecycleEvent.Added -> {
+                if (!features.contains(fragmentId)) {
+                    val feature = featureComponent.init(environment, fragmentId)
+                    features[fragmentId] = feature
+
+                    formula.fragmentAdded(feature)
+                }
+            }
+            is FragmentLifecycleEvent.Removed -> {
+                features.remove(fragmentId)
+                formula.fragmentRemoved(fragmentId)
+            }
+        }
+
         onFragmentLifecycleEvent?.invoke(event)
     }
 
     internal fun onVisibilityChanged(fragmentId: FragmentId, visible: Boolean) {
-        formula.onVisibilityChanged(fragmentId, visible)
+        if (visible) {
+            formula.fragmentVisible(fragmentId)
+        } else {
+            formula.fragmentHidden(fragmentId)
+        }
     }
 
     internal fun state(): Observable<FragmentState> {
@@ -84,5 +106,9 @@ class FragmentStore @PublishedApi internal constructor(
             defaultDispatcher = MainThreadDispatcher(),
         )
         return formula.toObservable(config)
+    }
+
+    internal fun getViewFactory(fragmentId: FragmentId): ViewFactory<Any>? {
+        return features.getViewFactory(environment, fragmentId)
     }
 }

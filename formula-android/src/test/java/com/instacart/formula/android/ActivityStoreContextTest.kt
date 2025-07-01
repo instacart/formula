@@ -3,25 +3,20 @@ package com.instacart.formula.android
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.internal.ActivityStoreContextImpl
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.rx3.asObservable
 import kotlinx.parcelize.Parcelize
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
 
 class ActivityStoreContextTest {
     class FakeActivity : FragmentActivity() {
-        fun fakeEvents(): Observable<String> = Observable.empty()
-
         fun doSomething() {}
     }
 
     private lateinit var context: ActivityStoreContextImpl<FakeActivity>
-    val fakeEventRelay = PublishRelay.create<String>()
 
     @Before fun setup() {
         context = ActivityStoreContextImpl()
@@ -53,6 +48,7 @@ class ActivityStoreContextTest {
     @Test fun `is fragment started`() {
         val contract = createContract()
         context.isFragmentStarted(contract)
+            .asObservable()
             .test()
             .apply {
                 val instance = FragmentId("", contract)
@@ -64,6 +60,7 @@ class ActivityStoreContextTest {
     @Test fun `is fragment resumed`() {
         val contract = createContract()
         context.isFragmentResumed(contract)
+            .asObservable()
             .test()
             .apply {
                 val instance = FragmentId("", contract)
@@ -77,9 +74,7 @@ class ActivityStoreContextTest {
     }
 
     private fun createFakeActivity(): FakeActivity {
-        val activity = mock<FakeActivity>()
-        whenever(activity.fakeEvents()).thenReturn(fakeEventRelay)
-        return activity
+        return mock<FakeActivity>()
     }
 
     @Parcelize
