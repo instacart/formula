@@ -34,7 +34,25 @@ allprojects {
 }
 
 subprojects {
-    val javaVersion = JavaVersion.VERSION_18
+
+    val libJavaVersion = JavaVersion.VERSION_18
+    val lintJavaVersion = JavaVersion.VERSION_17
+
+    /**
+     * We explicitly target JDK 17 for the lint module in order to be compatible with current Android Studio JRE version (JBR17),
+     * as lint checks compiled with JDK 18 are failing to be run by the code inspector.
+     *
+     * We should be able to update back to JDK 18 once AS ships with JBR21 (likely IDEA 2024.1):
+     * https://github.com/JetBrains/JetBrainsRuntime?tab=readme-ov-file#releases-based-on-jdk-21
+     */
+    fun Project.javaVersion(): JavaVersion {
+        return if (name == "formula-lint") {
+            logger.lifecycle("")
+            lintJavaVersion
+        } else {
+            libJavaVersion
+        }
+    }
 
     tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
         dokkaSourceSets.named("main") {
@@ -50,8 +68,8 @@ subprojects {
         compileSdk = 34
 
         compileOptions {
-            sourceCompatibility = javaVersion
-            targetCompatibility = javaVersion
+            sourceCompatibility = libJavaVersion
+            targetCompatibility = libJavaVersion
         }
     }
 
@@ -89,13 +107,13 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        sourceCompatibility = javaVersion.toString()
-        targetCompatibility = javaVersion.toString()
+        sourceCompatibility = project.javaVersion().toString()
+        targetCompatibility = project.javaVersion().toString()
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions {
-            jvmTarget = javaVersion.toString()
+            jvmTarget = project.javaVersion().toString()
         }
     }
 }
