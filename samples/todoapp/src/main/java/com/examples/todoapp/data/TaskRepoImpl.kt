@@ -1,35 +1,39 @@
 package com.examples.todoapp.data
 
 import com.examples.todoapp.tasks.TaskCompletedEvent
-import com.jakewharton.rxrelay3.BehaviorRelay
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
+import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TaskRepoImpl : TaskRepo {
-    private val localStore: BehaviorRelay<List<Task>> = BehaviorRelay.createDefault(
+    private val localStore = MutableStateFlow(
         listOf(
             Task("Mow the lawn."),
             Task("Go get a haircut.")
         )
     )
 
-    override fun tasks(): Observable<List<Task>> {
+    override fun tasks(): Flow<List<Task>> {
         // Fake initial network request
-        return Observable.timer(5, TimeUnit.SECONDS).observeOn(AndroidSchedulers.mainThread()).flatMap {
-            localStore
-        }
+        return flow<Unit> { delay(5.seconds) }.flatMapLatest { localStore }
     }
 
     override fun onTaskCompleted(event: TaskCompletedEvent) {
-        val updated = localStore.value!!.map {
-            if (it.id == event.taskId) {
-                it.copy(isCompleted = event.isCompleted)
-            } else {
-                it
+        localStore.update { taskList ->
+            taskList.map { task ->
+                if (task.id == event.taskId) {
+                    task.copy(isCompleted = event.isCompleted)
+                } else {
+                    task
+                }
             }
-        }
 
-        localStore.accept(updated)
+        }
     }
 }

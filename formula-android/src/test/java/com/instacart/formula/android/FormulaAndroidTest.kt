@@ -18,6 +18,7 @@ import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentActivity
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.withFormulaAndroid
+import kotlinx.coroutines.rx3.asObservable
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -102,7 +103,7 @@ class FormulaAndroidTest {
             }
         ) { interactor ->
             val activityLifecycleEvents = interactor
-                .selectEvents { it.activityLifecycleState() }
+                .selectEvents { it.activityLifecycleState().asObservable() }
                 .test()
 
             val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
@@ -124,7 +125,7 @@ class FormulaAndroidTest {
             }
         ) { interactor ->
             val activityResultEvents = interactor
-                .selectEvents { it.activityResults() }
+                .selectEvents { it.activityResults().asObservable() }
                 .test()
 
             val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)

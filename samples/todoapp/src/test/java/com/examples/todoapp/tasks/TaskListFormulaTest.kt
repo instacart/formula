@@ -4,7 +4,8 @@ import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.junit.Test
 
 class TaskListFormulaTest {
@@ -32,13 +33,15 @@ class TaskListFormulaTest {
     }
 
     class TaskRepoFake : TaskRepo {
-        override fun tasks(): Observable<List<Task>> {
-            return Observable.just(
-                listOf(
+
+        override fun tasks(): Flow<List<Task>> {
+            return flow {
+                val tasks = listOf(
                     Task("Mow the lawn."),
                     Task("Go get a haircut.")
                 )
-            )
+                emit(tasks)
+            }
         }
 
         override fun onTaskCompleted(event: TaskCompletedEvent) {

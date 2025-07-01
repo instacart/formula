@@ -13,6 +13,7 @@ import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.showFragment
 import com.instacart.testutils.android.withFormulaAndroid
 import io.reactivex.rxjava3.observers.TestObserver
+import kotlinx.coroutines.rx3.asObservable
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -84,10 +85,10 @@ class FragmentLifecycleStateTest {
     }
 
     private fun FormulaAndroidInteractor.startedEvents(key: FragmentKey): TestObserver<Boolean> {
-        return selectEvents { it.isFragmentStarted(key) }.test()
+        return selectEvents { it.isFragmentStarted(key).asObservable() }.test()
     }
 
     private fun FormulaAndroidInteractor.resumedEvents(key: FragmentKey): TestObserver<Boolean> {
-        return selectEvents { it.isFragmentResumed(key) }.test()
+        return selectEvents { it.isFragmentResumed(key).asObservable() }.test()
     }
 }
