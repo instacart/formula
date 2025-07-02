@@ -6,13 +6,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 
 /**
  * Activity manager connects [ActivityStore] and the [Activity].
  */
-@OptIn(DelicateCoroutinesApi::class)
 internal class ActivityManager<Activity : FragmentActivity>(
     private val delegate: ActivityStoreContextImpl<Activity>,
     private val store: ActivityStore<Activity>

@@ -29,6 +29,7 @@ dependencies {
     api(libs.compose.ui)
 
     api(libs.compose.rxjava3)
+    api(libs.rxrelay)
 
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
