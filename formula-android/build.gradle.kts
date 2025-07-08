@@ -30,6 +30,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.lifecycle.runtime.ktx)
 
+    api(libs.rxjava)
+    implementation(libs.rxrelay)
+
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.junit)

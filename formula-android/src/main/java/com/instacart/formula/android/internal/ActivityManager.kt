@@ -6,6 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
+import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.launch
 
 /**
@@ -16,9 +17,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    internal val stateSubscription = store.fragmentStore.state().subscribe { newState ->
-        delegate.fragmentStateRelay.tryEmit(newState)
-    }
+    internal val stateSubscription: Disposable = store
+        .fragmentStore
+        .state()
+        .subscribe(delegate.fragmentStateRelay::accept)
+
+    private var uiSubscription: Disposable? = null
+
     private var fragmentRenderView: FragmentFlowRenderView? = null
 
     fun onPreCreate(activity: Activity) {
@@ -39,14 +44,8 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
 
         val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
-        with(activity) {
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    delegate.fragmentState().collect {
-                        renderView.render(it)
-                    }
-                }
-            }
+        uiSubscription = delegate.fragmentState().subscribe {
+            renderView.render(it)
         }
     }
 
@@ -68,6 +67,9 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onActivityDestroyed(activity: Activity) {
+        uiSubscription?.dispose()
+        uiSubscription = null
+
         fragmentRenderView = null
 
         delegate.detachActivity(activity)

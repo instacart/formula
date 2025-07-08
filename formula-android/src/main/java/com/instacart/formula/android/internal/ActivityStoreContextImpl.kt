@@ -7,6 +7,8 @@ import com.instacart.formula.android.FragmentState
 import com.instacart.formula.android.FragmentKey
 import com.instacart.formula.android.FragmentId
 import com.instacart.formula.android.ActivityStoreContext
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,10 +26,10 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
-    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
 
     private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
 
+    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
     private val fragmentStateUpdated = MutableSharedFlow<String>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
@@ -35,16 +37,14 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private val activityResultRelay = MutableSharedFlow<ActivityResult>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
-    internal val fragmentStateRelay = MutableSharedFlow<FragmentState>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+
+    internal val fragmentStateRelay: BehaviorRelay<FragmentState> = BehaviorRelay.create()
 
     override fun activityLifecycleState(): StateFlow<Lifecycle.State> = lifecycleStates
 
     override fun activityResults(): Flow<ActivityResult> = activityResultRelay
 
-    override fun fragmentState(): Flow<FragmentState> = fragmentStateRelay
+    override fun fragmentState(): Observable<FragmentState> = fragmentStateRelay
 
     override fun isFragmentStarted(tag: String): Flow<Boolean> {
         return fragmentLifecycleState(tag)

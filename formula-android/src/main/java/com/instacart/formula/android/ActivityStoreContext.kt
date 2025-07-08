@@ -3,6 +3,7 @@ package com.instacart.formula.android
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -28,7 +29,7 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     /**
      * Returns RxJava stream that emits [FragmentStore] state changes.
      */
-    abstract fun fragmentState(): Flow<FragmentState>
+    abstract fun fragmentState(): Observable<FragmentState>
 
     /**
      * Returns RxJava stream that emits true if fragment with a specific [tag] has
