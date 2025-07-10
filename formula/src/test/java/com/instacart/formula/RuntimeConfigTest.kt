@@ -5,12 +5,6 @@ import org.junit.Test
 
 class RuntimeConfigTest {
     @Test
-    fun `validation is not enabled by default`() {
-        val config = RuntimeConfig()
-        assertThat(config.isValidationEnabled).isFalse()
-    }
-
-    @Test
     fun `default dispatcher is null`() {
         val config = RuntimeConfig()
         assertThat(config.defaultDispatcher).isNull()
