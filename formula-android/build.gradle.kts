@@ -35,6 +35,7 @@ dependencies {
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.junit)
+    testImplementation(libs.coroutines.test)
     testImplementation(libs.espresso.core)
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.mockito.core)

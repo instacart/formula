@@ -16,13 +16,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    internal val stateSubscription: Disposable
+    internal val stateSubscription: Disposable = store
+        .fragmentStore
+        .state()
+        .subscribe(delegate.fragmentStateRelay::accept)
+
     private var uiSubscription: Disposable? = null
     private var fragmentRenderView: FragmentFlowRenderView? = null
-
-    init {
-        stateSubscription = subscribeToFragmentStateChanges()
-    }
 
     fun onPreCreate(activity: Activity) {
         // Give store a chance to initialize the activity.
@@ -85,17 +85,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     fun dispose() {
         stateSubscription.dispose()
         store.onCleared?.invoke()
-    }
-
-    fun viewFactory(fragment: FormulaFragment): ViewFactory<Any>? {
-        return fragmentRenderView?.viewFactory(fragment)
-    }
-
-    private fun subscribeToFragmentStateChanges(): Disposable {
-        return store
-            .fragmentStore
-            .state()
-            .subscribe(delegate.fragmentStateRelay::accept)
     }
 
     private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
