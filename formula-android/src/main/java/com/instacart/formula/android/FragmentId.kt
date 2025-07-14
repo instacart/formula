@@ -1,8 +1,8 @@
 package com.instacart.formula.android
 
 import androidx.fragment.app.Fragment
+import com.instacart.formula.android.internal.EmptyFragmentKey
 import com.instacart.formula.android.internal.getFragmentInstanceId
-import com.instacart.formula.android.internal.getFragmentKey
 
 /**
  * An object used to identify a fragment. It combines both a user generated [key] and
@@ -22,8 +22,18 @@ data class FragmentId(
  * Gets a [FragmentId] for a given [Fragment].
  */
 fun Fragment.getFormulaFragmentId(): FragmentId {
+    val key = getFragmentKey()
     return FragmentId(
-        instanceId = getFragmentInstanceId(),
-        key = getFragmentKey()
+        instanceId = key.getOrInitInstanceId(),
+        key = key
     )
+}
+
+internal fun Fragment.getFragmentKey(): FragmentKey {
+    val fragment = this as? BaseFormulaFragment<*>
+    val key = fragment?.getFragmentKey() ?: EmptyFragmentKey(tag.orEmpty())
+    if (key.getInstanceId() == null) {
+        key.setInstanceId(getFragmentInstanceId())
+    }
+    return key
 }

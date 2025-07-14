@@ -85,5 +85,5 @@ class ActivityStoreContextTest {
     @Parcelize
     private data class TestFragmentKey(
         override val tag: String = "fake tag",
-    ): FragmentKey
+    ): FragmentKey()
 }

@@ -3,9 +3,6 @@ package com.instacart.formula.android.internal
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentInspector
-import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.BaseFormulaFragment
 import com.instacart.formula.android.FormulaFragment
 import java.util.UUID
 
@@ -17,11 +14,6 @@ internal object FragmentLifecycle {
     internal fun shouldTrack(fragment: Fragment): Boolean {
         return !fragment.retainInstance && !FragmentInspector.isHeadless(fragment)
     }
-}
-
-internal fun Fragment.getFragmentKey(): FragmentKey {
-    val fragment = this as? BaseFormulaFragment<*>
-    return fragment?.getFragmentKey() ?: EmptyFragmentKey(tag.orEmpty())
 }
 
 /**

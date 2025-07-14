@@ -6,4 +6,4 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TestKey(
     override val tag: String = "test key",
-) : FragmentKey
+) : FragmentKey()

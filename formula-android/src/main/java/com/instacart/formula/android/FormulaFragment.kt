@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.instacart.formula.android.internal.getFragmentInstanceId
 import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
@@ -17,16 +18,19 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         fun newInstance(key: FragmentKey): FormulaFragment {
             return FormulaFragment().apply {
                 getOrSetArguments().putParcelable(ARG_CONTRACT, key)
+                getOrSetArguments().putString(ARG_FORMULA_ID, key.getOrInitInstanceId())
             }
         }
     }
 
-    private val key: FragmentKey by lazy(LazyThreadSafetyMode.NONE) {
-        requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
-    }
-
     private val formulaFragmentId: FragmentId by lazy {
         getFormulaFragmentId()
+    }
+
+    private val key: FragmentKey by lazy(LazyThreadSafetyMode.NONE) {
+        val fragmentKey = requireNotNull(requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT))
+        fragmentKey.setInstanceId(getFragmentInstanceId())
+        fragmentKey
     }
 
     internal lateinit var fragmentStore: FragmentStore

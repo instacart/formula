@@ -7,4 +7,4 @@ import kotlinx.parcelize.Parcelize
 data class StateFlowKey(
     val initAsync: Boolean,
     override val tag: String = "state flow key",
-) : FragmentKey
+) : FragmentKey()

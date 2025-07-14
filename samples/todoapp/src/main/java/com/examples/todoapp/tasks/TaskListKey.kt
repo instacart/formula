@@ -6,4 +6,4 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TaskListKey(
     override val tag: String = "task list",
-) : FragmentKey
+) : FragmentKey()

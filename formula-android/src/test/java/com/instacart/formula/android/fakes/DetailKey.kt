@@ -7,4 +7,4 @@ import kotlinx.parcelize.Parcelize
 data class DetailKey(
     val id: Int,
     override val tag: String = "detail-$id",
-) : FragmentKey
+) : FragmentKey()

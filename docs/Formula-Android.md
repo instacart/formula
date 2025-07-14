@@ -28,7 +28,7 @@ use. You can also use it to add arguments that the fragment instance needs.
 @Parcelize
 data class CounterKey(
     override val tag: String = "counter"
-) : FragmentKey
+) : FragmentKey()
 ```
 
 ### Define a feature factory
@@ -119,7 +119,7 @@ value to the `CounterFormula` used in the previous examples. To accomplish that,
 data class CounterKey(
     val initialCount: Int = 0,    
     override val tag: String = "counter"
-) : FragmentKey
+) : FragmentKey()
 ```
 
 You can access the `CounterKey` within `CounterFeatureFactory`
