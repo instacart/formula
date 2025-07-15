@@ -13,15 +13,15 @@ import com.instacart.formula.android.internal.getFragmentKey
  *
  * @param key Fragment key used to create this fragment.
  */
-data class FragmentId(
+data class FragmentId<out Type : FragmentKey>(
     val instanceId: String,
-    val key: FragmentKey
+    val key: Type,
 )
 
 /**
  * Gets a [FragmentId] for a given [Fragment].
  */
-fun Fragment.getFormulaFragmentId(): FragmentId {
+fun Fragment.getFormulaFragmentId(): FragmentId<*> {
     return FragmentId(
         instanceId = getFragmentInstanceId(),
         key = getFragmentKey()

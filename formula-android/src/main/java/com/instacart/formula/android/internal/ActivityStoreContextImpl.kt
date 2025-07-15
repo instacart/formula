@@ -84,7 +84,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun updateFragmentLifecycleState(id: FragmentId, newState: Lifecycle.State) {
+    fun updateFragmentLifecycleState(id: FragmentId<*>, newState: Lifecycle.State) {
         // TODO: should probably start using [id] instead of [contract] here.
         val contract = id.key
         if (newState == Lifecycle.State.DESTROYED) {

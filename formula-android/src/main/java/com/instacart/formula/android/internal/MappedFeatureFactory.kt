@@ -13,7 +13,6 @@ internal class MappedFeatureFactory<Component, Dependencies, Key : FragmentKey>(
         return delegate.initialize(
             dependencies = toDependencies(dependencies),
             fragmentId = fragmentId,
-            key = key,
         )
     }
 }

@@ -39,9 +39,10 @@ abstract class FeatureFactory<in Dependencies, in Key : FragmentKey> {
 
     inner class Params(
         val dependencies: @UnsafeVariance Dependencies,
-        val fragmentId: FragmentId,
-        val key: @UnsafeVariance Key,
-    )
+        val fragmentId: FragmentId<@UnsafeVariance Key>,
+    ) {
+        val key = fragmentId.key
+    }
 
     /**
      * Initializes the [Feature] using [Params] provided.
@@ -51,7 +52,7 @@ abstract class FeatureFactory<in Dependencies, in Key : FragmentKey> {
     /**
      * Initializes state observable and a view factory for a specific [key].
      */
-    fun initialize(dependencies: Dependencies, fragmentId: FragmentId, key: Key): Feature {
-        return Params(dependencies, fragmentId, key).initialize()
+    fun initialize(dependencies: Dependencies, fragmentId: FragmentId<@UnsafeVariance Key>): Feature {
+        return Params(dependencies, fragmentId).initialize()
     }
 }
