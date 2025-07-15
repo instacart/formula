@@ -25,7 +25,7 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
     }
 
-    private val formulaFragmentId: FragmentId by lazy {
+    private val formulaFragmentId: FragmentId<*> by lazy {
         getFormulaFragmentId()
     }
 

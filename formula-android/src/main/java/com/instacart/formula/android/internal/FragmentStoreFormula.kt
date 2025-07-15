@@ -39,7 +39,7 @@ internal class FragmentStoreFormula(
         }
     }
 
-    fun fragmentRemoved(fragmentId: FragmentId) {
+    fun fragmentRemoved(fragmentId: FragmentId<*>) {
         stateChanges.tryEmit {
             val updated = state.copy(
                 activeIds = state.activeIds.minus(fragmentId),
@@ -50,7 +50,7 @@ internal class FragmentStoreFormula(
         }
     }
 
-    fun fragmentVisible(fragmentId: FragmentId) {
+    fun fragmentVisible(fragmentId: FragmentId<*>) {
         stateChanges.tryEmit {
             if (state.visibleIds.contains(fragmentId)) {
                 // TODO: should we log this duplicate visibility event?
@@ -61,7 +61,7 @@ internal class FragmentStoreFormula(
         }
     }
 
-    fun fragmentHidden(fragmentId: FragmentId) {
+    fun fragmentHidden(fragmentId: FragmentId<*>) {
         stateChanges.tryEmit {
             transition(state.copy(visibleIds = state.visibleIds.minus(fragmentId)))
         }

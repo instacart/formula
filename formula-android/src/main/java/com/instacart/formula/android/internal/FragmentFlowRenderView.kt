@@ -28,8 +28,8 @@ import java.util.LinkedList
 internal class FragmentFlowRenderView(
     private val activity: FragmentActivity,
     private val store: FragmentStore,
-    private val onLifecycleState: (FragmentId, Lifecycle.State) -> Unit,
-    private val onFragmentViewStateChanged: (FragmentId, isVisible: Boolean) -> Unit
+    private val onLifecycleState: (FragmentId<*>, Lifecycle.State) -> Unit,
+    private val onFragmentViewStateChanged: (FragmentId<*>, isVisible: Boolean) -> Unit
 ) {
     private var fragmentState: FragmentState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()

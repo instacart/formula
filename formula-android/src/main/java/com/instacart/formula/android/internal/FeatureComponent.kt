@@ -11,7 +11,7 @@ class FeatureComponent<in Component>(
     private val bindings: List<FeatureBinding<Component, *>>,
 ) {
 
-    fun init(environment: FragmentEnvironment, fragmentId: FragmentId): FeatureEvent {
+    fun init(environment: FragmentEnvironment, fragmentId: FragmentId<*>): FeatureEvent {
         val initialized = try {
             bindings.firstNotNullOfOrNull { binding ->
                 if (binding.type.isInstance(fragmentId.key)) {
@@ -20,7 +20,6 @@ class FeatureComponent<in Component>(
                         fragmentId = fragmentId,
                         factory = featureFactory,
                         dependencies = component,
-                        key = fragmentId.key,
                     )
                     FeatureEvent.Init(fragmentId, feature)
                 } else {

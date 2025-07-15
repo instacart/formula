@@ -81,7 +81,7 @@ class FragmentStore @PublishedApi internal constructor(
         val EMPTY = Builder().build {  }
     }
 
-    private val features = mutableMapOf<FragmentId, FeatureEvent>()
+    private val features = mutableMapOf<FragmentId<*>, FeatureEvent>()
 
     internal fun onLifecycleEvent(event: FragmentLifecycleEvent) {
         val fragmentId = event.fragmentId
@@ -103,7 +103,7 @@ class FragmentStore @PublishedApi internal constructor(
         onFragmentLifecycleEvent?.invoke(event)
     }
 
-    internal fun onVisibilityChanged(fragmentId: FragmentId, visible: Boolean) {
+    internal fun onVisibilityChanged(fragmentId: FragmentId<*>, visible: Boolean) {
         if (visible) {
             formula.fragmentVisible(fragmentId)
         } else {
@@ -118,7 +118,7 @@ class FragmentStore @PublishedApi internal constructor(
         return formula.toObservable(config)
     }
 
-    internal fun getViewFactory(fragmentId: FragmentId): ViewFactory<Any>? {
+    internal fun getViewFactory(fragmentId: FragmentId<*>): ViewFactory<Any>? {
         return features.getViewFactory(environment, fragmentId)
     }
 }

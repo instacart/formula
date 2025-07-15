@@ -13,7 +13,7 @@ internal inline fun <T> List<T>.forEachIndices(action: (T) -> Unit) {
     }
 }
 
-internal fun Map<FragmentId, FeatureEvent>.getViewFactory(environment: FragmentEnvironment, fragmentId: FragmentId): ViewFactory<Any>? {
+internal fun Map<FragmentId<*>, FeatureEvent>.getViewFactory(environment: FragmentEnvironment, fragmentId: FragmentId<*>): ViewFactory<Any>? {
     return try {
         findViewFactoryOrThrow(fragmentId)
     } catch (e: Throwable) {
@@ -22,8 +22,8 @@ internal fun Map<FragmentId, FeatureEvent>.getViewFactory(environment: FragmentE
     }
 }
 
-private fun Map<FragmentId, FeatureEvent>.findViewFactoryOrThrow(
-    fragmentId: FragmentId
+private fun Map<FragmentId<*>, FeatureEvent>.findViewFactoryOrThrow(
+    fragmentId: FragmentId<*>
 ): ViewFactory<Any> {
     val key = fragmentId.key
     val featureEvent = this[fragmentId] ?: throw IllegalStateException("Could not find feature for $key.")

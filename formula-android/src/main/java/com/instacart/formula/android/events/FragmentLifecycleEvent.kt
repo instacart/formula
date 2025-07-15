@@ -8,14 +8,14 @@ import com.instacart.formula.android.FragmentId
  */
 sealed class FragmentLifecycleEvent {
 
-    abstract val fragmentId: FragmentId
+    abstract val fragmentId: FragmentId<*>
 
     data class Added(
-        override val fragmentId: FragmentId
+        override val fragmentId: FragmentId<*>
     ) : FragmentLifecycleEvent()
 
     data class Removed(
-        override val fragmentId: FragmentId,
+        override val fragmentId: FragmentId<*>,
         val lastState: Any? = null
     ) : FragmentLifecycleEvent()
 }

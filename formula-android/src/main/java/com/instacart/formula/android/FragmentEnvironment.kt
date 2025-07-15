@@ -15,19 +15,18 @@ data class FragmentEnvironment(
          * Instantiates the feature.
          */
         open fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
-            fragmentId: FragmentId,
+            fragmentId: FragmentId<KeyT>,
             factory: FeatureFactory<DependenciesT, KeyT>,
             dependencies: DependenciesT,
-            key: KeyT,
         ): Feature {
-            return factory.initialize(dependencies, fragmentId, key)
+            return factory.initialize(dependencies, fragmentId)
         }
 
         /**
          * Called from [FormulaFragment.onCreateView] to instantiate the view.
          */
         open fun createView(
-            fragmentId: FragmentId,
+            fragmentId: FragmentId<*>,
             viewFactory: ViewFactory<Any>,
             params: ViewFactory.Params,
         ): FeatureView<Any> {
@@ -37,7 +36,7 @@ data class FragmentEnvironment(
         /**
          * Called when we are ready to apply [output] to the view.
          */
-        open fun setOutput(fragmentId: FragmentId, output: Any, applyOutputToView: (Any) -> Unit) {
+        open fun setOutput(fragmentId: FragmentId<*>, output: Any, applyOutputToView: (Any) -> Unit) {
             applyOutputToView(output)
         }
     }
