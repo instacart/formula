@@ -20,7 +20,7 @@ class GetViewFactoryTest {
         )
 
         val fragmentId = FragmentId("test", MainKey(1))
-        val features = mapOf<FragmentId, FeatureEvent>()
+        val features = mapOf<FragmentId<*>, FeatureEvent>()
 
         val viewFactory = features.getViewFactory(environment, fragmentId)
         assertThat(viewFactory).isNull()
@@ -37,7 +37,7 @@ class GetViewFactoryTest {
         )
 
         val fragmentId = FragmentId("test", MainKey(1))
-        val features = mapOf(
+        val features: Map<FragmentId<*>, FeatureEvent> = mapOf(
             fragmentId to FeatureEvent.MissingBinding(
                 id = fragmentId,
             )
@@ -58,7 +58,7 @@ class GetViewFactoryTest {
         )
 
         val fragmentId = FragmentId("test", MainKey(1))
-        val features = mapOf(
+        val features: Map<FragmentId<*>, FeatureEvent> = mapOf(
             fragmentId to FeatureEvent.Failure(
                 id = fragmentId,
                 error = IllegalStateException("test")
@@ -76,7 +76,7 @@ class GetViewFactoryTest {
     @Test fun `getViewFactory returns valid view factory`() {
         val fragmentId = FragmentId("test", MainKey(1))
         val expectedViewFactory = TestViewFactory<Any>()
-        val features = mapOf(
+        val features: Map<FragmentId<*>, FeatureEvent> = mapOf(
             fragmentId to FeatureEvent.Init(
                 id = fragmentId,
                 feature = Feature(

@@ -8,10 +8,10 @@ package com.instacart.formula.android
  * @param outputs Last emitted output of each active [FragmentKey].
  */
 data class FragmentState(
-    val activeIds: List<FragmentId> = emptyList(),
-    val visibleIds: List<FragmentId> = emptyList(),
-    val outputs: Map<FragmentId, FragmentOutput> = emptyMap(),
-    internal val features: Map<FragmentId, FeatureEvent> = emptyMap(),
+    val activeIds: List<FragmentId<*>> = emptyList(),
+    val visibleIds: List<FragmentId<*>> = emptyList(),
+    val outputs: Map<FragmentId<*>, FragmentOutput> = emptyMap(),
+    internal val features: Map<FragmentId<*>, FeatureEvent> = emptyMap(),
 ) {
     fun visibleOutput() = visibleIds.lastOrNull()?.let { outputs[it] }
 }

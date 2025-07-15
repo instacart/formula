@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 
 class FeatureObservableAction internal constructor(
     private val fragmentEnvironment: FragmentEnvironment,
-    private val fragmentId: FragmentId,
+    private val fragmentId: FragmentId<*>,
     private val feature: RxJavaFeature,
 ) : Action<Any> {
 

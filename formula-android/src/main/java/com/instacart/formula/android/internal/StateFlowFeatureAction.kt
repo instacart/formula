@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 class StateFlowFeatureAction internal constructor(
     private val asyncDispatcher: CoroutineDispatcher,
     private val fragmentEnvironment: FragmentEnvironment,
-    private val fragmentId: FragmentId,
+    private val fragmentId: FragmentId<*>,
     private val feature: StateFlowFeature,
 ) : Action<Any> {
 

@@ -7,7 +7,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.android.FragmentId
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class StateFlowFormula: Formula<FragmentId, String, String>() {
+class StateFlowFormula: Formula<FragmentId<*>, String, String>() {
     private val sharedFlow = MutableSharedFlow<Pair<String, String>>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
@@ -16,11 +16,11 @@ class StateFlowFormula: Formula<FragmentId, String, String>() {
         sharedFlow.tryEmit(instanceId to state)
     }
 
-    override fun initialState(input: FragmentId): String {
+    override fun initialState(input: FragmentId<*>): String {
         return ""
     }
 
-    override fun Snapshot<FragmentId, String>.evaluate(): Evaluation<String> {
+    override fun Snapshot<FragmentId<*>, String>.evaluate(): Evaluation<String> {
         return Evaluation(
             output = state,
             actions = context.actions {

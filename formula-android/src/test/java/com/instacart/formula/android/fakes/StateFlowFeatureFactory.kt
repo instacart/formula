@@ -9,7 +9,7 @@ import com.instacart.testutils.android.StateFlowKey
 import com.instacart.testutils.android.TestViewFactory
 
 class StateFlowFeatureFactory(
-    private val formula: IFormula<FragmentId, Any>
+    private val formula: IFormula<FragmentId<*>, Any>
 ) : FeatureFactory<Unit, StateFlowKey>() {
     override fun Params.initialize(): Feature {
         return Feature(
