@@ -29,7 +29,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
     )
 
-    private val isValidationEnabled = config.isValidationEnabled
+    private var isValidationEnabled = false
     private val inspector = FormulaPlugins.inspector(
         type = formula.type(),
         local = config.inspector,
@@ -115,6 +115,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
         synchronizedUpdateQueue.postUpdate(dispatcher ?: defaultDispatcher) {
             onInputInternal(input)
         }
+    }
+
+    fun setValidationEnabled(enabled: Boolean) {
+        isValidationEnabled = enabled
     }
 
     private fun isKeyValid(input: Input): Boolean {
