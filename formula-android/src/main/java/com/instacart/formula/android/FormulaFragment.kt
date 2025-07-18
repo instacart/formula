@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
 
-class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
+class FormulaFragment : Fragment() {
     companion object {
         private const val ARG_CONTRACT = "formula fragment contract"
         internal const val ARG_FORMULA_ID = "formula:fragment:id"
@@ -111,16 +111,16 @@ class FormulaFragment : Fragment(), BaseFormulaFragment<Any> {
         featureView = null
     }
 
-    override fun setState(state: Any) {
+    fun setState(state: Any) {
         output = state
         tryToSetState()
     }
 
-    override fun currentState(): Any? {
+    fun currentState(): Any? {
         return output
     }
 
-    override fun getFragmentKey(): FragmentKey {
+    fun getFragmentKey(): FragmentKey {
         return key
     }
 
