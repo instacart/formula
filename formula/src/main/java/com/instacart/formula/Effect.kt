@@ -1,5 +1,6 @@
 package com.instacart.formula
 
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Plugin
 
 /**
@@ -13,8 +14,18 @@ import com.instacart.formula.plugin.Plugin
  */
 data class Effect(
     val type: Type,
-    val executable: () -> Unit,
-) {
+    private val formulaType: Class<*>,
+    private val executable: () -> Unit,
+) : () -> Unit {
+
+    override fun invoke() {
+        try {
+            executable()
+        } catch (throwable: Exception) {
+            val error = FormulaError.EffectError(formulaType, throwable)
+            FormulaPlugins.onError(error)
+        }
+    }
 
     /**
      * Defines the execution model of the effect such as timing and threading. Take a

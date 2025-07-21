@@ -18,7 +18,7 @@ class TransitionUtilsTest {
     }
 
     @Test fun `transition with messages is not empty`() {
-        val effect = Effect(Effect.Main) {}
+        val effect = Effect(Effect.Main, Unit::class.java) {}
         val transition = Transition.Result.OnlyEffects(effects = listOf(effect))
         assertThat(TransitionUtils.isEmpty(transition)).isFalse()
     }

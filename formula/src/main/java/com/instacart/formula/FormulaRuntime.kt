@@ -340,7 +340,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 Effect.Main -> Dispatcher.Main
                 Effect.Background -> Dispatcher.Background
             }
-            dispatcher.dispatch(effect.executable)
+            dispatcher.dispatch(effect)
         }
         isExecutingEffects = false
     }

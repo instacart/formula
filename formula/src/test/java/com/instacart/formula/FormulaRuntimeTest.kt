@@ -91,6 +91,7 @@ import com.instacart.formula.types.OnInitActionFormula
 import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Ignore
 import org.junit.Rule
@@ -1325,6 +1326,40 @@ class FormulaRuntimeTest {
 
             assertThat(plugin.errors).hasSize(1)
             assertThat(plugin.errors.first().error.message).contains("Test exception")
+        }
+    }
+
+    @Test
+    fun `formula does not crash when an effect throws an exception`() {
+        withPlugin(TestPlugin()) { plugin ->
+            val events = MutableSharedFlow<Int>(replay = 0, extraBufferCapacity = Int.MAX_VALUE)
+            val formula = object : Formula<Unit, Int, Int>() {
+                override fun initialState(input: Unit): Int = 0
+
+                override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+                    return Evaluation(
+                        output = state,
+                        actions = context.actions {
+                            Action.fromFlow { events }.onEvent {
+                                transition(it) {
+                                    throw IllegalStateException("Test exception $it")
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            formula.test()
+                .input(Unit)
+                .apply { events.tryEmit(1) }
+                .apply { events.tryEmit(2) }
+                .assertNoErrors()
+                .assertOutputCount(3)
+            assertThat(plugin.errors).hasSize(2)
+
+            assertThat(plugin.errors[0].error.message).contains("Test exception 1")
+            assertThat(plugin.errors[1].error.message).contains("Test exception 2")
         }
     }
 

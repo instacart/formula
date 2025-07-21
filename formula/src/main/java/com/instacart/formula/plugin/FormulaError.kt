@@ -13,6 +13,14 @@ sealed class FormulaError {
     ): FormulaError()
 
     /**
+     * An unhandled error occurred during the execution of an effect.
+     */
+    data class EffectError(
+        override val formula: Class<*>,
+        override val error: Throwable,
+    ): FormulaError()
+
+    /**
      * An unhandled error occurred during formula run.
      */
     data class Unhandled(
