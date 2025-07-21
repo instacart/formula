@@ -149,7 +149,7 @@ internal class ActionManager(
 
     private fun finishAction(action: DeferredAction<*>) {
         inspector?.onActionFinished(manager.formulaType, action)
-        action.tearDown()
+        action.tearDown(manager.formulaType.java)
         action.listener = null
     }
 

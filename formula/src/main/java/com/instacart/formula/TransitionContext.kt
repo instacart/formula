@@ -10,6 +10,7 @@ import com.instacart.formula.internal.toResult
  */
 interface TransitionContext<out Input, State> {
 
+    val formulaType: Class<*>
     val input: Input
     val state: State
 
@@ -50,7 +51,7 @@ interface TransitionContext<out Input, State> {
         effect: (() -> Unit)?,
     ): Transition.Result.Stateful<State> {
         val effects = if (effect != null) {
-            listOf(Effect(effectType, effect))
+            listOf(Effect(effectType, formulaType, effect))
         } else {
             emptyList()
         }
@@ -78,7 +79,7 @@ interface TransitionContext<out Input, State> {
         return if (effect == null) {
             Transition.Result.None
         } else {
-            val effectList = listOf(Effect(effectType, effect))
+            val effectList = listOf(Effect(effectType, formulaType, effect))
             Transition.Result.OnlyEffects(effectList)
         }
     }
@@ -112,7 +113,7 @@ interface TransitionContext<out Input, State> {
                 combine(this, transition.toResult(this@TransitionContext, event))
             }
             is Transition.Result.Stateful -> {
-                combine(this, transition.toResult(DelegateTransitionContext(input, this.state), event))
+                combine(this, transition.toResult(DelegateTransitionContext(formulaType, input, this.state), event))
             }
         }
     }

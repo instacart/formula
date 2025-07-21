@@ -11,7 +11,7 @@ class TransitionApiTest {
 
     @Test fun `none transition`() {
         val transition = Transition<Unit, Int, Unit> { none() }
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit)
+        val result = transition.toResult(delegateTransitionContext(), Unit)
         assertThat(result).isEqualTo(Transition.Result.None)
     }
 
@@ -21,7 +21,7 @@ class TransitionApiTest {
     }
 
     @Test fun `state transition result with effect type but null effect`() {
-        val result = DelegateTransitionContext(Unit, 0)
+        val result = delegateTransitionContext()
             .transition(1, Effect.Unconfined, null)
 
         assertThat(result.state).isEqualTo(1)
@@ -29,14 +29,14 @@ class TransitionApiTest {
     }
 
     @Test fun `transition returns null if effect is null`() {
-        val result = DelegateTransitionContext(Unit, 0)
+        val result = delegateTransitionContext()
             .transition(Effect.Unconfined, null)
         assertThat(result).isEqualTo(Transition.Result.None)
     }
 
     @Test fun `stateful transition`() {
         val transition = Transition<Unit, Int, Unit> { transition(state + 1) }
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
     }
 
@@ -48,7 +48,7 @@ class TransitionApiTest {
             }
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
@@ -63,7 +63,7 @@ class TransitionApiTest {
             }
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit)
+        val result = transition.toResult(delegateTransitionContext(), Unit)
         result.assertAndExecuteEffects()
         testListener.assertTimesCalled(1)
     }
@@ -73,7 +73,7 @@ class TransitionApiTest {
         val transition = Transition<Unit, Int, Unit> {
             delegate(AddTransition(), 5)
         }
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(5)
     }
 
@@ -82,7 +82,7 @@ class TransitionApiTest {
             none().andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
     }
 
@@ -93,7 +93,7 @@ class TransitionApiTest {
             result.andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
 
         result.assertAndExecuteEffects()
@@ -105,7 +105,7 @@ class TransitionApiTest {
             transition(state + 1).andThen(AddTransition(), 1)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(2)
     }
 
@@ -115,7 +115,7 @@ class TransitionApiTest {
             transition(effect = effect).andThen { none() }
         }
 
-        transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertAndExecuteEffects()
+        transition.toResult(delegateTransitionContext(), Unit).assertAndExecuteEffects()
         effect.assertTimesCalled(1)
     }
 
@@ -127,7 +127,7 @@ class TransitionApiTest {
                 transition(effect = effect)
             }
         }
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
         result.assertAndExecuteEffects()
 
@@ -141,7 +141,7 @@ class TransitionApiTest {
             delegate(incrementAndNotify).andThen(incrementAndNotify)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(2)
 
         result.assertAndExecuteEffects()
@@ -153,7 +153,7 @@ class TransitionApiTest {
             (state + 1).andThen(AddTransition(), 2)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(3)
     }
 
@@ -163,8 +163,12 @@ class TransitionApiTest {
             (state + 1).andThen(empty)
         }
 
-        val result = transition.toResult(DelegateTransitionContext(Unit, 0), Unit).assertStateful()
+        val result = transition.toResult(delegateTransitionContext(), Unit).assertStateful()
         assertThat(result.state).isEqualTo(1)
+    }
+
+    private fun delegateTransitionContext(): DelegateTransitionContext<Unit, Int> {
+        return DelegateTransitionContext(Unit::class.java, Unit, 0)
     }
 
     private fun <State> Transition.Result<State>.assertStateful(): Transition.Result.Stateful<State> {
@@ -175,7 +179,7 @@ class TransitionApiTest {
     private fun <State> Transition.Result<State>.assertAndExecuteEffects() {
         assertThat(effects).isNotEmpty()
         for (effect in effects) {
-            effect.executable()
+            effect()
         }
     }
 

@@ -12,6 +12,7 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State>(
+    override val formulaType: Class<*>,
     override val input: Input,
     override val state: State,
     listeners: Listeners,

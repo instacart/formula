@@ -193,6 +193,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         val snapshot = SnapshotImpl(
+            formulaType = formulaType.java,
             input = input,
             state = state,
             listeners = listeners,
