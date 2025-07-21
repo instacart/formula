@@ -3,11 +3,11 @@ package com.instacart.formula.plugin
 import com.instacart.formula.FormulaPlugins
 
 
-fun withPlugin(plugin: Plugin?, continuation: () -> Unit) {
+fun <T: Plugin?> withPlugin(plugin: T, continuation: (T) -> Unit) {
     FormulaPlugins.setPlugin(plugin)
 
     try {
-        continuation()
+        continuation(plugin)
     } finally {
         FormulaPlugins.setPlugin(null)
     }

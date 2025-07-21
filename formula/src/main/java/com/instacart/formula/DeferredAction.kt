@@ -28,11 +28,23 @@ class DeferredAction<Event>(
             }
         }
 
-        cancelable = action.start(scope, emitter)
+        try {
+            cancelable = action.start(scope, emitter)
+        } catch (throwable: Throwable) {
+            val error = FormulaError.ActionError(formulaType, throwable)
+            FormulaPlugins.onError(error)
+        }
+
     }
 
-    internal fun tearDown() {
-        cancelable?.cancel()
+    internal fun tearDown(formulaType: Class<*>) {
+        try {
+            cancelable?.cancel()
+        } catch (throwable: Throwable) {
+            val error = FormulaError.ActionError(formulaType, throwable)
+            FormulaPlugins.onError(error)
+        }
+
         cancelable = null
     }
 
