@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import com.instacart.formula.android.BaseFormulaFragment
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.FragmentEnvironment
 import com.instacart.formula.android.FragmentState
@@ -104,7 +103,7 @@ internal class FragmentFlowRenderView(
 
             // Only trigger detach, when fragment is actually being removed from the backstack
             if (FragmentLifecycle.shouldTrack(f) && f.isRemoving && !activity.isChangingConfigurations) {
-                val formulaFragment = f as? BaseFormulaFragment<*>
+                val formulaFragment = f as? FormulaFragment
                 val event = FragmentLifecycleEvent.Removed(
                     fragmentId = f.getFormulaFragmentId(),
                     lastState = formulaFragment?.currentState(),
@@ -129,7 +128,7 @@ internal class FragmentFlowRenderView(
 
     fun onBackPressed(): Boolean {
         val lastFragment = visibleFragments.lastOrNull()
-        if (lastFragment is BaseFormulaFragment<*>) {
+        if (lastFragment is FormulaFragment) {
             val state = fragmentState?.outputs?.get(lastFragment.getFormulaFragmentId())?.renderModel
             return state is BackCallback && state.onBackPressed()
         }
@@ -143,9 +142,9 @@ internal class FragmentFlowRenderView(
     private fun updateVisibleFragments() {
         val state = fragmentState ?: return
         visibleFragments.forEachIndices { fragment ->
-            if (fragment is BaseFormulaFragment<*>) {
+            if (fragment is FormulaFragment) {
                 state.outputs[fragment.getFormulaFragmentId()]?.let {
-                    (fragment as BaseFormulaFragment<Any>).setState(it.renderModel)
+                    fragment.setState(it.renderModel)
                 }
             }
         }

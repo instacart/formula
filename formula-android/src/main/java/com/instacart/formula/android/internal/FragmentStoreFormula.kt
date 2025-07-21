@@ -20,7 +20,6 @@ internal class FragmentStoreFormula(
     private val asyncDispatcher: CoroutineDispatcher,
     private val environment: FragmentEnvironment,
 ) : Formula<Unit, FragmentState, FragmentState>(){
-
     private val stateChanges = MutableSharedFlow<Transition<Unit, FragmentState, Unit>>(
         extraBufferCapacity = Int.MAX_VALUE,
     )

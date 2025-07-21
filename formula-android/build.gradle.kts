@@ -28,14 +28,13 @@ dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
-
-    api(libs.rxandroid)
-    api(libs.rxrelay)
+    implementation(libs.lifecycle.runtime.ktx)
 
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.coroutines.test)
+    testImplementation(libs.coroutines.rx3)
     testImplementation(libs.espresso.core)
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.mockito.core)

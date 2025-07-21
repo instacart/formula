@@ -17,6 +17,8 @@
 - **Breaking**: Move coroutines logic into `formula` and removed `formula-coroutines` module
 - **Breaking**: Remove `ActivityStore.streams`
 - **Breaking**: Moving `FragmentEnvironment` to `FragmentStore`
+- **Breaking**: Remove `BaseFormulaFragment` interface from `formula-android` module.
+- **Breaking**: `ActivityStoreContext` migrated from RxJava to Kotlin coroutines
 
 ## [0.7.1] - June 28, 2022
 - **Breaking**: Rename `FragmentBindingBuilder` to `FragmentStoreBuilder`
