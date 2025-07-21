@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.ListInspector
+import com.instacart.formula.plugin.ListInspector
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector

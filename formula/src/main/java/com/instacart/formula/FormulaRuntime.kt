@@ -397,7 +397,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             delegate = this,
             formula = implementation,
             initialInput = initialInput,
-            formulaType = formula.type(),
+            formulaType = formula.type().java,
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
         )

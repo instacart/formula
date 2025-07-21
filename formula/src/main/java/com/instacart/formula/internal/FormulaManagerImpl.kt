@@ -11,7 +11,6 @@ import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.plugin.Dispatcher
 import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
-import kotlin.reflect.KClass
 
 /**
  * Responsible for keeping track of formula's state, running actions, and child formulas. The
@@ -27,7 +26,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    internal val formulaType: KClass<*>,
+    internal val formulaType: Class<*>,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
     val defaultDispatcher: Dispatcher,
@@ -193,7 +192,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         val snapshot = SnapshotImpl(
-            formulaType = formulaType.java,
+            formulaType = formulaType,
             input = input,
             state = state,
             listeners = listeners,
