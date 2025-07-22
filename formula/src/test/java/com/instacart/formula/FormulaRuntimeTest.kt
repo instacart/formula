@@ -1120,7 +1120,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -1189,7 +1189,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -1779,7 +1779,7 @@ class FormulaRuntimeTest {
                 throw java.lang.IllegalStateException("crashed")
             }
         }
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error?.message).isEqualTo("crashed")
     }
 
