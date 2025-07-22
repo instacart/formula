@@ -30,14 +30,6 @@ object FormulaPlugins {
         plugin?.onError(error)
     }
 
-    fun onDuplicateChildKey(
-        parentFormulaType: Class<*>,
-        childFormulaType: Class<*>,
-        key: Any,
-    ) {
-       plugin?.onDuplicateChildKey(parentFormulaType, childFormulaType, key)
-    }
-
     fun mainThreadDispatcher(): Dispatcher {
         return plugin?.mainThreadDispatcher() ?: Dispatcher.None
     }

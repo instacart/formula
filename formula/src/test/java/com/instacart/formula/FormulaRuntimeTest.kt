@@ -10,6 +10,7 @@ import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.TestPlugin
 import com.instacart.formula.internal.Try
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.plugin.withPlugin
@@ -814,7 +815,8 @@ class FormulaRuntimeTest {
             }
         }
 
-        parentFormula.test().input(Unit).output {
+        // Need failOnError to avoid test failing due to duplicate child errors
+        parentFormula.test(failOnError = false).input(Unit).output {
             assertThat(this).isEqualTo(5)
         }
     }
@@ -1423,22 +1425,10 @@ class FormulaRuntimeTest {
         assertThat(error).isNull()
     }
 
-    @Test fun `when child formulas with duplicate key are added, plugin is notified`() {
-        val duplicateKeys = mutableListOf<Any>()
-
-        FormulaPlugins.setPlugin(object : Plugin {
-            override fun onDuplicateChildKey(
-                parentType: Class<*>,
-                childFormulaType: Class<*>,
-                key: Any
-            ) {
-                duplicateKeys.add(key)
-            }
-        })
-
+    @Test fun `when child formulas with duplicate key are added, plugin is notified`() = withPlugin(TestPlugin()) {
         val result = Try {
             val formula = DynamicParentFormula()
-            formula.test().input(Unit)
+            formula.test(failOnError = false).input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
@@ -1448,8 +1438,11 @@ class FormulaRuntimeTest {
         assertThat(error).isNull()
 
         // Should log only once
-        assertThat(duplicateKeys).hasSize(1)
-        assertThat(duplicateKeys).containsExactly(
+        assertThat(it.errors).hasSize(1)
+
+        val duplicateKeyError = it.errors.first() as FormulaError.ChildKeyAlreadyUsed
+        assertThat(duplicateKeyError.formula).isEqualTo(DynamicParentFormula::class.java)
+        assertThat(duplicateKeyError.error.key).isEqualTo(
             FormulaKey(null, KeyFormula::class.java, TestKey("1"))
         )
     }

@@ -1,7 +1,8 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.IFormula
+import com.instacart.formula.plugin.ChildAlreadyUsedException
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
 
 /**
@@ -68,11 +69,14 @@ internal class ChildrenManager(
              * so it can be logged and fixed by defining explicit key.
              */
             if (logs.add(key)) {
-                FormulaPlugins.onDuplicateChildKey(
-                    parentFormulaType = delegate.formulaType,
-                    childFormulaType = formula.type().java,
-                    key = key,
+                val error = FormulaError.ChildKeyAlreadyUsed(
+                    error = ChildAlreadyUsedException(
+                        parentType = delegate.formulaType,
+                        childType = formula.type().java,
+                        key = key
+                    )
                 )
+                delegate.onError(error)
             }
 
             val index = nextIndex(key)
