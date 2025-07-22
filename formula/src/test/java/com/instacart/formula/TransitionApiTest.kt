@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.DelegateTransitionContext
+import com.instacart.formula.internal.FakeEffectDelegate
 import com.instacart.formula.internal.toResult
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestListener
@@ -168,7 +169,8 @@ class TransitionApiTest {
     }
 
     private fun delegateTransitionContext(): DelegateTransitionContext<Unit, Int> {
-        return DelegateTransitionContext(Unit::class.java, Unit, 0)
+        val effectDelegate = FakeEffectDelegate()
+        return DelegateTransitionContext(effectDelegate, Unit, 0)
     }
 
     private fun <State> Transition.Result<State>.assertStateful(): Transition.Result.Stateful<State> {

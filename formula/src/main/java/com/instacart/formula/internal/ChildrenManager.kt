@@ -69,7 +69,7 @@ internal class ChildrenManager(
              */
             if (logs.add(key)) {
                 FormulaPlugins.onDuplicateChildKey(
-                    parentFormulaType = delegate.formulaType.java,
+                    parentFormulaType = delegate.formulaType,
                     childFormulaType = formula.type().java,
                     key = key,
                 )
@@ -105,9 +105,10 @@ internal class ChildrenManager(
                 delegate = delegate,
                 formula = implementation,
                 initialInput = input,
-                formulaType = formula.type(),
+                formulaTypeKClass = formula.type(),
                 inspector = inspector,
                 defaultDispatcher = delegate.defaultDispatcher,
+                onError = delegate.onError,
             )
         }
         @Suppress("UNCHECKED_CAST")

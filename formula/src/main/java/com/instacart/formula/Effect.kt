@@ -1,5 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.EffectDelegate
+import com.instacart.formula.internal.onEffectError
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Plugin
 
@@ -12,9 +14,9 @@ import com.instacart.formula.plugin.Plugin
  * allows us to ensure that [Formula] is always in the correct state in case effects
  * trigger an update.
  */
-data class Effect(
+data class Effect internal constructor(
+    private val delegate: EffectDelegate,
     val type: Type,
-    private val formulaType: Class<*>,
     private val executable: () -> Unit,
 ) : () -> Unit {
 
@@ -22,8 +24,7 @@ data class Effect(
         try {
             executable()
         } catch (throwable: Exception) {
-            val error = FormulaError.EffectError(formulaType, throwable)
-            FormulaPlugins.onError(error)
+            delegate.onEffectError(throwable)
         }
     }
 

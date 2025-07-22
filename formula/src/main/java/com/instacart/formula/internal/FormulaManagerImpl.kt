@@ -9,6 +9,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 import kotlin.reflect.KClass
@@ -21,18 +22,19 @@ import kotlin.reflect.KClass
  * a state change, it will rerun [Formula.evaluate].
  */
 internal class FormulaManagerImpl<Input, State, Output>(
-    val scope: CoroutineScope,
+    internal val formulaTypeKClass: KClass<*>,
+    override val scope: CoroutineScope,
+    override val formulaType: Class<*> = formulaTypeKClass.java,
+    override val onError: (FormulaError) -> Unit,
     val queue: SynchronizedUpdateQueue,
     val batchManager: BatchManager,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
-    internal val formulaType: KClass<*>,
     private val listeners: Listeners = Listeners(),
     private val inspector: Inspector?,
     val defaultDispatcher: Dispatcher,
-) : FormulaManager<Input, Output>, ManagerDelegate {
-
+) : FormulaManager<Input, Output>, ManagerDelegate, ActionDelegate, EffectDelegate {
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -101,7 +103,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 globalEvaluationId += 1
 
                 inspector?.onStateChanged(
-                    formulaType = formulaType,
+                    formulaType = formulaTypeKClass,
                     event = event,
                     old = old,
                     new = result.state,
@@ -167,11 +169,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         if (lastFrame == null) {
-            inspector?.onFormulaStarted(formulaType)
+            inspector?.onFormulaStarted(formulaTypeKClass)
         }
 
         if (!isValidationEnabled) {
-            inspector?.onEvaluateStarted(formulaType, state)
+            inspector?.onEvaluateStarted(formulaTypeKClass, state)
         }
 
         if (lastFrame != null) {
@@ -179,21 +181,20 @@ internal class FormulaManagerImpl<Input, State, Output>(
             val hasInputChanged = prevInput != input
             if (!isValidationEnabled && lastFrame.associatedEvaluationId == evaluationId && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
-                inspector?.onEvaluateFinished(formulaType, evaluation.output, evaluated = false)
+                inspector?.onEvaluateFinished(formulaTypeKClass, evaluation.output, evaluated = false)
                 return evaluation
             }
 
             if (hasInputChanged) {
                 if (isValidationEnabled) {
-                    throw ValidationException("$formulaType - input changed during identical re-evaluation - old: $prevInput, new: $input")
+                    throw ValidationException("$formulaTypeKClass - input changed during identical re-evaluation - old: $prevInput, new: $input")
                 }
                 state = formula.onInputChanged(prevInput, input, state)
-                inspector?.onInputChanged(formulaType, prevInput, input)
+                inspector?.onInputChanged(formulaTypeKClass, prevInput, input)
             }
         }
 
         val snapshot = SnapshotImpl(
-            formulaType = formulaType.java,
             input = input,
             state = state,
             listeners = listeners,
@@ -204,13 +205,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isValidationEnabled) {
             val oldOutput = lastFrame?.evaluation?.output
             if (oldOutput != result.output) {
-                throw ValidationException("$formulaType - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+                throw ValidationException("$formulaTypeKClass - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
             }
 
             val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
             val currentActionKeys = result.actions.map { it.key }
             if (lastActionKeys != currentActionKeys) {
-                throw ValidationException("$formulaType - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
+                throw ValidationException("$formulaTypeKClass - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
             }
         }
 
@@ -223,7 +224,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         snapshot.markRunning()
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(formulaType, newFrame.evaluation.output, evaluated = true)
+            inspector?.onEvaluateFinished(formulaTypeKClass, newFrame.evaluation.output, evaluated = true)
         }
 
         return newFrame.evaluation
@@ -302,7 +303,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         listeners.disableAll()
-        inspector?.onFormulaFinished(formulaType)
+        inspector?.onFormulaFinished(formulaTypeKClass)
     }
 
     fun onPendingTransition(transition: DeferredTransition<*, *, *>) {

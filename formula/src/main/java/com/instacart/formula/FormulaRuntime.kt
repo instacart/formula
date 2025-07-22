@@ -6,7 +6,6 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
-import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +22,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 class FormulaRuntime<Input : Any, Output : Any>(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     private val formula: IFormula<Input, Output>,
-    config: RuntimeConfig,
+    private val config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
     private val scope = CoroutineScope(
         context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
@@ -397,9 +396,13 @@ class FormulaRuntime<Input : Any, Output : Any>(
             delegate = this,
             formula = implementation,
             initialInput = initialInput,
-            formulaType = formula.type(),
+            formulaTypeKClass = formula.type(),
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
+            onError = {
+                config.onError?.invoke(it)
+                FormulaPlugins.onError(it)
+            },
         )
     }
 
