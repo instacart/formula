@@ -4,13 +4,9 @@ import com.instacart.formula.Effect
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
-import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
-import com.instacart.formula.batch.BatchManager
-import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
-import kotlinx.coroutines.CoroutineScope
 import java.util.LinkedList
 import kotlin.reflect.KClass
 
@@ -23,18 +19,12 @@ import kotlin.reflect.KClass
  */
 internal class FormulaManagerImpl<Input, State, Output>(
     internal val formulaTypeKClass: KClass<*>,
-    override val scope: CoroutineScope,
-    override val formulaType: Class<*> = formulaTypeKClass.java,
-    override val onError: (FormulaError) -> Unit,
-    val queue: SynchronizedUpdateQueue,
-    val batchManager: BatchManager,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
     initialInput: Input,
     private val listeners: Listeners = Listeners(),
-    private val inspector: Inspector?,
-    val defaultDispatcher: Dispatcher,
-) : FormulaManager<Input, Output>, ManagerDelegate, ActionDelegate, EffectDelegate {
+    override val formulaType: Class<*> = formulaTypeKClass.java,
+) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -395,7 +385,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private fun getOrInitChildrenManager(): ChildrenManager {
         return childrenManager ?: run {
-            val value = ChildrenManager(this, inspector)
+            val value = ChildrenManager(this)
             childrenManager = value
             value
         }
