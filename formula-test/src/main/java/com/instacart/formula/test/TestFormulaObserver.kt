@@ -2,6 +2,7 @@ package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.start
 import com.instacart.formula.toFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     private val runtimeConfig: RuntimeConfig,
     val formula: FormulaT,
+    private val isValidationEnabled: Boolean = true,
 ) {
 
     private val values = mutableListOf<Output>()
@@ -31,7 +33,8 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         context = Dispatchers.Unconfined,
         start = CoroutineStart.UNDISPATCHED,
     ) {
-        formula.toFlow(inputFlow, runtimeConfig)
+        val flow = start(inputFlow, formula, runtimeConfig, isValidationEnabled)
+        flow
             .catch { errors.add(it) }
             .collect { values.add(it) }
     }
