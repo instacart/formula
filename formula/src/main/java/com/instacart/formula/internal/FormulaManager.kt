@@ -1,6 +1,5 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 
 interface FormulaManager<Input, Output> {
@@ -17,7 +16,12 @@ interface FormulaManager<Input, Output> {
      *
      * It will handle formula state changes internally and return the last [Output].
      */
-    fun run(input: Input): Evaluation<Output>
+    fun run(input: Input): Output
+
+    /**
+     * Returns the last output produced by the formula or null.
+     */
+    fun lastOutput(): Output?
 
     fun isTerminated(): Boolean
 

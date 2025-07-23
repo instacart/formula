@@ -1421,7 +1421,7 @@ class FormulaRuntimeTest {
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
     }
 
@@ -1434,7 +1434,7 @@ class FormulaRuntimeTest {
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
 
         // Should log only once
@@ -1786,11 +1786,13 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1810,11 +1812,14 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+        observer
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1834,7 +1839,7 @@ class FormulaRuntimeTest {
                 )
             },
         )
-        formula.test().input(0)
+        formula.test(failOnError = false).input(0)
             .output {
                 childOutputs.forEach { it.listener() }
                 childOutputs[1].errorToggle()
