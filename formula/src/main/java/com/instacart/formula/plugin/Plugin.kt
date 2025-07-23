@@ -19,15 +19,6 @@ interface Plugin {
     fun onError(error: FormulaError) = Unit
 
     /**
-     * Notified when there is a duplicate child key detected.
-     */
-    fun onDuplicateChildKey(
-        parentType: Class<*>,
-        childFormulaType: Class<*>,
-        key: Any,
-    ) = Unit
-
-    /**
      * Dispatcher for the main thread. It will be used to execute
      * effects defined by [Effect.Main].
      */
