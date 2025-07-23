@@ -6,6 +6,7 @@ import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
 import com.instacart.formula.internal.SynchronizedUpdateQueue
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -100,14 +101,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     @Volatile private var output: Output? = null
     @Volatile private var onOutput: ((Output) -> Unit)? = null
-    @Volatile private var onError: ((Throwable) -> Unit)? = null
 
     fun setOnOutput(onOutput: (Output) -> Unit) {
         this.onOutput = onOutput
-    }
-
-    fun setOnError(onError: (Throwable) -> Unit) {
-        this.onError = onError
     }
 
     fun onInput(input: Input, dispatcher: Dispatcher? = null) {
@@ -293,11 +289,12 @@ class FormulaRuntime<Input : Any, Output : Any>(
             isRunning = false
 
             val manager = requireManager()
-            manager.markAsTerminated()
-
-            onError?.invoke(e)
-
-            manager.let(this::terminateManager)
+            try {
+                terminateInternal()
+            } finally {
+                val error = FormulaError.Unhandled(manager.formulaType, e)
+                emitError(error)
+            }
         }
     }
 
@@ -388,6 +385,11 @@ class FormulaRuntime<Input : Any, Output : Any>(
         }
     }
 
+    private fun emitError(error: FormulaError) {
+        config.onError?.invoke(error)
+        FormulaPlugins.onError(error)
+    }
+
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
             scope = scope,
@@ -399,10 +401,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
             formulaTypeKClass = formula.type(),
             inspector = inspector,
             defaultDispatcher = defaultDispatcher,
-            onError = {
-                config.onError?.invoke(it)
-                FormulaPlugins.onError(it)
-            },
+            onError = this::emitError,
         )
     }
 
