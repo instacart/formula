@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.batch.BatchManager
+import com.instacart.formula.internal.CascadingFormulaException
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
@@ -292,8 +293,11 @@ class FormulaRuntime<Input : Any, Output : Any>(
             try {
                 terminateInternal()
             } finally {
-                val error = FormulaError.Unhandled(manager.formulaType, e)
-                emitError(error)
+
+                if (e !is CascadingFormulaException) {
+                    val error = FormulaError.Unhandled(manager.formulaType, e)
+                    emitError(error)
+                }
             }
         }
     }
@@ -302,9 +306,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Runs formula evaluation.
      */
     private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        val result = manager.run(currentInput)
-        pendingOutput.set(result.output)
-        output = result.output
+        val newValue = manager.run(currentInput)
+        pendingOutput.set(newValue)
+        output = newValue
 
         if (isValidationEnabled) {
             try {

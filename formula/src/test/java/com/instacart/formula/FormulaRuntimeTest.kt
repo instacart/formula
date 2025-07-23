@@ -1415,13 +1415,13 @@ class FormulaRuntimeTest {
     @Test fun `child formulas with duplicate key are supported`() {
         val result = Try {
             val formula = DynamicParentFormula()
-            formula.test().input(Unit)
+            formula.test(failOnError = false).input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
     }
 
@@ -1434,7 +1434,7 @@ class FormulaRuntimeTest {
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
 
         // Should log only once
@@ -1765,6 +1765,59 @@ class FormulaRuntimeTest {
             }
     }
 
+    @Test fun `propagate error up when child emits error during initial evaluation`() {
+        val child = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                throw IllegalStateException("evaluation error")
+            }
+        }
+
+        val parent = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val value = context.child(child)
+                return Evaluation(output = value)
+            }
+        }
+
+        parent.test(failOnError = false).input(Unit).apply {
+            assertThat(values()).isEmpty()
+            assertThat(errors()).hasSize(1)
+        }
+    }
+
+    @Test fun `return last output when child emits an error during subsequent evaluation`() {
+        val child = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                if (input == 1) throw IllegalStateException("evaluation error")
+                return Evaluation(output = input)
+            }
+        }
+
+        val parent = object : StatelessFormula<Int, Pair<Int, Int>>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Pair<Int, Int>> {
+                val childValue = context.child(child, input)
+                return Evaluation(
+                    output = Pair(input, childValue)
+                )
+            }
+        }
+
+        parent.test(failOnError = false).input(0).apply {
+            // Initial emission, no errors
+            output { assertThat(this).isEqualTo(Pair(0, 0)) }
+
+            // Subsequent emission, with error
+            input(1)
+            assertThat(errors()).hasSize(1)
+            output { assertThat(this).isEqualTo(Pair(1, 0)) }
+
+            // Child is terminated, but parent still functions
+            input(2)
+            output { assertThat(this).isEqualTo(Pair(2, 0)) }
+            assertThat(errors()).hasSize(1)
+        }
+    }
+
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
@@ -1786,11 +1839,13 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1810,11 +1865,14 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+        observer
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1834,7 +1892,7 @@ class FormulaRuntimeTest {
                 )
             },
         )
-        formula.test().input(0)
+        formula.test(failOnError = false).input(0)
             .output {
                 childOutputs.forEach { it.listener() }
                 childOutputs[1].errorToggle()

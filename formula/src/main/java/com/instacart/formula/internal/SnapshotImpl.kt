@@ -44,10 +44,9 @@ internal class SnapshotImpl<out Input, State>(
         return delegate.child(key, formula, input)
     }
 
-    override fun <ChildInput, ChildOutput> child(
+    override fun <ChildInput, ChildOutput> childOrNull(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        onError: (Throwable) -> Unit,
     ): ChildOutput? {
         ensureNotRunning()
 
@@ -55,7 +54,7 @@ internal class SnapshotImpl<out Input, State>(
             type = formula.type(),
             key = formula.key(input)
         )
-        return delegate.child(key, formula, input, onError)
+        return delegate.childOrNull(key, formula, input)
     }
 
     override fun <Event> eventListener(
