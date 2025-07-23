@@ -253,7 +253,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val manager = childrenManager.findOrInitChild(key, formula, input)
 
         if (manager.isTerminated()) {
-            manager.lastOutput() ?: run {
+            return manager.lastOutput() ?: run {
                 /**
                  * This block should never be reached as we should have been terminated as well.
                  */

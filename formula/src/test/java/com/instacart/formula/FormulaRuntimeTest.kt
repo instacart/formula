@@ -1415,7 +1415,7 @@ class FormulaRuntimeTest {
     @Test fun `child formulas with duplicate key are supported`() {
         val result = Try {
             val formula = DynamicParentFormula()
-            formula.test().input(Unit)
+            formula.test(failOnError = false).input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
@@ -1763,6 +1763,59 @@ class FormulaRuntimeTest {
                     FromObservableWithInputFormula.Item("2")
                 ).inOrder()
             }
+    }
+
+    @Test fun `propagate error up when child emits error during initial evaluation`() {
+        val child = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                throw IllegalStateException("evaluation error")
+            }
+        }
+
+        val parent = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val value = context.child(child)
+                return Evaluation(output = value)
+            }
+        }
+
+        parent.test(failOnError = false).input(Unit).apply {
+            assertThat(values()).isEmpty()
+            assertThat(errors()).hasSize(1)
+        }
+    }
+
+    @Test fun `return last output when child emits an error during subsequent evaluation`() {
+        val child = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                if (input == 1) throw IllegalStateException("evaluation error")
+                return Evaluation(output = input)
+            }
+        }
+
+        val parent = object : StatelessFormula<Int, Pair<Int, Int>>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Pair<Int, Int>> {
+                val childValue = context.child(child, input)
+                return Evaluation(
+                    output = Pair(input, childValue)
+                )
+            }
+        }
+
+        parent.test(failOnError = false).input(0).apply {
+            // Initial emission, no errors
+            output { assertThat(this).isEqualTo(Pair(0, 0)) }
+
+            // Subsequent emission, with error
+            input(1)
+            assertThat(errors()).hasSize(1)
+            output { assertThat(this).isEqualTo(Pair(1, 0)) }
+
+            // Child is terminated, but parent still functions
+            input(2)
+            output { assertThat(this).isEqualTo(Pair(2, 0)) }
+            assertThat(errors()).hasSize(1)
+        }
     }
 
     @Test
