@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 
 /**
  * @param defaultDispatcher Dispatcher used for event processing (this can be overwritten by
@@ -15,4 +16,5 @@ class RuntimeConfig(
     val defaultDispatcher: Dispatcher? = null,
     val inspector: Inspector? = null,
     val isValidationEnabled: Boolean = false,
+    val onError: ((FormulaError) -> Unit)? = null,
 )

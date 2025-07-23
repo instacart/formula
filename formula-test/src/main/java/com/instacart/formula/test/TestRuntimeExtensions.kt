@@ -22,16 +22,17 @@ import kotlin.coroutines.coroutineContext
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     isValidationEnabled: Boolean = true,
+    failOnError: Boolean = true,
     inspector: Inspector? = null,
     dispatcher: Dispatcher? = null,
 ): TestFormulaObserver<Input, Output, F> {
-    val runtimeConfig = RuntimeConfig(
+    return TestFormulaObserver(
         isValidationEnabled = isValidationEnabled,
+        failOnError = failOnError,
         inspector = inspector,
-        defaultDispatcher = dispatcher,
+        dispatcher = dispatcher,
+        formula = this,
     )
-
-    return TestFormulaObserver(runtimeConfig, this)
 }
 
 suspend fun <Event> Action<Event>.test(

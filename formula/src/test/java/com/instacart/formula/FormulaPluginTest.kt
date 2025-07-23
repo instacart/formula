@@ -90,7 +90,9 @@ class FormulaPluginTest {
                 }
             }
 
-            myFormula.test().input(Unit)
+            val observer = myFormula.test(failOnError = false)
+            observer.input(Unit)
+            observer.assertHasErrors()
 
             assertThat(plugin.errors).containsExactly(
                 FormulaError.ActionError(myFormula.type().java, exception)

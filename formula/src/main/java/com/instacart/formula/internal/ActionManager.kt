@@ -87,10 +87,10 @@ internal class ActionManager(
 
             val runningActions = getOrInitRunningActions()
             if (!runningActions.contains(action)) {
-                inspector?.onActionStarted(manager.formulaType, action)
+                inspector?.onActionStarted(manager.formulaTypeKClass, action)
 
                 runningActions.add(action)
-                action.start(manager.scope, manager.formulaType.java)
+                action.start(manager)
 
                 if (manager.isTerminated()) {
                     return false
@@ -148,9 +148,8 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        inspector?.onActionFinished(manager.formulaType, action)
-        action.tearDown(manager.formulaType.java)
-        action.listener = null
+        inspector?.onActionFinished(manager.formulaTypeKClass, action)
+        action.tearDown(manager)
     }
 
     private fun getOrInitRunningActions(): LinkedHashSet<DeferredAction<*>> {

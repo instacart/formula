@@ -1276,12 +1276,12 @@ class FormulaRuntimeTest {
                 }
             }
 
-            formula.test()
+            formula.test(failOnError = false)
                 .input(0)
-                .assertNoErrors()
                 .assertOutputCount(1)
                 .input(1)
                 .assertOutputCount(2)
+                .assertHasErrors()
 
             assertThat(plugin.errors).hasSize(1)
             assertThat(plugin.errors.first().error.message).contains("Test exception")
@@ -1316,13 +1316,13 @@ class FormulaRuntimeTest {
                 }
             }
 
-            formula.test()
+            formula.test(failOnError = false)
                 .input(0)
                 .input(1)
                 .input(2)
                 .input(3)
-                .assertNoErrors()
                 .assertOutputCount(4)
+                .assertHasErrors()
 
             assertThat(plugin.errors).hasSize(1)
             assertThat(plugin.errors.first().error.message).contains("Test exception")
@@ -1350,14 +1350,14 @@ class FormulaRuntimeTest {
                 }
             }
 
-            formula.test()
+            formula.test(failOnError = false)
                 .input(Unit)
                 .apply { events.tryEmit(1) }
                 .apply { events.tryEmit(2) }
-                .assertNoErrors()
                 .assertOutputCount(3)
-            assertThat(plugin.errors).hasSize(2)
+                .assertHasErrors()
 
+            assertThat(plugin.errors).hasSize(2)
             assertThat(plugin.errors[0].error.message).contains("Test exception 1")
             assertThat(plugin.errors[1].error.message).contains("Test exception 2")
         }
