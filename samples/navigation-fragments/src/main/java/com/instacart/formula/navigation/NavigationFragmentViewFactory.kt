@@ -42,13 +42,6 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
         }
         rootLayout.addView(counterText)
 
-        // Increment local counter button
-        val incrementLocalButton = Button(context).apply {
-            id = R.id.increment_local_button
-            text = "Increment Local Counter"
-        }
-        rootLayout.addView(incrementLocalButton)
-
         // Navigate next button
         val navigateNextButton = Button(context).apply {
             id = R.id.navigate_next_button
@@ -63,12 +56,12 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
         }
         rootLayout.addView(navigateBackButton)
 
-        // Container for back stack buttons
-        val backStackContainer = LinearLayout(context).apply {
+        // Container for fragment counter buttons
+        val fragmentsContainer = LinearLayout(context).apply {
             id = R.id.back_stack_container
             orientation = LinearLayout.VERTICAL
         }
-        rootLayout.addView(backStackContainer)
+        rootLayout.addView(fragmentsContainer)
 
         return rootLayout
     }
@@ -76,36 +69,34 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
     private fun bindView(view: View, renderModel: NavigationFragmentRenderModel) {
         val titleText = view.findViewById<TextView>(R.id.fragment_title)
         val counterText = view.findViewById<TextView>(R.id.counter_text)
-        val incrementLocalButton = view.findViewById<Button>(R.id.increment_local_button)
         val navigateNextButton = view.findViewById<Button>(R.id.navigate_next_button)
         val navigateBackButton = view.findViewById<Button>(R.id.navigate_back_button)
-        val backStackContainer = view.findViewById<LinearLayout>(R.id.back_stack_container)
+        val fragmentsContainer = view.findViewById<LinearLayout>(R.id.back_stack_container)
 
         titleText.text = "Fragment ${renderModel.fragmentId}"
         counterText.text = "Counter: ${renderModel.counter}"
 
-        incrementLocalButton.setOnClickListener { renderModel.onIncrementLocalCounter() }
         navigateNextButton.setOnClickListener { renderModel.onNavigateToNext() }
         navigateBackButton.setOnClickListener { renderModel.onNavigateBack() }
 
         // Show/hide back button based on back stack
-        navigateBackButton.visibility = if (renderModel.backStackFragments.isNotEmpty()) View.VISIBLE else View.GONE
+        navigateBackButton.visibility = if (renderModel.backStackFragments.size > 1) View.VISIBLE else View.GONE
 
-        // Clear and rebuild back stack buttons
-        backStackContainer.removeAllViews()
+        // Clear and rebuild fragment counter buttons
+        fragmentsContainer.removeAllViews()
         if (renderModel.backStackFragments.isNotEmpty()) {
-            val backStackLabel = TextView(view.context).apply {
-                text = "Back Stack Fragments:"
+            val fragmentsLabel = TextView(view.context).apply {
+                text = "Fragment Counters:"
                 textSize = 16f
             }
-            backStackContainer.addView(backStackLabel)
+            fragmentsContainer.addView(fragmentsLabel)
 
             renderModel.backStackFragments.forEach { fragmentId ->
                 val button = Button(view.context).apply {
                     text = "Increment Counter for Fragment $fragmentId"
                     setOnClickListener { renderModel.onIncrementCounter(fragmentId) }
                 }
-                backStackContainer.addView(button)
+                fragmentsContainer.addView(button)
             }
         }
     }

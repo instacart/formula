@@ -30,7 +30,7 @@ class NavigationFragmentFormula(
             output = NavigationFragmentRenderModel(
                 fragmentId = input.fragmentId,
                 counter = state.counter,
-                backStackFragments = state.navigationState.backStackFragments,
+                backStackFragments = state.navigationState.navigationStack,
                 onNavigateToNext = context.callback {
                     val nextFragmentId = state.navigationState.navigationStack.maxOrNull()?.plus(1) ?: 1
                     navigationStore.onEvent(NavigationEvent.NavigateToFragment(nextFragmentId))
@@ -46,9 +46,6 @@ class NavigationFragmentFormula(
                 },
                 onIncrementCounter = { fragmentId ->
                     navigationStore.onEvent(NavigationEvent.IncrementCounter(fragmentId))
-                },
-                onIncrementLocalCounter = context.callback {
-                    transition(state.copy(counter = state.counter + 1))
                 }
             ),
             actions = context.actions {

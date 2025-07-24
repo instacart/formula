@@ -5,10 +5,10 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 ## Features
 
 - **Infinite Routing**: Start with fragment 0 and navigate to infinitely many fragments (1, 2, 3, ...)
-- **Local Counter State**: Each fragment manages its own counter state locally in its Formula
+- **Counter State**: Each fragment manages its own counter state locally in its Formula
 - **Global Event System**: A global store manages counter increment events via RxJava relay
 - **Fragment Navigation**: Each fragment can navigate to the next fragment or back in the navigation stack
-- **Counter Management**: Each fragment can increment its own counter or send increment events to other fragments
+- **Counter Management**: Each fragment can increment any fragment counter through the global event system
 - **Formula Android Integration**: Demonstrates how Formula Android works with fragment navigation
 
 ## Architecture
@@ -30,12 +30,10 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 ### State Management Architecture
 
 **Local State (per fragment):**
-
 - Each fragment's counter is managed locally in its `NavigationFragmentFormula.State`
-- Counter starts at 0 and increments when local button is pressed or global event is received
+- Counter starts at 0 and increments when global increment events are received for this fragment
 
 **Global State:**
-
 - Navigation stack managed in `NavigationStore`
 - Counter increment events transmitted via global `PublishRelay<Int>`
 - Each fragment subscribes to counter increment events for its own fragment ID
@@ -45,18 +43,17 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 Each fragment contains:
 - **Fragment Title**: Shows "Fragment X" where X is the fragment ID
 - **Counter Display**: Shows the current counter value for this fragment (locally managed)
-- **Increment Local Counter Button**: Increments this fragment's counter directly
 - **Navigate to Next Fragment Button**: Creates and navigates to the next fragment (ID + 1)
 - **Navigate Back Button**: Goes back in the navigation stack (hidden for the root fragment)
-- **Back Stack Counter Buttons**: Buttons for each fragment in the back stack that send global increment events
+- **Fragment Counter Buttons**: Buttons for all fragments in the navigation stack (including current) that send global increment events
 
 ### Navigation Flow
 
 1. App starts with Fragment 0 (counter = 0)
-2. User can tap "Increment Local Counter" to increment the current fragment's counter
+2. User can tap "Increment Counter for Fragment 0" to increment the current fragment's counter
 3. User can tap "Navigate to Next Fragment" to create Fragment 1, 2, 3, etc.
 4. User can tap "Navigate Back" to go back through the navigation stack
-5. User can tap "Increment Counter for Fragment X" to send global events to other fragments
+5. User can tap "Increment Counter for Fragment X" to send global events to any fragment
 6. Each fragment receives increment events via global relay and updates its local counter
 
 ## Key Formula Android Concepts Demonstrated
@@ -72,7 +69,7 @@ Each fragment contains:
 
 Run the app and:
 1. Start on Fragment 0 with counter at 0
-2. Tap "Increment Local Counter" to increment the current fragment's counter
+2. Tap "Increment Counter for Fragment 0" to increment the current fragment's counter
 3. Tap "Navigate to Next Fragment" to go to Fragment 1
 4. Continue navigating to create more fragments
 5. Use "Navigate Back" to return through the stack
