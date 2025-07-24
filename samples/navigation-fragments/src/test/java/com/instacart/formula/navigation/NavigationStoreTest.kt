@@ -13,7 +13,6 @@ class NavigationStoreTest {
         assertThat(initialState.currentFragmentId).isEqualTo(0)
         assertThat(initialState.navigationStack).containsExactly(0)
         assertThat(initialState.backStackFragments).isEmpty()
-        assertThat(initialState.getCounter(0)).isEqualTo(0)
     }
 
     @Test
@@ -56,18 +55,19 @@ class NavigationStoreTest {
     }
 
     @Test
-    fun `increment counter should update fragment counter`() {
+    fun `increment counter should emit counter increment event`() {
         val store = NavigationStore()
+        val emittedIncrements = mutableListOf<Int>()
 
-        store.onEvent(NavigationEvent.IncrementCounter(0))
+        store.counterIncrements.subscribe { fragmentId ->
+            emittedIncrements.add(fragmentId)
+        }
+
         store.onEvent(NavigationEvent.IncrementCounter(0))
         store.onEvent(NavigationEvent.IncrementCounter(1))
+        store.onEvent(NavigationEvent.IncrementCounter(0))
 
-        val state = store.getCurrentState()
-
-        assertThat(state.getCounter(0)).isEqualTo(2)
-        assertThat(state.getCounter(1)).isEqualTo(1)
-        assertThat(state.getCounter(2)).isEqualTo(0) // Never incremented
+        assertThat(emittedIncrements).containsExactly(0, 1, 0).inOrder()
     }
 
     @Test
@@ -79,12 +79,6 @@ class NavigationStoreTest {
         store.onEvent(NavigationEvent.NavigateToFragment(2))
         store.onEvent(NavigationEvent.NavigateToFragment(3))
 
-        // Increment some counters
-        store.onEvent(NavigationEvent.IncrementCounter(0))
-        store.onEvent(NavigationEvent.IncrementCounter(1))
-        store.onEvent(NavigationEvent.IncrementCounter(1))
-        store.onEvent(NavigationEvent.IncrementCounter(3))
-
         // Navigate back: 3 -> 2
         store.onEvent(NavigationEvent.NavigateBack)
 
@@ -93,9 +87,5 @@ class NavigationStoreTest {
         assertThat(state.currentFragmentId).isEqualTo(2)
         assertThat(state.navigationStack).containsExactly(0, 1, 2).inOrder()
         assertThat(state.backStackFragments).containsExactly(0, 1).inOrder()
-        assertThat(state.getCounter(0)).isEqualTo(1)
-        assertThat(state.getCounter(1)).isEqualTo(2)
-        assertThat(state.getCounter(2)).isEqualTo(0)
-        assertThat(state.getCounter(3)).isEqualTo(1) // State preserved even after navigation
     }
 }

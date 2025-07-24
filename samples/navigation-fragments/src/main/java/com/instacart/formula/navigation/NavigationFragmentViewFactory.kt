@@ -1,6 +1,5 @@
 package com.instacart.formula.navigation
 
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -43,6 +42,13 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
         }
         rootLayout.addView(counterText)
 
+        // Increment local counter button
+        val incrementLocalButton = Button(context).apply {
+            id = R.id.increment_local_button
+            text = "Increment Local Counter"
+        }
+        rootLayout.addView(incrementLocalButton)
+
         // Navigate next button
         val navigateNextButton = Button(context).apply {
             id = R.id.navigate_next_button
@@ -70,6 +76,7 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
     private fun bindView(view: View, renderModel: NavigationFragmentRenderModel) {
         val titleText = view.findViewById<TextView>(R.id.fragment_title)
         val counterText = view.findViewById<TextView>(R.id.counter_text)
+        val incrementLocalButton = view.findViewById<Button>(R.id.increment_local_button)
         val navigateNextButton = view.findViewById<Button>(R.id.navigate_next_button)
         val navigateBackButton = view.findViewById<Button>(R.id.navigate_back_button)
         val backStackContainer = view.findViewById<LinearLayout>(R.id.back_stack_container)
@@ -77,6 +84,7 @@ class NavigationFragmentViewFactory : ViewFactory<NavigationFragmentRenderModel>
         titleText.text = "Fragment ${renderModel.fragmentId}"
         counterText.text = "Counter: ${renderModel.counter}"
 
+        incrementLocalButton.setOnClickListener { renderModel.onIncrementLocalCounter() }
         navigateNextButton.setOnClickListener { renderModel.onNavigateToNext() }
         navigateBackButton.setOnClickListener { renderModel.onNavigateBack() }
 

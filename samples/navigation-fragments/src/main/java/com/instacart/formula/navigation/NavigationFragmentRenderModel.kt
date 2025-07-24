@@ -6,5 +6,6 @@ data class NavigationFragmentRenderModel(
     val backStackFragments: List<Int>,
     val onNavigateToNext: () -> Unit,
     val onNavigateBack: () -> Unit,
-    val onIncrementCounter: (Int) -> Unit
+    val onIncrementCounter: (Int) -> Unit,
+    val onIncrementLocalCounter: () -> Unit
 )

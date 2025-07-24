@@ -16,18 +16,20 @@ class NavigationFragmentFormula(
     )
 
     data class State(
-        val navigationState: NavigationState
+        val navigationState: NavigationState,
+        val counter: Int = 0
     )
 
     override fun initialState(input: Input): State = State(
-        navigationState = navigationStore.getCurrentState()
+        navigationState = navigationStore.getCurrentState(),
+        counter = 0
     )
 
     override fun Snapshot<Input, State>.evaluate(): Evaluation<NavigationFragmentRenderModel> {
         return Evaluation(
             output = NavigationFragmentRenderModel(
                 fragmentId = input.fragmentId,
-                counter = state.navigationState.getCounter(input.fragmentId),
+                counter = state.counter,
                 backStackFragments = state.navigationState.backStackFragments,
                 onNavigateToNext = context.callback {
                     val nextFragmentId = state.navigationState.navigationStack.maxOrNull()?.plus(1) ?: 1
@@ -44,12 +46,22 @@ class NavigationFragmentFormula(
                 },
                 onIncrementCounter = { fragmentId ->
                     navigationStore.onEvent(NavigationEvent.IncrementCounter(fragmentId))
+                },
+                onIncrementLocalCounter = context.callback {
+                    transition(state.copy(counter = state.counter + 1))
                 }
             ),
             actions = context.actions {
                 val stateAction = RxAction.fromObservable { navigationStore.state }
                 stateAction.onEvent { navigationState ->
                     transition(state.copy(navigationState = navigationState))
+                }
+
+                val counterIncrementAction = RxAction.fromObservable {
+                    navigationStore.counterIncrements.filter { it == input.fragmentId }
+                }
+                counterIncrementAction.onEvent {
+                    transition(state.copy(counter = state.counter + 1))
                 }
             }
         )

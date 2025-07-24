@@ -5,9 +5,10 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 ## Features
 
 - **Infinite Routing**: Start with fragment 0 and navigate to infinitely many fragments (1, 2, 3, ...)
-- **Global State Management**: A global store tracks integer counters for each fragment
+- **Local Counter State**: Each fragment manages its own counter state locally in its Formula
+- **Global Event System**: A global store manages counter increment events via RxJava relay
 - **Fragment Navigation**: Each fragment can navigate to the next fragment or back in the navigation stack
-- **Counter Management**: Each fragment displays its own counter and provides buttons to increment counters of fragments in the back stack
+- **Counter Management**: Each fragment can increment its own counter or send increment events to other fragments
 - **Formula Android Integration**: Demonstrates how Formula Android works with fragment navigation
 
 ## Architecture
@@ -15,50 +16,68 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 ### Core Components
 
 1. **NavigationFragmentKey**: Parcelable key that identifies fragments using integer IDs
-2. **NavigationState**: Data class that holds the global state including:
-    - Fragment counters map (fragment ID -> counter value)
-    - Navigation stack (list of fragment IDs)
-3. **NavigationStore**: RxJava-based store that manages the global navigation state
-4. **NavigationFragmentFormula**: Formula that manages individual fragment state and handles user interactions
+2. **NavigationState**: Data class that holds the navigation stack (list of fragment IDs)
+3. **NavigationStore**: RxJava-based store that manages:
+   - Navigation state (current fragment, back stack)
+   - Global counter increment events relay
+4. **NavigationFragmentFormula**: Formula that manages individual fragment state including:
+   - Local counter state
+   - Navigation state subscription
+   - Counter increment event subscription for this fragment
 5. **NavigationFragmentFeatureFactory**: Creates Formula features for fragments
 6. **NavigationFragmentViewFactory**: Creates Android views for fragments
+
+### State Management Architecture
+
+**Local State (per fragment):**
+
+- Each fragment's counter is managed locally in its `NavigationFragmentFormula.State`
+- Counter starts at 0 and increments when local button is pressed or global event is received
+
+**Global State:**
+
+- Navigation stack managed in `NavigationStore`
+- Counter increment events transmitted via global `PublishRelay<Int>`
+- Each fragment subscribes to counter increment events for its own fragment ID
 
 ### UI Elements
 
 Each fragment contains:
-
 - **Fragment Title**: Shows "Fragment X" where X is the fragment ID
-- **Counter Display**: Shows the current counter value for this fragment
+- **Counter Display**: Shows the current counter value for this fragment (locally managed)
+- **Increment Local Counter Button**: Increments this fragment's counter directly
 - **Navigate to Next Fragment Button**: Creates and navigates to the next fragment (ID + 1)
 - **Navigate Back Button**: Goes back in the navigation stack (hidden for the root fragment)
-- **Back Stack Counter Buttons**: Buttons for each fragment in the back stack that allow incrementing their counters
+- **Back Stack Counter Buttons**: Buttons for each fragment in the back stack that send global increment events
 
 ### Navigation Flow
 
-1. App starts with Fragment 0
-2. User can tap "Navigate to Next Fragment" to create Fragment 1, 2, 3, etc.
-3. User can tap "Navigate Back" to go back through the navigation stack
-4. User can tap counter increment buttons to modify the state of fragments in the back stack
-5. All fragment states are preserved in the global store
+1. App starts with Fragment 0 (counter = 0)
+2. User can tap "Increment Local Counter" to increment the current fragment's counter
+3. User can tap "Navigate to Next Fragment" to create Fragment 1, 2, 3, etc.
+4. User can tap "Navigate Back" to go back through the navigation stack
+5. User can tap "Increment Counter for Fragment X" to send global events to other fragments
+6. Each fragment receives increment events via global relay and updates its local counter
 
 ## Key Formula Android Concepts Demonstrated
 
 - **Fragment Key Management**: Using `FragmentKey` to identify fragments
-- **Global State Management**: Sharing state across multiple fragments
-- **Formula State Management**: Each fragment has its own Formula managing local UI state
+- **Local State Management**: Each fragment managing its own state via Formula
+- **Global Event System**: Using RxJava relays for cross-fragment communication
 - **Navigation Effects**: Using effects to communicate navigation actions from fragments to the activity
 - **Fragment Lifecycle**: How Formula manages fragment creation, state updates, and navigation
+- **Event Subscription**: How fragments subscribe to global events that affect their local state
 
 ## Usage
 
 Run the app and:
-
 1. Start on Fragment 0 with counter at 0
-2. Tap "Navigate to Next Fragment" to go to Fragment 1
-3. Continue navigating to create more fragments
-4. Use "Navigate Back" to return through the stack
-5. Use "Increment Counter for Fragment X" buttons to modify counters of previous fragments
-6. Observe how state is preserved across navigation
+2. Tap "Increment Local Counter" to increment the current fragment's counter
+3. Tap "Navigate to Next Fragment" to go to Fragment 1
+4. Continue navigating to create more fragments
+5. Use "Navigate Back" to return through the stack
+6. Use "Increment Counter for Fragment X" buttons to send increment events to other fragments
+7. Observe how each fragment's counter is managed locally but can be incremented from anywhere
 
-This sample serves as preparation work for Jetpack Compose Navigation 3 support, demonstrating the core navigation patterns that will be
-adapted for the future "navigation-nav3" sample.
+This sample serves as preparation work for Jetpack Compose Navigation 3 support, demonstrating the core navigation and state management
+patterns that will be adapted for the future "navigation-nav3" sample.
