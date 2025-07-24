@@ -101,7 +101,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import kotlin.reflect.KClass
 
 class FormulaRuntimeTest {
 
@@ -2032,7 +2031,7 @@ class FormulaRuntimeTest {
     fun `inspector events`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -2073,7 +2072,7 @@ class FormulaRuntimeTest {
         val localInspector = TestInspector()
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -2116,7 +2115,7 @@ class FormulaRuntimeTest {
     fun `only global inspector events`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -2423,7 +2422,7 @@ class FormulaRuntimeTest {
     @Test fun `batched events notify the inspector of start and stop`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })

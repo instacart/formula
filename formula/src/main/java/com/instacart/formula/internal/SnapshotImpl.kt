@@ -9,7 +9,6 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
 import java.lang.IllegalStateException
-import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State>(
     private val delegate: FormulaManagerImpl<Input, State, *>,
@@ -86,15 +85,15 @@ internal class SnapshotImpl<out Input, State>(
         scopeKey = lastKey
     }
 
-    override fun createScopedKey(type: KClass<*>, key: Any?): Any {
+    override fun createScopedKey(type: Class<*>, key: Any?): Any {
         if (scopeKey == null && key == null) {
             // No need to allocate a new object, just use type as key.
-            return type.java
+            return type
         }
 
         return FormulaKey(
             scopeKey = scopeKey,
-            type = type.java,
+            type = type,
             key = key,
         )
     }

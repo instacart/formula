@@ -87,7 +87,7 @@ internal class ActionManager(
 
             val runningActions = getOrInitRunningActions()
             if (!runningActions.contains(action)) {
-                inspector?.onActionStarted(manager.formulaTypeKClass, action)
+                inspector?.onActionStarted(manager.formulaType, action)
 
                 runningActions.add(action)
                 action.start(manager)
@@ -148,7 +148,7 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        inspector?.onActionFinished(manager.formulaTypeKClass, action)
+        inspector?.onActionFinished(manager.formulaType, action)
         action.tearDown(manager)
     }
 

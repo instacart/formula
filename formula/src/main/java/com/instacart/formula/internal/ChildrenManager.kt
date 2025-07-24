@@ -70,7 +70,7 @@ internal class ChildrenManager(
                 val error = FormulaError.ChildKeyAlreadyUsed(
                     error = ChildAlreadyUsedException(
                         parentType = manager.formulaType,
-                        childType = formula.type().java,
+                        childType = formula.type(),
                         key = key
                     )
                 )
@@ -101,9 +101,9 @@ internal class ChildrenManager(
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation
             FormulaManagerImpl(
-                formulaTypeKClass = formula.type(),
                 delegate = manager,
                 formula = implementation,
+                formulaType = formula.type(),
                 initialInput = input,
             )
         }

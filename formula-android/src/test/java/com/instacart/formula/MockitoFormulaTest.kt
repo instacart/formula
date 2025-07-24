@@ -13,7 +13,7 @@ class MockitoFormulaTest {
         val formula = mock<MyFormula>(defaultAnswer = CallsRealMethods())
         whenever(formula.implementation).thenReturn(testFormula)
         assertThat(formula.implementation).isEqualTo(testFormula)
-        assertThat(formula.type()).isEqualTo(MyFormula::class)
+        assertThat(formula.type()).isEqualTo(MyFormula::class.java)
     }
 
     @Test fun mockActionFormula() {
@@ -21,7 +21,7 @@ class MockitoFormulaTest {
         val formula = mock<MyActionFormula>(defaultAnswer = CallsRealMethods())
         whenever(formula.implementation).thenReturn(testFormula)
         assertThat(formula.implementation).isEqualTo(testFormula)
-        assertThat(formula.type()).isEqualTo(MyActionFormula::class)
+        assertThat(formula.type()).isEqualTo(MyActionFormula::class.java)
     }
 
     class MyFormula : StatelessFormula<Unit, Unit>() {
