@@ -75,6 +75,3 @@ Run the app and:
 5. Use "Navigate Back" to return through the stack
 6. Use "Increment Counter for Fragment X" buttons to send increment events to other fragments
 7. Observe how each fragment's counter is managed locally but can be incremented from anywhere
-
-This sample serves as preparation work for Jetpack Compose Navigation 3 support, demonstrating the core navigation and state management
-patterns that will be adapted for the future "navigation-nav3" sample.
