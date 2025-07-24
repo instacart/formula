@@ -3,14 +3,12 @@ package com.instacart.formula.internal
 import com.instacart.formula.IFormula
 import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
-import com.instacart.formula.plugin.Inspector
 
 /**
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
-    private val delegate: FormulaManagerImpl<*, *, *>,
-    private val inspector: Inspector?,
+    private val manager: FormulaManagerImpl<*, *, *>,
 ) {
     private val children: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
     private var indexes: MutableMap<Any, Int>? = null
@@ -34,11 +32,11 @@ internal class ChildrenManager(
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
 
-        if (delegate.isTerminated()) {
+        if (manager.isTerminated()) {
             return false
         }
 
-        return !delegate.canUpdatesContinue(evaluationId)
+        return !manager.canUpdatesContinue(evaluationId)
     }
 
     fun markAsTerminated() {
@@ -71,12 +69,12 @@ internal class ChildrenManager(
             if (logs.add(key)) {
                 val error = FormulaError.ChildKeyAlreadyUsed(
                     error = ChildAlreadyUsedException(
-                        parentType = delegate.formulaType,
+                        parentType = manager.formulaType,
                         childType = formula.type().java,
                         key = key
                     )
                 )
-                delegate.onError(error)
+                manager.onError(error)
             }
 
             val index = nextIndex(key)
@@ -103,16 +101,10 @@ internal class ChildrenManager(
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation
             FormulaManagerImpl(
-                scope = delegate.scope,
-                queue = delegate.queue,
-                batchManager = delegate.batchManager,
-                delegate = delegate,
+                formulaTypeKClass = formula.type(),
+                delegate = manager,
                 formula = implementation,
                 initialInput = input,
-                formulaTypeKClass = formula.type(),
-                inspector = inspector,
-                defaultDispatcher = delegate.defaultDispatcher,
-                onError = delegate.onError,
             )
         }
         @Suppress("UNCHECKED_CAST")

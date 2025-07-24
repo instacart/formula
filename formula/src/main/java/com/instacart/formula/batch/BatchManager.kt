@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  * schedule the execution of the batch. The [BatchScheduler] will keep a reference to the batch
  * until it is executed.
  */
-internal class BatchManager(private val batchExecutor: Executor) {
+class BatchManager(private val batchExecutor: Executor) {
 
     /**
      * Responsible for executing batch of updates.
@@ -29,7 +29,7 @@ internal class BatchManager(private val batchExecutor: Executor) {
 
     private var activeBatches: MutableMap<Any, BatchImpl>? = null
 
-    fun add(batched: Transition.Batched, event: Any?, update: () -> Unit) {
+    internal fun add(batched: Transition.Batched, event: Any?, update: () -> Unit) {
         val batch = synchronized(this) {
             initOrGetBatch(batched.scheduler, event).apply {
                 // TODO: implement drop previous event!
@@ -39,7 +39,7 @@ internal class BatchManager(private val batchExecutor: Executor) {
         batch.scheduleIfNeeded(batched.scheduler)
     }
 
-    fun removeBatch(batch: BatchImpl): Boolean {
+    internal fun removeBatch(batch: BatchImpl): Boolean {
         val batchImpl = synchronized(this) {
             activeBatches?.remove(batch.key())
         }
