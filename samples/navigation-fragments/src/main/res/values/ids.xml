@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="fragment_title" type="id" />
+    <item name="counter_text" type="id" />
+    <item name="navigate_next_button" type="id" />
+    <item name="navigate_back_button" type="id" />
+    <item name="back_stack_container" type="id" />
+</resources>
