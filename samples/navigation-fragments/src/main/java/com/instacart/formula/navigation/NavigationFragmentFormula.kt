@@ -2,7 +2,6 @@ package com.instacart.formula.navigation
 
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
-import com.instacart.formula.FormulaContext
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
 
@@ -60,7 +59,7 @@ class NavigationFragmentFormula(
                 counterIncrementAction.onEvent {
                     transition(state.copy(counter = state.counter + 1))
                 }
-            }
+            },
         )
     }
 }

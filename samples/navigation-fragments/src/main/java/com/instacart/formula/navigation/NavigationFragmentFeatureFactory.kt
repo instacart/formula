@@ -6,14 +6,14 @@ import com.instacart.formula.rxjava3.toObservable
 
 class NavigationFragmentFeatureFactory(
     private val navigationStore: NavigationStore,
-    private val onNavigationEffect: (NavigationEffect) -> Unit
+    private val onNavigationEffect: (NavigationEffect) -> Unit,
 ) : FeatureFactory<Unit, NavigationFragmentKey>() {
 
     override fun Params.initialize(): Feature {
         val formula = NavigationFragmentFormula(navigationStore, onNavigationEffect)
         return Feature(
             state = formula.toObservable(NavigationFragmentFormula.Input(key.fragmentId)),
-            viewFactory = NavigationFragmentViewFactory()
+            viewFactory = NavigationFragmentViewFactory(),
         )
     }
 }

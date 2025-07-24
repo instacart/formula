@@ -6,7 +6,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class NavigationFragmentKey(
-    val fragmentId: Int
-) : FragmentKey, Parcelable {
-    override val tag: String = "navigation-fragment-$fragmentId"
-}
+    val fragmentId: Int,
+    override val tag: String = "navigation-fragment-$fragmentId",
+) : FragmentKey, Parcelable
