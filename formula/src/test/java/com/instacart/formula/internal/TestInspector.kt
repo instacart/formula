@@ -17,44 +17,44 @@ class TestInspector : Inspector {
         events.add("formula-run-finished")
     }
 
-    override fun onFormulaStarted(formulaType: KClass<*>) {
+    override fun onFormulaStarted(formulaType: Class<*>) {
         super.onFormulaStarted(formulaType)
-        events.add("formula-started: ${formulaType.qualifiedName}")
+        events.add("formula-started: ${name(formulaType)}")
     }
 
-    override fun onEvaluateStarted(formulaType: KClass<*>, state: Any?) {
+    override fun onEvaluateStarted(formulaType: Class<*>, state: Any?) {
         super.onEvaluateStarted(formulaType, state)
-        events.add("evaluate-started: ${formulaType.qualifiedName}")
+        events.add("evaluate-started: ${name(formulaType)}")
     }
 
-    override fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) {
+    override fun onEvaluateFinished(formulaType: Class<*>, output: Any?, evaluated: Boolean) {
         super.onEvaluateFinished(formulaType, output, evaluated)
-        events.add("evaluate-finished: ${formulaType.qualifiedName}")
+        events.add("evaluate-finished: ${name(formulaType)}")
     }
 
-    override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
+    override fun onActionStarted(formulaType: Class<*>, action: DeferredAction<*>) {
         super.onActionStarted(formulaType, action)
-        events.add("action-started: ${formulaType.qualifiedName}")
+        events.add("action-started: ${name(formulaType)}")
     }
 
-    override fun onActionFinished(formulaType: KClass<*>, action: DeferredAction<*>) {
+    override fun onActionFinished(formulaType: Class<*>, action: DeferredAction<*>) {
         super.onActionFinished(formulaType, action)
-        events.add("action-finished: ${formulaType.qualifiedName}")
+        events.add("action-finished: ${name(formulaType)}")
     }
 
-    override fun onInputChanged(formulaType: KClass<*>, prevInput: Any?, newInput: Any?) {
+    override fun onInputChanged(formulaType: Class<*>, prevInput: Any?, newInput: Any?) {
         super.onInputChanged(formulaType, prevInput, newInput)
-        events.add("input-changed: ${formulaType.qualifiedName}")
+        events.add("input-changed: ${name(formulaType)}")
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
+    override fun onStateChanged(formulaType: Class<*>, event: Any?, old: Any?, new: Any?) {
         super.onStateChanged(formulaType, event, old, new)
-        events.add("state-changed: ${formulaType.qualifiedName}")
+        events.add("state-changed: ${name(formulaType)}")
     }
 
-    override fun onFormulaFinished(formulaType: KClass<*>) {
+    override fun onFormulaFinished(formulaType: Class<*>) {
         super.onFormulaFinished(formulaType)
-        events.add("formula-finished: ${formulaType.qualifiedName}")
+        events.add("formula-finished: ${name(formulaType)}")
     }
 
     override fun onBatchStarted(updateCount: Int) {
@@ -65,5 +65,14 @@ class TestInspector : Inspector {
     override fun onBatchFinished() {
         super.onBatchFinished()
         events.add("batch-finished")
+    }
+
+    private fun name(formula: Class<*>): String {
+        val simpleName = formula.simpleName
+        return if (simpleName.isNotEmpty()) {
+            "${formula.packageName}.$simpleName"
+        } else {
+            "null"
+        }
     }
 }

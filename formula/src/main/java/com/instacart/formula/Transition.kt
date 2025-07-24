@@ -110,7 +110,7 @@ fun interface Transition<in Input, State, in Event> {
     /**
      * Transition type is used as part of the key to distinguish different transitions.
      */
-    fun type(): KClass<*> {
-        return this::class
+    fun type(): Class<*> {
+        return this::class.java
     }
 }

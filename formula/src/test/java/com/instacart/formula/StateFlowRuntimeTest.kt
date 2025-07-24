@@ -169,7 +169,7 @@ class StateFlowRuntimeTest {
             runCatching { formula.runAsStateFlow(backgroundScope) }
 
             assertThat(plugin.errors).containsExactly(
-                FormulaError.Unhandled(formula.type().java, error)
+                FormulaError.Unhandled(formula.type(), error)
             )
         }
     }

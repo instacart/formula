@@ -164,5 +164,5 @@ abstract class FormulaContext<out Input, State> internal constructor(
     // Internal key scope management
     @PublishedApi internal abstract fun enterScope(key: Any)
     @PublishedApi internal abstract fun endScope()
-    @PublishedApi internal abstract fun createScopedKey(type: KClass<*>, key: Any?): Any
+    @PublishedApi internal abstract fun createScopedKey(type: Class<*>, key: Any?): Any
 }

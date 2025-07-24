@@ -18,12 +18,11 @@ import kotlin.reflect.KClass
  * a state change, it will rerun [Formula.evaluate].
  */
 internal class FormulaManagerImpl<Input, State, Output>(
-    internal val formulaTypeKClass: KClass<*>,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
+    override val formulaType: Class<*>,
     initialInput: Input,
     private val listeners: Listeners = Listeners(),
-    override val formulaType: Class<*> = formulaTypeKClass.java,
 ) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
@@ -93,7 +92,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 globalEvaluationId += 1
 
                 inspector?.onStateChanged(
-                    formulaType = formulaTypeKClass,
+                    formulaType = formulaType,
                     event = event,
                     old = old,
                     new = result.state,
@@ -173,11 +172,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         if (lastFrame == null) {
-            inspector?.onFormulaStarted(formulaTypeKClass)
+            inspector?.onFormulaStarted(formulaType)
         }
 
         if (!isValidationEnabled) {
-            inspector?.onEvaluateStarted(formulaTypeKClass, state)
+            inspector?.onEvaluateStarted(formulaType, state)
         }
 
         if (lastFrame != null) {
@@ -185,16 +184,16 @@ internal class FormulaManagerImpl<Input, State, Output>(
             val hasInputChanged = prevInput != input
             if (!isValidationEnabled && lastFrame.associatedEvaluationId == evaluationId && !hasInputChanged) {
                 val evaluation = lastFrame.evaluation
-                inspector?.onEvaluateFinished(formulaTypeKClass, evaluation.output, evaluated = false)
+                inspector?.onEvaluateFinished(formulaType, evaluation.output, evaluated = false)
                 return evaluation
             }
 
             if (hasInputChanged) {
                 if (isValidationEnabled) {
-                    throw ValidationException("$formulaTypeKClass - input changed during identical re-evaluation - old: $prevInput, new: $input")
+                    throw ValidationException("$formulaType - input changed during identical re-evaluation - old: $prevInput, new: $input")
                 }
                 state = formula.onInputChanged(prevInput, input, state)
-                inspector?.onInputChanged(formulaTypeKClass, prevInput, input)
+                inspector?.onInputChanged(formulaType, prevInput, input)
             }
         }
 
@@ -209,13 +208,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isValidationEnabled) {
             val oldOutput = lastFrame?.evaluation?.output
             if (oldOutput != result.output) {
-                throw ValidationException("$formulaTypeKClass - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+                throw ValidationException("$formulaType - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
             }
 
             val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
             val currentActionKeys = result.actions.map { it.key }
             if (lastActionKeys != currentActionKeys) {
-                throw ValidationException("$formulaTypeKClass - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
+                throw ValidationException("$formulaType - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
             }
         }
 
@@ -228,7 +227,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         snapshot.markRunning()
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(formulaTypeKClass, newFrame.evaluation.output, evaluated = true)
+            inspector?.onEvaluateFinished(formulaType, newFrame.evaluation.output, evaluated = true)
         }
 
         return newFrame.evaluation
@@ -304,7 +303,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         listeners.disableAll()
-        inspector?.onFormulaFinished(formulaTypeKClass)
+        inspector?.onFormulaFinished(formulaType)
     }
 
     fun onPendingTransition(transition: DeferredTransition<*, *, *>) {

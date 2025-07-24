@@ -397,9 +397,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
-            formulaTypeKClass = formula.type(),
             delegate = this,
             formula = implementation,
+            formulaType = formula.type(),
             initialInput = initialInput,
         )
     }

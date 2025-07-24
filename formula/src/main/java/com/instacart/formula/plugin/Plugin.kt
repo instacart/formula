@@ -1,6 +1,5 @@
 package com.instacart.formula.plugin
 
-import kotlin.reflect.KClass
 
 interface Plugin {
     /**
@@ -9,7 +8,7 @@ interface Plugin {
      *
      * @param type Formula type.
      */
-    fun inspector(type: KClass<*>): Inspector? {
+    fun inspector(type: Class<*>): Inspector? {
         return null
     }
 

@@ -86,7 +86,7 @@ class FormulaPluginTest {
             observer.assertHasErrors()
 
             assertThat(plugin.errors).containsExactly(
-                FormulaError.ActionError(myFormula.type().java, exception)
+                FormulaError.ActionError(myFormula.type(), exception)
             )
         }
     }
