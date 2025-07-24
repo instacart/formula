@@ -24,13 +24,15 @@ class NavigationApp : Application() {
                     ActivityStore(
                         fragmentStore = FragmentStore.Builder()
                             .build {
-                                bind(NavigationFragmentFeatureFactory(navigationStore) { effect ->
-                                    onNavigationEffect?.invoke(effect)
-                                })
-                            }
+                                bind(
+                                    NavigationFragmentFeatureFactory(navigationStore) { effect ->
+                                        onNavigationEffect?.invoke(effect)
+                                    }
+                                )
+                            },
                     )
                 }
-            }
+            },
         )
     }
 }

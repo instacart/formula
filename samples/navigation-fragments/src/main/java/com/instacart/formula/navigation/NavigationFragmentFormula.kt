@@ -7,21 +7,21 @@ import com.instacart.formula.rxjava3.RxAction
 
 class NavigationFragmentFormula(
     private val navigationStore: NavigationStore,
-    private val onNavigationEffect: (NavigationEffect) -> Unit
 ) : Formula<NavigationFragmentFormula.Input, NavigationFragmentFormula.State, NavigationFragmentRenderModel>() {
 
     data class Input(
-        val fragmentId: Int
+        val fragmentId: Int,
+        val onNavigationEffect: (NavigationEffect) -> Unit,
     )
 
     data class State(
         val navigationState: NavigationState,
-        val counter: Int = 0
+        val counter: Int = 0,
     )
 
     override fun initialState(input: Input): State = State(
         navigationState = navigationStore.getCurrentState(),
-        counter = 0
+        counter = 0,
     )
 
     override fun Snapshot<Input, State>.evaluate(): Evaluation<NavigationFragmentRenderModel> {
@@ -31,32 +31,30 @@ class NavigationFragmentFormula(
                 counter = state.counter,
                 backStackFragments = state.navigationState.navigationStack,
                 onNavigateToNext = context.callback {
-                    val nextFragmentId = state.navigationState.navigationStack.maxOrNull()?.plus(1) ?: 1
-                    navigationStore.onEvent(NavigationEvent.NavigateToFragment(nextFragmentId))
-                    transition(effect = {
-                        onNavigationEffect(NavigationEffect.NavigateToFragment(nextFragmentId))
-                    })
+                    transition {
+                        val nextFragmentId = state.navigationState.navigationStack.maxOrNull()?.plus(1) ?: 1
+                        navigationStore.onEvent(NavigationEvent.NavigateToFragment(nextFragmentId))
+                        input.onNavigationEffect(NavigationEffect.NavigateToFragment(nextFragmentId))
+                    }
                 },
                 onNavigateBack = context.callback {
-                    navigationStore.onEvent(NavigationEvent.NavigateBack)
-                    transition(effect = {
-                        onNavigationEffect(NavigationEffect.NavigateBack)
-                    })
+                    transition {
+                        navigationStore.onEvent(NavigationEvent.NavigateBack)
+                        input.onNavigationEffect(NavigationEffect.NavigateBack)
+                    }
                 },
                 onIncrementCounter = { fragmentId ->
                     navigationStore.onEvent(NavigationEvent.IncrementCounter(fragmentId))
-                }
+                },
             ),
             actions = context.actions {
-                val stateAction = RxAction.fromObservable { navigationStore.state }
-                stateAction.onEvent { navigationState ->
+                RxAction.fromObservable { navigationStore.state }.onEvent { navigationState ->
                     transition(state.copy(navigationState = navigationState))
                 }
 
-                val counterIncrementAction = RxAction.fromObservable {
+                RxAction.fromObservable {
                     navigationStore.counterIncrements.filter { it == input.fragmentId }
-                }
-                counterIncrementAction.onEvent {
+                }.onEvent {
                     transition(state.copy(counter = state.counter + 1))
                 }
             },

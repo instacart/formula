@@ -8,7 +8,7 @@ android {
     namespace = "com.instacart.formula.navigation"
 
     defaultConfig {
-        applicationId = "com.instacart.formula.navigation"
+        applicationId = "com.instacart.formula.navigation.fragments"
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -20,13 +20,6 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
     }
 
     testOptions {

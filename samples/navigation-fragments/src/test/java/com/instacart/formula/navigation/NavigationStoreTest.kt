@@ -1,5 +1,6 @@
 package com.instacart.formula.navigation
 
+import android.annotation.SuppressLint
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -12,7 +13,6 @@ class NavigationStoreTest {
 
         assertThat(initialState.currentFragmentId).isEqualTo(0)
         assertThat(initialState.navigationStack).containsExactly(0)
-        assertThat(initialState.backStackFragments).isEmpty()
     }
 
     @Test
@@ -24,7 +24,6 @@ class NavigationStoreTest {
 
         assertThat(state.currentFragmentId).isEqualTo(1)
         assertThat(state.navigationStack).containsExactly(0, 1).inOrder()
-        assertThat(state.backStackFragments).containsExactly(0)
     }
 
     @Test
@@ -39,7 +38,6 @@ class NavigationStoreTest {
 
         assertThat(state.currentFragmentId).isEqualTo(1)
         assertThat(state.navigationStack).containsExactly(0, 1).inOrder()
-        assertThat(state.backStackFragments).containsExactly(0)
     }
 
     @Test
@@ -51,9 +49,9 @@ class NavigationStoreTest {
 
         assertThat(state.currentFragmentId).isEqualTo(0)
         assertThat(state.navigationStack).containsExactly(0)
-        assertThat(state.backStackFragments).isEmpty()
     }
 
+    @SuppressLint("CheckResult")
     @Test
     fun `increment counter should emit counter increment event`() {
         val store = NavigationStore()
@@ -82,10 +80,13 @@ class NavigationStoreTest {
         // Navigate back: 3 -> 2
         store.onEvent(NavigationEvent.NavigateBack)
 
+        // Navigate forward: 2 -> 3 -> 4
+        store.onEvent(NavigationEvent.NavigateToFragment(3))
+        store.onEvent(NavigationEvent.NavigateToFragment(4))
+
         val state = store.getCurrentState()
 
-        assertThat(state.currentFragmentId).isEqualTo(2)
-        assertThat(state.navigationStack).containsExactly(0, 1, 2).inOrder()
-        assertThat(state.backStackFragments).containsExactly(0, 1).inOrder()
+        assertThat(state.currentFragmentId).isEqualTo(4)
+        assertThat(state.navigationStack).containsExactly(0, 1, 2, 3, 4).inOrder()
     }
 }

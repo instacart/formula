@@ -13,24 +13,24 @@ fun NavigationScreen(renderModel: NavigationFragmentRenderModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp)
+            .padding(16.dp),
     ) {
         // Fragment title
         Text(
             text = "Fragment ${renderModel.fragmentId}",
             fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
         // Counter text
         Text(
             text = "Counter: ${renderModel.counter}",
             fontSize = 18.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
         )
         // Navigate next button
         Button(
             onClick = { renderModel.onNavigateToNext() },
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         ) {
             Text("Navigate to Next Fragment")
         }
@@ -38,7 +38,7 @@ fun NavigationScreen(renderModel: NavigationFragmentRenderModel) {
         if (renderModel.backStackFragments.size > 1) {
             Button(
                 onClick = { renderModel.onNavigateBack() },
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             ) {
                 Text("Navigate Back")
             }
@@ -50,7 +50,7 @@ fun NavigationScreen(renderModel: NavigationFragmentRenderModel) {
             Text(
                 text = "Fragment Counters:",
                 fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -58,7 +58,7 @@ fun NavigationScreen(renderModel: NavigationFragmentRenderModel) {
                 renderModel.backStackFragments.forEach { fragmentId ->
                     Button(
                         onClick = { renderModel.onIncrementCounter(fragmentId) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Increment Counter for Fragment $fragmentId")
                     }

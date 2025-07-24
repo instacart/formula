@@ -1,7 +1,6 @@
 package com.instacart.formula.navigation
 
 import android.os.Bundle
-import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.FormulaAppCompatActivity
 import com.instacart.formula.android.FormulaFragment
 
@@ -48,9 +47,8 @@ class NavigationActivity : FormulaAppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (!FormulaAndroid.onBackPressed(this)) {
-            // Handle navigation back through our navigation system
-            handleNavigationEffect(NavigationEffect.NavigateBack)
-        }
+        // Handle navigation back through our navigation system
+        NavigationApp.navigationStore.onEvent(NavigationEvent.NavigateBack)
+        NavigationApp.onNavigationEffect?.invoke(NavigationEffect.NavigateBack)
     }
 }

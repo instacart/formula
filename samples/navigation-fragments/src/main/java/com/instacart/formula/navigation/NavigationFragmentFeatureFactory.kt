@@ -10,9 +10,14 @@ class NavigationFragmentFeatureFactory(
 ) : FeatureFactory<Unit, NavigationFragmentKey>() {
 
     override fun Params.initialize(): Feature {
-        val formula = NavigationFragmentFormula(navigationStore, onNavigationEffect)
+        val formula = NavigationFragmentFormula(navigationStore)
         return Feature(
-            state = formula.toObservable(NavigationFragmentFormula.Input(key.fragmentId)),
+            state = formula.toObservable(
+                NavigationFragmentFormula.Input(
+                    fragmentId = key.fragmentId,
+                    onNavigationEffect = onNavigationEffect,
+                )
+            ),
             viewFactory = NavigationFragmentViewFactory(),
         )
     }
