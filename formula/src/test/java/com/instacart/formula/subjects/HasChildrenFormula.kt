@@ -5,14 +5,13 @@ import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.subjects.HasChildrenFormula.State
 import com.instacart.formula.subjects.HasChildrenFormula.Output
 
 class HasChildrenFormula<ChildInput, ChildOutput>(
     private val childCount: Int,
     private val child: IFormula<ChildParamsInput<ChildInput>, ChildOutput>,
-    private val createChildInput: FormulaContext<*, State>.(ChildParams) -> ChildParamsInput<ChildInput>,
-) : Formula<Int, State, Output<ChildOutput>>() {
+    private val createChildInput: FormulaContext<*, Unit>.(ChildParams) -> ChildParamsInput<ChildInput>,
+) : Formula<Int, Unit, Output<ChildOutput>>() {
 
     companion object {
         operator fun <ChildOutput> invoke(
@@ -39,36 +38,24 @@ class HasChildrenFormula<ChildInput, ChildOutput>(
         val value: Input,
     )
 
-    data class State(
-        val errors: List<Throwable> = emptyList(),
-    )
-
     data class Output<ChildOutput>(
         val run: Int,
-        val errors: List<Throwable>,
         val childOutputs: List<ChildOutput>,
     )
 
-    override fun initialState(input: Int): State = State()
+    override fun initialState(input: Int): Unit = Unit
 
-    override fun Snapshot<Int, State>.evaluate(): Evaluation<Output<ChildOutput>> {
-        val childOutputs = (0 until childCount).mapNotNull{ index ->
+    override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Output<ChildOutput>> {
+        val childOutputs = (0 until childCount).mapNotNull { index ->
             context.key(index) {
                 val childParams = ChildParams(index = index, run = input)
                 val childInput = createChildInput(context, childParams)
-                context.child(
-                    formula = child,
-                    input = childInput,
-                    onError = context.onEvent { error ->
-                        transition(state.copy(errors = state.errors + error))
-                    }
-                )
+                context.childOrNull(child, childInput)
             }
         }
         return Evaluation(
             output = Output(
                 run = input,
-                errors = state.errors,
                 childOutputs = childOutputs,
             )
         )

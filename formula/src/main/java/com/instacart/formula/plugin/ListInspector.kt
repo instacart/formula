@@ -1,41 +1,40 @@
-package com.instacart.formula.internal
+package com.instacart.formula.plugin
 
 import com.instacart.formula.DeferredAction
-import com.instacart.formula.plugin.Inspector
 import kotlin.reflect.KClass
 
-internal class ListInspector(
+class ListInspector(
     private val inspectors: List<Inspector>,
 ) : Inspector {
-    override fun onFormulaStarted(formulaType: KClass<*>) {
+    override fun onFormulaStarted(formulaType: Class<*>) {
         forEachInspector { onFormulaStarted(formulaType) }
     }
 
-    override fun onFormulaFinished(formulaType: KClass<*>) {
+    override fun onFormulaFinished(formulaType: Class<*>) {
         forEachInspector { onFormulaFinished(formulaType) }
     }
 
-    override fun onEvaluateStarted(formulaType: KClass<*>, state: Any?) {
+    override fun onEvaluateStarted(formulaType: Class<*>, state: Any?) {
         forEachInspector { onEvaluateStarted(formulaType, state) }
     }
 
-    override fun onInputChanged(formulaType: KClass<*>, prevInput: Any?, newInput: Any?) {
+    override fun onInputChanged(formulaType: Class<*>, prevInput: Any?, newInput: Any?) {
         forEachInspector { onInputChanged(formulaType, prevInput, newInput) }
     }
 
-    override fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) {
+    override fun onEvaluateFinished(formulaType: Class<*>, output: Any?, evaluated: Boolean) {
         forEachInspector { onEvaluateFinished(formulaType, output, evaluated) }
     }
 
-    override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
+    override fun onActionStarted(formulaType: Class<*>, action: DeferredAction<*>) {
         forEachInspector { onActionStarted(formulaType, action) }
     }
 
-    override fun onActionFinished(formulaType: KClass<*>, action: DeferredAction<*>) {
+    override fun onActionFinished(formulaType: Class<*>, action: DeferredAction<*>) {
         forEachInspector { onActionFinished(formulaType, action) }
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
+    override fun onStateChanged(formulaType: Class<*>, event: Any?, old: Any?, new: Any?) {
         forEachInspector { onStateChanged(formulaType, event, old, new) }
     }
 

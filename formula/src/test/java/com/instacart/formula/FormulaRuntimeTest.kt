@@ -7,10 +7,13 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.FormulaKey
 import com.instacart.formula.internal.TestDispatcher
 import com.instacart.formula.internal.TestInspector
+import com.instacart.formula.internal.TestPlugin
 import com.instacart.formula.internal.Try
 import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.plugin.Plugin
+import com.instacart.formula.plugin.withPlugin
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.subjects.ChildActionFiresParentEventOnStart
 import com.instacart.formula.subjects.ChildErrorAfterToggleFormula
@@ -89,6 +92,7 @@ import com.instacart.formula.types.OnInitActionFormula
 import com.instacart.formula.types.TestStateBatchScheduler
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Ignore
 import org.junit.Rule
@@ -97,7 +101,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestName
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import kotlin.reflect.KClass
 
 class FormulaRuntimeTest {
 
@@ -331,7 +334,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `no state changes after event stream is removed`() {
+    fun `no state changes after event action is removed`() {
         StartStopFormula().test().input(Unit)
             .output { startListening() }
             .apply { formula.incrementEvents.triggerEvent() }
@@ -538,7 +541,7 @@ class FormulaRuntimeTest {
         inspector.assertEvaluationCount(HasChildFormula::class, 3)
     }
 
-    @Test fun `transition effect queue maintains FIFO order when starting a new stream during a transition`() {
+    @Test fun `transition effect queue maintains FIFO order when starting a new action during a transition`() {
         val inspector = CountingInspector()
         val onEvent = TestEventCallback<EffectOrderFormula.Event>()
         val initialInput = EffectOrderFormula.Input(onEvent = onEvent)
@@ -811,7 +814,8 @@ class FormulaRuntimeTest {
             }
         }
 
-        parentFormula.test().input(Unit).output {
+        // Need failOnError to avoid test failing due to duplicate child errors
+        parentFormula.test(failOnError = false).input(Unit).output {
             assertThat(this).isEqualTo(5)
         }
     }
@@ -834,9 +838,9 @@ class FormulaRuntimeTest {
             .output { assertThat(items).hasSize(2) }
     }
 
-    // Stream test cases
+    // Action test cases
 
-    @Test fun `stream event triggers a state change`() {
+    @Test fun `action event triggers a state change`() {
         val formula = StartStopFormula()
         formula.test().input(Unit)
             .output { this.startListening() }
@@ -860,7 +864,7 @@ class FormulaRuntimeTest {
         assertThat(eventCallback.values()).containsExactly("a", "b").inOrder()
     }
 
-    @Test fun `stream is disposed when evaluation does not contain it`() {
+    @Test fun `action is disposed when evaluation does not contain it`() {
         DynamicStreamSubject()
             .updateStreams(keys = arrayOf("1"))
             .assertRunning(keys = arrayOf("1"))
@@ -868,7 +872,7 @@ class FormulaRuntimeTest {
             .assertRunning(keys = emptyArray())
     }
 
-    @Test fun `stream is removed when formula is removed`() {
+    @Test fun `action is removed when formula is removed`() {
         DynamicStreamSubject()
             .updateStreams(keys = arrayOf("1"))
             .assertRunning(keys = arrayOf("1"))
@@ -876,7 +880,7 @@ class FormulaRuntimeTest {
             .assertRunning(keys = emptyArray())
     }
 
-    @Test fun `stream is reset when key changes`() {
+    @Test fun `action is reset when key changes`() {
         DynamicStreamSubject()
             .updateStreams("1")
             .assertRunning("1")
@@ -1004,7 +1008,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `remove all streams`() {
+    fun `remove all actions`() {
         DynamicStreamSubject()
             .updateStreams("one", "two", "three")
             .removeAll()
@@ -1012,14 +1016,14 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `switch one stream`() {
+    fun `switch one action`() {
         DynamicStreamSubject()
             .updateStreams("one", "two", "three")
             .updateStreams("one", "three", "four")
     }
 
     @Test
-    fun `stream event listener is scoped to latest state`() {
+    fun `action event listener is scoped to latest state`() {
         val events = listOf("a", "b")
         val formula = EventFormula(events)
 
@@ -1033,7 +1037,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `stream events are captured in order`() {
+    fun `action events are captured in order`() {
         val inspector = CountingInspector()
         val events = listOf("first", "second", "third", "third")
         val formula = EventFormula(events)
@@ -1045,7 +1049,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `stream event listeners can handle at least 100k events`() {
+    fun `action event listeners can handle at least 100k events`() {
         val inspector = CountingInspector()
         val eventCount = 100000
         val events = (1..eventCount).toList()
@@ -1076,7 +1080,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `same stream declarations are okay`() {
+    fun `same action declarations are okay`() {
         val formula = OnlyUpdateFormula<Unit> {
             EmptyAction.init().onEvent {
                 transition(Unit)
@@ -1107,7 +1111,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `key is required when stream is declared in a loop`() {
+    fun `key is required when action is declared in a loop`() {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
@@ -1117,12 +1121,12 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
-    fun `using key for stream declared in a loop`() {
+    fun `using key for action declared in a loop`() {
         val formula = OnlyUpdateFormula<Unit> {
             val list = listOf(1, 2, 3)
             list.forEach {
@@ -1136,7 +1140,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `multiple event streams without key`() {
+    fun `multiple event actions without key`() {
         var executed = 0
         val formula = OnlyUpdateFormula<Unit> {
             Action.onInit().onEvent {
@@ -1186,7 +1190,7 @@ class FormulaRuntimeTest {
             }
         }
 
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error).isInstanceOf(IllegalStateException::class.java)
     }
 
@@ -1253,7 +1257,114 @@ class FormulaRuntimeTest {
             }
     }
 
-    // End of stream test cases
+    @Test
+    fun `formula does not crash when action throws an exception during initialization`() {
+        withPlugin(TestPlugin()) { plugin ->
+            val formula = object : Formula<Int, Unit, Int>() {
+                override fun initialState(input: Int): Unit = Unit
+
+                override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                    return Evaluation(
+                        output = input,
+                        actions = context.actions {
+                            RxAction.fromObservable<Unit> {
+                                throw RuntimeException("Test exception")
+                            }.onEvent {
+                                none()
+                            }
+                        }
+                    )
+                }
+            }
+
+            formula.test(failOnError = false)
+                .input(0)
+                .assertOutputCount(1)
+                .input(1)
+                .assertOutputCount(2)
+                .assertHasErrors()
+
+            assertThat(plugin.errors).hasSize(1)
+            assertThat(plugin.errors.first().error.message).contains("Test exception")
+        }
+    }
+
+    @Test
+    fun `formula does not crash when action throws an exception during termination`() {
+        val action = object : Action<Unit> {
+            override fun start(scope: CoroutineScope, emitter: Action.Emitter<Unit>): Cancelable {
+                return Cancelable {
+                    throw RuntimeException("Test exception")
+                }
+            }
+
+            override fun key(): Any? = null
+        }
+
+        withPlugin(TestPlugin()) { plugin ->
+            val formula = object : Formula<Int, Unit, Int>() {
+                override fun initialState(input: Int): Unit = Unit
+
+                override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                    return Evaluation(
+                        output = input,
+                        actions = context.actions {
+                            if (input == 0) {
+                                action.onEvent { none() }
+                            }
+                        }
+                    )
+                }
+            }
+
+            formula.test(failOnError = false)
+                .input(0)
+                .input(1)
+                .input(2)
+                .input(3)
+                .assertOutputCount(4)
+                .assertHasErrors()
+
+            assertThat(plugin.errors).hasSize(1)
+            assertThat(plugin.errors.first().error.message).contains("Test exception")
+        }
+    }
+
+    @Test
+    fun `formula does not crash when an effect throws an exception`() {
+        withPlugin(TestPlugin()) { plugin ->
+            val events = MutableSharedFlow<Int>(replay = 0, extraBufferCapacity = Int.MAX_VALUE)
+            val formula = object : Formula<Unit, Int, Int>() {
+                override fun initialState(input: Unit): Int = 0
+
+                override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+                    return Evaluation(
+                        output = state,
+                        actions = context.actions {
+                            Action.fromFlow { events }.onEvent {
+                                transition(it) {
+                                    throw IllegalStateException("Test exception $it")
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            formula.test(failOnError = false)
+                .input(Unit)
+                .apply { events.tryEmit(1) }
+                .apply { events.tryEmit(2) }
+                .assertOutputCount(3)
+                .assertHasErrors()
+
+            assertThat(plugin.errors).hasSize(2)
+            assertThat(plugin.errors[0].error.message).contains("Test exception 1")
+            assertThat(plugin.errors[1].error.message).contains("Test exception 2")
+        }
+    }
+
+    // End of action test cases
 
     // Child specific test cases
 
@@ -1303,43 +1414,34 @@ class FormulaRuntimeTest {
     @Test fun `child formulas with duplicate key are supported`() {
         val result = Try {
             val formula = DynamicParentFormula()
-            formula.test().input(Unit)
+            formula.test(failOnError = false).input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
     }
 
-    @Test fun `when child formulas with duplicate key are added, plugin is notified`() {
-        val duplicateKeys = mutableListOf<Any>()
-
-        FormulaPlugins.setPlugin(object : Plugin {
-            override fun onDuplicateChildKey(
-                parentType: Class<*>,
-                childFormulaType: Class<*>,
-                key: Any
-            ) {
-                duplicateKeys.add(key)
-            }
-        })
-
+    @Test fun `when child formulas with duplicate key are added, plugin is notified`() = withPlugin(TestPlugin()) {
         val result = Try {
             val formula = DynamicParentFormula()
-            formula.test().input(Unit)
+            formula.test(failOnError = false).input(Unit)
                 .output { addChild(TestKey("1")) }
                 .output { addChild(TestKey("1")) }
         }
 
         // No errors
-        val error = result.errorOrNull()?.cause
+        val error = result.errorOrNull()
         assertThat(error).isNull()
 
         // Should log only once
-        assertThat(duplicateKeys).hasSize(1)
-        assertThat(duplicateKeys).containsExactly(
+        assertThat(it.errors).hasSize(1)
+
+        val duplicateKeyError = it.errors.first() as FormulaError.ChildKeyAlreadyUsed
+        assertThat(duplicateKeyError.formula).isEqualTo(DynamicParentFormula::class.java)
+        assertThat(duplicateKeyError.error.key).isEqualTo(
             FormulaKey(null, KeyFormula::class.java, TestKey("1"))
         )
     }
@@ -1464,7 +1566,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `canceling terminate stream does not emit terminate message`() {
+    fun `canceling terminate action does not emit terminate message`() {
         val terminateCallback = TestCallback()
         RemovingTerminateStreamSendsNoMessagesFormula().test()
             .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback))
@@ -1662,6 +1764,59 @@ class FormulaRuntimeTest {
             }
     }
 
+    @Test fun `propagate error up when child emits error during initial evaluation`() {
+        val child = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                throw IllegalStateException("evaluation error")
+            }
+        }
+
+        val parent = object : StatelessFormula<Unit, Int>() {
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                val value = context.child(child)
+                return Evaluation(output = value)
+            }
+        }
+
+        parent.test(failOnError = false).input(Unit).apply {
+            assertThat(values()).isEmpty()
+            assertThat(errors()).hasSize(1)
+        }
+    }
+
+    @Test fun `return last output when child emits an error during subsequent evaluation`() {
+        val child = object : StatelessFormula<Int, Int>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+                if (input == 1) throw IllegalStateException("evaluation error")
+                return Evaluation(output = input)
+            }
+        }
+
+        val parent = object : StatelessFormula<Int, Pair<Int, Int>>() {
+            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Pair<Int, Int>> {
+                val childValue = context.child(child, input)
+                return Evaluation(
+                    output = Pair(input, childValue)
+                )
+            }
+        }
+
+        parent.test(failOnError = false).input(0).apply {
+            // Initial emission, no errors
+            output { assertThat(this).isEqualTo(Pair(0, 0)) }
+
+            // Subsequent emission, with error
+            input(1)
+            assertThat(errors()).hasSize(1)
+            output { assertThat(this).isEqualTo(Pair(1, 0)) }
+
+            // Child is terminated, but parent still functions
+            input(2)
+            output { assertThat(this).isEqualTo(Pair(2, 0)) }
+            assertThat(errors()).hasSize(1)
+        }
+    }
+
     @Test
     fun `emit error`() {
         val formula = OnlyUpdateFormula<Unit> {
@@ -1669,7 +1824,7 @@ class FormulaRuntimeTest {
                 throw java.lang.IllegalStateException("crashed")
             }
         }
-        val error = Try { formula.test().input(Unit) }.errorOrNull()?.cause
+        val error = Try { formula.test().input(Unit) }.errorOrNull()
         assertThat(error?.message).isEqualTo("crashed")
     }
 
@@ -1683,11 +1838,13 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1707,11 +1864,14 @@ class FormulaRuntimeTest {
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
-        formula.test().input(0)
+        val observer = formula.test(failOnError = false)
+        observer
+            .input(0)
             .output {
                 assertThat(childOutputs).isEqualTo(listOf(0, 2))
-                assertThat(errors).hasSize(1)
             }
+
+        assertThat(observer.errors()).hasSize(1)
     }
 
     @Test
@@ -1731,7 +1891,7 @@ class FormulaRuntimeTest {
                 )
             },
         )
-        formula.test().input(0)
+        formula.test(failOnError = false).input(0)
             .output {
                 childOutputs.forEach { it.listener() }
                 childOutputs[1].errorToggle()
@@ -1871,7 +2031,7 @@ class FormulaRuntimeTest {
     fun `inspector events`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -1912,7 +2072,7 @@ class FormulaRuntimeTest {
         val localInspector = TestInspector()
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -1955,7 +2115,7 @@ class FormulaRuntimeTest {
     fun `only global inspector events`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })
@@ -2262,7 +2422,7 @@ class FormulaRuntimeTest {
     @Test fun `batched events notify the inspector of start and stop`() {
         val globalInspector = TestInspector()
         FormulaPlugins.setPlugin(object : Plugin {
-            override fun inspector(type: KClass<*>): Inspector {
+            override fun inspector(type: Class<*>): Inspector {
                 return globalInspector
             }
         })

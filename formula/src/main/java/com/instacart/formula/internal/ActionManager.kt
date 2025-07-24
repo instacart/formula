@@ -90,7 +90,7 @@ internal class ActionManager(
                 inspector?.onActionStarted(manager.formulaType, action)
 
                 runningActions.add(action)
-                action.start(manager.scope, manager.formulaType.java)
+                action.start(manager)
 
                 if (manager.isTerminated()) {
                     return false
@@ -149,8 +149,7 @@ internal class ActionManager(
 
     private fun finishAction(action: DeferredAction<*>) {
         inspector?.onActionFinished(manager.formulaType, action)
-        action.tearDown()
-        action.listener = null
+        action.tearDown(manager)
     }
 
     private fun getOrInitRunningActions(): LinkedHashSet<DeferredAction<*>> {

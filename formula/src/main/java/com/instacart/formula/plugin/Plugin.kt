@@ -1,6 +1,5 @@
 package com.instacart.formula.plugin
 
-import kotlin.reflect.KClass
 
 interface Plugin {
     /**
@@ -9,7 +8,7 @@ interface Plugin {
      *
      * @param type Formula type.
      */
-    fun inspector(type: KClass<*>): Inspector? {
+    fun inspector(type: Class<*>): Inspector? {
         return null
     }
 
@@ -17,15 +16,6 @@ interface Plugin {
      * Notified when an error is thrown in a formula.
      */
     fun onError(error: FormulaError) = Unit
-
-    /**
-     * Notified when there is a duplicate child key detected.
-     */
-    fun onDuplicateChildKey(
-        parentType: Class<*>,
-        childFormulaType: Class<*>,
-        key: Any,
-    ) = Unit
 
     /**
      * Dispatcher for the main thread. It will be used to execute

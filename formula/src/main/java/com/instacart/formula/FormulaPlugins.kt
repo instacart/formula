@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.ListInspector
+import com.instacart.formula.plugin.ListInspector
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
@@ -14,7 +14,7 @@ object FormulaPlugins {
         this.plugin = plugin
     }
 
-    fun inspector(type: KClass<*>, local: Inspector?): Inspector? {
+    fun inspector(type: Class<*>, local: Inspector?): Inspector? {
         val global = plugin?.inspector(type)
         return when {
             global == null -> local
@@ -28,14 +28,6 @@ object FormulaPlugins {
      */
     fun onError(error: FormulaError) {
         plugin?.onError(error)
-    }
-
-    fun onDuplicateChildKey(
-        parentFormulaType: Class<*>,
-        childFormulaType: Class<*>,
-        key: Any,
-    ) {
-       plugin?.onDuplicateChildKey(parentFormulaType, childFormulaType, key)
     }
 
     fun mainThreadDispatcher(): Dispatcher {

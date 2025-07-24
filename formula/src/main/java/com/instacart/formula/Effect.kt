@@ -1,5 +1,8 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.EffectDelegate
+import com.instacart.formula.internal.onEffectError
+import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Plugin
 
 /**
@@ -11,10 +14,19 @@ import com.instacart.formula.plugin.Plugin
  * allows us to ensure that [Formula] is always in the correct state in case effects
  * trigger an update.
  */
-data class Effect(
+data class Effect internal constructor(
+    private val delegate: EffectDelegate,
     val type: Type,
-    val executable: () -> Unit,
-) {
+    private val executable: () -> Unit,
+) : () -> Unit {
+
+    override fun invoke() {
+        try {
+            executable()
+        } catch (throwable: Exception) {
+            delegate.onEffectError(throwable)
+        }
+    }
 
     /**
      * Defines the execution model of the effect such as timing and threading. Take a

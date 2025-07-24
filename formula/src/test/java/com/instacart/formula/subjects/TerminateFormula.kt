@@ -30,10 +30,10 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
 
     internal class WithId<Input, State, Output>(
         override val implementation: Formula<Input, State, Output>,
-        val type: KClass<*>,
+        val type: Class<*>,
         val key: Any
     ) : IFormula<Input, Output> {
-        override fun type(): KClass<*> = type
+        override fun type(): Class<*> = type
 
         override fun key(input: Input): Any = key
     }

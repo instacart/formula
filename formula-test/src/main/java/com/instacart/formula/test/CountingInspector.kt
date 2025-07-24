@@ -11,9 +11,9 @@ class CountingInspector : Inspector {
     private val actionsStarted = mutableListOf<Class<*>>()
     private val stateTransitions = mutableListOf<Class<*>>()
 
-    override fun onEvaluateFinished(formulaType: KClass<*>, output: Any?, evaluated: Boolean) {
+    override fun onEvaluateFinished(formulaType: Class<*>, output: Any?, evaluated: Boolean) {
         if (evaluated) {
-            evaluatedList.add(formulaType.java)
+            evaluatedList.add(formulaType)
         }
     }
 
@@ -21,12 +21,12 @@ class CountingInspector : Inspector {
         runCount += 1
     }
 
-    override fun onActionStarted(formulaType: KClass<*>, action: DeferredAction<*>) {
-        actionsStarted.add(formulaType.java)
+    override fun onActionStarted(formulaType: Class<*>, action: DeferredAction<*>) {
+        actionsStarted.add(formulaType)
     }
 
-    override fun onStateChanged(formulaType: KClass<*>, event: Any?, old: Any?, new: Any?) {
-        stateTransitions.add(formulaType.java)
+    override fun onStateChanged(formulaType: Class<*>, event: Any?, old: Any?, new: Any?) {
+        stateTransitions.add(formulaType)
     }
 
     fun assertEvaluationCount(expected: Int) = apply {

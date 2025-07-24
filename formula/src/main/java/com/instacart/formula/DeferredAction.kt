@@ -1,5 +1,8 @@
 package com.instacart.formula
 
+import com.instacart.formula.internal.ActionDelegate
+import com.instacart.formula.internal.onActionError
+import com.instacart.formula.internal.runSafe
 import com.instacart.formula.plugin.FormulaError
 import kotlinx.coroutines.CoroutineScope
 
@@ -10,30 +13,36 @@ class DeferredAction<Event>(
     val key: Any,
     private val action: Action<Event>,
     // We use event listener for equality because it provides better equality performance
-    private val initial: (Event) -> Unit
+    private val listener: (Event) -> Unit
 ) {
+    @Volatile private var isEnabled = true
     private var cancelable: Cancelable? = null
 
-    internal var listener: ((Event) -> Unit)? = initial
-
-    internal fun start(scope: CoroutineScope, formulaType: Class<*>) {
+    internal fun start(delegate: ActionDelegate) {
         val emitter = object : Action.Emitter<Event> {
             override fun onEvent(event: Event) {
-                listener?.invoke(event)
+                if (isEnabled) {
+                    listener.invoke(event)
+                }
             }
 
             override fun onError(throwable: Throwable) {
-                val error = FormulaError.ActionError(formulaType, throwable)
-                FormulaPlugins.onError(error)
+                delegate.onActionError(throwable)
             }
         }
 
-        cancelable = action.start(scope, emitter)
+        delegate.runSafe {
+            cancelable = action.start(delegate.scope, emitter)
+        }
     }
 
-    internal fun tearDown() {
-        cancelable?.cancel()
+    internal fun tearDown(delegate: ActionDelegate) {
+        delegate.runSafe {
+            cancelable?.cancel()
+        }
+
         cancelable = null
+        isEnabled = false
     }
 
     /**
@@ -41,10 +50,10 @@ class DeferredAction<Event>(
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return other is DeferredAction<*> && initial == other.initial
+        return other is DeferredAction<*> && listener == other.listener
     }
 
     override fun hashCode(): Int {
-        return initial.hashCode()
+        return listener.hashCode()
     }
 }

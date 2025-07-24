@@ -49,7 +49,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         return DeferredAction(
             key = key,
             action = stream,
-            initial = listener
+            listener = listener
         )
     }
 }

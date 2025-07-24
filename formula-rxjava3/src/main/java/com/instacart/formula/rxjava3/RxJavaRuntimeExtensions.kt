@@ -40,7 +40,6 @@ fun <Input : Any, Output : Any> start(
             config = config ?: RuntimeConfig(),
         )
         runtime.setOnOutput(emitter::onNext)
-        runtime.setOnError(emitter::onError)
 
         val disposables = CompositeDisposable()
         disposables.add(input.subscribe(runtime::onInput, emitter::onError))

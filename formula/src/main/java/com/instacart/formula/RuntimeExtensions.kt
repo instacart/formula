@@ -43,10 +43,6 @@ fun <Input : Any, Output : Any> IFormula<Input, Output>.runAsStateFlow(
     // having a specific dispatcher does not make sense.
     val config = RuntimeConfig(defaultDispatcher = Dispatcher.None)
     val runtime = asRuntime(scope.coroutineContext, config)
-    runtime.setOnError { e ->
-        val error = FormulaError.Unhandled(type().java, e)
-        FormulaPlugins.onError(error)
-    }
 
     // Setup cancellation
     job.invokeOnCompletion { runtime.terminate() }
@@ -91,7 +87,6 @@ private fun <Input : Any, Output : Any> start(
     val callbackFlow = callbackFlow {
         val runtime = formula.asRuntime(coroutineContext, config)
         runtime.setOnOutput(this::trySend)
-        runtime.setOnError(this::close)
 
         launch {
             input.collect(runtime::onInput)

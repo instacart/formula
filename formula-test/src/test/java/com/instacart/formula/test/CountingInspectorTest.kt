@@ -23,7 +23,7 @@ class CountingInspectorTest {
     fun `assertEvaluationCount with types throws exception when count does not match`() {
         val inspector = CountingInspector()
         inspector.assertEvaluationCount(MyFormula::class, 0)
-        inspector.onEvaluateFinished(MyFormula::class, null, true)
+        inspector.onEvaluateFinished(MyFormula::class.java, null, true)
         inspector.assertEvaluationCount(MyFormula::class, 1)
 
         val result = runCatching { inspector.assertEvaluationCount(MyFormula::class, 5) }
@@ -58,7 +58,7 @@ class CountingInspectorTest {
     fun `assertStateTransitions throws exception when count does not match`() {
         val inspector = CountingInspector()
         inspector.assertStateTransitions(MyFormula::class, 0)
-        inspector.onStateChanged(MyFormula::class, null, null, null)
+        inspector.onStateChanged(MyFormula::class.java, null, null, null)
         inspector.assertStateTransitions(MyFormula::class, 1)
 
         val result = runCatching { inspector.assertStateTransitions(MyFormula::class, 5) }

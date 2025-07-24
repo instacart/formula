@@ -9,18 +9,18 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
 import java.lang.IllegalStateException
-import kotlin.reflect.KClass
 
 internal class SnapshotImpl<out Input, State>(
+    private val delegate: FormulaManagerImpl<Input, State, *>,
     override val input: Input,
     override val state: State,
     listeners: Listeners,
-    private val delegate: FormulaManagerImpl<Input, State, *>,
 ) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
     private var running = false
 
+    override val effectDelegate: EffectDelegate = delegate
     override val context: FormulaContext<Input, State> = this
 
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
@@ -43,10 +43,9 @@ internal class SnapshotImpl<out Input, State>(
         return delegate.child(key, formula, input)
     }
 
-    override fun <ChildInput, ChildOutput> child(
+    override fun <ChildInput, ChildOutput> childOrNull(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        onError: (Throwable) -> Unit,
     ): ChildOutput? {
         ensureNotRunning()
 
@@ -54,7 +53,7 @@ internal class SnapshotImpl<out Input, State>(
             type = formula.type(),
             key = formula.key(input)
         )
-        return delegate.child(key, formula, input, onError)
+        return delegate.childOrNull(key, formula, input)
     }
 
     override fun <Event> eventListener(
@@ -86,15 +85,15 @@ internal class SnapshotImpl<out Input, State>(
         scopeKey = lastKey
     }
 
-    override fun createScopedKey(type: KClass<*>, key: Any?): Any {
+    override fun createScopedKey(type: Class<*>, key: Any?): Any {
         if (scopeKey == null && key == null) {
             // No need to allocate a new object, just use type as key.
-            return type.java
+            return type
         }
 
         return FormulaKey(
             scopeKey = scopeKey,
-            type = type.java,
+            type = type,
             key = key,
         )
     }

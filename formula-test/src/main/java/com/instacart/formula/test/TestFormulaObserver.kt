@@ -2,6 +2,8 @@ package com.instacart.formula.test
 
 import com.instacart.formula.IFormula
 import com.instacart.formula.RuntimeConfig
+import com.instacart.formula.plugin.Dispatcher
+import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.toFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -14,10 +16,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(DelicateCoroutinesApi::class)
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
-    private val runtimeConfig: RuntimeConfig,
+    private val failOnError: Boolean,
+    isValidationEnabled: Boolean,
+    dispatcher: Dispatcher?,
+    inspector: Inspector?,
     val formula: FormulaT,
 ) {
-
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
@@ -25,6 +29,13 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         replay = 1,
         extraBufferCapacity = Int.MAX_VALUE,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    private val runtimeConfig = RuntimeConfig(
+        isValidationEnabled = isValidationEnabled,
+        inspector = inspector,
+        defaultDispatcher = dispatcher,
+        onError = { errors.add(it.error) }
     )
 
     private val job = GlobalScope.launch(
@@ -39,7 +50,11 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     private var started: Boolean = false
 
     init {
-        assertNoErrors()
+        failOnError()
+    }
+
+    fun errors(): List<Throwable> {
+        return errors.toList()
     }
 
     fun values(): List<Output> {
@@ -51,22 +66,22 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
      */
     fun input(value: Input) = apply {
         started = true
-        
-        assertNoErrors() // Check before interaction
+
+        failOnError() // Check before interaction
         inputFlow.tryEmit(value)
-        assertNoErrors() // Check after interaction
+        failOnError() // Check after interaction
     }
 
     fun output(assert: Output.() -> Unit) = apply {
         ensureFormulaIsRunning()
-        assertNoErrors() // Check before interaction
+        failOnError() // Check before interaction
         assert(values().last())
-        assertNoErrors() // Check after interaction
+        failOnError() // Check after interaction
     }
 
     fun assertOutputCount(count: Int) = apply {
         ensureFormulaIsRunning()
-        assertNoErrors()
+        failOnError()
         val size = values().size
 
         if (size != count) {
@@ -81,8 +96,23 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         }
     }
 
+    fun assertHasErrors() = apply {
+        if (errors.isEmpty()) {
+            throw AssertionError("There were no errors")
+        }
+    }
+
     fun dispose() = apply {
         job.cancel()
+    }
+
+    /**
+     * Provides automatic error checking.
+     */
+    private fun failOnError() {
+        if (failOnError) {
+            assertNoErrors()
+        }
     }
 
     @PublishedApi

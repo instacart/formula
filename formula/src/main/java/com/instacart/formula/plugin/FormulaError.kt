@@ -12,6 +12,20 @@ sealed class FormulaError {
         override val error: Throwable,
     ): FormulaError()
 
+    data class ChildKeyAlreadyUsed(
+        override val error: ChildAlreadyUsedException,
+    ): FormulaError() {
+        override val formula: Class<*> = error.parentType
+    }
+
+    /**
+     * An unhandled error occurred during the execution of an effect.
+     */
+    data class EffectError(
+        override val formula: Class<*>,
+        override val error: Throwable,
+    ): FormulaError()
+
     /**
      * An unhandled error occurred during formula run.
      */

@@ -1,6 +1,7 @@
 package com.instacart.formula
 
 import com.instacart.formula.batch.BatchManager
+import com.instacart.formula.internal.CascadingFormulaException
 import com.instacart.formula.internal.FormulaManager
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.ManagerDelegate
@@ -23,27 +24,29 @@ import kotlin.coroutines.EmptyCoroutineContext
 class FormulaRuntime<Input : Any, Output : Any>(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     private val formula: IFormula<Input, Output>,
-    config: RuntimeConfig,
+    private val config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
-    private val scope = CoroutineScope(
+    override val scope = CoroutineScope(
         context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
     )
 
-    private val isValidationEnabled = config.isValidationEnabled
-    private val inspector = FormulaPlugins.inspector(
+    override val inspector = FormulaPlugins.inspector(
         type = formula.type(),
         local = config.inspector,
     )
-    private val defaultDispatcher: Dispatcher = config.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
-    private val implementation = formula.implementation
-    private val synchronizedUpdateQueue = SynchronizedUpdateQueue(
+    override val defaultDispatcher: Dispatcher = config.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
+
+    override val queue: SynchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }
     )
 
     /**
      * Global batched event manager.
      */
-    private val batchManager = BatchManager(this)
+    override val batchManager = BatchManager(this)
+
+    private val isValidationEnabled = config.isValidationEnabled
+    private val implementation = formula.implementation
 
     @Volatile
     private var manager: FormulaManagerImpl<Input, *, Output>? = null
@@ -101,18 +104,18 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     @Volatile private var output: Output? = null
     @Volatile private var onOutput: ((Output) -> Unit)? = null
-    @Volatile private var onError: ((Throwable) -> Unit)? = null
+
+    override val onError: (FormulaError) -> Unit = {
+        config.onError?.invoke(it)
+        FormulaPlugins.onError(it)
+    }
 
     fun setOnOutput(onOutput: (Output) -> Unit) {
         this.onOutput = onOutput
     }
 
-    fun setOnError(onError: (Throwable) -> Unit) {
-        this.onError = onError
-    }
-
     fun onInput(input: Input, dispatcher: Dispatcher? = null) {
-        synchronizedUpdateQueue.postUpdate(dispatcher ?: defaultDispatcher) {
+        queue.postUpdate(dispatcher ?: defaultDispatcher) {
             onInputInternal(input)
         }
     }
@@ -159,7 +162,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     }
 
     fun terminate() {
-        synchronizedUpdateQueue.postUpdate(defaultDispatcher, this::terminateInternal)
+        queue.postUpdate(defaultDispatcher, this::terminateInternal)
     }
 
     /**
@@ -209,7 +212,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     override fun executeBatch(updates: List<() -> Unit>) {
         // Using default dispatcher for batch execution
-        synchronizedUpdateQueue.postUpdate(defaultDispatcher) {
+        queue.postUpdate(defaultDispatcher) {
             // We disable run until all batch updates are processed
             isRunEnabled = false
 
@@ -294,11 +297,14 @@ class FormulaRuntime<Input : Any, Output : Any>(
             isRunning = false
 
             val manager = requireManager()
-            manager.markAsTerminated()
-
-            onError?.invoke(e)
-
-            manager.let(this::terminateManager)
+            try {
+                terminateInternal()
+            } finally {
+                if (e !is CascadingFormulaException) {
+                    val error = FormulaError.Unhandled(manager.formulaType, e)
+                    onError(error)
+                }
+            }
         }
     }
 
@@ -306,9 +312,9 @@ class FormulaRuntime<Input : Any, Output : Any>(
      * Runs formula evaluation.
      */
     private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
-        val result = manager.run(currentInput)
-        pendingOutput.set(result.output)
-        output = result.output
+        val newValue = manager.run(currentInput)
+        pendingOutput.set(newValue)
+        output = newValue
 
         if (isValidationEnabled) {
             try {
@@ -340,7 +346,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 Effect.Main -> Dispatcher.Main
                 Effect.Background -> Dispatcher.Background
             }
-            dispatcher.dispatch(effect.executable)
+            dispatcher.dispatch(effect)
         }
         isExecutingEffects = false
     }
@@ -391,15 +397,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     private fun initManager(initialInput: Input): FormulaManagerImpl<Input, *, Output> {
         return FormulaManagerImpl(
-            scope = scope,
-            queue = synchronizedUpdateQueue,
-            batchManager = batchManager,
             delegate = this,
             formula = implementation,
-            initialInput = initialInput,
             formulaType = formula.type(),
-            inspector = inspector,
-            defaultDispatcher = defaultDispatcher,
+            initialInput = initialInput,
         )
     }
 

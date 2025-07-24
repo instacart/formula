@@ -27,7 +27,7 @@ interface IFormula<in Input, out Output> {
      * instance. This method allows us to preserve the original identity of formula
      * when using delegation and composition.
      */
-    fun type(): KClass<*> = this::class
+    fun type(): Class<*> = this::class.java
 
     /**
      * A unique identifier used to distinguish formulas of the same type. This can also

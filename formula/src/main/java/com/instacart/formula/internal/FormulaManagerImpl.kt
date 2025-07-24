@@ -4,12 +4,9 @@ import com.instacart.formula.Effect
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
-import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
-import com.instacart.formula.batch.BatchManager
-import com.instacart.formula.plugin.Dispatcher
-import kotlinx.coroutines.CoroutineScope
+import com.instacart.formula.plugin.FormulaError
 import java.util.LinkedList
 import kotlin.reflect.KClass
 
@@ -21,18 +18,12 @@ import kotlin.reflect.KClass
  * a state change, it will rerun [Formula.evaluate].
  */
 internal class FormulaManagerImpl<Input, State, Output>(
-    val scope: CoroutineScope,
-    val queue: SynchronizedUpdateQueue,
-    val batchManager: BatchManager,
     private val delegate: ManagerDelegate,
     private val formula: Formula<Input, State, Output>,
+    override val formulaType: Class<*>,
     initialInput: Input,
-    internal val formulaType: KClass<*>,
     private val listeners: Listeners = Listeners(),
-    private val inspector: Inspector?,
-    val defaultDispatcher: Dispatcher,
-) : FormulaManager<Input, Output>, ManagerDelegate {
-
+) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -126,7 +117,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * Within [run], we run through formula [evaluation] and [postEvaluation] until we are idle
      * and can emit the last produced [Output].
      */
-    override fun run(input: Input): Evaluation<Output> {
+    override fun run(input: Input): Output {
         var result: Evaluation<Output>? = null
         isRunning = true
         try {
@@ -149,7 +140,23 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
                 result = evaluation
             }
-            return result
+            return result.output
+        } catch (e: Throwable) {
+            if (e is ValidationException) {
+                throw e
+            } else {
+                markAsTerminated()
+                performTerminationSideEffects()
+
+                if (e !is CascadingFormulaException) {
+                    val error = FormulaError.Unhandled(formulaType, e)
+                    onError(error)
+
+                    throw CascadingFormulaException(e)
+                } else {
+                    throw e
+                }
+            }
         } finally {
             isRunning = false
         }
@@ -159,8 +166,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
     private fun evaluation(input: Input, evaluationId: Long): Evaluation<Output> {
-        // TODO: assert main thread.
-
         val lastFrame = frame
         if (lastFrame == null && isValidationEnabled) {
             throw ValidationException("Formula should already have run at least once before the validation mode.")
@@ -236,48 +241,45 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val childrenManager = getOrInitChildrenManager()
         val manager = childrenManager.findOrInitChild(key, formula, input)
 
-        // If termination happens while running, we might still be initializing child formulas. To
-        // ensure correct behavior, we mark each requested child manager as terminated to avoid
-        // starting new actions.
-        if (isTerminated()) {
-            manager.markAsTerminated()
+        if (manager.isTerminated()) {
+            return manager.lastOutput() ?: run {
+                /**
+                 * This block should never be reached as we should have been terminated as well.
+                 */
+                throw IllegalStateException("Child formula manager is terminated but has no last output")
+            }
         }
-        manager.setValidationRun(isValidationEnabled)
-        return manager.run(input).output
+
+        return try {
+            manager.setValidationRun(isValidationEnabled)
+            manager.run(input)
+        } catch (e: ValidationException) {
+            throw e
+        } catch (e: Throwable) {
+            // Use last output if available, otherwise cascade the exception up
+            manager.lastOutput() ?: throw e
+        }
     }
 
-    fun <ChildInput, ChildOutput> child(
+    fun <ChildInput, ChildOutput> childOrNull(
         key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
-        onError: (Throwable) -> Unit,
     ): ChildOutput? {
         val childrenManager = getOrInitChildrenManager()
         val manager = childrenManager.findOrInitChild(key, formula, input)
 
-        // If termination happens while running, we might still be initializing child formulas. To
-        // ensure correct behavior, we mark each requested child manager as terminated to avoid
-        // starting new actions.
-        if (isTerminated()) {
-            manager.markAsTerminated()
+        if (manager.isTerminated()) {
+            // Manager was already terminated in a previous run. No need to run it again.
+            return null
         }
-        manager.setValidationRun(isValidationEnabled)
 
         return try {
-            // If manager.run(input) previously threw an exception it would be marked as
-            // terminated in the catch block. We avoid running it again because there is a decent
-            // chance it will continue to throw the same exception and cause performance issues
-            if (!manager.isTerminated()) {
-                manager.run(input).output
-            } else {
-                null
-            }
-        } catch (e: ValidationException) {
+            manager.setValidationRun(isValidationEnabled)
+            manager.run(input)
+        } catch (e : ValidationException) {
             throw e
         } catch (e: Throwable) {
-            manager.markAsTerminated()
-            onError(e)
-            manager.performTerminationSideEffects()
             null
         }
     }
@@ -329,6 +331,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         delegate.onPostTransition(effects, evaluate && !isRunning)
     }
 
+    override fun lastOutput(): Output? {
+        return frame?.evaluation?.output
+    }
+
     /**
      * Called after [evaluate] to remove detached children, stop detached actions and start
      * new ones. It will start with child formulas first and then perform execution it self.
@@ -378,7 +384,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private fun getOrInitChildrenManager(): ChildrenManager {
         return childrenManager ?: run {
-            val value = ChildrenManager(this, inspector)
+            val value = ChildrenManager(this)
             childrenManager = value
             value
         }

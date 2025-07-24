@@ -1,15 +1,14 @@
 package com.instacart.formula.internal
 
-import com.instacart.formula.FormulaPlugins
 import com.instacart.formula.IFormula
-import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.plugin.ChildAlreadyUsedException
+import com.instacart.formula.plugin.FormulaError
 
 /**
  * Keeps track of child formula managers.
  */
 internal class ChildrenManager(
-    private val delegate: FormulaManagerImpl<*, *, *>,
-    private val inspector: Inspector?,
+    private val manager: FormulaManagerImpl<*, *, *>,
 ) {
     private val children: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
     private var indexes: MutableMap<Any, Int>? = null
@@ -33,11 +32,11 @@ internal class ChildrenManager(
         pendingRemoval = null
         local?.forEach { it.performTerminationSideEffects() }
 
-        if (delegate.isTerminated()) {
+        if (manager.isTerminated()) {
             return false
         }
 
-        return !delegate.canUpdatesContinue(evaluationId)
+        return !manager.canUpdatesContinue(evaluationId)
     }
 
     fun markAsTerminated() {
@@ -68,11 +67,14 @@ internal class ChildrenManager(
              * so it can be logged and fixed by defining explicit key.
              */
             if (logs.add(key)) {
-                FormulaPlugins.onDuplicateChildKey(
-                    parentFormulaType = delegate.formulaType.java,
-                    childFormulaType = formula.type().java,
-                    key = key,
+                val error = FormulaError.ChildKeyAlreadyUsed(
+                    error = ChildAlreadyUsedException(
+                        parentType = manager.formulaType,
+                        childType = formula.type(),
+                        key = key
+                    )
                 )
+                manager.onError(error)
             }
 
             val index = nextIndex(key)
@@ -99,15 +101,10 @@ internal class ChildrenManager(
         val childFormulaHolder = children.findOrInit(key) {
             val implementation = formula.implementation
             FormulaManagerImpl(
-                scope = delegate.scope,
-                queue = delegate.queue,
-                batchManager = delegate.batchManager,
-                delegate = delegate,
+                delegate = manager,
                 formula = implementation,
-                initialInput = input,
                 formulaType = formula.type(),
-                inspector = inspector,
-                defaultDispatcher = delegate.defaultDispatcher,
+                initialInput = input,
             )
         }
         @Suppress("UNCHECKED_CAST")
