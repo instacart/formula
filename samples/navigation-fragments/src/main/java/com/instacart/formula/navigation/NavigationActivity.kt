@@ -1,19 +1,28 @@
 package com.instacart.formula.navigation
 
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import com.instacart.formula.android.FormulaAppCompatActivity
 import com.instacart.formula.android.FormulaFragment
+import com.instacart.formula.runAsStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class NavigationActivity : FormulaAppCompatActivity() {
+
+    private val navigationFormula = NavigationActivityFormula()
+    private lateinit var navigationState: StateFlow<NavigationActivityFormula.Output>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.navigation_activity)
 
-        // Set up navigation effect handler
-        NavigationApp.onNavigationEffect = { effect ->
-            handleNavigationEffect(effect)
-        }
+        // Initialize the navigation formula
+        val input = NavigationActivityFormula.Input(
+            onNavigation = ::handleNavigationAction,
+        )
+
+        navigationState = navigationFormula.runAsStateFlow(lifecycleScope, input)
 
         if (savedInstanceState == null) {
             // Start with fragment 0
@@ -24,10 +33,14 @@ class NavigationActivity : FormulaAppCompatActivity() {
         }
     }
 
-    private fun handleNavigationEffect(effect: NavigationEffect) {
-        when (effect) {
-            is NavigationEffect.NavigateToFragment -> {
-                val key = CounterFragmentKey(effect.fragmentId)
+    fun getNavigationOutput(): NavigationActivityFormula.Output {
+        return navigationState.value
+    }
+
+    private fun handleNavigationAction(action: NavigationAction) {
+        when (action) {
+            is NavigationAction.NavigateToFragment -> {
+                val key = CounterFragmentKey(action.fragmentId)
                 val fragment = FormulaFragment.newInstance(key)
 
                 supportFragmentManager.beginTransaction()
@@ -36,7 +49,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
                     .commit()
             }
 
-            is NavigationEffect.NavigateBack -> {
+            is NavigationAction.NavigateBack -> {
                 if (supportFragmentManager.backStackEntryCount > 0) {
                     supportFragmentManager.popBackStack()
                 } else {
@@ -47,8 +60,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Handle navigation back through our navigation system
-        NavigationApp.navigationStore.onEvent(NavigationEvent.NavigateBack)
-        NavigationApp.onNavigationEffect?.invoke(NavigationEffect.NavigateBack)
+        // Handle navigation back through our formula
+        navigationState.value.onNavigateBack()
     }
 }
