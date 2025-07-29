@@ -1,6 +1,6 @@
 package com.instacart.formula.navigation
 
-data class NavigationFragmentRenderModel(
+data class CounterFragmentRenderModel(
     val fragmentId: Int,
     val counter: Int,
     val backStackFragments: List<Int>,

@@ -25,7 +25,7 @@ class NavigationApp : Application() {
                         fragmentStore = FragmentStore.Builder()
                             .build {
                                 bind(
-                                    NavigationFragmentFeatureFactory(navigationStore) { effect ->
+                                    CounterFragmentFeatureFactory(navigationStore) { effect ->
                                         onNavigationEffect?.invoke(effect)
                                     }
                                 )

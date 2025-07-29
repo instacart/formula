@@ -17,7 +17,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
 
         if (savedInstanceState == null) {
             // Start with fragment 0
-            val initialKey = NavigationFragmentKey(0)
+            val initialKey = CounterFragmentKey(0)
             supportFragmentManager.beginTransaction()
                 .add(R.id.activity_content, FormulaFragment.newInstance(initialKey), initialKey.tag)
                 .commit()
@@ -27,7 +27,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
     private fun handleNavigationEffect(effect: NavigationEffect) {
         when (effect) {
             is NavigationEffect.NavigateToFragment -> {
-                val key = NavigationFragmentKey(effect.fragmentId)
+                val key = CounterFragmentKey(effect.fragmentId)
                 val fragment = FormulaFragment.newInstance(key)
 
                 supportFragmentManager.beginTransaction()

@@ -5,13 +5,13 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import com.instacart.formula.android.compose.ComposeViewFactory
 
-class NavigationFragmentViewFactory : ComposeViewFactory<NavigationFragmentRenderModel>() {
+class CounterFragmentViewFactory : ComposeViewFactory<CounterFragmentRenderModel>() {
 
     @Composable
-    override fun Content(model: NavigationFragmentRenderModel) {
+    override fun Content(model: CounterFragmentRenderModel) {
         MaterialTheme {
             Surface {
-                NavigationScreen(model)
+                CounterScreen(model)
             }
         }
     }

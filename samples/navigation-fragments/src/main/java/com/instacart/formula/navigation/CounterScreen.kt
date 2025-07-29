@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun NavigationScreen(renderModel: NavigationFragmentRenderModel) {
+fun CounterScreen(renderModel: CounterFragmentRenderModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()

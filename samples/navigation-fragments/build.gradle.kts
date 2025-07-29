@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":formula-rxjava3"))
+    implementation(project(":formula"))
     implementation(project(":formula-android"))
     implementation(project(":formula-android-compose"))
 

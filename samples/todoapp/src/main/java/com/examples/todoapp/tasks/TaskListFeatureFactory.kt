@@ -8,7 +8,6 @@ import com.instacart.formula.android.FeatureView
 import com.instacart.formula.android.LayoutViewFactory
 import com.instacart.formula.android.ViewInstance
 import com.instacart.formula.runAsStateFlow
-import com.instacart.formula.rxjava3.toObservable
 
 class TaskListFeatureFactory : FeatureFactory<TaskListFeatureFactory.Dependencies, TaskListKey>() {
     interface Dependencies {

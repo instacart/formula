@@ -1,13 +1,14 @@
 package com.instacart.formula.navigation
 
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxAction
+import kotlinx.coroutines.flow.filter
 
-class NavigationFragmentFormula(
+class CounterFragmentFormula(
     private val navigationStore: NavigationStore,
-) : Formula<NavigationFragmentFormula.Input, NavigationFragmentFormula.State, NavigationFragmentRenderModel>() {
+) : Formula<CounterFragmentFormula.Input, CounterFragmentFormula.State, CounterFragmentRenderModel>() {
 
     data class Input(
         val fragmentId: Int,
@@ -24,9 +25,9 @@ class NavigationFragmentFormula(
         counter = 0,
     )
 
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<NavigationFragmentRenderModel> {
+    override fun Snapshot<Input, State>.evaluate(): Evaluation<CounterFragmentRenderModel> {
         return Evaluation(
-            output = NavigationFragmentRenderModel(
+            output = CounterFragmentRenderModel(
                 fragmentId = input.fragmentId,
                 counter = state.counter,
                 backStackFragments = state.navigationState.navigationStack,
@@ -48,11 +49,11 @@ class NavigationFragmentFormula(
                 },
             ),
             actions = context.actions {
-                RxAction.fromObservable { navigationStore.state }.onEvent { navigationState ->
+                Action.fromFlow { navigationStore.state }.onEvent { navigationState ->
                     transition(state.copy(navigationState = navigationState))
                 }
 
-                RxAction.fromObservable {
+                Action.fromFlow {
                     navigationStore.counterIncrements.filter { it == input.fragmentId }
                 }.onEvent {
                     transition(state.copy(counter = state.counter + 1))
