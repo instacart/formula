@@ -57,6 +57,25 @@ class ActivityStoreContextTest {
             .assertValues(false, true)
     }
 
+    @Test fun `is fragment started is a behavior relay - new subscription gets latest emission first`() {
+        val contract = createContract()
+        val fragment = FragmentId("", contract)
+        val observable = context.isFragmentStarted(contract).asObservable()
+
+        // 1st subscription
+        observable
+            .test()
+            .apply {
+                context.updateFragmentLifecycleState(fragment, Lifecycle.State.STARTED)
+            }
+            .assertValues(false, true)
+
+        // 2nd subscription - should receive latest emission first
+        observable
+            .test()
+            .assertValues(true)
+    }
+
     @Test fun `is fragment resumed`() {
         val contract = createContract()
         context.isFragmentResumed(contract)
@@ -80,5 +99,5 @@ class ActivityStoreContextTest {
     @Parcelize
     private data class TestFragmentKey(
         override val tag: String = "fake tag",
-    ): FragmentKey
+    ) : FragmentKey
 }
