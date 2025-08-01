@@ -74,6 +74,8 @@ jobs:
         run: ./gradlew :samples:stopwatch-compose:assembleDebug
       - name: Assemble Stopwatch Kotlin Coroutine Sample
         run: ./gradlew :samples:stopwatch-coroutines:assembleDebug
+      - name: Assemble Fragments Navigation Sample
+        run: ./gradlew :samples:navigation-fragments:assembleDebug
       - name: Publish all artifacts locally
         run: |
           ./gradlew :formula:build
