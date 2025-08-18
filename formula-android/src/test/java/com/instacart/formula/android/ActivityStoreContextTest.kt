@@ -57,7 +57,7 @@ class ActivityStoreContextTest {
             .assertValues(false, true)
     }
 
-    @Test fun `is fragment started is a behavior relay - new subscription gets latest emission first`() {
+    @Test fun `isFragmentStarted emits latest value first`() {
         val contract = createContract()
         val fragment = FragmentId("", contract)
         val observable = context.isFragmentStarted(contract).asObservable()
