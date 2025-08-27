@@ -1,6 +1,8 @@
 package com.instacart.formula.navigation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +15,8 @@ fun CounterScreen(renderModel: CounterFragmentRenderModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
     ) {
         // Fragment title
         Text(
