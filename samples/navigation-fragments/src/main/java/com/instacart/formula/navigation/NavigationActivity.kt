@@ -1,28 +1,30 @@
 package com.instacart.formula.navigation
 
 import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.FormulaAppCompatActivity
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.runAsStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class NavigationActivity : FormulaAppCompatActivity() {
 
-    private val navigationFormula = NavigationActivityFormula()
-    private lateinit var navigationState: StateFlow<NavigationActivityFormula.Output>
+    private val viewModel: NavigationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.navigation_activity)
 
-        // Initialize the navigation formula
-        val input = NavigationActivityFormula.Input(
-            onNavigation = ::handleNavigationAction,
-        )
-
-        navigationState = navigationFormula.runAsStateFlow(lifecycleScope, input)
+        // Collect navigation events from ViewModel and handle them in the Activity
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigationEvents.collect { action ->
+                    handleNavigationAction(action)
+                }
+            }
+        }
 
         if (savedInstanceState == null) {
             // Start with fragment 0
@@ -34,7 +36,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
     }
 
     fun getNavigationOutput(): NavigationActivityFormula.Output {
-        return navigationState.value
+        return viewModel.state.value
     }
 
     private fun handleNavigationAction(action: NavigationAction) {
@@ -61,6 +63,6 @@ class NavigationActivity : FormulaAppCompatActivity() {
 
     override fun onBackPressed() {
         // Handle navigation back through our formula
-        navigationState.value.onNavigateBack()
+        viewModel.state.value.onNavigateBack()
     }
 }
