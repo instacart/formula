@@ -20,6 +20,9 @@ class NavigationApp : Application() {
                             .build(activityComponent) {
                                 bind(CounterFragmentFeatureFactory())
                             },
+                        configureActivity = { activity ->
+                            activity.fragmentState = activityComponent.fragmentState()
+                        },
                     )
                 }
             },

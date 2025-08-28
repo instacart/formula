@@ -1,24 +1,33 @@
 package com.instacart.formula.navigation
 
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
+import com.instacart.formula.android.FragmentState
+import com.instacart.formula.navigation.NavigationActivityFormula.Input
+import com.instacart.formula.navigation.NavigationActivityFormula.Output
+import com.instacart.formula.navigation.NavigationActivityFormula.State
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-class NavigationActivityFormula : Formula<NavigationActivityFormula.Input, NavigationActivityFormula.State, NavigationActivityFormula.Output>() {
+class NavigationActivityFormula(
+    private val fragmentState: Flow<FragmentState>,
+) : Formula<Input, State, Output>() {
 
     data class Input(
         val onNavigation: (NavigationAction) -> Unit,
     )
 
     data class State(
-        val store: NavigationStore = NavigationStore(),
-        val navigationStack: List<Int> = listOf(0), // Start with fragment 0
+        val countersStore: CountersStore = CountersStore(),
+        val currentFragmentState: FragmentState = FragmentState(),
+        val navigationStackFlow: MutableSharedFlow<List<Int>> = MutableSharedFlow(replay = 1, extraBufferCapacity = Int.MAX_VALUE),
     ) {
-        class NavigationStore {
+        class CountersStore {
             private val _counterIncrements = MutableSharedFlow<Int>(
                 replay = 0,
                 extraBufferCapacity = Int.MAX_VALUE,
@@ -31,25 +40,10 @@ class NavigationActivityFormula : Formula<NavigationActivityFormula.Input, Navig
                 _counterIncrements.tryEmit(fragmentId)
             }
         }
-
-        fun navigateToFragment(fragmentId: Int): State = copy(
-            navigationStack = navigationStack + fragmentId,
-        )
-
-        fun navigateBack(): State = copy(
-            navigationStack = if (navigationStack.size > 1) {
-                navigationStack.dropLast(1)
-            } else {
-                navigationStack
-            },
-        )
-
-        val currentFragmentId: Int get() = navigationStack.lastOrNull() ?: 0
     }
 
     data class Output(
-        val currentFragmentId: Int,
-        val navigationStack: List<Int>,
+        val navigationStack: SharedFlow<List<Int>>,
         val counterIncrements: SharedFlow<Int>,
         val onNavigateToNext: () -> Unit,
         val onNavigateBack: () -> Unit,
@@ -61,26 +55,46 @@ class NavigationActivityFormula : Formula<NavigationActivityFormula.Input, Navig
     override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
         return Evaluation(
             output = Output(
-                currentFragmentId = state.currentFragmentId,
-                navigationStack = state.navigationStack,
-                counterIncrements = state.store.counterIncrements,
+                navigationStack = state.navigationStackFlow,
+                counterIncrements = state.countersStore.counterIncrements,
                 onNavigateToNext = context.callback {
-                    val nextFragmentId = state.navigationStack.maxOrNull()?.plus(1) ?: 1
-                    val newState = state.navigateToFragment(nextFragmentId)
-                    transition(newState) {
+                    val nextFragmentId = state.currentFragmentState.navStack().maxOrNull()?.plus(1) ?: 1
+                    transition {
                         input.onNavigation(NavigationAction.NavigateToFragment(nextFragmentId))
                     }
                 },
                 onNavigateBack = context.callback {
-                    val newState = state.navigateBack()
-                    transition(newState) {
+                    transition {
                         input.onNavigation(NavigationAction.NavigateBack)
                     }
                 },
                 onIncrementCounter = { fragmentId ->
-                    state.store.incrementCounterFor(fragmentId)
+                    state.countersStore.incrementCounterFor(fragmentId)
                 },
-            )
+            ),
+            actions = context.actions {
+                Action.onInit().onEvent {
+                    transition {
+                        // initial fragment
+                        input.onNavigation(NavigationAction.NavigateToFragment(fragmentId = 0))
+                    }
+                }
+
+                Action.fromFlow { fragmentState }.onEvent { newFragmentState ->
+                    transition(state.copy(currentFragmentState = newFragmentState)) {
+                        state.navigationStackFlow.tryEmit(newFragmentState.navStack())
+                    }
+                }
+            },
         )
     }
 }
+
+private fun extractFragmentId(fragmentKey: Any?): Int {
+    return when (fragmentKey) {
+        is CounterFragmentKey -> fragmentKey.fragmentId
+        else -> throw RuntimeException("Unexpected fragment key: $fragmentKey")
+    }
+}
+
+private fun FragmentState.navStack(): List<Int> = activeIds.map { extractFragmentId(it.key) }

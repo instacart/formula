@@ -4,14 +4,16 @@ import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
+import com.instacart.formula.navigation.CounterFragmentFormula.Input
+import com.instacart.formula.navigation.CounterFragmentFormula.State
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.filter
 
-class CounterFragmentFormula : Formula<CounterFragmentFormula.Input, CounterFragmentFormula.State, CounterFragmentRenderModel>() {
+class CounterFragmentFormula : Formula<Input, State, CounterFragmentRenderModel>() {
 
     data class Input(
         val fragmentId: Int,
-        val navigationStack: List<Int>,
+        val navigationStackFlow: SharedFlow<List<Int>>,
         val counterIncrements: SharedFlow<Int>,
         val onNavigateToNext: () -> Unit,
         val onNavigateBack: () -> Unit,
@@ -19,6 +21,7 @@ class CounterFragmentFormula : Formula<CounterFragmentFormula.Input, CounterFrag
     )
 
     data class State(
+        val navigationStack: List<Int> = emptyList(),
         val counter: Int = 0,
     )
 
@@ -29,7 +32,7 @@ class CounterFragmentFormula : Formula<CounterFragmentFormula.Input, CounterFrag
             output = CounterFragmentRenderModel(
                 fragmentId = input.fragmentId,
                 counter = state.counter,
-                backStackFragments = input.navigationStack,
+                backStackFragments = state.navigationStack,
                 onNavigateToNext = context.callback {
                     transition {
                         input.onNavigateToNext()
@@ -49,6 +52,12 @@ class CounterFragmentFormula : Formula<CounterFragmentFormula.Input, CounterFrag
                     input.counterIncrements.filter { it == input.fragmentId }
                 }.onEvent {
                     transition(state.copy(counter = state.counter + 1))
+                }
+
+                Action.fromFlow {
+                    input.navigationStackFlow
+                }.onEvent { stack ->
+                    transition(state.copy(navigationStack = stack))
                 }
             },
         )

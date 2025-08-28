@@ -1,13 +1,15 @@
 package com.instacart.formula.navigation
 
 import com.instacart.formula.android.ActivityStoreContext
+import com.instacart.formula.android.FragmentState
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.Flow
 
 class NavigationActivityComponent(
     private val store: ActivityStoreContext<NavigationActivity>,
 ) : CounterFragmentFeatureFactory.Dependencies {
 
-    override fun navigationStack(): List<Int> {
+    override fun navigationStack(): SharedFlow<List<Int>> {
         return requireNavigationOutput().navigationStack
     }
 
@@ -25,6 +27,10 @@ class NavigationActivityComponent(
 
     override fun onIncrementCounter(): (Int) -> Unit {
         return requireNavigationOutput().onIncrementCounter
+    }
+
+    fun fragmentState(): Flow<FragmentState> {
+        return store.fragmentState()
     }
 
     private fun requireNavigationOutput(): NavigationActivityFormula.Output {

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.SharedFlow
 class CounterFragmentFeatureFactory : FeatureFactory<CounterFragmentFeatureFactory.Dependencies, CounterFragmentKey>() {
 
     interface Dependencies {
-        fun navigationStack(): List<Int>
+        fun navigationStack(): SharedFlow<List<Int>>
         fun counterIncrements(): SharedFlow<Int>
         fun onNavigateToNext(): () -> Unit
         fun onNavigateBack(): () -> Unit
@@ -22,7 +22,7 @@ class CounterFragmentFeatureFactory : FeatureFactory<CounterFragmentFeatureFacto
                 scope = it,
                 input = CounterFragmentFormula.Input(
                     fragmentId = key.fragmentId,
-                    navigationStack = dependencies.navigationStack(),
+                    navigationStackFlow = dependencies.navigationStack(),
                     counterIncrements = dependencies.counterIncrements(),
                     onNavigateToNext = dependencies.onNavigateToNext(),
                     onNavigateBack = dependencies.onNavigateBack(),
