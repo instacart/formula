@@ -9,7 +9,8 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 - **Global Event System**: A global store manages counter increment events via Kotlin Flows
 - **Fragment Navigation**: Each fragment can navigate to the next fragment or back in the navigation stack
 - **Counter Management**: Each fragment can increment any fragment counter through the global event system
-- **Formula Android Integration**: Demonstrates how Formula Android works with fragment navigation
+- **Compose UI in Fragments**: Fragment content is rendered with Jetpack Compose via `ComposeViewFactory`
+- **ViewModel Bridge**: Activity navigation is handled by the Activity in response to Formula-driven events exposed via a `ViewModel`
 
 ## Architecture
 
@@ -18,20 +19,27 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 1. **CounterFragmentKey**: Parcelable key that identifies fragments using integer IDs
 2. **NavigationActivityFormula**: Activity-level Formula that manages:
    - Navigation state (current fragment, back stack)
-   - Global counter increment events via SharedFlow
-3. **CounterFragmentFormula**: Formula that manages individual fragment state including:
+   - Global counter increment events via `SharedFlow`
+   - Outputs navigation and counter APIs consumed by fragments
+3. **NavigationViewModel**: Hosts `NavigationActivityFormula`, exposes its `Output` as a `StateFlow`, and emits navigation events for the
+   Activity
+4. **NavigationActivity**: Observes navigation events and performs fragment transactions
+5. **NavigationActivityComponent**: Bridges Activity store context to fragments, exposes `FragmentState` and provides
+   `CounterFragmentFormula.Dependencies`
+6. **CounterFragmentFormula**: Manages per-fragment state including:
    - Local counter state
-   - Counter increment event subscription for this fragment
-4. **CounterFragmentFeatureFactory**: Creates Formula features for fragments
-5. **CounterFragmentViewFactory**: Creates Android views for fragments
+   - Subscriptions to navigation stack and counter increment events
+7. **CounterFragmentFeatureFactory**: Binds fragment key to Formula feature
+8. **CounterFragmentViewFactory**: Compose-based view factory for fragments (uses `CounterScreen`)
+9. **CounterScreen**: Composable that renders the fragment UI
 
 ### State Management Architecture
 
 **Activity-Level State:**
 
-- Navigation stack managed in `NavigationActivityFormula.State`
+- Navigation stack managed in `NavigationActivityFormula.State` and kept in sync with `FragmentState`
 - Counter increment events transmitted via `SharedFlow<Int>` within the activity formula
-- Navigation actions handled through Formula effects
+- Navigation actions are requested from fragments via formula outputs and forwarded to the Activity through a `ViewModel`
 
 **Local State (per fragment):**
 
@@ -40,7 +48,7 @@ This sample demonstrates infinite fragment navigation using the Formula framewor
 
 ### UI Elements
 
-Each fragment contains:
+Each fragment uses Compose and contains:
 - **Fragment Title**: Shows "Fragment X" where X is the fragment ID
 - **Counter Display**: Shows the current counter value for this fragment (locally managed)
 - **Navigate to Next Fragment Button**: Creates and navigates to the next fragment (ID + 1)
@@ -61,8 +69,9 @@ Each fragment contains:
 - **Fragment Key Management**: Using `FragmentKey` to identify fragments
 - **Activity-Level Formula**: Managing global app state at the activity level with `NavigationActivityFormula`
 - **Local State Management**: Each fragment managing its own state via Formula
-- **Global Event System**: Using Kotlin Flows (SharedFlow) for cross-fragment communication
-- **Navigation Effects**: Using effects to communicate navigation actions from activity formula to the activity
+- **Global Event System**: Using Kotlin Flows (`SharedFlow`) for cross-fragment communication
+- **Compose Integration**: Using `ComposeViewFactory` to render fragment UI with Jetpack Compose (`CounterScreen`)
+- **Activity-Orchestrated Navigation**: Activity performs navigation in response to events emitted by the formula via a `ViewModel`
 - **Fragment Lifecycle**: How Formula manages fragment creation, state updates, and navigation
 - **Event Subscription**: How fragments subscribe to global events that affect their local state
 
@@ -76,3 +85,5 @@ Run the app and:
 5. Use "Navigate Back" to return through the stack
 6. Use "Increment Counter for Fragment X" buttons to send increment events to other fragments
 7. Observe how each fragment's counter is managed locally but can be incremented from anywhere
+
+To launch from Android Studio, run the `samples/navigation-fragments` app module. The main Activity is `NavigationActivity`.

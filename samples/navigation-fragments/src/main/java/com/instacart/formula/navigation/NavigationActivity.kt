@@ -3,13 +3,10 @@ package com.instacart.formula.navigation
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.FormulaAppCompatActivity
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.FragmentState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
