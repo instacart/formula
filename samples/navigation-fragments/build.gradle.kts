@@ -36,21 +36,6 @@ dependencies {
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
-    implementation(libs.rxrelay)
-    implementation(libs.rxandroid)
-
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling)
-    implementation(libs.compose.foundation)
     implementation(libs.compose.material)
-    implementation(libs.compose.rxjava3)
     implementation(libs.androidx.activity.compose)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.truth)
-    testImplementation(libs.androidx.test.rules)
-    testImplementation(libs.androidx.test.runner)
-    testImplementation(libs.espresso.core)
-    testImplementation(libs.robolectric)
-    testImplementation(project(":formula-test"))
 }
