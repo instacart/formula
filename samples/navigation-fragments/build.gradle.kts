@@ -38,4 +38,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.compose.material)
     implementation(libs.androidx.activity.compose)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlin.reflect)
+    testImplementation(project(":formula-test"))
 }

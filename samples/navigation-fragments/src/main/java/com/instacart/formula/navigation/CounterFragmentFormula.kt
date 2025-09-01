@@ -48,8 +48,10 @@ class CounterFragmentFormula(
                         dependencies.onNavigateBack()
                     }
                 },
-                onIncrementCounter = { fragmentId ->
-                    dependencies.onIncrementCounter(fragmentId)
+                onIncrementCounter = context.onEvent { fragmentId ->
+                    transition {
+                        dependencies.onIncrementCounter(fragmentId)
+                    }
                 },
             ),
             actions = context.actions {

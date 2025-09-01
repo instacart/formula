@@ -68,8 +68,10 @@ class NavigationActivityFormula(
                         input.onNavigation(NavigationAction.NavigateBack)
                     }
                 },
-                onIncrementCounter = { fragmentId ->
-                    state.countersStore.incrementCounterFor(fragmentId)
+                onIncrementCounter = context.onEvent { fragmentId ->
+                    transition {
+                        state.countersStore.incrementCounterFor(fragmentId)
+                    }
                 },
             ),
             actions = context.actions {
