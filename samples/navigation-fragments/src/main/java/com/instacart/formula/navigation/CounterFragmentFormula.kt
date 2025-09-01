@@ -9,15 +9,20 @@ import com.instacart.formula.navigation.CounterFragmentFormula.State
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.filter
 
-class CounterFragmentFormula : Formula<Input, State, CounterFragmentRenderModel>() {
+class CounterFragmentFormula(
+    private val dependencies: Dependencies,
+) : Formula<Input, State, CounterFragmentRenderModel>() {
+
+    interface Dependencies {
+        val navigationStack: SharedFlow<List<Int>>
+        val counterIncrements: SharedFlow<Int>
+        val onNavigateToNext: () -> Unit
+        val onNavigateBack: () -> Unit
+        val onIncrementCounter: (Int) -> Unit
+    }
 
     data class Input(
         val fragmentId: Int,
-        val navigationStackFlow: SharedFlow<List<Int>>,
-        val counterIncrements: SharedFlow<Int>,
-        val onNavigateToNext: () -> Unit,
-        val onNavigateBack: () -> Unit,
-        val onIncrementCounter: (Int) -> Unit,
     )
 
     data class State(
@@ -35,27 +40,27 @@ class CounterFragmentFormula : Formula<Input, State, CounterFragmentRenderModel>
                 backStackFragments = state.navigationStack,
                 onNavigateToNext = context.callback {
                     transition {
-                        input.onNavigateToNext()
+                        dependencies.onNavigateToNext()
                     }
                 },
                 onNavigateBack = context.callback {
                     transition {
-                        input.onNavigateBack()
+                        dependencies.onNavigateBack()
                     }
                 },
                 onIncrementCounter = { fragmentId ->
-                    input.onIncrementCounter(fragmentId)
+                    dependencies.onIncrementCounter(fragmentId)
                 },
             ),
             actions = context.actions {
                 Action.fromFlow {
-                    input.counterIncrements.filter { it == input.fragmentId }
+                    dependencies.counterIncrements.filter { it == input.fragmentId }
                 }.onEvent {
                     transition(state.copy(counter = state.counter + 1))
                 }
 
                 Action.fromFlow {
-                    input.navigationStackFlow
+                    dependencies.navigationStack
                 }.onEvent { stack ->
                     transition(state.copy(navigationStack = stack))
                 }

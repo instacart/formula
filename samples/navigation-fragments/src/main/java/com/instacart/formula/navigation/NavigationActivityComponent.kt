@@ -7,27 +7,22 @@ import kotlinx.coroutines.flow.Flow
 
 class NavigationActivityComponent(
     private val store: ActivityStoreContext<NavigationActivity>,
-) : CounterFragmentFeatureFactory.Dependencies {
+) : CounterFragmentFormula.Dependencies {
 
-    override fun navigationStack(): SharedFlow<List<Int>> {
-        return requireNavigationOutput().navigationStack
-    }
+    override val navigationStack: SharedFlow<List<Int>>
+        get() = requireNavigationOutput().navigationStack
 
-    override fun counterIncrements(): SharedFlow<Int> {
-        return requireNavigationOutput().counterIncrements
-    }
+    override val counterIncrements: SharedFlow<Int>
+        get() = requireNavigationOutput().counterIncrements
 
-    override fun onNavigateToNext(): () -> Unit {
-        return requireNavigationOutput().onNavigateToNext
-    }
+    override val onNavigateToNext: () -> Unit
+        get() = requireNavigationOutput().onNavigateToNext
 
-    override fun onNavigateBack(): () -> Unit {
-        return requireNavigationOutput().onNavigateBack
-    }
+    override val onNavigateBack: () -> Unit
+        get() = requireNavigationOutput().onNavigateBack
 
-    override fun onIncrementCounter(): (Int) -> Unit {
-        return requireNavigationOutput().onIncrementCounter
-    }
+    override val onIncrementCounter: (Int) -> Unit
+        get() = requireNavigationOutput().onIncrementCounter
 
     fun fragmentState(): Flow<FragmentState> {
         return store.fragmentState()
