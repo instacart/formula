@@ -12,7 +12,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 1))
+            .input(CounterFragmentFormula.Input(counterIndex = 1))
             .output {
                 assertThat(fragmentId).isEqualTo(1)
                 assertThat(counter).isEqualTo(0)
@@ -25,7 +25,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         val observer = CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 42))
+            .input(CounterFragmentFormula.Input(counterIndex = 42))
 
         // Non-matching id should be ignored
         deps.counterIncrementsFlow.tryEmit(99)
@@ -51,7 +51,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         val observer = CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 3))
+            .input(CounterFragmentFormula.Input(counterIndex = 3))
 
         val stack = listOf(1, 2, 3)
         deps.navigationStackFlow.tryEmit(stack)
@@ -66,7 +66,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         val observer = CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 7))
+            .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onNavigateToNext() }
         assertThat(deps.navigateToNextCalled).isTrue()
@@ -77,7 +77,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         val observer = CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 7))
+            .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onNavigateBack() }
         assertThat(deps.navigateBackCalled).isTrue()
@@ -88,7 +88,7 @@ class CounterFragmentFormulaTest {
         val deps = TestDependencies()
         val observer = CounterFragmentFormula(deps)
             .test()
-            .input(CounterFragmentFormula.Input(fragmentId = 7))
+            .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onIncrementCounter(7) }
         observer.output {

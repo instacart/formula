@@ -17,12 +17,12 @@ class NavigationApp : Application() {
                     val activityComponent = NavigationActivityComponent(this)
                     ActivityStore(
                         fragmentStore = FragmentStore.Builder()
+                            .setOnPreRenderFragmentState { state ->
+                                activityComponent.onFragmentStateChanged(state)
+                            }
                             .build(activityComponent) {
                                 bind(CounterFragmentFeatureFactory())
                             },
-                        configureActivity = { activity ->
-                            activity.fragmentState = activityComponent.fragmentState()
-                        },
                     )
                 }
             },

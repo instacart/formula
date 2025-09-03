@@ -6,23 +6,14 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.navigation.CounterFragmentFormula.Input
 import com.instacart.formula.navigation.CounterFragmentFormula.State
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.filter
 
 class CounterFragmentFormula(
-    private val dependencies: Dependencies,
+    private val counterStore: CounterStore,
+    private val counterRouter: CounterRouter,
 ) : Formula<Input, State, CounterFragmentRenderModel>() {
 
-    interface Dependencies {
-        val navigationStack: SharedFlow<List<Int>>
-        val counterIncrements: SharedFlow<Int>
-        val onNavigateToNext: () -> Unit
-        val onNavigateBack: () -> Unit
-        val onIncrementCounter: (Int) -> Unit
-    }
-
     data class Input(
-        val fragmentId: Int,
+        val counterIndex: Int,
     )
 
     data class State(
@@ -35,34 +26,34 @@ class CounterFragmentFormula(
     override fun Snapshot<Input, State>.evaluate(): Evaluation<CounterFragmentRenderModel> {
         return Evaluation(
             output = CounterFragmentRenderModel(
-                fragmentId = input.fragmentId,
+                fragmentId = input.counterIndex,
                 counter = state.counter,
                 backStackFragments = state.navigationStack,
                 onNavigateToNext = context.callback {
                     transition {
-                        dependencies.onNavigateToNext()
+                        counterRouter.onNavigateToNext(input.counterIndex + 1)
                     }
                 },
                 onNavigateBack = context.callback {
                     transition {
-                        dependencies.onNavigateBack()
+                        counterRouter.onNavigateBack()
                     }
                 },
                 onIncrementCounter = context.onEvent { fragmentId ->
                     transition {
-                        dependencies.onIncrementCounter(fragmentId)
+                        counterStore.incrementCounterFor(fragmentId)
                     }
                 },
             ),
             actions = context.actions {
                 Action.fromFlow {
-                    dependencies.counterIncrements.filter { it == input.fragmentId }
+                    counterStore.counterIncrements(input.counterIndex)
                 }.onEvent {
                     transition(state.copy(counter = state.counter + 1))
                 }
 
                 Action.fromFlow {
-                    dependencies.navigationStack
+                    counterStore.counterStack()
                 }.onEvent { stack ->
                     transition(state.copy(navigationStack = stack))
                 }

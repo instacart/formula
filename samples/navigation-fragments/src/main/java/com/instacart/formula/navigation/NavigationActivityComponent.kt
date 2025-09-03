@@ -2,35 +2,24 @@ package com.instacart.formula.navigation
 
 import com.instacart.formula.android.ActivityStoreContext
 import com.instacart.formula.android.FragmentState
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.Flow
 
 class NavigationActivityComponent(
-    private val store: ActivityStoreContext<NavigationActivity>,
-) : CounterFragmentFormula.Dependencies {
+    activityStoreContext: ActivityStoreContext<NavigationActivity>,
+) : CounterFragmentFeatureFactory.Dependencies {
 
-    override val navigationStack: SharedFlow<List<Int>>
-        get() = requireNavigationOutput().navigationStack
+    override val counterStore: CounterStore = CounterStore()
+    override val counterRouter: CounterRouterImpl = CounterRouterImpl(activityStoreContext)
 
-    override val counterIncrements: SharedFlow<Int>
-        get() = requireNavigationOutput().counterIncrements
-
-    override val onNavigateToNext: () -> Unit
-        get() = requireNavigationOutput().onNavigateToNext
-
-    override val onNavigateBack: () -> Unit
-        get() = requireNavigationOutput().onNavigateBack
-
-    override val onIncrementCounter: (Int) -> Unit
-        get() = requireNavigationOutput().onIncrementCounter
-
-    fun fragmentState(): Flow<FragmentState> {
-        return store.fragmentState()
-    }
-
-    private fun requireNavigationOutput(): NavigationActivityFormula.Output {
-        var navigationOutput: NavigationActivityFormula.Output? = null
-        store.send { navigationOutput = getNavigationOutput() }
-        return checkNotNull(navigationOutput) { "Navigation output not available" }
+    fun onFragmentStateChanged(state: FragmentState) {
+        counterStore.updateCounterStack(state.navStack())
     }
 }
+
+private fun extractFragmentId(fragmentKey: Any?): Int {
+    return when (fragmentKey) {
+        is CounterFragmentKey -> fragmentKey.fragmentId
+        else -> throw RuntimeException("Unexpected fragment key: $fragmentKey")
+    }
+}
+
+private fun FragmentState.navStack(): List<Int> = activeIds.map { extractFragmentId(it.key) }
