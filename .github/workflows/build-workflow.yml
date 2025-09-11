@@ -76,6 +76,16 @@ jobs:
         run: ./gradlew :samples:stopwatch-coroutines:assembleDebug
       - name: Assemble Fragments Navigation Sample
         run: ./gradlew :samples:navigation-fragments:assembleDebug
+      - name: Run Samples Unit Tests
+        run: |
+          set -euo pipefail
+          TASKS=()
+          for dir in samples/*; do
+            [ -d "$dir" ] || continue
+            module_name=$(basename "$dir")
+            TASKS+=(":samples:${module_name}:testDebugUnitTest")
+          done
+          ./gradlew "${TASKS[@]}"
       - name: Publish all artifacts locally
         run: |
           ./gradlew :formula:build
