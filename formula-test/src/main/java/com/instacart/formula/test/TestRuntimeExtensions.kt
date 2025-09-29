@@ -2,7 +2,6 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.IFormula
-import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,6 +24,7 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
     failOnError: Boolean = true,
     inspector: Inspector? = null,
     dispatcher: Dispatcher? = null,
+    coroutineScheduler: TestCoroutineScheduler = TestCoroutineScheduler()
 ): TestFormulaObserver<Input, Output, F> {
     return TestFormulaObserver(
         isValidationEnabled = isValidationEnabled,
@@ -32,6 +32,7 @@ fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
         inspector = inspector,
         dispatcher = dispatcher,
         formula = this,
+        coroutineScheduler = coroutineScheduler,
     )
 }
 
