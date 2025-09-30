@@ -7,20 +7,23 @@ import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.toFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
     private val failOnError: Boolean,
     isValidationEnabled: Boolean,
     dispatcher: Dispatcher?,
     inspector: Inspector?,
     val formula: FormulaT,
+    coroutineScheduler: TestCoroutineScheduler = TestCoroutineScheduler(),
 ) {
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
@@ -39,7 +42,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     )
 
     private val job = GlobalScope.launch(
-        context = Dispatchers.Unconfined,
+        context = UnconfinedTestDispatcher(coroutineScheduler),
         start = CoroutineStart.UNDISPATCHED,
     ) {
         formula.toFlow(inputFlow, runtimeConfig)

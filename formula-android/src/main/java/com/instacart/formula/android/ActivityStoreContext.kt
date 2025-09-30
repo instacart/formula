@@ -21,35 +21,35 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun activityResults(): Flow<ActivityResult>
 
     /**
-     * Returns RxJava stream that emits Activity lifecycle state [Lifecycle.State].
+     * Returns Flow that emits Activity lifecycle state [Lifecycle.State].
      */
     abstract fun activityLifecycleState(): StateFlow<Lifecycle.State>
 
     /**
-     * Returns RxJava stream that emits [FragmentStore] state changes.
+     * Returns Flow that emits [FragmentStore] state changes.
      */
     abstract fun fragmentState(): Flow<FragmentState>
 
     /**
-     * Returns RxJava stream that emits true if fragment with a specific [tag] has
+     * Returns Flow that emits true if fragment with a specific [tag] has
      * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
      */
     abstract fun isFragmentStarted(tag: String): Flow<Boolean>
 
     /**
-     * Returns RxJava stream that emits true if fragment with [FragmentKey] has
+     * Returns Flow that emits true if fragment with [FragmentKey] has
      * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
      */
     abstract fun isFragmentStarted(key: FragmentKey): Flow<Boolean>
 
     /**
-     * Returns RxJava stream that emits true if fragment with a specific [tag]
+     * Returns Flow that emits true if fragment with a specific [tag]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
     abstract fun isFragmentResumed(tag: String): Flow<Boolean>
 
     /**
-     * Returns RxJava stream that emits true if fragment with [FragmentKey]
+     * Returns Flow that emits true if fragment with [FragmentKey]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
     abstract fun isFragmentResumed(key: FragmentKey): Flow<Boolean>
