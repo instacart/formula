@@ -34,7 +34,7 @@ allprojects {
 }
 
 subprojects {
-    val javaVersion = JavaVersion.VERSION_18
+    val javaVersion = JavaVersion.VERSION_17
 
     tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
         dokkaSourceSets.named("main") {
