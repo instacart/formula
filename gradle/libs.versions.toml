@@ -1,5 +1,5 @@
 [versions]
-android-gradle = "8.9.0"
+android-gradle = "8.11.0"
 dokka-gradle = "1.9.10"
 
 kotlin = "1.9.10"
