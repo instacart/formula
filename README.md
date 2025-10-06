@@ -20,10 +20,15 @@ Add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.instacart.formula:formula-rxjava3:0.7.1'
+    implementation 'com.instacart.formula:formula:0.7.1'
     implementation 'com.instacart.formula:formula-android:0.7.1'
+
+    // Optional: RxJava3 support
+    implementation 'com.instacart.formula:formula-rxjava3:0.7.1'
 }
 ```
+
+**Note:** Formula core uses Kotlin Coroutines. The `formula-rxjava3` module is optional and only needed if you want RxJava3 integration.
 
 # License
 
