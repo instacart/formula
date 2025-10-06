@@ -131,14 +131,15 @@ utility functions (take a look at that class for other utility functions).
 Now that we defined our state management, let's connect it to our `RenderView`.
 
 #### Using Formula
-Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can 
-convert `Formula` to an RxJava 3 `Observable` by using `toObservable` extension function.
+Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can
+convert `Formula` to a Kotlin `StateFlow` by using `runAsStateFlow` function.
 ```kotlin
 val formula = CounterFormula()
-val state: Observable<CounterRenderModel> = formula.toObservable(input = Unit)
+val scope = CoroutineScope(Dispatchers.Main)
+val state: StateFlow<CounterRenderModel> = formula.runAsStateFlow(scope, input = Unit)
 ```
 
-Ideally, it would be placed within a surface that survives configuration changes such as [Android Components ViewModel](using_android_view_model.md). You can 
+Ideally, it would be placed within a surface that survives configuration changes such as [Android Components ViewModel](using_android_view_model.md). You can
 see the full <a href="https://github.com/instacart/formula/tree/master/samples/counter" target="_blank">sample here</a>.
 
 ### Download
@@ -146,10 +147,15 @@ Add the library to your list of dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.instacart.formula:formula-rxjava3:0.7.1'
+    implementation 'com.instacart.formula:formula:0.7.1'
     implementation 'com.instacart.formula:formula-android:0.7.1'
+
+    // Optional: RxJava3 support
+    implementation 'com.instacart.formula:formula-rxjava3:0.7.1'
 }
 ```
+
+**Note:** Formula core uses Kotlin Coroutines. The `formula-rxjava3` module is optional and only needed if you want RxJava3 integration.
 
 ### Inspiration
 Formula would not have been possible without ideas from other projects such as

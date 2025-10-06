@@ -4,7 +4,7 @@ This module has been designed for gradual adoption. You can use as much or as li
 
 Some of the goals for this module are:
 
-    - Use a single RxJava stream to drive the UI.
+    - Use a single reactive stream to drive the UI.
     - Separate state management from Android UI lifecycle.
     - Ability to group multiple fragments into a flow and share state between them.
     - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
@@ -36,13 +36,12 @@ A feature factory creates the state observable and a view factory for a fragment
 example, we define a `CounterFeatureFactory` which will handle `CounterKey` fragments.
 
 ```kotlin
-class CounterFeatureFactory : FeatureFactory<Any, CounterKey> {
-    override fun initialize(dependencies: Any, key: CounterKey): Feature {
-        val counterFormula = CounterFormula()        
-        return Feature(
-            state = counterFormula.toObservable(),
-            viewFactory = CounterViewFactory()
-        )   
+class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
+    override fun Params.initialize(): Feature {
+        val counterFormula = CounterFormula()
+        return Feature(CounterViewFactory()) { scope ->
+            counterFormula.runAsStateFlow(scope, input = Unit)
+        }
     }
 }
 
@@ -152,18 +151,20 @@ data class CounterEventRouter(
 
 We can now request this dependency within our feature factory 
 ```kotlin
-class CounterFeatureFactory : FeatureFactory<Dependencies, CounterKey> {
+class CounterFeatureFactory : FeatureFactory<Dependencies, CounterKey>() {
 
     // We can ask for dependencies from the parent using an interface.
     interface Dependencies {
         fun counterEventRouter(): CounterEventRouter
     }
 
-    override fun initialize(dependencies: Dependencies, key: CounterKey): Feature {
+    override fun Params.initialize(): Feature {
         val counterEventRouter = dependencies.counterEventRouter()
         // We can pass the event router to the counter formula.
-        val counterFormula = CounterFormula(counterEventRouter)        
-        return ...
+        val counterFormula = CounterFormula(counterEventRouter)
+        return Feature(CounterViewFactory()) { scope ->
+            counterFormula.runAsStateFlow(scope, input = Unit)
+        }
     }
 }
 ```
