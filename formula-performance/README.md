@@ -85,6 +85,14 @@ open class MyBenchmark {
 - Critical for validating transition queue optimizations and child formula overhead
 - Run: `./gradlew :formula-performance:jmh -Pjmh=TransitionBenchmark`
 
+**TransitionQueueBenchmark** - Inline state transition queue processing overhead
+- Measures framework overhead for processing multiple inline state transitions
+- Tests with 1, 100, and 10,000 transitions to validate queue scaling behavior
+- Uses custom Action that emits events synchronously on start to exercise transitionQueue
+- Validates that `FormulaManagerImpl.transitionQueue` adds negligible overhead
+- Pure framework benchmark (trivial evaluation) - isolates queue processing cost
+- Run: `./gradlew :formula-performance:jmh -Pjmh=TransitionQueueBenchmark`
+
 ### ⏳ Planned Benchmarks
 
 #### Action Performance
