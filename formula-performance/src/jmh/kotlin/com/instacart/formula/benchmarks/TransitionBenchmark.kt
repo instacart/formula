@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Fork(1)
+@Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
+@Fork(3)
 @State(Scope.Thread)
 open class TransitionBenchmark {
 
