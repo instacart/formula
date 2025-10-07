@@ -34,6 +34,8 @@ jobs:
         run: ./gradlew :formula-test:test
       - name: Run Formula Lint Tests
         run: ./gradlew :formula-lint:build
+      - name: Run Formula Performance Benchmarks
+        run: ./gradlew :formula-performance:jmh
       - name: Generate Jacoco Report
         run: ./gradlew jacocoTestReportMerged
       - name: Save Jacoco Report
