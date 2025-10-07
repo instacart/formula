@@ -106,11 +106,8 @@ open class MyBenchmark {
 ```
 Benchmark                        (depth)  Mode  Cnt   Score   Error  Units
 TransitionBenchmark.transitions        0  avgt    5  34.649 ±17.587  us/op
-TransitionBenchmark.transitions        1  avgt    5  34.451 ±20.221  us/op
-TransitionBenchmark.transitions        2  avgt    5  35.297 ±15.498  us/op
-TransitionBenchmark.transitions        5  avgt    5  35.313 ±15.181  us/op
 TransitionBenchmark.transitions       10  avgt    5  35.253 ±15.513  us/op
-TransitionBenchmark.transitions       25  avgt    5  35.750 ±16.558  us/op
+TransitionBenchmark.transitions       20  avgt    5  35.750 ±16.558  us/op
 ```
 
 The `Score ± Error` shows the average time with 99.9% confidence interval, indicating measurement precision.

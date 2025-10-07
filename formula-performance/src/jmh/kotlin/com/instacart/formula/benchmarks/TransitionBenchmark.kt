@@ -21,20 +21,21 @@ import java.util.concurrent.TimeUnit
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
-@Fork(3)
+@Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(2)
 @State(Scope.Thread)
 open class TransitionBenchmark {
 
-    @Param("0", "1", "2", "5", "10", "25")
+    @Param("0", "10", "20")
     var depth: Int = 0
 
     private lateinit var observer: TestFormulaObserver<Unit, TransitionOutput, *>
 
-    @Setup(Level.Trial)
+    @Setup(Level.Iteration)
     fun setup() {
-        observer = initFormula(depth).test().apply { input(Unit) }
+        observer = initFormula(depth).test(isValidationEnabled = false)
+        observer.input(Unit)
     }
 
     /**
@@ -49,7 +50,7 @@ open class TransitionBenchmark {
         }
     }
 
-    @TearDown(Level.Trial)
+    @TearDown(Level.Iteration)
     fun tearDown() {
         observer.dispose()
     }
