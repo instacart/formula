@@ -50,6 +50,19 @@ jobs:
         if: github.event_name == 'pull_request'
         run: bundle exec danger --verbose
 
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: Checkout the code
+        uses: actions/checkout@v2
+      - name: Run Performance Benchmarks
+        run: ./gradlew :formula-performance:jmh
+
   assemble_samples:
     runs-on: ubuntu-latest
     steps:
