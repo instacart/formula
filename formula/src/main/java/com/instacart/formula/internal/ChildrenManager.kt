@@ -99,6 +99,9 @@ internal class ChildrenManager(
         input: ChildInput,
     ): SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>> {
         val childFormulaHolder = children.findOrInit(key) {
+            // Add a small delay to check if perf test will catch this
+            Thread.sleep(1)
+
             val implementation = formula.implementation
             FormulaManagerImpl(
                 delegate = manager,
