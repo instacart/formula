@@ -93,17 +93,59 @@ open class MyBenchmark {
 - Pure framework benchmark (trivial evaluation) - isolates queue processing cost
 - Run: `./gradlew :formula-performance:jmh -Pjmh=TransitionQueueBenchmark`
 
+**CallbackOverheadBenchmark** - State transition performance with many callback declarations
+- Measures whether declaring many callbacks impacts state change performance
+- Tests with 10 and 50 callbacks to understand callback declaration overhead
+- Simulates real-world applications with many UI interaction callbacks
+- Validates that callback management adds minimal overhead during evaluation
+- Run: `./gradlew :formula-performance:jmh -Pjmh=CallbackOverheadBenchmark`
+
+**ActionCountBenchmark** - State transition performance with varying numbers of active actions
+- Measures how the number of running actions affects state change performance
+- Tests with 1, 25, and 100 active actions (never-ending flows that don't emit)
+- Triggers 1000 state changes while actions remain active
+- Critical for understanding action management overhead during state updates
+- Run: `./gradlew :formula-performance:jmh -Pjmh=ActionCountBenchmark`
+
+**ChildrenCountBenchmark** - State transition performance with varying numbers of child formulas
+- Measures how the number of active child formulas affects parent state change performance
+- Tests with 1, 25, and 100 child formulas to understand composition overhead
+- Triggers 1000 parent state changes while children remain stable
+- Critical for understanding the cost of composing many child formulas
+- Run: `./gradlew :formula-performance:jmh -Pjmh=ChildrenCountBenchmark`
+
+**CallbackInitializationBenchmark** - Callback initialization and removal performance
+- Measures the cost of creating brand new callbacks (not redeclaring existing ones)
+- Tests with 10 and 50 callbacks to understand initialization overhead
+- Each iteration creates callbacks with different keys, forcing initialization from scratch
+- Measures combined cost of removing old callbacks and initializing new ones (steady-state)
+- Initial formula setup excluded via warmup
+- Run: `./gradlew :formula-performance:jmh -Pjmh=CallbackInitializationBenchmark`
+
+**ActionInitializationBenchmark** - Action initialization and cancellation performance
+- Measures the cost of creating brand new actions (not redeclaring existing ones)
+- Tests with 1, 25, and 100 actions to understand initialization overhead
+- Each iteration creates actions with different keys, forcing new subscriptions from scratch
+- Measures combined cost of cancelling old actions and starting new ones (steady-state)
+- Initial formula setup excluded via warmup
+- Run: `./gradlew :formula-performance:jmh -Pjmh=ActionInitializationBenchmark`
+
+**ChildrenInitializationBenchmark** - Child formula initialization and removal performance
+- Measures the cost of creating brand new child formulas (not reusing existing ones)
+- Tests with 1, 25, and 100 children to understand initialization overhead
+- Each iteration creates children with different keys, forcing initialState() calls
+- Measures combined cost of removing old children and initializing new ones (steady-state)
+- Initial formula setup excluded via warmup
+- Run: `./gradlew :formula-performance:jmh -Pjmh=ChildrenInitializationBenchmark`
+
 ### ⏳ Planned Benchmarks
 
 #### Action Performance
-- Concurrent actions (10, 50, 100)
-- Rapid action churn
-- Actions with state transitions
+- Actions with frequent state transitions
 
 #### Callback Performance
-- Many callbacks in output
-- Nested callback invocation
-- Keyed callbacks in loops
+- Nested callback invocation patterns
+- Deep callback call stacks
 
 #### Input Change Performance
 - Rapid input changes
