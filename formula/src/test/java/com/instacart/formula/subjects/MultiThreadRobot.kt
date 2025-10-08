@@ -3,8 +3,6 @@ package com.instacart.formula.subjects
 import com.google.common.truth.Truth
 import com.instacart.formula.subjects.SleepFormula.SleepEvent
 import com.instacart.formula.test.test
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
@@ -20,15 +18,20 @@ class MultiThreadRobot() {
     private val threadFormula = SleepFormula()
     private val observer = threadFormula.test().input("initial-key")
 
-    // Manage executors and update completion
+    // Manage executors
     private val executorMap = mutableMapOf<String, Executor>()
-    private val eventCompletionLatches = ConcurrentLinkedQueue<CountDownLatch>()
+    private var expectedEventCount = 0
 
     fun thread(name: String, sleepDuration: Long) = apply {
-        thread(name) {
-           observer.output {
-               this.onSleep(sleepDuration)
-           }
+        expectedEventCount++
+        val executor = executorMap.getOrPut(name) {
+            Executors.newSingleThreadExecutor(NamedThreadFactory(name))
+        }
+
+        executor.execute {
+            observer.output {
+                this.onSleep(sleepDuration)
+            }
         }
     }
 
@@ -37,15 +40,9 @@ class MultiThreadRobot() {
             Executors.newSingleThreadExecutor(NamedThreadFactory(name))
         }
 
-        // Creating a latch and adding it to a list to make sure we are able to
-        // wait for all event completion.
-        val completionLatch = CountDownLatch(1)
-        eventCompletionLatches.add(completionLatch)
-
         executor.execute {
             observer.output {
                 function()
-                completionLatch.countDown()
             }
         }
     }
@@ -59,9 +56,18 @@ class MultiThreadRobot() {
     }
 
     fun awaitCompletion() = apply {
-        for (latch in eventCompletionLatches) {
-            await(latch, 1, TimeUnit.SECONDS)
+        // Poll until all expected events have been processed (Actions completed)
+        val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5)
+        while (System.currentTimeMillis() < deadline) {
+            val currentCount = observer.values().lastOrNull()?.sleepEvents?.size ?: 0
+            if (currentCount >= expectedEventCount) {
+                // Give a small delay to ensure the SynchronizedUpdateQueue is fully idle
+                Thread.sleep(10)
+                return@apply
+            }
+            Thread.sleep(10)
         }
+        throw IllegalStateException("Timeout waiting for $expectedEventCount events, got ${observer.values().lastOrNull()?.sleepEvents?.size ?: 0}")
     }
 
     fun awaitEvents(vararg sleepEvents: SleepEvent) = apply {
@@ -76,12 +82,6 @@ class MultiThreadRobot() {
         awaitCompletion()
         observer.output {
             assertEvents(sleepEvents)
-        }
-    }
-
-    private fun await(latch: CountDownLatch, timeout: Long, unit: TimeUnit) {
-        if (!latch.await(timeout, unit)) {
-            throw IllegalStateException("Timeout")
         }
     }
 }
