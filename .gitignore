@@ -17,3 +17,6 @@
 
 # Jenv
 .java-version
+
+# Benchmark baselines (stored in separate benchmarks branch)
+/baselines
