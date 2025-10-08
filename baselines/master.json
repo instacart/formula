@@ -1,0 +1,1447 @@
+[
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 13.055903367130758,
+            "scoreError" : 0.1961234725792852,
+            "scoreConfidence" : [
+                12.859779894551473,
+                13.252026839710044
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12.82413141025641,
+                "50.0" : 13.068630438061938,
+                "90.0" : 13.242346688311688,
+                "95.0" : 13.242514038961039,
+                "99.0" : 13.242514038961039,
+                "99.9" : 13.242514038961039,
+                "99.99" : 13.242514038961039,
+                "99.999" : 13.242514038961039,
+                "99.9999" : 13.242514038961039,
+                "100.0" : 13.242514038961039
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    13.074149538461539,
+                    13.085691487179487,
+                    12.946427936708861,
+                    12.955405076923077,
+                    13.114573923076923
+                ],
+                [
+                    13.240840532467532,
+                    13.242514038961039,
+                    13.063111337662338,
+                    13.01218838961039,
+                    12.82413141025641
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "25"
+        },
+        "primaryMetric" : {
+            "score" : 14.102837555481596,
+            "scoreError" : 0.14934041918609753,
+            "scoreConfidence" : [
+                13.953497136295498,
+                14.252177974667694
+            ],
+            "scorePercentiles" : {
+                "0.0" : 13.903575555555555,
+                "50.0" : 14.10878913233568,
+                "90.0" : 14.236080526388887,
+                "95.0" : 14.24021873611111,
+                "99.0" : 14.24021873611111,
+                "99.9" : 14.24021873611111,
+                "99.99" : 14.24021873611111,
+                "99.999" : 14.24021873611111,
+                "99.9999" : 14.24021873611111,
+                "100.0" : 14.24021873611111
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    14.192903152777777,
+                    14.198836638888888,
+                    14.055959944444444,
+                    13.903575555555555,
+                    14.00747110958904
+                ],
+                [
+                    14.099674056338028,
+                    14.24021873611111,
+                    14.092469958333334,
+                    14.119362194444445,
+                    14.117904208333334
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "100"
+        },
+        "primaryMetric" : {
+            "score" : 19.08758180188679,
+            "scoreError" : 0.18030685792258608,
+            "scoreConfidence" : [
+                18.907274943964207,
+                19.267888659809376
+            ],
+            "scorePercentiles" : {
+                "0.0" : 18.898828433962265,
+                "50.0" : 19.09857899056604,
+                "90.0" : 19.269165816981133,
+                "95.0" : 19.275890264150945,
+                "99.0" : 19.275890264150945,
+                "99.9" : 19.275890264150945,
+                "99.99" : 19.275890264150945,
+                "99.999" : 19.275890264150945,
+                "99.9999" : 19.275890264150945,
+                "100.0" : 19.275890264150945
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    19.004169547169813,
+                    18.898828433962265,
+                    18.9504619245283,
+                    19.016760641509435,
+                    19.091355867924527
+                ],
+                [
+                    19.10580211320755,
+                    19.168391698113208,
+                    19.20864579245283,
+                    19.275890264150945,
+                    19.155511735849057
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionInitializationBenchmark.initializeNewActions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 0.8305294022163506,
+            "scoreError" : 0.05830130328501328,
+            "scoreConfidence" : [
+                0.7722280989313374,
+                0.8888307055013639
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.7669845197393638,
+                "50.0" : 0.8367009238426908,
+                "90.0" : 0.8908486420776148,
+                "95.0" : 0.8932023745311662,
+                "99.0" : 0.8932023745311662,
+                "99.9" : 0.8932023745311662,
+                "99.99" : 0.8932023745311662,
+                "99.999" : 0.8932023745311662,
+                "99.9999" : 0.8932023745311662,
+                "100.0" : 0.8932023745311662
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.8696650499956525,
+                    0.8558876287865822,
+                    0.8932023745311662,
+                    0.8360867600100309,
+                    0.8388584150943397
+                ],
+                [
+                    0.8373150876753507,
+                    0.783335437827686,
+                    0.8215047722517302,
+                    0.8024539762516046,
+                    0.7669845197393638
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionInitializationBenchmark.initializeNewActions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "25"
+        },
+        "primaryMetric" : {
+            "score" : 6.236207699918422,
+            "scoreError" : 0.15225597599307147,
+            "scoreConfidence" : [
+                6.083951723925351,
+                6.388463675911494
+            ],
+            "scorePercentiles" : {
+                "0.0" : 6.112433903481979,
+                "50.0" : 6.244636901849688,
+                "90.0" : 6.362403120277322,
+                "95.0" : 6.365625699745547,
+                "99.0" : 6.365625699745547,
+                "99.9" : 6.365625699745547,
+                "99.99" : 6.365625699745547,
+                "99.999" : 6.365625699745547,
+                "99.9999" : 6.365625699745547,
+                "100.0" : 6.365625699745547
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    6.233960816199377,
+                    6.112433903481979,
+                    6.115219468215159,
+                    6.119153602446483,
+                    6.171208951264651
+                ],
+                [
+                    6.331105546430828,
+                    6.333399905063291,
+                    6.365625699745547,
+                    6.3246561188369155,
+                    6.2553129875
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ActionInitializationBenchmark.initializeNewActions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "actionCount" : "100"
+        },
+        "primaryMetric" : {
+            "score" : 24.90684662475551,
+            "scoreError" : 0.46704543889560796,
+            "scoreConfidence" : [
+                24.439801185859903,
+                25.373892063651116
+            ],
+            "scorePercentiles" : {
+                "0.0" : 24.529211838235295,
+                "50.0" : 24.946726558138238,
+                "90.0" : 25.374063820253166,
+                "95.0" : 25.379667974683546,
+                "99.0" : 25.379667974683546,
+                "99.9" : 25.379667974683546,
+                "99.99" : 25.379667974683546,
+                "99.999" : 25.379667974683546,
+                "99.9999" : 25.379667974683546,
+                "100.0" : 25.379667974683546
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    25.379667974683546,
+                    25.07849789473684,
+                    25.006812743142145,
+                    25.323626430379747,
+                    25.03120575
+                ],
+                [
+                    24.886640373134327,
+                    24.529211838235295,
+                    24.590870024570023,
+                    24.606950466830465,
+                    24.634982751842752
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.CallbackInitializationBenchmark.initializeNewCallbacks",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "callbackCount" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 2.2897699003083356,
+            "scoreError" : 0.4441727067146754,
+            "scoreConfidence" : [
+                1.8455971935936601,
+                2.733942607023011
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.8497086814404433,
+                "50.0" : 2.33375728371916,
+                "90.0" : 2.82833282255132,
+                "95.0" : 2.8710009636363636,
+                "99.0" : 2.8710009636363636,
+                "99.9" : 2.8710009636363636,
+                "99.99" : 2.8710009636363636,
+                "99.999" : 2.8710009636363636,
+                "99.9999" : 2.8710009636363636,
+                "100.0" : 2.8710009636363636
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    2.010862864897467,
+                    2.3658589947965942,
+                    2.2200442484544047,
+                    2.4360059843864357,
+                    2.417132003383277
+                ],
+                [
+                    1.9811101366607249,
+                    2.444319552785924,
+                    1.8497086814404433,
+                    2.8710009636363636,
+                    2.301655572641726
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.CallbackInitializationBenchmark.initializeNewCallbacks",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "callbackCount" : "50"
+        },
+        "primaryMetric" : {
+            "score" : 8.504405574692274,
+            "scoreError" : 0.9883271138641454,
+            "scoreConfidence" : [
+                7.516078460828129,
+                9.49273268855642
+            ],
+            "scorePercentiles" : {
+                "0.0" : 7.5150088072018,
+                "50.0" : 8.616624367100094,
+                "90.0" : 9.3970003277503,
+                "95.0" : 9.422502351505289,
+                "99.0" : 9.422502351505289,
+                "99.9" : 9.422502351505289,
+                "99.99" : 9.422502351505289,
+                "99.999" : 9.422502351505289,
+                "99.9999" : 9.422502351505289,
+                "100.0" : 9.422502351505289
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    7.954175340729002,
+                    9.422502351505289,
+                    8.982837789757413,
+                    7.850124933333333,
+                    8.429290345408592
+                ],
+                [
+                    7.94676242063492,
+                    9.167482113955408,
+                    8.803958388791594,
+                    8.971913255605381,
+                    7.5150088072018
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.CallbackOverheadBenchmark.transitions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "callbackCount" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 13.183738602024718,
+            "scoreError" : 0.10493341343682729,
+            "scoreConfidence" : [
+                13.078805188587891,
+                13.288672015461545
+            ],
+            "scorePercentiles" : {
+                "0.0" : 13.081551411764705,
+                "50.0" : 13.176917736989724,
+                "90.0" : 13.297994747024594,
+                "95.0" : 13.299778193717277,
+                "99.0" : 13.299778193717277,
+                "99.9" : 13.299778193717277,
+                "99.99" : 13.299778193717277,
+                "99.999" : 13.299778193717277,
+                "99.9999" : 13.299778193717277,
+                "100.0" : 13.299778193717277
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    13.221893416230367,
+                    13.156978856767411,
+                    13.191665934210526,
+                    13.16624737254902,
+                    13.081551411764705
+                ],
+                [
+                    13.28194372679045,
+                    13.299778193717277,
+                    13.13747217847769,
+                    13.112266828309306,
+                    13.187588101430428
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.CallbackOverheadBenchmark.transitions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "callbackCount" : "50"
+        },
+        "primaryMetric" : {
+            "score" : 14.719956143907075,
+            "scoreError" : 0.44419890781699006,
+            "scoreConfidence" : [
+                14.275757236090085,
+                15.164155051724064
+            ],
+            "scorePercentiles" : {
+                "0.0" : 14.268032610556348,
+                "50.0" : 14.676070341569767,
+                "90.0" : 15.227695513399096,
+                "95.0" : 15.256538934550989,
+                "99.0" : 15.256538934550989,
+                "99.9" : 15.256538934550989,
+                "99.99" : 15.256538934550989,
+                "99.999" : 15.256538934550989,
+                "99.9999" : 15.256538934550989,
+                "100.0" : 15.256538934550989
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    14.832726518518518,
+                    14.465528713872832,
+                    14.557354636627908,
+                    14.268032610556348,
+                    14.791407674418604
+                ],
+                [
+                    15.256538934550989,
+                    14.96810472303207,
+                    14.54089908563135,
+                    14.95823553314121,
+                    14.56073300872093
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 12.839043217522311,
+            "scoreError" : 0.12796667344081258,
+            "scoreConfidence" : [
+                12.711076544081498,
+                12.967009890963125
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12.698667303797468,
+                "50.0" : 12.846040784810127,
+                "90.0" : 12.943735306410257,
+                "95.0" : 12.944223294871795,
+                "99.0" : 12.944223294871795,
+                "99.9" : 12.944223294871795,
+                "99.99" : 12.944223294871795,
+                "99.999" : 12.944223294871795,
+                "99.9999" : 12.944223294871795,
+                "100.0" : 12.944223294871795
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    12.8015358625,
+                    12.749331227848101,
+                    12.76667764556962,
+                    12.698667303797468,
+                    12.83777729113924
+                ],
+                [
+                    12.939343410256411,
+                    12.944223294871795,
+                    12.926354329113924,
+                    12.854304278481013,
+                    12.87221753164557
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "25"
+        },
+        "primaryMetric" : {
+            "score" : 13.211836949060151,
+            "scoreError" : 0.14399924678015105,
+            "scoreConfidence" : [
+                13.06783770228,
+                13.355836195840302
+            ],
+            "scorePercentiles" : {
+                "0.0" : 13.038727038961039,
+                "50.0" : 13.244921720779221,
+                "90.0" : 13.305379653246753,
+                "95.0" : 13.306439857142857,
+                "99.0" : 13.306439857142857,
+                "99.9" : 13.306439857142857,
+                "99.99" : 13.306439857142857,
+                "99.999" : 13.306439857142857,
+                "99.9999" : 13.306439857142857,
+                "100.0" : 13.306439857142857
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    13.250464753246753,
+                    13.28550309090909,
+                    13.287120012987012,
+                    13.168419776315789,
+                    13.074529610389611
+                ],
+                [
+                    13.038727038961039,
+                    13.239378688311689,
+                    13.295837818181818,
+                    13.171948844155844,
+                    13.306439857142857
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenCountBenchmark.stateChanges",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "100"
+        },
+        "primaryMetric" : {
+            "score" : 14.520630915714284,
+            "scoreError" : 0.13773558372354663,
+            "scoreConfidence" : [
+                14.382895331990737,
+                14.65836649943783
+            ],
+            "scorePercentiles" : {
+                "0.0" : 14.3323324,
+                "50.0" : 14.509100257142858,
+                "90.0" : 14.639193378571429,
+                "95.0" : 14.6406341,
+                "99.0" : 14.6406341,
+                "99.9" : 14.6406341,
+                "99.99" : 14.6406341,
+                "99.999" : 14.6406341,
+                "99.9999" : 14.6406341,
+                "100.0" : 14.6406341
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    14.3323324,
+                    14.468684428571429,
+                    14.520475714285714,
+                    14.575092542857142,
+                    14.584858985714286
+                ],
+                [
+                    14.473154885714285,
+                    14.4977248,
+                    14.626226885714285,
+                    14.487124414285715,
+                    14.6406341
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenInitializationBenchmark.initializeNewChildren",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 0.7030409560011555,
+            "scoreError" : 0.04240731101092232,
+            "scoreConfidence" : [
+                0.6606336449902331,
+                0.7454482670120778
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.6538362737791724,
+                "50.0" : 0.6958925779693812,
+                "90.0" : 0.7409223885331457,
+                "95.0" : 0.7412590973115731,
+                "99.0" : 0.7412590973115731,
+                "99.9" : 0.7412590973115731,
+                "99.99" : 0.7412590973115731,
+                "99.999" : 0.7412590973115731,
+                "99.9999" : 0.7412590973115731,
+                "100.0" : 0.7412590973115731
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.6931636509806639,
+                    0.7352069751543664,
+                    0.6946780518127518,
+                    0.7412590973115731,
+                    0.687429831264147
+                ],
+                [
+                    0.6971071041260106,
+                    0.7085523997294555,
+                    0.6812841663261137,
+                    0.6538362737791724,
+                    0.7378920095272994
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenInitializationBenchmark.initializeNewChildren",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "25"
+        },
+        "primaryMetric" : {
+            "score" : 3.500312525474226,
+            "scoreError" : 0.0754813152020705,
+            "scoreConfidence" : [
+                3.4248312102721554,
+                3.5757938406762966
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3.43300459162663,
+                "50.0" : 3.4953353189539245,
+                "90.0" : 3.577205850136823,
+                "95.0" : 3.5793723363148477,
+                "99.0" : 3.5793723363148477,
+                "99.9" : 3.5793723363148477,
+                "99.99" : 3.5793723363148477,
+                "99.999" : 3.5793723363148477,
+                "99.9999" : 3.5793723363148477,
+                "100.0" : 3.5793723363148477
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    3.5034521541155867,
+                    3.440254628610729,
+                    3.5241644644115575,
+                    3.43300459162663,
+                    3.487218483792262
+                ],
+                [
+                    3.5394429370134466,
+                    3.4857014808362368,
+                    3.5793723363148477,
+                    3.4528067034863654,
+                    3.557707474534598
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.ChildrenInitializationBenchmark.initializeNewChildren",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "childrenCount" : "100"
+        },
+        "primaryMetric" : {
+            "score" : 12.870299055842086,
+            "scoreError" : 0.7865620735970836,
+            "scoreConfidence" : [
+                12.083736982245002,
+                13.65686112943917
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12.282909079754601,
+                "50.0" : 12.633985068266858,
+                "90.0" : 13.676631281720823,
+                "95.0" : 13.695015417236663,
+                "99.0" : 13.695015417236663,
+                "99.9" : 13.695015417236663,
+                "99.99" : 13.695015417236663,
+                "99.999" : 13.695015417236663,
+                "99.9999" : 13.695015417236663,
+                "100.0" : 13.695015417236663
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    12.282909079754601,
+                    12.448746878109453,
+                    12.597318427672956,
+                    12.470671558603492,
+                    12.5099988375
+                ],
+                [
+                    12.67065170886076,
+                    13.015835708712613,
+                    13.695015417236663,
+                    13.500668879892038,
+                    13.511174062078272
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionBenchmark.transitions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "depth" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 12.700285344527359,
+            "scoreError" : 0.09187360437362112,
+            "scoreConfidence" : [
+                12.608411740153738,
+                12.79215894890098
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12.596682921914358,
+                "50.0" : 12.721345203303684,
+                "90.0" : 12.761637717703302,
+                "95.0" : 12.76238506377551,
+                "99.0" : 12.76238506377551,
+                "99.9" : 12.76238506377551,
+                "99.99" : 12.76238506377551,
+                "99.999" : 12.76238506377551,
+                "99.9999" : 12.76238506377551,
+                "100.0" : 12.76238506377551
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    12.73335208386277,
+                    12.76238506377551,
+                    12.597555919395466,
+                    12.701615964467004,
+                    12.669479620253165
+                ],
+                [
+                    12.7093383227446,
+                    12.754911603053435,
+                    12.596682921914358,
+                    12.741980675159235,
+                    12.735551270648031
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionBenchmark.transitions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "depth" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 12.989232239422293,
+            "scoreError" : 0.09081790154318424,
+            "scoreConfidence" : [
+                12.898414337879109,
+                13.080050140965477
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12.857953530166881,
+                "50.0" : 13.005478667626797,
+                "90.0" : 13.079632322365196,
+                "95.0" : 13.085112065359477,
+                "99.0" : 13.085112065359477,
+                "99.9" : 13.085112065359477,
+                "99.99" : 13.085112065359477,
+                "99.999" : 13.085112065359477,
+                "99.9999" : 13.085112065359477,
+                "100.0" : 13.085112065359477
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    13.004501854734112,
+                    12.963594481865284,
+                    12.945918564036223,
+                    13.006455480519481,
+                    12.857953530166881
+                ],
+                [
+                    13.085112065359477,
+                    13.016264265279585,
+                    13.030314635416667,
+                    13.007842743823147,
+                    12.97436477302205
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionBenchmark.transitions",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "depth" : "20"
+        },
+        "primaryMetric" : {
+            "score" : 13.644062347677746,
+            "scoreError" : 0.205897687749074,
+            "scoreConfidence" : [
+                13.438164659928672,
+                13.84996003542682
+            ],
+            "scorePercentiles" : {
+                "0.0" : 13.483867021563343,
+                "50.0" : 13.634906000959976,
+                "90.0" : 13.87631667738629,
+                "95.0" : 13.886743213296398,
+                "99.0" : 13.886743213296398,
+                "99.9" : 13.886743213296398,
+                "99.99" : 13.886743213296398,
+                "99.999" : 13.886743213296398,
+                "99.9999" : 13.886743213296398,
+                "100.0" : 13.886743213296398
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    13.529117722371968,
+                    13.483867021563343,
+                    13.548228836265224,
+                    13.492716226415094,
+                    13.587031824324324
+                ],
+                [
+                    13.682780177595628,
+                    13.709147551299589,
+                    13.73851304945055,
+                    13.886743213296398,
+                    13.782477854195323
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionQueueBenchmark.measure1",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "primaryMetric" : {
+            "score" : 0.3451531499533877,
+            "scoreError" : 0.015911902421551976,
+            "scoreConfidence" : [
+                0.3292412475318357,
+                0.3610650523749397
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.3351705670241287,
+                "50.0" : 0.3434380096999217,
+                "90.0" : 0.36410860101063747,
+                "95.0" : 0.3648973599923238,
+                "99.0" : 0.3648973599923238,
+                "99.9" : 0.3648973599923238,
+                "99.99" : 0.3648973599923238,
+                "99.999" : 0.3648973599923238,
+                "99.9999" : 0.3648973599923238,
+                "100.0" : 0.3648973599923238
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.33656223789637335,
+                    0.33767725634450496,
+                    0.3357551860143701,
+                    0.3351705670241287,
+                    0.3357063729763168
+                ],
+                [
+                    0.3648973599923238,
+                    0.35026836366641884,
+                    0.3492856223886414,
+                    0.3491987630553385,
+                    0.35700977017546054
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionQueueBenchmark.measure100",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "primaryMetric" : {
+            "score" : 0.3581249241001791,
+            "scoreError" : 0.00714721560839211,
+            "scoreConfidence" : [
+                0.350977708491787,
+                0.3652721397085712
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.3534395012360966,
+                "50.0" : 0.35736034042122433,
+                "90.0" : 0.3678267223967267,
+                "95.0" : 0.36858133541861593,
+                "99.0" : 0.36858133541861593,
+                "99.9" : 0.36858133541861593,
+                "99.99" : 0.36858133541861593,
+                "99.999" : 0.36858133541861593,
+                "99.9999" : 0.36858133541861593,
+                "100.0" : 0.36858133541861593
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.355320395675479,
+                    0.3547043918607406,
+                    0.3538173031478793,
+                    0.3534395012360966,
+                    0.35455498753775805
+                ],
+                [
+                    0.36103520519972376,
+                    0.3605801299753836,
+                    0.36858133541861593,
+                    0.35940028516696965,
+                    0.35981570578314503
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "com.instacart.formula.benchmarks.TransitionQueueBenchmark.measure10000",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/hostedtoolcache/Java_Zulu_jdk/17.0.16-8/x64/bin/java",
+        "jvmArgs" : [
+            "-Dfile.encoding=UTF-8",
+            "-Djava.io.tmpdir=/home/runner/work/formula/formula/formula-performance/build/tmp/jmh",
+            "-Duser.country",
+            "-Duser.language=en",
+            "-Duser.variant"
+        ],
+        "jdkVersion" : "17.0.16",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.16+8-LTS",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "primaryMetric" : {
+            "score" : 0.35294551105438055,
+            "scoreError" : 0.005878538398107989,
+            "scoreConfidence" : [
+                0.34706697265627257,
+                0.3588240494524885
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.3490842863963746,
+                "50.0" : 0.3511648929377279,
+                "90.0" : 0.3598918494851214,
+                "95.0" : 0.36013201735703154,
+                "99.0" : 0.36013201735703154,
+                "99.9" : 0.36013201735703154,
+                "99.99" : 0.36013201735703154,
+                "99.999" : 0.36013201735703154,
+                "99.9999" : 0.36013201735703154,
+                "100.0" : 0.36013201735703154
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.3496756053261358,
+                    0.36013201735703154,
+                    0.3553247062560107,
+                    0.3577303386379301,
+                    0.3552630948177691
+                ],
+                [
+                    0.3493939378060598,
+                    0.3509858763267922,
+                    0.3513439095486637,
+                    0.3490842863963746,
+                    0.35052133807103825
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+
