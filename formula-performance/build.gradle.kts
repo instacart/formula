@@ -19,4 +19,6 @@ dependencies {
 jmh {
     jmhVersion.set("1.37")
     includeTests.set(false)
+    resultFormat.set("JSON")
+    resultsFile.set(project.file("${project.buildDir}/results/jmh/results.json"))
 }

@@ -1,0 +1,18 @@
+# Benchmark comparison
+baseline_path = "baselines/master.json"
+current_path = "formula-performance/build/results/jmh/results.json"
+
+if File.exist?(baseline_path) && File.exist?(current_path)
+  require_relative 'formula-performance/scripts/compare_benchmarks'
+
+  comparator = BenchmarkComparator.new(baseline_path: baseline_path, current_path: current_path)
+  results = comparator.compare
+
+  if results[:has_regressions]
+    warn("⚠️ Performance regressions detected in benchmarks")
+  end
+
+  markdown(comparator.generate_markdown)
+elsif File.exist?(current_path) && !File.exist?(baseline_path)
+  message("📊 Benchmark results available but no baseline found for comparison")
+end
