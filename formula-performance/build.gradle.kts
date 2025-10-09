@@ -21,4 +21,12 @@ jmh {
     includeTests.set(false)
     resultFormat.set("JSON")
     resultsFile.set(project.file("${project.buildDir}/results/jmh/results.json"))
+
+    // Support filtering benchmarks via -Pjmh=BenchmarkName
+    if (project.hasProperty("jmh")) {
+        val jmhProperty = project.property("jmh")
+        if (jmhProperty is String) {
+            includes.add(jmhProperty)
+        }
+    }
 }

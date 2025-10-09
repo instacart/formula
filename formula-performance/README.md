@@ -138,6 +138,14 @@ open class MyBenchmark {
 - Initial formula setup excluded via warmup
 - Run: `./gradlew :formula-performance:jmh -Pjmh=ChildrenInitializationBenchmark`
 
+**GlobalEffectQueueBenchmark** - Effect queueing and execution performance
+- Measures the cost of queueing and executing transition effects through globalEffectQueue
+- Tests with 1, 10, and 100 effects per transition to understand queueing overhead
+- Each benchmark triggers 100 transitions to measure average per-transition cost
+- Uses TransitionContext.andThen API to chain multiple effects in a single transition
+- Critical for validating that globalEffectQueue (LinkedList) adds minimal overhead
+- Run: `./gradlew :formula-performance:jmh -Pjmh=GlobalEffectQueueBenchmark`
+
 ### ⏳ Planned Benchmarks
 
 #### Action Performance
