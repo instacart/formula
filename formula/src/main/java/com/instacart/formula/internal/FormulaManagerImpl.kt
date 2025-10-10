@@ -29,7 +29,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var childrenManager: ChildrenManager? = null
     private var isValidationEnabled: Boolean = false
 
-    private val actionManager: ActionManager = ActionManager(
+    /**
+     * Internal accessor for ActionManager.
+     * Required by SnapshotImpl to pass to ActionBuilderImpl.
+     */
+    internal val actionManager: ActionManager = ActionManager(
         manager = this,
         inspector = inspector,
     )
@@ -197,6 +201,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
+        // Set validation mode before evaluation
+        actionManager.setValidationMode(isValidationEnabled)
+
         val snapshot = SnapshotImpl(
             input = input,
             state = state,
@@ -210,18 +217,14 @@ internal class FormulaManagerImpl<Input, State, Output>(
             if (oldOutput != result.output) {
                 throw ValidationException("$formulaType - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
             }
-
-            val lastActionKeys = lastFrame?.evaluation?.actions?.map { it.key }
-            val currentActionKeys = result.actions.map { it.key }
-            if (lastActionKeys != currentActionKeys) {
-                throw ValidationException("$formulaType - action keys changed during identical re-evaluation - old: $lastActionKeys, new: $currentActionKeys")
-            }
         }
+
+        actionManager.runValidation()
 
         val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
-
-        actionManager.prepareForPostEvaluation(newFrame.evaluation.actions)
+        // Use new ActionManager API - no longer pass actions
+        actionManager.prepareForPostEvaluation()
         listeners.prepareForPostEvaluation()
         childrenManager?.prepareForPostEvaluation()
 
