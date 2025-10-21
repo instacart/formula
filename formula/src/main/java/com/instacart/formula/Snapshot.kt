@@ -6,17 +6,17 @@ package com.instacart.formula
  * is a state change within the Formula hierarchy, a new snapshot will be generated and
  * [Formula.evaluate] will be called again.
  */
-interface Snapshot<out Input, State> {
+interface Snapshot<out Input, State> : ParameterProvider<Input, State> {
 
     /**
      * The current Formula input value passed by the parent.
      */
-    val input: Input
+    override val input: Input
 
     /**
      * The current Formula state value.
      */
-    val state: State
+    override val state: State
 
     /**
      * Context is a short-lived object associated with the current evaluation. It should not be
