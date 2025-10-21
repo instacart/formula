@@ -11,18 +11,18 @@ import com.instacart.formula.Transition
  */
 internal class ActionBuilderImpl<out Input, State> internal constructor(
     private val snapshot: Snapshot<Input, State>,
+    private val actionManager: ActionManager,
 ) : ActionBuilder<Input, State>(
     input = snapshot.input,
     state = snapshot.state,
 ) {
-    internal val actions = LinkedHashSet<DeferredAction<*>>()
 
     override fun <Event> events(
         action: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
-        actions.add(toBoundStream(action, executionType, transition))
+        toBoundStream(action, executionType, transition)
     }
 
     override fun <Event> Action<Event>.onEvent(
@@ -43,13 +43,9 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         stream: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
-    ): DeferredAction<Event> {
+    ) {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())
         val listener = snapshot.context.eventListener(key, useIndex = false, executionType, transition)
-        return DeferredAction(
-            key = key,
-            action = stream,
-            listener = listener
-        )
+        actionManager.findOrInitAction(key, stream, listener)
     }
 }

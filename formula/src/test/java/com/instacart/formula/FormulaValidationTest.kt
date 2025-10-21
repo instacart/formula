@@ -84,7 +84,45 @@ class FormulaValidationTest {
             formula.test(isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
-            "action keys changed during identical re-evaluation"
+            "actions changed during validation - new:"
+        )
+    }
+
+    @Test
+    fun `action removed during re-evaluation will throw validation error`() {
+        val formula = object : StatelessFormula<Unit, Int>() {
+            val unstableActionKey = AtomicInteger(0)
+            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                return Evaluation(
+                    output = 0,
+                    context.actions {
+                        if (unstableActionKey.getAndIncrement() == 1) {
+                            val action = object : Action<Unit> {
+                                override fun start(
+                                    scope: CoroutineScope,
+                                    emitter: Action.Emitter<Unit>
+                                ): Cancelable? {
+                                    return null
+                                }
+
+                                override fun key(): Any {
+                                    return unstableActionKey.incrementAndGet()
+                                }
+                            }
+
+                            action.onEvent {
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+        val error = runCatching {
+            formula.test(isValidationEnabled = true).input(Unit)
+        }
+        Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
+            "actions changed during validation - new:"
         )
     }
 }

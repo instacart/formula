@@ -22,7 +22,7 @@ jobs:
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.6.1'
+          ruby-version: '3.3'
           bundler-cache: true
       - name: Run Core Tests
         run: ./gradlew :formula:test
@@ -48,7 +48,63 @@ jobs:
           find . -type f -regex ".*/build/reports/allTests/.*xml" -exec cp {} ~/junit/ \;
       - name: Publish Coverage Results
         if: github.event_name == 'pull_request'
-        run: bundle exec danger --verbose
+        run: bundle exec danger --verbose --dangerfile=CoverageDangerfile --danger_id=coverage
+
+  benchmarks:
+    runs-on: ubuntu-latest
+    env:
+      DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
+    steps:
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: Checkout the code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Need full history for baseline branch
+      - name: Download baseline (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          # Fetch and extract baseline from benchmarks branch
+          git fetch origin benchmarks:benchmarks 2>/dev/null || echo "No benchmarks branch yet"
+          if git rev-parse benchmarks >/dev/null 2>&1; then
+            git checkout benchmarks -- baselines/master.json || echo "No baseline file yet"
+          fi
+      - name: Run Performance Benchmarks
+        run: ./gradlew :formula-performance:jmh
+      - name: Install Ruby (PR only)
+        if: github.event_name == 'pull_request'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Report Benchmark Results (PR only)
+        if: github.event_name == 'pull_request'
+        run: bundle exec danger --verbose --dangerfile=BenchmarkDangerfile --danger_id=benchmarks
+      - name: Store baseline (master only)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch or create benchmarks branch
+          git fetch origin benchmarks:benchmarks 2>/dev/null || git checkout --orphan benchmarks
+          if git rev-parse benchmarks >/dev/null 2>&1; then
+            git checkout benchmarks
+          else
+            git checkout --orphan benchmarks
+            git rm -rf . 2>/dev/null || true
+          fi
+
+          # Store baseline
+          mkdir -p baselines
+          cp formula-performance/build/results/jmh/results.json baselines/master.json
+          git add baselines/master.json
+          git diff --staged --quiet || git commit -m "Update baseline from ${{ github.sha }}"
+          git push origin benchmarks
 
   assemble_samples:
     runs-on: ubuntu-latest

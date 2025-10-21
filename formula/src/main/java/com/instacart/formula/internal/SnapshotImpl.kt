@@ -25,9 +25,14 @@ internal class SnapshotImpl<out Input, State>(
 
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
         ensureNotRunning()
-        val builder = ActionBuilderImpl(this)
+
+        // Pass ActionManager from FormulaManagerImpl (via delegate)
+        // delegate is FormulaManagerImpl, which now exposes actionManager
+        val builder = ActionBuilderImpl(this, delegate.actionManager)
         builder.init()
-        return builder.actions
+
+        // Always return empty set - actions are tracked internally in ActionManager
+        return emptySet()
     }
 
     override fun <ChildInput, ChildOutput> child(
