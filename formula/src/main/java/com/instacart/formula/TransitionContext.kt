@@ -9,11 +9,11 @@ import com.instacart.formula.internal.toResult
  * Transition context provides the current [input], the current [state] and utilities to help
  * create [Transition.Result] within [Transition.toResult].
  */
-interface TransitionContext<out Input, State> {
+interface TransitionContext<out Input, State> : ParameterProvider<Input, State> {
 
     val effectDelegate: EffectDelegate
-    val input: Input
-    val state: State
+    override val input: Input
+    override val state: State
 
     /**
      * Returns a result that indicates to do nothing as part of this event.
