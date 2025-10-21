@@ -1751,6 +1751,45 @@ class FormulaRuntimeTest {
     }
 
     @Test
+    fun `action is removed before it is started`() {
+
+        var firstActionEventCount = 0
+        var secondActionStartCount = 0
+        val formula  = object : Formula<Unit, Boolean, Unit>() {
+
+            // Starting with the action running.
+            override fun initialState(input: Unit): Boolean = true
+
+            override fun Snapshot<Unit, Boolean>.evaluate(): Evaluation<Unit> {
+                return Evaluation(
+                    output = Unit,
+                    actions = context.actions {
+                        Action.onInit().onEvent {
+                            firstActionEventCount += 1
+
+                            // First action should disable the second action.
+                            transition(false)
+                        }
+
+                        if (state) {
+                            RxAction.fromObservable {
+                                secondActionStartCount += 1
+                                Observable.empty()
+                            }.onEvent {
+                                none()
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        val observer = formula.test().input(Unit)
+        assertThat(firstActionEventCount).isEqualTo(1)
+        assertThat(secondActionStartCount).isEqualTo(0)
+    }
+
+    @Test
     fun `using from observable with input`() {
         val onItem = TestEventCallback<FromObservableWithInputFormula.Item>()
         FromObservableWithInputFormula().test()

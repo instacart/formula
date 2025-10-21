@@ -14,7 +14,7 @@ internal class ActionManager(
     private val manager: FormulaManagerImpl<*, *, *>,
     private val inspector: Inspector?,
 ) {
-    private var running: SingleRequestMap<Any, DeferredAction<*>>? = null
+    private var actions: SingleRequestMap<Any, DeferredAction<*>>? = null
 
     // For scheduling start/terminate operations in post-evaluation phase
     private var checkToStartActionList: MutableList<DeferredAction<*>>? = null
@@ -54,9 +54,9 @@ internal class ActionManager(
         listener: Listener<Event>
     ): DeferredAction<Event> {
         // Lazy init actions map
-        val actionsMap = running ?: run {
+        val actionsMap = actions ?: run {
             val map = mutableMapOf<Any, SingleRequestHolder<DeferredAction<*>>>()
-            running = map
+            actions = map
             map
         }
 
@@ -140,9 +140,10 @@ internal class ActionManager(
             val action = iterator.next()
             iterator.remove()
 
-            inspector?.onActionStarted(manager.formulaType, action)
-
-            action.start(manager)
+            if (!action.isTerminated()) {
+                inspector?.onActionStarted(manager.formulaType, action)
+                action.start(manager)
+            }
 
             if (manager.isTerminated()) {
                 return false
@@ -160,10 +161,10 @@ internal class ActionManager(
      * Terminate all running actions.
      */
     fun terminate() {
-        running?.forEachValue { action ->
+        actions?.forEachValue { action ->
             finishAction(action)
         }
-        running?.clear()
+        actions?.clear()
     }
 
     private fun runValidationIfNeeded() {
@@ -180,7 +181,7 @@ internal class ActionManager(
      * last evaluation and should be removed.
      */
     private fun computeRemovedActionList() {
-        running?.clearUnrequested { action ->
+        actions?.clearUnrequested { action ->
             val list = checkToRemoveActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToRemoveActionList = it
             }
