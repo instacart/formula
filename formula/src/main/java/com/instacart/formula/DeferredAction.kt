@@ -15,13 +15,13 @@ class DeferredAction<Event>(
     // We use event listener for equality because it provides better equality performance
     private val listener: (Event) -> Unit
 ) {
-    @Volatile private var isEnabled = true
+    @Volatile private var isTerminated = false
     private var cancelable: Cancelable? = null
 
     internal fun start(delegate: ActionDelegate) {
         val emitter = object : Action.Emitter<Event> {
             override fun onEvent(event: Event) {
-                if (isEnabled) {
+                if (!isTerminated) {
                     listener.invoke(event)
                 }
             }
@@ -42,7 +42,7 @@ class DeferredAction<Event>(
         }
 
         cancelable = null
-        isEnabled = false
+        isTerminated = true
     }
 
     /**
@@ -56,4 +56,6 @@ class DeferredAction<Event>(
     override fun hashCode(): Int {
         return listener.hashCode()
     }
+
+    fun isTerminated(): Boolean = isTerminated
 }
