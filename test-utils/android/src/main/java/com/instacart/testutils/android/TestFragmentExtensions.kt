@@ -4,11 +4,11 @@ import android.os.Looper
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.android.RouteKey
 import org.robolectric.Shadows.shadowOf
 
 fun FragmentActivity.showFragment(
-    fragmentKey: FragmentKey,
+    routeKey: RouteKey,
     allowStateLoss: Boolean = false,
 ) {
     val entryIndex = supportFragmentManager.backStackEntryCount - 1
@@ -24,8 +24,8 @@ fun FragmentActivity.showFragment(
             remove(fragment)
         }
 
-        val tag = fragmentKey.tag
-        add(R.id.activity_content, FormulaFragment.newInstance(fragmentKey), tag)
+        val tag = routeKey.tag
+        add(R.id.activity_content, FormulaFragment.newInstance(routeKey), tag)
         addToBackStack(tag)
     }.apply {
         if (allowStateLoss) {
@@ -37,11 +37,11 @@ fun FragmentActivity.showFragment(
 }
 
 fun <ActivityType : FragmentActivity> ActivityScenario<ActivityType>.showFragment(
-    fragmentKey: FragmentKey,
+    routeKey: RouteKey,
     allowStateLoss: Boolean = false
 ) {
     onActivity {
-        it.showFragment(fragmentKey, allowStateLoss)
+        it.showFragment(routeKey, allowStateLoss)
         shadowOf(Looper.getMainLooper()).idle()
     }
 }

@@ -1,32 +1,32 @@
 package com.instacart.formula.android
 
-data class FragmentEnvironment(
+data class RouteEnvironment(
     val logger: (String) -> Unit = {},
-    val onScreenError: (FragmentKey, Throwable) -> Unit = { _, it -> throw it },
-    val fragmentDelegate: FragmentDelegate = FragmentDelegate(),
+    val onScreenError: (RouteKey, Throwable) -> Unit = { _, it -> throw it },
+    val routeDelegate: RouteDelegate = RouteDelegate(),
 ) {
 
     /**
      * Introspection API to track various formula fragment events and their performance.
      */
-    open class FragmentDelegate {
+    open class RouteDelegate {
 
         /**
          * Instantiates the feature.
          */
-        open fun <DependenciesT, KeyT: FragmentKey> initializeFeature(
-            fragmentId: FragmentId<KeyT>,
+        open fun <DependenciesT, KeyT: RouteKey> initializeFeature(
+            routeId: RouteId<KeyT>,
             factory: FeatureFactory<DependenciesT, KeyT>,
             dependencies: DependenciesT,
         ): Feature {
-            return factory.initialize(dependencies, fragmentId)
+            return factory.initialize(dependencies, routeId)
         }
 
         /**
          * Called from [FormulaFragment.onCreateView] to instantiate the view.
          */
         open fun createView(
-            fragmentId: FragmentId<*>,
+            routeId: RouteId<*>,
             viewFactory: ViewFactory<Any>,
             params: ViewFactory.Params,
         ): FeatureView<Any> {
@@ -36,7 +36,7 @@ data class FragmentEnvironment(
         /**
          * Called when we are ready to apply [output] to the view.
          */
-        open fun setOutput(fragmentId: FragmentId<*>, output: Any, applyOutputToView: (Any) -> Unit) {
+        open fun setOutput(routeId: RouteId<*>, output: Any, applyOutputToView: (Any) -> Unit) {
             applyOutputToView(output)
         }
     }

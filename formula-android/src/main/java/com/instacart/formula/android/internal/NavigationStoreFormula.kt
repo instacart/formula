@@ -6,25 +6,25 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentState
-import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FragmentOutput
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.NavigationState
+import com.instacart.formula.android.RouteId
+import com.instacart.formula.android.RouteOutput
 import kotlinx.coroutines.flow.MutableSharedFlow
 import com.instacart.formula.android.RxJavaFeature
 import com.instacart.formula.android.StateFlowFeature
 import kotlinx.coroutines.CoroutineDispatcher
 
 @PublishedApi
-internal class FragmentStoreFormula(
+internal class NavigationStoreFormula(
     private val asyncDispatcher: CoroutineDispatcher,
-    private val environment: FragmentEnvironment,
-) : Formula<Unit, FragmentState, FragmentState>(){
-    private val stateChanges = MutableSharedFlow<Transition<Unit, FragmentState, Unit>>(
+    private val environment: RouteEnvironment,
+) : Formula<Unit, NavigationState, NavigationState>(){
+    private val stateChanges = MutableSharedFlow<Transition<Unit, NavigationState, Unit>>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
 
-    fun fragmentAdded(feature: FeatureEvent) {
+    fun routeAdded(feature: FeatureEvent) {
         stateChanges.tryEmit {
             if (!state.activeIds.contains(feature.id)) {
                 val updated = state.copy(
@@ -38,37 +38,37 @@ internal class FragmentStoreFormula(
         }
     }
 
-    fun fragmentRemoved(fragmentId: FragmentId<*>) {
+    fun routeRemoved(routeId: RouteId<*>) {
         stateChanges.tryEmit {
             val updated = state.copy(
-                activeIds = state.activeIds.minus(fragmentId),
-                outputs = state.outputs.minus(fragmentId),
-                features = state.features.minus(fragmentId)
+                activeIds = state.activeIds.minus(routeId),
+                outputs = state.outputs.minus(routeId),
+                features = state.features.minus(routeId)
             )
             transition(updated)
         }
     }
 
-    fun fragmentVisible(fragmentId: FragmentId<*>) {
+    fun routeVisible(routeId: RouteId<*>) {
         stateChanges.tryEmit {
-            if (state.visibleIds.contains(fragmentId)) {
+            if (state.visibleIds.contains(routeId)) {
                 // TODO: should we log this duplicate visibility event?
                 none()
             } else {
-                transition(state.copy(visibleIds = state.visibleIds.plus(fragmentId)))
+                transition(state.copy(visibleIds = state.visibleIds.plus(routeId)))
             }
         }
     }
 
-    fun fragmentHidden(fragmentId: FragmentId<*>) {
+    fun routeHidden(routeId: RouteId<*>) {
         stateChanges.tryEmit {
-            transition(state.copy(visibleIds = state.visibleIds.minus(fragmentId)))
+            transition(state.copy(visibleIds = state.visibleIds.minus(routeId)))
         }
     }
 
-    override fun initialState(input: Unit): FragmentState = FragmentState()
+    override fun initialState(input: Unit): NavigationState = NavigationState()
 
-    override fun Snapshot<Unit, FragmentState>.evaluate(): Evaluation<FragmentState> {
+    override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
         return Evaluation(
             output = state,
             actions = context.actions {
@@ -77,30 +77,30 @@ internal class FragmentStoreFormula(
                 }
 
                 state.features.entries.forEach { entry ->
-                    val fragmentId = entry.key
+                    val routeId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
                         val action = when (feature) {
                             is RxJavaFeature -> {
                                 FeatureObservableAction(
-                                    fragmentEnvironment = environment,
-                                    fragmentId = fragmentId,
+                                    routeEnvironment = environment,
+                                    routeId = routeId,
                                     feature = feature,
                                 )
                             }
                             is StateFlowFeature -> {
                                 StateFlowFeatureAction(
                                     asyncDispatcher = asyncDispatcher,
-                                    fragmentEnvironment = environment,
-                                    fragmentId = fragmentId,
+                                    routeEnvironment = environment,
+                                    routeId = routeId,
                                     feature = feature,
                                 )
                             }
                         }
 
                         action.onEvent {
-                            val keyState = FragmentOutput(fragmentId.key, it)
-                            transition(state.copy(outputs = state.outputs.plus(fragmentId to keyState)))
+                            val keyState = RouteOutput(routeId.key, it)
+                            transition(state.copy(outputs = state.outputs.plus(routeId to keyState)))
                         }
                     }
                 }

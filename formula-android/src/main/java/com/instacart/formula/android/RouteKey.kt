@@ -9,15 +9,15 @@ import androidx.fragment.app.FragmentManager
  * ```
  * data class TaskDetailKey(
  *   val taskID: String
- * ) : FragmentKey {
+ * ) : RouteKey {
  *   override val tag: String = "task-detail-$taskId"
  * }
  * ```
  */
-interface FragmentKey : Parcelable {
+interface RouteKey : Parcelable {
 
     /**
-     * Tag is a unique identifier used to distinguish each fragment instance by the [FragmentManager].
+     * Tag is a unique identifier used to distinguish each route instance by the [FragmentManager].
      */
     val tag: String
 }
