@@ -6,7 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.fakes.DetailKey
 import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
-import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
@@ -25,7 +25,7 @@ class FragmentStoreTest {
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
         try {
-            FragmentStore.Builder().build(FakeComponent()) {
+            NavigationStore.Builder().build(FakeComponent()) {
                 bind(TestFeatureFactory<MainKey>())
                 bind(TestFeatureFactory<MainKey>())
             }
@@ -96,7 +96,7 @@ class FragmentStoreTest {
             }
         }
 
-        val store = FragmentStore.Builder().build(100) {
+        val store = NavigationStore.Builder().build(100) {
             bind(myFeatureFactory) {
                 "Dependency: $it"
             }
@@ -117,7 +117,7 @@ class FragmentStoreTest {
 
         val latch = CountDownLatch(1)
 
-        val updates = mutableListOf<Map<FragmentKey, Any>>()
+        val updates = mutableListOf<Map<RouteKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
         val disposable = store.state().subscribe {
             val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
@@ -162,27 +162,27 @@ class FragmentStoreTest {
     }
 
     @Test fun `store returns missing binding event when no feature factory is present`() {
-        val store = FragmentStore.Builder().build(FakeComponent()) {
+        val store = NavigationStore.Builder().build(FakeComponent()) {
             bind(TestFeatureFactory<MainKey>())
         }
         val observer = store.state().test()
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "random",
             key = DetailKey(id = 100)
         )
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+            RouteLifecycleEvent.Added(routeId = routeId)
         )
 
         val lastState = observer.values().last()
-        assertThat(lastState.features[fragmentId]).isEqualTo(
-            FeatureEvent.MissingBinding(fragmentId)
+        assertThat(lastState.features[routeId]).isEqualTo(
+            FeatureEvent.MissingBinding(routeId)
         )
     }
 
     @Test fun `store returns failure event when feature factory initialization throws an error`() {
         val expectedError = RuntimeException("something happened")
-        val store = FragmentStore.Builder().build(FakeComponent()) {
+        val store = NavigationStore.Builder().build(FakeComponent()) {
             val featureFactory = object : FeatureFactory<FakeComponent, MainKey>() {
                 override fun Params.initialize(): Feature {
                     throw expectedError
@@ -192,24 +192,24 @@ class FragmentStoreTest {
         }
 
         val observer = store.state().test()
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "random",
             key = MainKey(id = 100)
         )
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+            RouteLifecycleEvent.Added(routeId = routeId)
         )
 
         val lastState = observer.values().last()
-        assertThat(lastState.features[fragmentId]).isEqualTo(
-            FeatureEvent.Failure(fragmentId, expectedError)
+        assertThat(lastState.features[routeId]).isEqualTo(
+            FeatureEvent.Failure(routeId, expectedError)
         )
     }
 
     @Test fun `fragment store ignores events after key is removed`() {
         val stateSubject = PublishSubject.create<Any>()
 
-        val store = FragmentStore.Builder().build {
+        val store = NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -222,41 +222,41 @@ class FragmentStoreTest {
         }
 
         val observer = store.state().test()
-        val fragmentId = FragmentId("", MainKey(1))
+        val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+            RouteLifecycleEvent.Added(routeId = routeId)
         )
         stateSubject.onNext("value")
 
         // Check that first event was shown
-        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        val firstModel = observer.values().last().outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
         // Remove fragment
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Removed(fragmentId = fragmentId)
+            RouteLifecycleEvent.Removed(routeId = routeId)
         )
 
         // Check that new events are ignored
         stateSubject.onNext("new-value")
 
         // Output should not exist
-        val secondModel = observer.values().last().outputs[fragmentId]
+        val secondModel = observer.values().last().outputs[routeId]
         assertThat(secondModel).isNull()
     }
 
     @Test fun `feature observable error emits on screen error and finishes`() {
         val stateSubject = PublishSubject.create<Any>()
 
-        val screenErrors = mutableListOf<Pair<FragmentKey, Throwable>>()
-        val environment = FragmentEnvironment(
+        val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
+        val environment = RouteEnvironment(
             onScreenError = { key, error ->
                 screenErrors.add(key to error)
             }
         )
 
-        val store = FragmentStore.Builder()
-            .setFragmentEnvironment(environment)
+        val store = NavigationStore.Builder()
+            .setRouteEnvironment(environment)
             .build {
                 val featureFactory = object : FeatureFactory<Any, MainKey>() {
                     override fun Params.initialize(): Feature {
@@ -271,13 +271,13 @@ class FragmentStoreTest {
 
 
         val observer = store.state().test()
-        val fragmentId = FragmentId("", MainKey(1))
+        val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+            RouteLifecycleEvent.Added(routeId = routeId)
         )
         stateSubject.onNext("value")
 
-        val firstModel = observer.values().last().outputs[fragmentId]?.renderModel
+        val firstModel = observer.values().last().outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
         // Emit error
@@ -285,20 +285,20 @@ class FragmentStoreTest {
         stateSubject.onError(error)
 
         // Model didn't change
-        val secondModel = observer.values().last().outputs[fragmentId]?.renderModel
+        val secondModel = observer.values().last().outputs[routeId]?.renderModel
         assertThat(secondModel).isEqualTo("value")
 
         // Store observable didn't crash
         observer.assertNoErrors()
 
         assertThat(screenErrors).containsExactly(
-            fragmentId.key to error
+            routeId.key to error
         )
     }
 
     @Test fun `state flow feature`() {
         val stateFlow = MutableStateFlow(0)
-        val store = FragmentStore.Builder().build {
+        val store = NavigationStore.Builder().build {
             bind(object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(TestViewFactory()) {
@@ -312,8 +312,8 @@ class FragmentStoreTest {
         
         // Add fragment key
         val key = MainKey(1)
-        val fragmentId = FragmentId("", key)
-        store.onLifecycleEvent(FragmentLifecycleEvent.Added(fragmentId = fragmentId))
+        val routeId = RouteId("", key)
+        store.onLifecycleEvent(RouteLifecycleEvent.Added(routeId = routeId))
 
         stateFlow.tryEmit(1)
         stateFlow.tryEmit(2)
@@ -327,7 +327,7 @@ class FragmentStoreTest {
     }
 
     @Test fun `fragment store visible output`() {
-        val store = FragmentStore.Builder().build {
+        val store = NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -340,9 +340,9 @@ class FragmentStoreTest {
         }
 
         val observer = store.state().test()
-        val fragmentId = FragmentId("", MainKey(1))
+        val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
-            FragmentLifecycleEvent.Added(fragmentId = fragmentId)
+            RouteLifecycleEvent.Added(routeId = routeId)
         )
 
         // No visible output yet
@@ -350,52 +350,52 @@ class FragmentStoreTest {
         assertThat(firstModel).isNull()
 
         // Toggle visibility
-        store.onVisibilityChanged(fragmentId, true)
+        store.onVisibilityChanged(routeId, true)
 
         // Check that visible output is now present
         val secondModel = observer.values().last().visibleOutput()
         assertThat(secondModel).isNotNull()
 
         // Toggle visibility again
-        store.onVisibilityChanged(fragmentId, false)
+        store.onVisibilityChanged(routeId, false)
 
         // Check that visible output is null again
         val third = observer.values().last().visibleOutput()
         assertThat(third).isNull()
     }
     
-    private fun FragmentStore.toStates(): TestObserver<Map<FragmentKey, FragmentOutput>> {
+    private fun NavigationStore.toStates(): TestObserver<Map<RouteKey, RouteOutput>> {
         return state()
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
             .test()
     }
 
-    private fun expectedState(vararg states: Pair<FragmentKey, *>): Map<FragmentKey, FragmentOutput> {
+    private fun expectedState(vararg states: Pair<RouteKey, *>): Map<RouteKey, RouteOutput> {
         return expectedState(states.asList())
     }
 
-    private fun expectedState(states: List<Pair<FragmentKey, *>>): Map<FragmentKey, FragmentOutput> {
-        val initial = mutableMapOf<FragmentKey, FragmentOutput>()
+    private fun expectedState(states: List<Pair<RouteKey, *>>): Map<RouteKey, RouteOutput> {
+        val initial = mutableMapOf<RouteKey, RouteOutput>()
         return states.foldRight(initial) { value, acc ->
             if (value.second != null) {
-                acc.put(value.first, FragmentOutput(value.first, value.second!!))
+                acc.put(value.first, RouteOutput(value.first, value.second!!))
             }
 
             acc
         }
     }
 
-    fun createStore(component: FakeComponent): FragmentStore {
-        return FragmentStore.Builder().build(component) {
+    fun createStore(component: FakeComponent): NavigationStore {
+        return NavigationStore.Builder().build(component) {
             bind(TestFeatureFactory<MainKey>())
             bind(TestFeatureFactory<DetailKey>())
         }
     }
 
-    private fun FragmentKey.asAddedEvent() = FragmentLifecycleEvent.Added(FragmentId("", this))
-    private fun FragmentKey.asRemovedEvent() = FragmentLifecycleEvent.Removed(FragmentId("", this))
+    private fun RouteKey.asAddedEvent() = RouteLifecycleEvent.Added(RouteId("", this))
+    private fun RouteKey.asRemovedEvent() = RouteLifecycleEvent.Removed(RouteId("", this))
 
-    class TestFeatureFactory<FragmentKeyT : FragmentKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
+    class TestFeatureFactory<FragmentKeyT : RouteKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
         override fun Params.initialize(): Feature {
             return Feature(
                 state = dependencies.state(key),

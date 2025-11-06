@@ -14,28 +14,28 @@ class FormulaFragment : Fragment() {
         internal const val ARG_FORMULA_ID = "formula:fragment:id"
 
         @JvmStatic
-        fun newInstance(key: FragmentKey): FormulaFragment {
+        fun newInstance(key: RouteKey): FormulaFragment {
             return FormulaFragment().apply {
                 getOrSetArguments().putParcelable(ARG_CONTRACT, key)
             }
         }
     }
 
-    private val key: FragmentKey by lazy(LazyThreadSafetyMode.NONE) {
-        requireArguments().getParcelable<FragmentKey>(ARG_CONTRACT)!!
+    private val key: RouteKey by lazy(LazyThreadSafetyMode.NONE) {
+        requireArguments().getParcelable<RouteKey>(ARG_CONTRACT)!!
     }
 
-    private val formulaFragmentId: FragmentId<*> by lazy {
-        getFormulaFragmentId()
+    private val formulaRouteId: RouteId<*> by lazy {
+        getFormulaRouteId()
     }
 
-    internal lateinit var fragmentStore: FragmentStore
+    internal lateinit var navigationStore: NavigationStore
 
-    private val environment: FragmentEnvironment
-        get() = fragmentStore.environment
+    private val environment: RouteEnvironment
+        get() = navigationStore.environment
 
-    private val fragmentDelegate: FragmentEnvironment.FragmentDelegate
-        get() = environment.fragmentDelegate
+    private val routeDelegate: RouteEnvironment.RouteDelegate
+        get() = environment.routeDelegate
 
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
@@ -44,7 +44,7 @@ class FormulaFragment : Fragment() {
         get() = featureView?.lifecycleCallbacks
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val viewFactory = fragmentStore.getViewFactory(formulaFragmentId) ?: run {
+        val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: run {
             // No view factory, no view
             return null
         }
@@ -54,8 +54,8 @@ class FormulaFragment : Fragment() {
             container = container,
         )
 
-        val featureView = environment.fragmentDelegate.createView(
-            fragmentId = formulaFragmentId,
+        val featureView = environment.routeDelegate.createView(
+            routeId = formulaRouteId,
             viewFactory = viewFactory,
             params = params,
         )
@@ -120,7 +120,7 @@ class FormulaFragment : Fragment() {
         return output
     }
 
-    fun getFragmentKey(): FragmentKey {
+    fun getRouteKey(): RouteKey {
         return key
     }
 
@@ -133,7 +133,7 @@ class FormulaFragment : Fragment() {
         val view = featureView ?: return
 
         try {
-            fragmentDelegate.setOutput(formulaFragmentId, output, view.setOutput)
+            routeDelegate.setOutput(formulaRouteId, output, view.setOutput)
         } catch (exception: Exception) {
             environment.onScreenError(key, exception)
         }

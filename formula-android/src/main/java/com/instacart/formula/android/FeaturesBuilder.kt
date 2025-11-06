@@ -7,7 +7,7 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
- * Helps to build a [Features] list that binds various fragment keys to their respective
+ * Helps to build a [Features] list that binds various route keys to their respective
  * feature factories. Each feature factory has a dependency type that needs to either match
  * [Dependencies] type defined here or map this root dependency type to the custom type.
  */
@@ -29,7 +29,7 @@ class FeaturesBuilder<Dependencies> {
      * @param type The class which describes the [key][Key].
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
-    fun <Key : FragmentKey> bind(
+    fun <Key : RouteKey> bind(
         type : KClass<Key>,
         featureFactory: FeatureFactory<Dependencies, Key>,
     ) = apply {
@@ -42,7 +42,7 @@ class FeaturesBuilder<Dependencies> {
      *
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      */
-    inline fun <reified Key: FragmentKey> bind(
+    inline fun <reified Key: RouteKey> bind(
         featureFactory: FeatureFactory<Dependencies, Key>
     ) = apply {
         bind(Key::class, featureFactory)
@@ -54,7 +54,7 @@ class FeaturesBuilder<Dependencies> {
      * @param featureFactory Feature factory that provides state observable and view rendering logic.
      * @param toDependencies Maps [Dependencies] to feature factory [dependencies][CustomDependencyType].
      */
-    inline fun <CustomDependencyType, reified Key: FragmentKey> bind(
+    inline fun <CustomDependencyType, reified Key: RouteKey> bind(
         featureFactory: FeatureFactory<CustomDependencyType, Key>,
         noinline toDependencies: (Dependencies) -> CustomDependencyType
     ) = apply {

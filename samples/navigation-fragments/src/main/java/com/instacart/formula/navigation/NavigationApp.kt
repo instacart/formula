@@ -3,7 +3,7 @@ package com.instacart.formula.navigation
 import android.app.Application
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.android.NavigationStore
 
 class NavigationApp : Application() {
 
@@ -16,8 +16,8 @@ class NavigationApp : Application() {
                 activity<NavigationActivity> {
                     val activityComponent = NavigationActivityComponent(this)
                     ActivityStore(
-                        fragmentStore = FragmentStore.Builder()
-                            .setOnPreRenderFragmentState { state ->
+                        navigationStore = NavigationStore.Builder()
+                            .setOnPreRenderNavigationState { state ->
                                 activityComponent.onFragmentStateChanged(state)
                             }
                             .build(activityComponent) {

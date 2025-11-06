@@ -7,13 +7,13 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentState
-import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.android.NavigationState
+import com.instacart.formula.android.RouteKey
 import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentStore
-import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.NavigationStore
+import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
@@ -36,16 +36,16 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class FormulaFragmentTest {
 
-    private var lastState: FragmentState? = null
-    private val stateChangeRelay = PublishRelay.create<Pair<FragmentKey, Any>>()
+    private var lastState: NavigationState? = null
+    private val stateChangeRelay = PublishRelay.create<Pair<RouteKey, Any>>()
     private var updateThreads = linkedSetOf<Thread>()
     private val errors = mutableListOf<Throwable>()
-    private val fragmentLifecycleEvents = mutableListOf<FragmentLifecycleEvent>()
-    private val renderCalls = mutableListOf<Pair<FragmentKey, *>>()
+    private val routeLifecycleEvents = mutableListOf<RouteLifecycleEvent>()
+    private val renderCalls = mutableListOf<Pair<RouteKey, *>>()
 
     private val formulaRule = TestFormulaRule(
         initFormula = { app ->
-            val environment = FragmentEnvironment(
+            val environment = RouteEnvironment(
                 onScreenError = { _, error ->
                     errors.add(error)
                 }
@@ -53,14 +53,14 @@ class FormulaFragmentTest {
             FormulaAndroid.init(app) {
                 activity<TestFormulaActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentStore.Builder()
-                            .setFragmentEnvironment(environment)
-                            .setOnPreRenderFragmentState {
+                        navigationStore = NavigationStore.Builder()
+                            .setRouteEnvironment(environment)
+                            .setOnPreRenderNavigationState {
                                 lastState = it
                                 updateThreads.add(Thread.currentThread())
                             }
-                            .setOnFragmentLifecycleEvent {
-                                fragmentLifecycleEvents.add(it)
+                            .setOnRouteLifecycleEvent {
+                                routeLifecycleEvents.add(it)
                             }
                             .build {
                                 bind(
@@ -92,7 +92,7 @@ class FormulaFragmentTest {
         cleanUp = {
             lastState = null
             updateThreads = linkedSetOf()
-            fragmentLifecycleEvents.clear()
+            routeLifecycleEvents.clear()
         }
     )
 
@@ -116,10 +116,10 @@ class FormulaFragmentTest {
 
         assertThat(activeContracts()).containsExactly(TestKey()).inOrder()
 
-        assertThat(fragmentLifecycleEvents).hasSize(3)
-        assertThat(fragmentLifecycleEvents[0]).isInstanceOf(FragmentLifecycleEvent.Added::class.java)
-        assertThat(fragmentLifecycleEvents[1]).isInstanceOf(FragmentLifecycleEvent.Added::class.java)
-        assertThat(fragmentLifecycleEvents[2]).isInstanceOf(FragmentLifecycleEvent.Removed::class.java)
+        assertThat(routeLifecycleEvents).hasSize(3)
+        assertThat(routeLifecycleEvents[0]).isInstanceOf(RouteLifecycleEvent.Added::class.java)
+        assertThat(routeLifecycleEvents[1]).isInstanceOf(RouteLifecycleEvent.Added::class.java)
+        assertThat(routeLifecycleEvents[2]).isInstanceOf(RouteLifecycleEvent.Removed::class.java)
     }
 
     @Test fun `navigating forward should have both keys in backstack`() {
@@ -347,7 +347,7 @@ class FormulaFragmentTest {
         scenario.showFragment(fragmentKey, allowStateLoss)
     }
 
-    private fun assertFragmentViewIsCreated(key: FragmentKey) {
+    private fun assertFragmentViewIsCreated(key: RouteKey) {
         scenario.onActivity {
             val view = it.supportFragmentManager.findFragmentByTag(key.tag)?.view
             assertThat(view).isNotNull()
@@ -358,25 +358,25 @@ class FormulaFragmentTest {
         return scenario.activity()
     }
 
-    private fun activeContracts(): List<FragmentKey> {
+    private fun activeContracts(): List<RouteKey> {
         return lastState!!.activeIds.map { it.key }
     }
 
-    private fun assertVisibleContract(contract: FragmentKey) {
+    private fun assertVisibleContract(contract: RouteKey) {
         assertNoDuplicates(contract)
         // TODO: would be best to test visibleState() however `FragmentFlowState.states` is empty
         assertThat(lastState?.visibleIds?.lastOrNull()?.key).isEqualTo(contract)
     }
 
-    private fun assertNoDuplicates(contract: FragmentKey) {
+    private fun assertNoDuplicates(contract: RouteKey) {
         assertThat(lastState?.visibleIds?.count { it.key == contract }).isEqualTo(1)
     }
 
-    private fun sendStateUpdate(contract: FragmentKey, update: Any) {
+    private fun sendStateUpdate(contract: RouteKey, update: Any) {
         stateChangeRelay.accept(Pair(contract, update))
     }
 
-    private fun stateChanges(contract: FragmentKey): Observable<Any> {
+    private fun stateChanges(contract: RouteKey): Observable<Any> {
         return stateChangeRelay
             .filter { event ->
                 event.first == contract

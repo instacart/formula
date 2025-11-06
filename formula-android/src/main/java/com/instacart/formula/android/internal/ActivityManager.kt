@@ -18,21 +18,21 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    internal val stateSubscription = store.fragmentStore.state().subscribe { newState ->
-        delegate.fragmentStateRelay.tryEmit(newState)
+    internal val stateSubscription = store.navigationStore.state().subscribe { newState ->
+        delegate.navigationStateRelay.tryEmit(newState)
     }
-    private var fragmentRenderView: FragmentFlowRenderView? = null
+    private var navigationRenderView: NavigationFlowRenderView? = null
 
     fun onPreCreate(activity: Activity) {
         // Give store a chance to initialize the activity.
         store.configureActivity?.invoke(activity)
 
         // Initialize render view
-        fragmentRenderView = FragmentFlowRenderView(
+        navigationRenderView = NavigationFlowRenderView(
             activity = activity,
-            store = store.fragmentStore,
+            store = store.navigationStore,
             onLifecycleState = delegate::updateFragmentLifecycleState,
-            onFragmentViewStateChanged = store.fragmentStore::onVisibilityChanged
+            onFragmentViewStateChanged = store.navigationStore::onVisibilityChanged
         )
     }
 
@@ -40,11 +40,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.attachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
 
-        val renderView = fragmentRenderView ?: throw callOnPreCreateException(activity)
+        val renderView = navigationRenderView ?: throw callOnPreCreateException(activity)
         with(activity) {
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    delegate.fragmentState().collect {
+                    delegate.navigationState().collect {
                         renderView.render(it)
                     }
                 }
@@ -70,7 +70,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onActivityDestroyed(activity: Activity) {
-        fragmentRenderView = null
+        navigationRenderView = null
 
         delegate.detachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.DESTROYED)
@@ -81,7 +81,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onBackPressed(): Boolean {
-        return fragmentRenderView?.onBackPressed() ?: false
+        return navigationRenderView?.onBackPressed() ?: false
     }
 
     fun dispose() {

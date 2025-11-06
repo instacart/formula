@@ -47,11 +47,11 @@ class ActivityStoreContextTest {
 
     @Test fun `is fragment started`() {
         val contract = createContract()
-        context.isFragmentStarted(contract)
+        context.isRouteStarted(contract)
             .asObservable()
             .test()
             .apply {
-                val instance = FragmentId("", contract)
+                val instance = RouteId("", contract)
                 context.updateFragmentLifecycleState(instance, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
@@ -59,8 +59,8 @@ class ActivityStoreContextTest {
 
     @Test fun `isFragmentStarted emits latest value first`() {
         val contract = createContract()
-        val fragment = FragmentId("", contract)
-        val observable = context.isFragmentStarted(contract).asObservable()
+        val fragment = RouteId("", contract)
+        val observable = context.isRouteStarted(contract).asObservable()
 
         // 1st subscription
         observable
@@ -78,18 +78,18 @@ class ActivityStoreContextTest {
 
     @Test fun `is fragment resumed`() {
         val contract = createContract()
-        context.isFragmentResumed(contract)
+        context.isRouteResumed(contract)
             .asObservable()
             .test()
             .apply {
-                val instance = FragmentId("", contract)
+                val instance = RouteId("", contract)
                 context.updateFragmentLifecycleState(instance, Lifecycle.State.RESUMED)
             }
             .assertValues(false, true)
     }
 
-    private fun createContract(): FragmentKey {
-        return TestFragmentKey()
+    private fun createContract(): RouteKey {
+        return TestRouteKey()
     }
 
     private fun createFakeActivity(): FakeActivity {
@@ -97,7 +97,7 @@ class ActivityStoreContextTest {
     }
 
     @Parcelize
-    private data class TestFragmentKey(
+    private data class TestRouteKey(
         override val tag: String = "fake tag",
-    ) : FragmentKey
+    ) : RouteKey
 }

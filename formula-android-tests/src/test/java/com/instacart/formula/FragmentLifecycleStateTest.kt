@@ -3,8 +3,8 @@ package com.instacart.formula
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentStore
-import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.android.NavigationStore
+import com.instacart.formula.android.RouteKey
 import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.testutils.android.FormulaAndroidInteractor
@@ -25,7 +25,7 @@ class FragmentLifecycleStateTest {
             configure = {
                 activity<TestFormulaActivity> {
                     ActivityStore(
-                        fragmentStore = FragmentStore.Builder().build {
+                        navigationStore = NavigationStore.Builder().build {
                             bind(NoOpFeatureFactory<TestKey>())
                             bind(NoOpFeatureFactory<TestKeyWithId>())
                         }
@@ -84,11 +84,11 @@ class FragmentLifecycleStateTest {
         }
     }
 
-    private fun FormulaAndroidInteractor.startedEvents(key: FragmentKey): TestObserver<Boolean> {
-        return selectEvents { it.isFragmentStarted(key).asObservable() }.test()
+    private fun FormulaAndroidInteractor.startedEvents(key: RouteKey): TestObserver<Boolean> {
+        return selectEvents { it.isRouteStarted(key).asObservable() }.test()
     }
 
-    private fun FormulaAndroidInteractor.resumedEvents(key: FragmentKey): TestObserver<Boolean> {
-        return selectEvents { it.isFragmentResumed(key).asObservable() }.test()
+    private fun FormulaAndroidInteractor.resumedEvents(key: RouteKey): TestObserver<Boolean> {
+        return selectEvents { it.isRouteResumed(key).asObservable() }.test()
     }
 }

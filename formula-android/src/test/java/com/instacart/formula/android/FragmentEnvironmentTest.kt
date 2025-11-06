@@ -9,11 +9,11 @@ class FragmentEnvironmentTest {
     @Test
     fun `default onError throws exception`() {
 
-        val fragmentEnvironment = FragmentEnvironment()
+        val routeEnvironment = RouteEnvironment()
         val mainKey = MainKey(id = 1)
         val exception = RuntimeException("huh")
         try {
-            fragmentEnvironment.onScreenError(mainKey, exception)
+            routeEnvironment.onScreenError(mainKey, exception)
             error("should not happen")
         } catch (e: Exception) {
             Truth.assertThat(e).isEqualTo(exception)

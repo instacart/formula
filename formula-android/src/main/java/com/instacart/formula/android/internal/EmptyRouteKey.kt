@@ -1,9 +1,9 @@
 package com.instacart.formula.android.internal
 
-import com.instacart.formula.android.FragmentKey
+import com.instacart.formula.android.RouteKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-internal data class EmptyFragmentKey(
+internal data class EmptyRouteKey(
     override val tag: String
-) : FragmentKey
+) : RouteKey

@@ -5,7 +5,7 @@ import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.navigation.CounterFragmentFeatureFactory.Dependencies
 import com.instacart.formula.runAsStateFlow
 
-class CounterFragmentFeatureFactory : FeatureFactory<Dependencies, CounterFragmentKey>() {
+class CounterFragmentFeatureFactory : FeatureFactory<Dependencies, CounterRouteKey>() {
 
     interface Dependencies {
         val counterStore: CounterStore
