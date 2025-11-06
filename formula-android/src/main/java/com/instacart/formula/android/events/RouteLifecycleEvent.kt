@@ -19,3 +19,9 @@ sealed class RouteLifecycleEvent {
         val lastState: Any? = null
     ) : RouteLifecycleEvent()
 }
+
+@Deprecated(
+    message = "FragmentLifecycleEvent has been renamed to RouteLifecycleEvent",
+    replaceWith = ReplaceWith("RouteLifecycleEvent", "com.instacart.formula.android.events.RouteLifecycleEvent")
+)
+typealias FragmentLifecycleEvent = RouteLifecycleEvent

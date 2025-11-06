@@ -27,3 +27,15 @@ fun Fragment.getFormulaRouteId(): RouteId<*> {
         key = this@getFormulaRouteId.getRouteKey()
     )
 }
+
+@Deprecated(
+    message = "FragmentId has been renamed to RouteId",
+    replaceWith = ReplaceWith("RouteId", "com.instacart.formula.android.RouteId")
+)
+typealias FragmentId<Type> = RouteId<Type>
+
+@Deprecated(
+    message = "getFormulaFragmentId has been renamed to getFormulaRouteId",
+    replaceWith = ReplaceWith("getFormulaRouteId()", "com.instacart.formula.android.getFormulaRouteId")
+)
+fun Fragment.getFormulaFragmentId(): RouteId<*> = getFormulaRouteId()
