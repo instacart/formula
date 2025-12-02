@@ -3,6 +3,7 @@ include(
     ":formula-android",
     ":formula-android-compose",
     ":formula-android-tests",
+    ":formula-r8-tests",
     ":formula-lint",
     ":formula-performance",
     ":formula-rxjava3",
