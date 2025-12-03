@@ -20,3 +20,6 @@
 
 # Benchmark baselines (stored in separate benchmarks branch)
 /baselines
+
+# Claude Code
+.claude

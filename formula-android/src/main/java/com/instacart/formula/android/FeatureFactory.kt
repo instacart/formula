@@ -1,7 +1,7 @@
 package com.instacart.formula.android
 
 /**
- * Feature factory is responsible for creating a [Feature] for a specific [fragment key][Key].
+ * Feature factory is responsible for creating a [Feature] for a specific [route key][Key].
  *
  * ```
  * // An example from samples/todoapp
@@ -27,21 +27,21 @@ package com.instacart.formula.android
  * ```
  *
  * Once we define a [FeatureFactory], we need to [bind][FeaturesBuilder.bind] it to a
- * [FragmentStore]. The fragment flow store will call [initialize] the first time
+ * [NavigationStore]. The navigation flow store will call [initialize] the first time
  * [FormulaFragment] with a new [Key] is attached. It will subscribe to the state management
  * and persist it across configuration changes.
  *
  * @param Dependencies dependencies to instantiate this feature. Usually defined by an interface.
- * @param Key a type of fragment key that is used to identify this feature.
+ * @param Key a type of route key that is used to identify this feature.
  *
  */
-abstract class FeatureFactory<in Dependencies, in Key : FragmentKey> {
+abstract class FeatureFactory<in Dependencies, in Key : RouteKey> {
 
     inner class Params(
         val dependencies: @UnsafeVariance Dependencies,
-        val fragmentId: FragmentId<@UnsafeVariance Key>,
+        val routeId: RouteId<@UnsafeVariance Key>,
     ) {
-        val key = fragmentId.key
+        val key = routeId.key
     }
 
     /**
@@ -52,7 +52,7 @@ abstract class FeatureFactory<in Dependencies, in Key : FragmentKey> {
     /**
      * Initializes state observable and a view factory for a specific [key].
      */
-    fun initialize(dependencies: Dependencies, fragmentId: FragmentId<@UnsafeVariance Key>): Feature {
-        return Params(dependencies, fragmentId).initialize()
+    fun initialize(dependencies: Dependencies, routeId: RouteId<@UnsafeVariance Key>): Feature {
+        return Params(dependencies, routeId).initialize()
     }
 }

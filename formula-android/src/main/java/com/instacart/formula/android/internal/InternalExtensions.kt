@@ -1,8 +1,8 @@
 package com.instacart.formula.android.internal
 
 import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentId
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.ViewFactory
 import java.lang.IllegalStateException
 
@@ -13,20 +13,20 @@ internal inline fun <T> List<T>.forEachIndices(action: (T) -> Unit) {
     }
 }
 
-internal fun Map<FragmentId<*>, FeatureEvent>.getViewFactory(environment: FragmentEnvironment, fragmentId: FragmentId<*>): ViewFactory<Any>? {
+internal fun Map<RouteId<*>, FeatureEvent>.getViewFactory(environment: RouteEnvironment, routeId: RouteId<*>): ViewFactory<Any>? {
     return try {
-        findViewFactoryOrThrow(fragmentId)
+        findViewFactoryOrThrow(routeId)
     } catch (e: Throwable) {
-        environment.onScreenError(fragmentId.key, e)
+        environment.onScreenError(routeId.key, e)
         null
     }
 }
 
-private fun Map<FragmentId<*>, FeatureEvent>.findViewFactoryOrThrow(
-    fragmentId: FragmentId<*>
+private fun Map<RouteId<*>, FeatureEvent>.findViewFactoryOrThrow(
+    routeId: RouteId<*>
 ): ViewFactory<Any> {
-    val key = fragmentId.key
-    val featureEvent = this[fragmentId] ?: throw IllegalStateException("Could not find feature for $key.")
+    val key = routeId.key
+    val featureEvent = this[routeId] ?: throw IllegalStateException("Could not find feature for $key.")
     return when (featureEvent) {
         is FeatureEvent.MissingBinding -> {
             throw IllegalStateException("Missing feature factory or integration for $key. Please check your FragmentStore configuration.")
