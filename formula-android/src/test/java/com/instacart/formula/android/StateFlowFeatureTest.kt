@@ -44,7 +44,7 @@ class StateFlowFeatureTest {
         private val tasks = mutableListOf<Runnable>()
         private val executors = Executor { command -> tasks.add(command) }
 
-        private val store = FragmentStore.Builder()
+        private val store = NavigationStore.Builder()
             .setAsyncCoroutineDispatcher(executors.asCoroutineDispatcher())
             .build {
                 val featureFactory = StateFlowFeatureFactory(formula)

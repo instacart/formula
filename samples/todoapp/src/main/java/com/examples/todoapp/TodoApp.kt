@@ -5,15 +5,15 @@ import android.util.Log
 import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.NavigationStore
 
 class TodoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
-        val fragmentEnvironment = FragmentEnvironment(
+        val routeEnvironment = RouteEnvironment(
             onScreenError = { _, error ->
                 Log.e("TodoApp", "fragment crashed", error)
             }
@@ -26,8 +26,8 @@ class TodoApp : Application() {
                     val component = TodoAppComponent(this)
 
                     ActivityStore(
-                        fragmentStore = FragmentStore.Builder()
-                            .setFragmentEnvironment(fragmentEnvironment)
+                        navigationStore = NavigationStore.Builder()
+                            .setRouteEnvironment(routeEnvironment)
                             .build(component) {
                                 bind(TaskListFeatureFactory())
                             }

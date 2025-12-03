@@ -26,33 +26,33 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun activityLifecycleState(): StateFlow<Lifecycle.State>
 
     /**
-     * Returns Flow that emits [FragmentStore] state changes.
+     * Returns Flow that emits [NavigationStore] state changes.
      */
-    abstract fun fragmentState(): Flow<FragmentState>
+    abstract fun navigationState(): Flow<NavigationState>
 
     /**
-     * Returns Flow that emits true if fragment with a specific [tag] has
+     * Returns Flow that emits true if route with a specific [tag] has
      * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentStarted(tag: String): Flow<Boolean>
+    abstract fun isRouteStarted(tag: String): Flow<Boolean>
 
     /**
-     * Returns Flow that emits true if fragment with [FragmentKey] has
+     * Returns Flow that emits true if route with [RouteKey] has
      * either [Lifecycle.State.STARTED] or [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentStarted(key: FragmentKey): Flow<Boolean>
+    abstract fun isRouteStarted(key: RouteKey): Flow<Boolean>
 
     /**
-     * Returns Flow that emits true if fragment with a specific [tag]
+     * Returns Flow that emits true if route with a specific [tag]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentResumed(tag: String): Flow<Boolean>
+    abstract fun isRouteResumed(tag: String): Flow<Boolean>
 
     /**
-     * Returns Flow that emits true if fragment with [FragmentKey]
+     * Returns Flow that emits true if route with [RouteKey]
      * has [Lifecycle.State.RESUMED] lifecycle state.
      */
-    abstract fun isFragmentResumed(key: FragmentKey): Flow<Boolean>
+    abstract fun isRouteResumed(key: RouteKey): Flow<Boolean>
 
     /**
      * Performs an [effect] on the current activity instance. If there is no activity connected,

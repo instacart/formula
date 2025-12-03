@@ -1,9 +1,9 @@
 package com.instacart.formula.android.fakes
 
-import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FragmentKey
-import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.RouteId
+import com.instacart.formula.android.RouteKey
+import com.instacart.formula.android.events.RouteLifecycleEvent
 
-fun FragmentKey.asAddedEvent(instanceId: String = "") = FragmentLifecycleEvent.Added(
-    fragmentId = FragmentId(instanceId, this)
+fun RouteKey.asAddedEvent(instanceId: String = "") = RouteLifecycleEvent.Added(
+    routeId = RouteId(instanceId, this)
 )

@@ -2,7 +2,7 @@ package com.instacart.formula.android
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.events.ActivityResult
-import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.fakes.MainKey
 import org.junit.Test
 
@@ -10,18 +10,18 @@ class FragmentDataClassTest {
 
     @Test fun fragmentId() {
         val fragmentKey = MainKey(id = 1)
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "instanceId",
             key = fragmentKey
         )
 
-        assertThat(fragmentId.instanceId).isEqualTo("instanceId")
-        assertThat(fragmentId.key).isEqualTo(fragmentKey)
+        assertThat(routeId.instanceId).isEqualTo("instanceId")
+        assertThat(routeId.key).isEqualTo(fragmentKey)
     }
 
     @Test fun fragmentOutput() {
         val key = MainKey(id = 1)
-        val output = FragmentOutput(
+        val output = RouteOutput(
             key = key,
             renderModel = Unit
         )
@@ -42,16 +42,16 @@ class FragmentDataClassTest {
 
     @Test fun fragmentLifecycleEventRemoved() {
         val fragmentKey = MainKey(id = 1)
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "instanceId",
             key = fragmentKey
         )
 
-        val event = FragmentLifecycleEvent.Removed(
-            fragmentId = fragmentId,
+        val event = RouteLifecycleEvent.Removed(
+            routeId = routeId,
             lastState = "last-state"
         )
-        assertThat(event.fragmentId).isEqualTo(fragmentId)
+        assertThat(event.routeId).isEqualTo(routeId)
         assertThat(event.lastState).isEqualTo("last-state")
     }
 }

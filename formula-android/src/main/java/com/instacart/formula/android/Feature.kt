@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
  * the view rendering logic. It is used to support [FormulaFragment] by providing [ViewFactory]
  * and the [stateObservable] observable.
  *
- * To define a feature, we need to create a [FeatureFactory] for a specific [FragmentKey] type
- * and [bind][FeaturesBuilder.bind] it to the [FragmentStore].
+ * To define a feature, we need to create a [FeatureFactory] for a specific [RouteKey] type
+ * and [bind][FeaturesBuilder.bind] it to the [NavigationStore].
  *
  * Take a look at [FeatureFactory] for more information.
  */

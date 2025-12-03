@@ -17,7 +17,7 @@ class NavigationActivity : FormulaAppCompatActivity() {
     }
 
     fun showNextFragment(id: Int) {
-        val key = CounterFragmentKey(id)
+        val key = CounterRouteKey(id)
         val fragment = FormulaFragment.newInstance(key)
 
         with(supportFragmentManager.beginTransaction()) {

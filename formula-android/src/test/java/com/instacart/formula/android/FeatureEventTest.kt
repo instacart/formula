@@ -8,14 +8,14 @@ import java.lang.RuntimeException
 class FeatureEventTest {
 
     @Test fun failureEvent() {
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "random",
             key = MainKey(id = 100)
         )
 
         val error = RuntimeException("error")
-        val event = FeatureEvent.Failure(fragmentId, error)
-        Truth.assertThat(event.id).isEqualTo(fragmentId)
+        val event = FeatureEvent.Failure(routeId, error)
+        Truth.assertThat(event.id).isEqualTo(routeId)
         Truth.assertThat(event.error).isEqualTo(error)
     }
 }

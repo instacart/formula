@@ -6,7 +6,7 @@ import org.junit.Test
 
 class FragmentStateTest {
     @Test fun `visibleOutput is null when visible ids are empty`() {
-        val state = FragmentState(
+        val state = NavigationState(
             visibleIds = emptyList(),
         )
 
@@ -16,13 +16,13 @@ class FragmentStateTest {
     @Test
     fun `visible output is null until output is set`() {
         val fragmentKey = MainKey(id = 1)
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "instanceId",
             key = fragmentKey
         )
 
-        val state = FragmentState(
-            visibleIds = listOf(fragmentId)
+        val state = NavigationState(
+            visibleIds = listOf(routeId)
         )
 
         Truth.assertThat(state.visibleOutput()).isNull()
@@ -31,23 +31,23 @@ class FragmentStateTest {
     @Test
     fun `visible output is not null when visible fragment has an output`() {
         val fragmentKey = MainKey(id = 1)
-        val fragmentId = FragmentId(
+        val routeId = RouteId(
             instanceId = "instanceId",
             key = fragmentKey
         )
 
-        val fragmentOutput = FragmentOutput(
+        val routeOutput = RouteOutput(
             key = fragmentKey,
             renderModel = "value"
         )
 
-        val state = FragmentState(
-            visibleIds = listOf(fragmentId),
+        val state = NavigationState(
+            visibleIds = listOf(routeId),
             outputs = mapOf(
-                fragmentId to fragmentOutput
+                routeId to routeOutput
             )
         )
 
-        Truth.assertThat(state.visibleOutput()).isEqualTo(fragmentOutput)
+        Truth.assertThat(state.visibleOutput()).isEqualTo(routeOutput)
     }
 }

@@ -8,32 +8,32 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FragmentEnvironment
-import com.instacart.formula.android.FragmentState
-import com.instacart.formula.android.events.FragmentLifecycleEvent
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.NavigationState
+import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.BackCallback
-import com.instacart.formula.android.FragmentId
-import com.instacart.formula.android.FragmentStore
-import com.instacart.formula.android.getFormulaFragmentId
+import com.instacart.formula.android.RouteId
+import com.instacart.formula.android.NavigationStore
+import com.instacart.formula.android.getFormulaRouteId
 import java.util.LinkedList
 
 /**
- * Renders [FragmentState] and provides back button handling.
+ * Renders [NavigationState] and provides back button handling.
  *
  * NOTE: Initialize this class before calling [FragmentActivity.super.onCreate]
  *
- * [activity] activity within which the [FragmentFlowRenderView] lives.
+ * [activity] activity within which the [NavigationFlowRenderView] lives.
  */
-internal class FragmentFlowRenderView(
+internal class NavigationFlowRenderView(
     private val activity: FragmentActivity,
-    private val store: FragmentStore,
-    private val onLifecycleState: (FragmentId<*>, Lifecycle.State) -> Unit,
-    private val onFragmentViewStateChanged: (FragmentId<*>, isVisible: Boolean) -> Unit
+    private val store: NavigationStore,
+    private val onLifecycleState: (RouteId<*>, Lifecycle.State) -> Unit,
+    private val onFragmentViewStateChanged: (RouteId<*>, isVisible: Boolean) -> Unit
 ) {
-    private var fragmentState: FragmentState? = null
+    private var navigationState: NavigationState? = null
     private val visibleFragments: LinkedList<Fragment> = LinkedList()
 
-    private val environment: FragmentEnvironment
+    private val environment: RouteEnvironment
         get() = store.environment
 
     private val callback = object : FragmentManager.FragmentLifecycleCallbacks() {
@@ -49,7 +49,7 @@ internal class FragmentFlowRenderView(
             visibleFragments.add(f)
             updateVisibleFragments()
 
-            onFragmentViewStateChanged(f.getFormulaFragmentId(), true)
+            onFragmentViewStateChanged(f.getFormulaRouteId(), true)
             notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
         }
 
@@ -78,18 +78,18 @@ internal class FragmentFlowRenderView(
             visibleFragments.remove(f)
 
             notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
-            onFragmentViewStateChanged(f.getFormulaFragmentId(), false)
+            onFragmentViewStateChanged(f.getFormulaRouteId(), false)
         }
 
         override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
             super.onFragmentAttached(fm, f, context)
             if (f is FormulaFragment) {
-                f.fragmentStore = store
+                f.navigationStore = store
             }
 
             if (FragmentLifecycle.shouldTrack(f)) {
-                val event = FragmentLifecycleEvent.Added(
-                    fragmentId = f.getFormulaFragmentId(),
+                val event = RouteLifecycleEvent.Added(
+                    routeId = f.getFormulaRouteId(),
                 )
 
                 store.onLifecycleEvent(event)
@@ -104,8 +104,8 @@ internal class FragmentFlowRenderView(
             // Only trigger detach, when fragment is actually being removed from the backstack
             if (FragmentLifecycle.shouldTrack(f) && f.isRemoving && !activity.isChangingConfigurations) {
                 val formulaFragment = f as? FormulaFragment
-                val event = FragmentLifecycleEvent.Removed(
-                    fragmentId = f.getFormulaFragmentId(),
+                val event = RouteLifecycleEvent.Removed(
+                    routeId = f.getFormulaRouteId(),
                     lastState = formulaFragment?.currentState(),
                 )
                 store.onLifecycleEvent(event)
@@ -117,33 +117,33 @@ internal class FragmentFlowRenderView(
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, false)
     }
 
-    fun render(state: FragmentState) {
+    fun render(state: NavigationState) {
         Utils.assertMainThread()
 
-        store.onPreRenderFragmentState?.invoke(state)
+        store.onPreRenderNavigationState?.invoke(state)
 
-        fragmentState = state
+        navigationState = state
         updateVisibleFragments()
     }
 
     fun onBackPressed(): Boolean {
         val lastFragment = visibleFragments.lastOrNull()
         if (lastFragment is FormulaFragment) {
-            val state = fragmentState?.outputs?.get(lastFragment.getFormulaFragmentId())?.renderModel
+            val state = navigationState?.outputs?.get(lastFragment.getFormulaRouteId())?.renderModel
             return state is BackCallback && state.onBackPressed()
         }
         return false
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
-        onLifecycleState.invoke(fragment.getFormulaFragmentId(), newState)
+        onLifecycleState.invoke(fragment.getFormulaRouteId(), newState)
     }
 
     private fun updateVisibleFragments() {
-        val state = fragmentState ?: return
+        val state = navigationState ?: return
         visibleFragments.forEachIndices { fragment ->
             if (fragment is FormulaFragment) {
-                state.outputs[fragment.getFormulaFragmentId()]?.let {
+                state.outputs[fragment.getFormulaRouteId()]?.let {
                     fragment.setState(it.renderModel)
                 }
             }

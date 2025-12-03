@@ -2,7 +2,7 @@ package com.instacart.formula.android.test
 
 import androidx.test.core.app.ActivityScenario
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.FragmentStore
+import com.instacart.formula.android.NavigationStore
 import com.instacart.testutils.android.NoOpFeatureFactory
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentLifecycleCallback
@@ -24,7 +24,7 @@ fun runFeatureFactoryLifecycleTest(
         configure = {
             activity<TestFormulaActivity> {
                 ActivityStore(
-                    fragmentStore = FragmentStore.Builder().build {
+                    navigationStore = NavigationStore.Builder().build {
                         val featureFactory = NoOpFeatureFactory<TestKey>(
                             viewFactory = TestViewFactory(lifecycleCallback)
                         )

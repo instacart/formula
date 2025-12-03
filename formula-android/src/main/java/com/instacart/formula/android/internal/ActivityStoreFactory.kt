@@ -2,7 +2,6 @@ package com.instacart.formula.android.internal
 
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.ActivityConfigurator
-import com.instacart.formula.android.FragmentEnvironment
 import kotlin.reflect.KClass
 
 internal class ActivityStoreFactory internal constructor(
