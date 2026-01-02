@@ -1,6 +1,7 @@
 name: Version Bump
 
 on:
+  workflow_dispatch: # Manual trigger for testing
   push:
     branches:
       - master
