@@ -33,22 +33,22 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build formula module
-        run: ./gradlew :formula:build -PreleaseBuild
+        run: ./gradlew :formula:build
 
       - name: Build formula-android module
-        run: ./gradlew :formula-android:build -PreleaseBuild
+        run: ./gradlew :formula-android:build
 
       - name: Build formula-test module
-        run: ./gradlew :formula-test:build -PreleaseBuild
+        run: ./gradlew :formula-test:build
 
       - name: Build formula-android-compose module
-        run: ./gradlew :formula-android-compose:build -PreleaseBuild
+        run: ./gradlew :formula-android-compose:build
 
       - name: Build formula-lint module
-        run: ./gradlew :formula-lint:build -PreleaseBuild
+        run: ./gradlew :formula-lint:build
 
       - name: Build formula-rxjava3 module
-        run: ./gradlew :formula-rxjava3:build -PreleaseBuild
+        run: ./gradlew :formula-rxjava3:build
 
       - name: Publish to Artifactory
         run: ./gradlew uploadArchives -PreleaseBuild --no-parallel --no-daemon
