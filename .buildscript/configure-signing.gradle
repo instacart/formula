@@ -9,28 +9,29 @@ if (project.hasProperty('releaseBuild')) {
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
     }
 
-    signing {
-        // Support both env vars (CI) and local.properties (local dev)
-        def signingKeyEnv = System.getenv('SIGNING_KEY')
-        def signingKey
-        if (signingKeyEnv) {
-            // CI: key content directly from env var
-            signingKey = signingKeyEnv
-        } else {
-            // Local: read from file specified in local.properties
-            def signingKeyFilename = properties.signingKey
-            if (signingKeyFilename) {
-                signingKey = project.rootProject.file(signingKeyFilename).text
-            } else {
-                throw new GradleException("SIGNING_KEY env var not set and signingKey not found in local.properties")
-            }
-        }
-        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
-
-        useInMemoryPgpKeys(signingKey, signingPassword)
-    }
+//    signing {
+//        // Support both env vars (CI) and local.properties (local dev)
+//        def signingKeyEnv = System.getenv('SIGNING_KEY')
+//        def signingKey
+//        if (signingKeyEnv) {
+//            // CI: key content directly from env var
+//            signingKey = signingKeyEnv
+//        } else {
+//            // Local: read from file specified in local.properties
+//            def signingKeyFilename = properties.signingKey
+//            if (signingKeyFilename) {
+//                signingKey = project.rootProject.file(signingKeyFilename).text
+//            } else {
+//                throw new GradleException("SIGNING_KEY env var not set and signingKey not found in local.properties")
+//            }
+//        }
+//        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
+//
+//        useInMemoryPgpKeys(signingKey, signingPassword)
+//    }
 
     mavenPublish {
+        releaseSigningEnabled = false
         targets {
             // Modify the existing uploadArchives task
             uploadArchives {
