@@ -1,5 +1,5 @@
 ### Releasing
-As of now, we're pushing Formula releases to a private JFrog Artifactory maven repo. TODO: migrate to public Maven Central.
+As of now, we're publishing Formula releases to a private JFrog Artifactory maven repo. TODO: migrate to public Maven Central.
 
 Make sure you have `local.properties` configured
 ```
