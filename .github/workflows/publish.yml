@@ -11,6 +11,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
+      ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -34,52 +38,24 @@ jobs:
 
       - name: Build formula module
         run: ./gradlew :formula:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Build formula-android module
         run: ./gradlew :formula-android:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Build formula-test module
         run: ./gradlew :formula-test:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Build formula-android-compose module
         run: ./gradlew :formula-android-compose:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Build formula-lint module
         run: ./gradlew :formula-lint:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Build formula-rxjava3 module
         run: ./gradlew :formula-rxjava3:build -PreleaseBuild
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Publish to Artifactory
         run: ./gradlew uploadArchives -PreleaseBuild --no-parallel --no-daemon
-        env:
-          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Create GitHub Release
         run: |
