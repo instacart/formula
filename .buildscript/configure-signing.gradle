@@ -19,7 +19,11 @@ if (project.hasProperty('releaseBuild')) {
         } else {
             // Local: read from file specified in local.properties
             def signingKeyFilename = properties.signingKey
-            signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
+            if (signingKeyFilename) {
+                signingKey = project.rootProject.file(signingKeyFilename).text
+            } else {
+                throw new GradleException("SIGNING_KEY env var not set and signingKey not found in local.properties")
+            }
         }
         def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
 
