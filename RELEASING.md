@@ -1,13 +1,11 @@
 ### Releasing
-To release formula artifacts, make sure you have signing and configuration setup
+As of now, we're pushing Formula releases to a private JFrog Artifactory maven repo. TODO: migrate to public Maven Central.
 
 Make sure you have `local.properties` configured
 ```
-signingKey=/path/to/maven-key.asc
-signingPassword=
-
-SONATYPE_NEXUS_USERNAME=
-SONATYPE_NEXUS_PASSWORD=
+ARTIFACTORY_URL=
+ARTIFACTORY_USERNAME=
+ARTIFACTORY_PASSWORD=
 ```
 
 To upload archives
