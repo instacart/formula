@@ -10,10 +10,18 @@ if (project.hasProperty('releaseBuild')) {
     }
 
     signing {
-        def signingKeyFilename = properties.signingKey
-
-        def signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
-        def signingPassword = properties.signingPassword
+        // Support both env vars (CI) and local.properties (local dev)
+        def signingKeyEnv = System.getenv('SIGNING_KEY')
+        def signingKey
+        if (signingKeyEnv) {
+            // CI: key content directly from env var
+            signingKey = signingKeyEnv
+        } else {
+            // Local: read from file specified in local.properties
+            def signingKeyFilename = properties.signingKey
+            signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
+        }
+        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
 
         useInMemoryPgpKeys(signingKey, signingPassword)
     }
@@ -22,8 +30,8 @@ if (project.hasProperty('releaseBuild')) {
         targets {
             // Modify the existing uploadArchives task
             uploadArchives {
-                repositoryUsername = properties.SONATYPE_NEXUS_USERNAME
-                repositoryPassword = properties.SONATYPE_NEXUS_PASSWORD
+                repositoryUsername = System.getenv('SONATYPE_NEXUS_USERNAME') ?: properties.SONATYPE_NEXUS_USERNAME
+                repositoryPassword = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: properties.SONATYPE_NEXUS_PASSWORD
             }
         }
     }

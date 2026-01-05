@@ -1,0 +1,84 @@
+name: Version Bump
+
+on:
+  workflow_dispatch: # Manual trigger for testing
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'VERSION'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'Bump version to') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read current version
+        id: current_version
+        run: |
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          IFS='.' read -ra PARTS <<< "$CURRENT"
+          MAJOR="${PARTS[0]}"
+          MINOR="${PARTS[1]}"
+          PATCH="${PARTS[2]}"
+          PATCH=$((PATCH + 1))
+          NEXT="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEXT" >> $GITHUB_OUTPUT
+
+      - name: Check if PR already exists
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT="${{ steps.next_version.outputs.version }}"
+          EXISTING_PR=$(gh pr list --head "bump-version/$NEXT" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "PR #$EXISTING_PR already exists for version $NEXT"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create version bump branch and PR
+        if: steps.check_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_VERSION: ${{ steps.current_version.outputs.version }}
+          NEXT_VERSION: ${{ steps.next_version.outputs.version }}
+        run: |
+          BRANCH="bump-version/$NEXT_VERSION"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          echo "$NEXT_VERSION" > VERSION
+          git add VERSION
+          git commit -m "Bump version to $NEXT_VERSION"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Bump version to $NEXT_VERSION" \
+            --body "$(cat <<EOF
+          Automated version bump from $CURRENT_VERSION to $NEXT_VERSION.
+
+          This PR was automatically created after a merge to master.
+
+          Once merged, the publish workflow will automatically release the new version to Maven Central.
+          EOF
+          )" \
+            --base master \
+            --head "$BRANCH"

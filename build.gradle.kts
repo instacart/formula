@@ -3,6 +3,11 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.TestExtension
 
+val versionName = file("VERSION").readText().trim()
+allprojects {
+    extra["VERSION_NAME"] = versionName
+}
+
 buildscript {
 
     repositories {
