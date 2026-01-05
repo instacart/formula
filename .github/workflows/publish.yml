@@ -1,4 +1,4 @@
-name: Publish to Maven Central
+name: Publish to JFrog Artifactory
 
 on:
   workflow_dispatch: # Manual trigger for testing
