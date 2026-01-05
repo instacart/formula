@@ -34,47 +34,28 @@ jobs:
 
       - name: Build formula module
         run: ./gradlew :formula:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Build formula-android module
         run: ./gradlew :formula-android:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Build formula-test module
         run: ./gradlew :formula-test:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Build formula-android-compose module
         run: ./gradlew :formula-android-compose:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Build formula-lint module
         run: ./gradlew :formula-lint:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Build formula-rxjava3 module
         run: ./gradlew :formula-rxjava3:build -PreleaseBuild
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
-      - name: Publish to Maven Central
+      - name: Publish to Artifactory
         run: ./gradlew uploadArchives -PreleaseBuild --no-parallel --no-daemon
         env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
       - name: Create GitHub Release
         run: |
