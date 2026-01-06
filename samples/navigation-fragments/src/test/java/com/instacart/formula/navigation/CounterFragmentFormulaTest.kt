@@ -2,16 +2,17 @@ package com.instacart.formula.navigation
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class CounterFragmentFormulaTest {
 
     @Test
-    fun `initial state`() {
+    fun `initial state`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 1))
             .output {
                 assertThat(fragmentId).isEqualTo(1)
@@ -21,11 +22,11 @@ class CounterFragmentFormulaTest {
     }
 
     @Test
-    fun `increments only for matching fragment id`() {
+    fun `increments only for matching fragment id`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         val observer = CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 42))
 
         // Non-matching id should be ignored
@@ -48,11 +49,11 @@ class CounterFragmentFormulaTest {
     }
 
     @Test
-    fun `navigation stack updates from flow`() {
+    fun `navigation stack updates from flow`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         val observer = CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 3))
 
         val stack = listOf(1, 2, 3)
@@ -64,11 +65,11 @@ class CounterFragmentFormulaTest {
     }
 
     @Test
-    fun `on navigate to next invokes router`() {
+    fun `on navigate to next invokes router`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         val observer = CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onNavigateToNext() }
@@ -76,11 +77,11 @@ class CounterFragmentFormulaTest {
     }
 
     @Test
-    fun `on navigate back invokes router`() {
+    fun `on navigate back invokes router`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         val observer = CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onNavigateBack() }
@@ -88,11 +89,11 @@ class CounterFragmentFormulaTest {
     }
 
     @Test
-    fun `on increment counter invokes counter store and increments counter`() {
+    fun `on increment counter invokes counter store and increments counter`() = runTest {
         val store = CounterStore()
         val router = TestRouter()
         val observer = CounterFragmentFormula(store, router)
-            .test()
+            .test(coroutineContext)
             .input(CounterFragmentFormula.Input(counterIndex = 7))
 
         observer.output { onIncrementCounter(7) }

@@ -3,13 +3,14 @@ package com.instacart.formula
 import com.google.common.truth.Truth
 import com.instacart.formula.test.test
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 
 class FormulaValidationTest {
 
     @Test
-    fun `input changed during re-evaluation will throw validation error`() {
+    fun `input changed during re-evaluation will throw validation error`() = runTest {
         val childFormula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(output = input)
@@ -26,7 +27,7 @@ class FormulaValidationTest {
         }
 
         val error = runCatching {
-            parentFormula.test(isValidationEnabled = true).input(Unit)
+            parentFormula.test(coroutineContext, isValidationEnabled = true).input(Unit)
         }
 
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
@@ -35,7 +36,7 @@ class FormulaValidationTest {
     }
 
     @Test
-    fun `output changed during re-evaluation will throw validation error`() {
+    fun `output changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableOutput = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
@@ -45,7 +46,7 @@ class FormulaValidationTest {
             }
         }
         val error = runCatching {
-            formula.test(isValidationEnabled = true).input(Unit)
+            formula.test(coroutineContext, isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
             "- output changed during identical re-evaluation - old: 1, new: 2"
@@ -53,7 +54,7 @@ class FormulaValidationTest {
     }
 
     @Test
-    fun `action key changed during re-evaluation will throw validation error`() {
+    fun `action key changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
@@ -81,7 +82,7 @@ class FormulaValidationTest {
             }
         }
         val error = runCatching {
-            formula.test(isValidationEnabled = true).input(Unit)
+            formula.test(coroutineContext, isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
             "actions changed during validation - new:"
@@ -89,7 +90,7 @@ class FormulaValidationTest {
     }
 
     @Test
-    fun `action removed during re-evaluation will throw validation error`() {
+    fun `action removed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
@@ -119,7 +120,7 @@ class FormulaValidationTest {
             }
         }
         val error = runCatching {
-            formula.test(isValidationEnabled = true).input(Unit)
+            formula.test(this, isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
             "actions changed during validation - new:"

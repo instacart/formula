@@ -10,7 +10,7 @@ class TestCoroutineSchedulerIntegrationTest {
     @Test
     fun `delay within action is advanced by scheduler`() = runTest {
         val formula = DelayFormula(1.seconds)
-        val observer = formula.test(coroutineScheduler = testScheduler)
+        val observer = formula.test(this)
 
         observer.input(Unit)
         observer.output {
@@ -30,7 +30,7 @@ class TestCoroutineSchedulerIntegrationTest {
     fun `delay within action is advanced by scheduler when infinite`() = runTest {
         // basically forever
         val formula = DelayFormula(Int.MAX_VALUE.seconds)
-        val observer = formula.test(coroutineScheduler = testScheduler)
+        val observer = formula.test(this)
 
         observer.input(Unit)
         observer.output {

@@ -6,6 +6,7 @@ import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
+import com.instacart.formula.test.testUnscoped
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -34,7 +35,7 @@ open class TransitionBenchmark {
 
     @Setup(Level.Iteration)
     fun setup() {
-        observer = initFormula(depth).test(isValidationEnabled = false)
+        observer = initFormula(depth).testUnscoped(isValidationEnabled = false)
         observer.input(Unit)
     }
 
