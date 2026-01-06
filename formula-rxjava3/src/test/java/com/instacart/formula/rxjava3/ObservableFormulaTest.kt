@@ -4,12 +4,13 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 
 class ObservableFormulaTest {
 
-    @Test fun `initial value`() {
+    @Test fun `initial value`() = runTest {
         val formula = object : ObservableFormula<String, Int>() {
             override fun initialValue(input: String): Int = 0
 
@@ -18,14 +19,14 @@ class ObservableFormulaTest {
             }
         }
 
-        formula.test()
+        formula.test(this)
             .input("initial")
             .apply {
                 assertThat(values()).containsExactly(0).inOrder()
             }
     }
 
-    @Test fun `initial value and then subsequent events`() {
+    @Test fun `initial value and then subsequent events`() = runTest {
         val relay = PublishRelay.create<Int>()
         val formula = object : ObservableFormula<String, Int>() {
             override fun initialValue(input: String): Int = 0
@@ -35,7 +36,7 @@ class ObservableFormulaTest {
             }
         }
 
-        formula.test()
+        formula.test(this)
             .input("initial")
             .apply {
                 relay.accept(1)
@@ -47,7 +48,7 @@ class ObservableFormulaTest {
             }
     }
 
-    @Test fun `resets state when input changes`() {
+    @Test fun `resets state when input changes`() = runTest {
         val incrementingOutput = AtomicInteger(0)
         val formula = object : ObservableFormula<String, Int>() {
             override fun initialValue(input: String): Int = 0
@@ -59,7 +60,7 @@ class ObservableFormulaTest {
             }
         }
 
-        formula.test()
+        formula.test(this)
             .input("initial")
             .input("reset")
             .apply {

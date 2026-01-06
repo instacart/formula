@@ -1,13 +1,11 @@
 package com.instacart.formula
 
 import app.cash.turbine.test
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.internal.TestPlugin
 import com.instacart.formula.internal.TestDispatcher
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.withPlugin
-import com.instacart.formula.test.test
 import com.instacart.formula.types.IncrementFormula
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

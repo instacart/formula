@@ -8,22 +8,23 @@ import com.instacart.formula.samples.networkstate.NetworkStateFormula
 import com.instacart.formula.samples.networkstate.NetworkStateStream
 import com.instacart.formula.test.test
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class NetworkStateFormulaTest {
 
-    @Test fun offline() {
+    @Test fun offline() = runTest {
         formula(isOnline = false)
-            .test()
+            .test(this)
             .input(Unit)
             .output {
                 assertThat(status).isEqualTo("Network state: OFFLINE")
             }
     }
 
-    @Test fun connected() {
+    @Test fun connected() = runTest {
         formula(isOnline = true)
-            .test()
+            .test(this)
             .input(Unit)
             .output {
                 assertThat(status).isEqualTo("Network state: CONNECTED")

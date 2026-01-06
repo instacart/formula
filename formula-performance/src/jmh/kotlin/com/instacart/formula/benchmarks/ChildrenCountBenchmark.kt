@@ -5,6 +5,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
+import com.instacart.formula.test.testUnscoped
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +33,7 @@ open class ChildrenCountBenchmark {
 
     @Setup(Level.Iteration)
     fun setup() {
-        observer = ParentFormula().test(isValidationEnabled = false)
+        observer = ParentFormula().testUnscoped(isValidationEnabled = false)
         observer.input(childrenCount)
     }
 

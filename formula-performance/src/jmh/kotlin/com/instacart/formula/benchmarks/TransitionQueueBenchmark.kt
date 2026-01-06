@@ -7,6 +7,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
+import com.instacart.formula.test.testUnscoped
 import kotlinx.coroutines.CoroutineScope
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
@@ -33,7 +34,7 @@ open class TransitionQueueBenchmark {
 
     @Setup(Level.Iteration)
     fun setup() {
-        observer = MultiEventFormula().test(isValidationEnabled = false)
+        observer = MultiEventFormula().testUnscoped(isValidationEnabled = false)
         observer.input(0)
     }
 

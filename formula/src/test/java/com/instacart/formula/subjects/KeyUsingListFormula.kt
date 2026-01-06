@@ -5,11 +5,12 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 
 class KeyUsingListFormula :
     Formula<KeyUsingListFormula.Input, KeyUsingListFormula.State, KeyUsingListFormula.Output>() {
     companion object {
-        fun test(items: List<String>) = KeyUsingListFormula().test().input(Input(items))
+        fun test(scope: CoroutineScope, items: List<String>) = KeyUsingListFormula().test(scope).input(Input(items))
     }
 
     data class State(val items: List<String>)
