@@ -14,13 +14,12 @@ String propOrEnv(String... names) {
     return result
 }
 
-if (project.hasProperty('releaseBuild')) {
+if (project.hasProperty('artifactoryRelease')) {
+    // Artifactory publishing (no signing required)
     mavenPublish {
         releaseSigningEnabled = false
         targets {
-            // Modify the existing uploadArchives task
             uploadArchives {
-                // release
                 releaseRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
                 snapshotRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
                 repositoryUsername = propOrEnv("ARTIFACTORY_USERNAME", "instacart_artifactory_username")
@@ -28,7 +27,44 @@ if (project.hasProperty('releaseBuild')) {
             }
         }
     }
+} else if (project.hasProperty('mavenCentralRelease')) {
+    // Maven Central publishing (requires signing)
+    Properties properties = new Properties()
+    if (project.rootProject.file('local.properties').exists()) {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    }
+
+    signing {
+        // Support both env vars (CI) and local.properties (local dev)
+        def signingKeyEnv = System.getenv('SIGNING_KEY')
+        def signingKey
+        if (signingKeyEnv) {
+            // CI: key content directly from env var
+            signingKey = signingKeyEnv
+        } else {
+            // Local: read from file specified in local.properties
+            def signingKeyFilename = properties.signingKey
+            if (signingKeyFilename) {
+                signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
+            }
+        }
+        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
+
+        if (signingKey && signingPassword) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+    }
+
+    mavenPublish {
+        targets {
+            uploadArchives {
+                repositoryUsername = System.getenv('SONATYPE_NEXUS_USERNAME') ?: properties.SONATYPE_NEXUS_USERNAME
+                repositoryPassword = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: properties.SONATYPE_NEXUS_PASSWORD
+            }
+        }
+    }
 } else {
+    // Local development (no publishing)
     mavenPublish {
         releaseSigningEnabled = false
     }

@@ -1,4 +1,4 @@
-name: Publish to JFrog Artifactory
+name: Publish Library
 
 on:
   push:
@@ -11,9 +11,17 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
+      # Artifactory
       ARTIFACTORY_URL: ${{ secrets.ARTIFACTORY_URL }}
       ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      # Maven Central
+      SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+      SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+      SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+      # Use -PmavenCentralRelease for Maven Central
+      GRADLE_ARGS: -PartifactoryRelease
 
     steps:
       - name: Checkout code
@@ -36,25 +44,25 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build formula module
-        run: ./gradlew :formula:build -PreleaseBuild
+        run: ./gradlew :formula:build $GRADLE_ARGS
 
       - name: Build formula-android module
-        run: ./gradlew :formula-android:build -PreleaseBuild
+        run: ./gradlew :formula-android:build $GRADLE_ARGS
 
       - name: Build formula-test module
-        run: ./gradlew :formula-test:build -PreleaseBuild
+        run: ./gradlew :formula-test:build $GRADLE_ARGS
 
       - name: Build formula-android-compose module
-        run: ./gradlew :formula-android-compose:build -PreleaseBuild
+        run: ./gradlew :formula-android-compose:build $GRADLE_ARGS
 
       - name: Build formula-lint module
-        run: ./gradlew :formula-lint:build -PreleaseBuild
+        run: ./gradlew :formula-lint:build $GRADLE_ARGS
 
       - name: Build formula-rxjava3 module
-        run: ./gradlew :formula-rxjava3:build -PreleaseBuild
+        run: ./gradlew :formula-rxjava3:build $GRADLE_ARGS
 
       - name: Publish to Artifactory
-        run: ./gradlew uploadArchives -PreleaseBuild --no-parallel --no-daemon
+        run: ./gradlew uploadArchives $GRADLE_ARGS --no-parallel --no-daemon
 
       - name: Create GitHub Release
         run: |
