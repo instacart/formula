@@ -2,6 +2,7 @@ package com.instacart.formula.r8
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.instacart.formula.r8.interactors.AbstractFormulaTypeInheritanceInteractor
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -17,8 +18,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class FormulaR8Test {
 
-    @Test fun actionFormulas() {
-        val interactor = AbstractFormulaTypeInheritanceInteractor()
+    @Test fun actionFormulas() = runTest {
+        val interactor = AbstractFormulaTypeInheritanceInteractor(this)
         interactor.start()
         interactor.assertValue(3)
     }

@@ -2,12 +2,13 @@ package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class SnapshotTest {
 
     @Test
-    fun `using snapshot outside of evaluation will throw an exception`() {
+    fun `using snapshot outside of evaluation will throw an exception`() = runTest {
         // Note: you should never expose snapshot like this! This is only to simplify testing
         val formula = object : StatelessFormula<Unit, Snapshot<Unit, Unit>>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Snapshot<Unit, Unit>> {
@@ -15,7 +16,7 @@ class SnapshotTest {
             }
         }
 
-        val observer = formula.test(isValidationEnabled = false)
+        val observer = formula.test(coroutineContext, isValidationEnabled = false)
         observer.input(Unit)
         val result = runCatching {
             observer.output { this.context.callback { none() } }

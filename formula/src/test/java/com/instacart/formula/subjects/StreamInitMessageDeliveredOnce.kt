@@ -5,9 +5,10 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 
 object StreamInitMessageDeliveredOnce {
-    fun test() = TestFormula().test().input(Unit)
+    fun test(scope: CoroutineScope) = TestFormula().test(scope).input(Unit)
 
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var timesInitializedCalled = 0

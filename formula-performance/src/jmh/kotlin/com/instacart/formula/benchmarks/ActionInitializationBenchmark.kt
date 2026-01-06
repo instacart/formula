@@ -6,6 +6,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
+import com.instacart.formula.test.testUnscoped
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -35,7 +36,7 @@ open class ActionInitializationBenchmark {
 
     @Setup(Level.Iteration)
     fun setup() {
-        observer = ActionInitFormula().test(isValidationEnabled = false)
+        observer = ActionInitFormula().testUnscoped(isValidationEnabled = false)
         generation = 0
         // Warmup: trigger initial formula setup outside measurement
         observer.input(InitInput(actionCount, generation++))

@@ -6,11 +6,12 @@ import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.FlowRelay
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flowOf
 
 object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
-    fun test() = TestFormula().test().input(Unit)
+    fun test(scope: CoroutineScope) = TestFormula().test(scope).input(Unit)
 
     class TestFormula : Formula<Unit, Int, Int>() {
         private val initial = Action.fromFlow {

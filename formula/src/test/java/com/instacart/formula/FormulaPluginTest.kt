@@ -6,10 +6,10 @@ import com.instacart.formula.internal.ClearPluginsRule
 import com.instacart.formula.internal.TestPlugin
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
-import com.instacart.formula.plugin.Plugin
 import com.instacart.formula.plugin.withPlugin
 import com.instacart.formula.subjects.IncrementingDispatcher
 import com.instacart.formula.test.test
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 
@@ -63,7 +63,7 @@ class FormulaPluginTest {
         assertThat(FormulaPlugins.mainThreadDispatcher()).isEqualTo(myDispatcher)
     }
 
-    @Test fun `plugin is notified when action error occurs`() {
+    @Test fun `plugin is notified when action error occurs`() = runTest {
         val plugin = TestPlugin()
 
         withPlugin(plugin) {
@@ -81,7 +81,7 @@ class FormulaPluginTest {
                 }
             }
 
-            val observer = myFormula.test(failOnError = false)
+            val observer = myFormula.test(this, failOnError = false)
             observer.input(Unit)
             observer.assertHasErrors()
 

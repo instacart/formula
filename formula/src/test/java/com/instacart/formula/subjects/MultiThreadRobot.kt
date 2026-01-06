@@ -3,12 +3,13 @@ package com.instacart.formula.subjects
 import com.google.common.truth.Truth
 import com.instacart.formula.subjects.SleepFormula.SleepEvent
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 
-class MultiThreadRobot() {
+class MultiThreadRobot(scope: CoroutineScope) {
     class NamedThreadFactory(private val name: String): ThreadFactory {
         override fun newThread(r: Runnable): Thread {
             return Thread(r, name)
@@ -16,7 +17,7 @@ class MultiThreadRobot() {
     }
 
     private val threadFormula = SleepFormula()
-    private val observer = threadFormula.test().input("initial-key")
+    private val observer = threadFormula.test(scope).input("initial-key")
 
     // Manage executors
     private val executorMap = mutableMapOf<String, Executor>()
