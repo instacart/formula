@@ -80,4 +80,5 @@ jobs:
           EOF
           )" \
             --base master \
-            --head "$BRANCH"
+            --head "$BRANCH" \
+            --reviewer Laimiux
