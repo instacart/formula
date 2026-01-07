@@ -1,33 +1,70 @@
 apply plugin: "signing"
 apply plugin: "com.vanniktech.maven.publish"
 
-if (project.hasProperty('releaseBuild')) {
-    println "configuring signing key"
+// Find the first non-null Gradle property or environment variable
+// corresponding to the given names, giving preference to Gradle properties.
+String propOrEnv(String... names) {
+    // hasProperty, getProperty don't work when called directly in a closure;
+    // they need a receiver that knows about properties, like rootProject.
+    def p = rootProject
+    def result = names.findResult { p.hasProperty(it) ? p.getProperty(it) : System.getenv(it) }
+    if (result == null) {
+        logger.error("Missing gradle property or environment variable: $names")
+    }
+    return result
+}
 
+if (project.hasProperty('artifactoryRelease')) {
+    // Artifactory publishing (no signing required)
+    mavenPublish {
+        releaseSigningEnabled = false
+        targets {
+            uploadArchives {
+                releaseRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
+                snapshotRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
+                repositoryUsername = propOrEnv("ARTIFACTORY_USERNAME", "instacart_artifactory_username")
+                repositoryPassword = propOrEnv("ARTIFACTORY_PASSWORD", "instacart_artifactory_password")
+            }
+        }
+    }
+} else if (project.hasProperty('mavenCentralRelease')) {
+    // Maven Central publishing (requires signing)
     Properties properties = new Properties()
     if (project.rootProject.file('local.properties').exists()) {
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
     }
 
     signing {
-        def signingKeyFilename = properties.signingKey
+        // Support both env vars (CI) and local.properties (local dev)
+        def signingKeyEnv = System.getenv('SIGNING_KEY')
+        def signingKey
+        if (signingKeyEnv) {
+            // CI: key content directly from env var
+            signingKey = signingKeyEnv
+        } else {
+            // Local: read from file specified in local.properties
+            def signingKeyFilename = properties.signingKey
+            if (signingKeyFilename) {
+                signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
+            }
+        }
+        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
 
-        def signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
-        def signingPassword = properties.signingPassword
-
-        useInMemoryPgpKeys(signingKey, signingPassword)
+        if (signingKey && signingPassword) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
     }
 
     mavenPublish {
         targets {
-            // Modify the existing uploadArchives task
             uploadArchives {
-                repositoryUsername = properties.SONATYPE_NEXUS_USERNAME
-                repositoryPassword = properties.SONATYPE_NEXUS_PASSWORD
+                repositoryUsername = System.getenv('SONATYPE_NEXUS_USERNAME') ?: properties.SONATYPE_NEXUS_USERNAME
+                repositoryPassword = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: properties.SONATYPE_NEXUS_PASSWORD
             }
         }
     }
 } else {
+    // Local development (no publishing)
     mavenPublish {
         releaseSigningEnabled = false
     }
