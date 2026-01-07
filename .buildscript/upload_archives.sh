@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Use -PmavenCentralRelease for Maven Central
-GRADLE_ARGS="-PartifactoryRelease"
+# Optional target parameter, defaults to "artifactoryRelease"
+# Use "mavenCentralRelease" for Maven Central
+TARGET="${1:-artifactoryRelease}"
+GRADLE_ARGS="-P$TARGET"
 
 ./gradlew clean
 ./gradlew :formula:build $GRADLE_ARGS
