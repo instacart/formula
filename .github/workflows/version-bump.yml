@@ -76,7 +76,7 @@ jobs:
 
           This PR was automatically created after a merge to master.
 
-          Once merged, the publish workflow will automatically release the new version to Maven Central.
+          Once merged, the publish workflow will automatically release the new version to either JFrog Artifactory or Maven Central (controlled by [this](https://github.com/instacart/formula/blob/2d1f862/.github/workflows/publish.yml#L24)).
           EOF
           )" \
             --base master \
