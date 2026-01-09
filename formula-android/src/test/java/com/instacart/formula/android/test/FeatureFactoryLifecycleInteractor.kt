@@ -26,7 +26,7 @@ fun runFeatureFactoryLifecycleTest(
                 ActivityStore(
                     navigationStore = NavigationStore.Builder().build {
                         val featureFactory = NoOpFeatureFactory<TestKey>(
-                            viewFactory = TestViewFactory(lifecycleCallback)
+                            renderFactory = TestViewFactory(lifecycleCallback)
                         )
                         bind(featureFactory)
                     },

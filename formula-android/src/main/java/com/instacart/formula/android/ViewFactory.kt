@@ -7,13 +7,16 @@ import androidx.annotation.LayoutRes
 import com.instacart.formula.android.views.DelegateLayoutViewFactory
 
 /**
- * View factory is used by [FormulaFragment] to create a [FeatureView] which contains
+ * View factory is used by [FormulaFragment] to create a [ViewFeatureView] which contains
  * the root Android view and the logic to bind the state management observable to this
  * view.
  *
  * To create a view factory, use static constructor [fromLayout] or extend [LayoutViewFactory].
+ *
+ * @see RenderFactory for the base interface
+ * @see com.instacart.formula.android.compose.ComposeRenderFactory for Nav3 Compose rendering (in formula-android-compose)
  */
-fun interface ViewFactory<RenderModel> {
+fun interface ViewFactory<RenderModel> : RenderFactory<RenderModel> {
 
     companion object {
         /**
@@ -36,11 +39,11 @@ fun interface ViewFactory<RenderModel> {
          * ```
          *
          * @param layoutId Layout resource to be inflated.
-         * @param createView Called with a [ViewInstance] to finish [FeatureView] creation
+         * @param createView Called with a [ViewInstance] to finish [ViewFeatureView] creation
          */
         fun <RenderModel> fromLayout(
             @LayoutRes layoutId: Int,
-            createView: ViewInstance.() -> FeatureView<RenderModel>
+            createView: ViewInstance.() -> ViewFeatureView<RenderModel>
         ): ViewFactory<RenderModel> {
             return DelegateLayoutViewFactory(layoutId, createView)
         }
@@ -54,9 +57,9 @@ fun interface ViewFactory<RenderModel> {
 
     /**
      * This method is called from [FormulaFragment.onCreateView] function. Use it to
-     * instantiate an Android view instance and return a [FeatureView] which knows how to
+     * instantiate an Android view instance and return a [ViewFeatureView] which knows how to
      * bind the state management to view rendering. Usually, you should use [LayoutViewFactory]
      * or [ViewFactory.fromLayout] instead of implementing this method directly.
      */
-    fun create(params: Params): FeatureView<RenderModel>
+    fun create(params: Params): ViewFeatureView<RenderModel>
 }

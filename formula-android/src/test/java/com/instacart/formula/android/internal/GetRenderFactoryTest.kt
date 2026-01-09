@@ -11,9 +11,9 @@ import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.core.Observable
 import org.junit.Test
 
-class GetViewFactoryTest {
+class GetRenderFactoryTest {
 
-    @Test fun `getViewFactory with no feature`() {
+    @Test fun `getRenderFactory with no feature`() {
         val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
         val environment = RouteEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
@@ -22,7 +22,7 @@ class GetViewFactoryTest {
         val routeId = RouteId("test", MainKey(1))
         val features = mapOf<RouteId<*>, FeatureEvent>()
 
-        val viewFactory = features.getViewFactory(environment, routeId)
+        val viewFactory = features.getRenderFactory(environment, routeId)
         assertThat(viewFactory).isNull()
 
         assertThat(screenErrors).hasSize(1)
@@ -30,7 +30,7 @@ class GetViewFactoryTest {
         assertThat(screenErrors.last().second).hasMessageThat().contains("Could not find feature for ${routeId.key}")
     }
 
-    @Test fun `getViewFactory with missing binding`() {
+    @Test fun `getRenderFactory with missing binding`() {
         val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
         val environment = RouteEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
@@ -43,7 +43,7 @@ class GetViewFactoryTest {
             )
         )
 
-        val viewFactory = features.getViewFactory(environment, routeId)
+        val viewFactory = features.getRenderFactory(environment, routeId)
         assertThat(viewFactory).isNull()
 
         assertThat(screenErrors).hasSize(1)
@@ -51,7 +51,7 @@ class GetViewFactoryTest {
         assertThat(screenErrors.last().second).hasMessageThat().contains("Missing feature factory or integration for ${routeId.key}. Please check your FragmentStore configuration")
     }
 
-    @Test fun `getViewFactory with feature initialization error`() {
+    @Test fun `getRenderFactory with feature initialization error`() {
         val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
         val environment = RouteEnvironment(
             onScreenError = { key, error -> screenErrors.add(key to error) }
@@ -65,7 +65,7 @@ class GetViewFactoryTest {
             )
         )
 
-        val viewFactory = features.getViewFactory(environment, routeId)
+        val viewFactory = features.getRenderFactory(environment, routeId)
         assertThat(viewFactory).isNull()
 
         assertThat(screenErrors).hasSize(1)
@@ -73,7 +73,7 @@ class GetViewFactoryTest {
         assertThat(screenErrors.last().second).hasMessageThat().contains("Feature failed to initialize: ${routeId.key}")
     }
 
-    @Test fun `getViewFactory returns valid view factory`() {
+    @Test fun `getRenderFactory returns valid view factory`() {
         val routeId = RouteId("test", MainKey(1))
         val expectedViewFactory = TestViewFactory<Any>()
         val features: Map<RouteId<*>, FeatureEvent> = mapOf(
@@ -81,12 +81,12 @@ class GetViewFactoryTest {
                 id = routeId,
                 feature = Feature(
                     state = Observable.empty(),
-                    viewFactory = expectedViewFactory
+                    renderFactory = expectedViewFactory
                 )
             )
         )
 
-        val viewFactory = features.getViewFactory(RouteEnvironment(), routeId)
+        val viewFactory = features.getRenderFactory(RouteEnvironment(), routeId)
         assertThat(viewFactory).isEqualTo(expectedViewFactory)
     }
 }

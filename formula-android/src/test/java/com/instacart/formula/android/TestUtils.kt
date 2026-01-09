@@ -7,7 +7,7 @@ object TestUtils {
     fun <Value : Any> feature(stateValue: Value): Feature {
         return Feature(
             state = Observable.just(stateValue),
-            viewFactory = TestViewFactory()
+            renderFactory = TestViewFactory()
         )
     }
 }

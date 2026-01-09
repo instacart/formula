@@ -5,7 +5,7 @@ import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
 import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.NavigationStoreFormula
-import com.instacart.formula.android.internal.getViewFactory
+import com.instacart.formula.android.internal.getRenderFactory
 import com.instacart.formula.android.utils.MainThreadDispatcher
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
@@ -118,8 +118,12 @@ class NavigationStore @PublishedApi internal constructor(
         return formula.toObservable(config)
     }
 
-    internal fun getViewFactory(routeId: RouteId<*>): ViewFactory<Any>? {
-        return features.getViewFactory(environment, routeId)
+    /**
+     * Gets the [RenderFactory] for the given [routeId].
+     * This can be either a [ViewFactory] or [com.instacart.formula.android.compose.ComposeRenderFactory].
+     */
+    fun getRenderFactory(routeId: RouteId<*>): RenderFactory<Any>? {
+        return features.getRenderFactory(environment, routeId)
     }
 }
 

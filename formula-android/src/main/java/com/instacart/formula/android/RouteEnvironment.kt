@@ -24,12 +24,13 @@ data class RouteEnvironment(
 
         /**
          * Called from [FormulaFragment.onCreateView] to instantiate the view.
+         * Returns a [ViewFeatureView] containing the Android View for Fragment rendering.
          */
         open fun createView(
             routeId: RouteId<*>,
             viewFactory: ViewFactory<Any>,
             params: ViewFactory.Params,
-        ): FeatureView<Any> {
+        ): ViewFeatureView<Any> {
             return viewFactory.create(params)
         }
 

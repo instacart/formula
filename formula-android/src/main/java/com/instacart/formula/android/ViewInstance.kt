@@ -6,23 +6,23 @@ import com.instacart.formula.Renderer
 
 /**
  * View instance contains an initialized Android [view] and provides factory
- * [methods][featureView] to create a [FeatureView].
+ * [methods][featureView] to create a [ViewFeatureView].
  */
 abstract class ViewInstance {
     /**
-     * Android view which will be used to create [FeatureView]. This view will be returned
+     * Android view which will be used to create [ViewFeatureView]. This view will be returned
      * as part of [FormulaFragment.onCreateView].
      */
     abstract val view: View
 
     /**
-     * Creates a [FeatureView] from a [render] function
+     * Creates a [ViewFeatureView] from a [render] function
      */
     fun <RenderModel> featureView(
         lifecycleCallbacks: FragmentLifecycleCallback? = null,
         render: (RenderModel) -> Unit
-    ): FeatureView<RenderModel> {
-        return FeatureView(
+    ): ViewFeatureView<RenderModel> {
+        return ViewFeatureView(
             view = view,
             setOutput = Renderer.create(render),
             lifecycleCallbacks = lifecycleCallbacks
@@ -30,13 +30,13 @@ abstract class ViewInstance {
     }
 
     /**
-     * Creates a [FeatureView] from a [RenderView].
+     * Creates a [ViewFeatureView] from a [RenderView].
      */
     fun <RenderModel> featureView(
         renderView: RenderView<RenderModel>,
         lifecycleCallbacks: FragmentLifecycleCallback? = null,
-    ): FeatureView<RenderModel> {
-        return FeatureView(
+    ): ViewFeatureView<RenderModel> {
+        return ViewFeatureView(
             view = view,
             setOutput = renderView.render,
             lifecycleCallbacks = lifecycleCallbacks,

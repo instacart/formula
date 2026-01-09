@@ -17,7 +17,7 @@ package com.instacart.formula.android
  *     val formula = TaskListFormula(dependencies.taskRepo())
  *     return Feature(
  *       state = formula.toObservable(dependencies.taskListInput()),
- *       viewFactory = ViewFactory.fromLayout(R.layout.task_list) { view ->
+ *       renderFactory = ViewFactory.fromLayout(R.layout.task_list) { view ->
  *         val renderView = TaskListRenderView(view)
  *         featureView(renderView)
  *       }
