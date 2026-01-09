@@ -20,12 +20,12 @@ abstract class ActionBuilder<out Input, State>(
     /**
      * Current input associated with the Formula evaluation.
      */
-    val input: Input,
+    override val input: Input,
     /**
      * Current state associated with the Formula evaluation.
      */
-    val state: State,
-) {
+    override val state: State,
+) : ParameterProvider<Input, State> {
 
     /**
      * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
