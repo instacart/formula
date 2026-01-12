@@ -5,26 +5,37 @@ import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.toFlow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.coroutines.CoroutineContext
 
-@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, Output>>(
+    parentContext: CoroutineContext,
     private val failOnError: Boolean,
     isValidationEnabled: Boolean,
     dispatcher: Dispatcher?,
     inspector: Inspector?,
     val formula: FormulaT,
-    coroutineScheduler: TestCoroutineScheduler = TestCoroutineScheduler(),
 ) {
+    // Use parent scheduler or create own.
+    val coroutineScheduler = parentContext[TestCoroutineScheduler] ?: TestCoroutineScheduler()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val scope = CoroutineScope(UnconfinedTestDispatcher(coroutineScheduler) + SupervisorJob()).apply {
+        // Make sure to cancel our scope when parent job is cancelled.
+        parentContext[Job]?.invokeOnCompletion { this.cancel() }
+    }
+
     private val values = mutableListOf<Output>()
     private val errors = mutableListOf<Throwable>()
 
@@ -41,18 +52,15 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
         onError = { errors.add(it.error) }
     )
 
-    private val job = GlobalScope.launch(
-        context = UnconfinedTestDispatcher(coroutineScheduler),
-        start = CoroutineStart.UNDISPATCHED,
-    ) {
-        formula.toFlow(inputFlow, runtimeConfig)
-            .catch { errors.add(it) }
-            .collect { values.add(it) }
-    }
-
     private var started: Boolean = false
 
     init {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            formula.toFlow(inputFlow, runtimeConfig)
+                .catch { errors.add(it) }
+                .collect { values.add(it) }
+        }
+
         failOnError()
     }
 
@@ -106,7 +114,7 @@ class TestFormulaObserver<Input : Any, Output : Any, FormulaT : IFormula<Input, 
     }
 
     fun dispose() = apply {
-        job.cancel()
+        scope.cancel()
     }
 
     /**

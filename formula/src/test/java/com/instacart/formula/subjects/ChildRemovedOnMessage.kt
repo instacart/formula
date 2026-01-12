@@ -3,8 +3,9 @@ package com.instacart.formula.subjects
 import com.google.common.truth.Truth
 import com.instacart.formula.invoke
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 
-class ChildRemovedOnMessage {
+class ChildRemovedOnMessage(scope: CoroutineScope) {
     private val formula = OptionalChildFormula(
         child = MessageFormula(),
         childInput = { state ->
@@ -14,7 +15,7 @@ class ChildRemovedOnMessage {
                 }
             )
         })
-    private val subject = formula.test().input(Unit)
+    private val subject = formula.test(scope).input(Unit)
 
     fun assertChildIsVisible(visible: Boolean) = apply {
         subject.output {

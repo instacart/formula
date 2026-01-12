@@ -6,8 +6,9 @@ import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
 import com.instacart.formula.types.OnStartActionFormula
+import kotlinx.coroutines.test.TestScope
 
-class InputChangeWhileFormulaRunningRobot(eventCount: Int) {
+class InputChangeWhileFormulaRunningRobot(scope: TestScope, eventCount: Int) {
     private var input: Int = 0
 
     private var observer: TestFormulaObserver<Int, Int, Parent>? = null
@@ -19,7 +20,7 @@ class InputChangeWhileFormulaRunningRobot(eventCount: Int) {
         }
     )
 
-    val test = parent.test().apply {
+    val test = parent.test(scope).apply {
         observer = this
     }
 

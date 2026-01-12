@@ -6,6 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class TaskListFormulaTest {
@@ -15,11 +16,11 @@ class TaskListFormulaTest {
     }
 
     @Test
-    fun `change filter type`() {
+    fun `change filter type`() = runTest {
         val repo = TaskRepoFake()
 
         TaskListFormula(repo)
-            .test()
+            .test(coroutineContext)
             .input(TaskListFormula.Input(showToast = showToast))
             .output {
                 assertThat(items).hasSize(2)

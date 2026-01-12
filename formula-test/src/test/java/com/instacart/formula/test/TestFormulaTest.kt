@@ -2,14 +2,15 @@ package com.instacart.formula.test
 
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class TestFormulaTest {
-    @Test fun `assert running count is zero when formula is not running`() {
+    @Test fun `assert running count is zero when formula is not running`() = runTest {
         val formula = TestSimpleFormula()
         formula.implementation.assertRunningCount(0)
 
-        val observer = formula.test()
+        val observer = formula.test(this)
         observer.input(SimpleFormula.Input())
         formula.implementation.assertRunningCount(1)
 
@@ -28,10 +29,10 @@ class TestFormulaTest {
         )
     }
 
-    @Test fun `emits initial output when subscribed`() {
+    @Test fun `emits initial output when subscribed`() = runTest {
         val initialOutput = SimpleFormula.Output(100, "random")
         val formula = TestSimpleFormula(initialOutput)
-        formula.test().input(SimpleFormula.Input()).output {
+        formula.test(this).input(SimpleFormula.Input()).output {
             assertThat(this).isEqualTo(initialOutput)
         }
     }
@@ -46,21 +47,21 @@ class TestFormulaTest {
         }
     }
 
-    @Test fun `output emits new output to the parent`() {
+    @Test fun `output emits new output to the parent`() = runTest {
         val formula = TestSimpleFormula()
-        val observer = formula.test().input(SimpleFormula.Input())
+        val observer = formula.test(this).input(SimpleFormula.Input())
 
         val newOutput = SimpleFormula.Output(5, "random")
         formula.implementation.output(newOutput)
         observer.output { assertThat(this).isEqualTo(newOutput) }
     }
 
-    @Test fun `output with key throws an exception when test formula matching key is not running`() {
+    @Test fun `output with key throws an exception when test formula matching key is not running`() = runTest {
         try {
             val newOutput = SimpleFormula.Output(5, "random")
 
             val formula = TestSimpleFormula()
-            val observer = formula.test().input(SimpleFormula.Input())
+            val observer = formula.test(this).input(SimpleFormula.Input())
             formula.implementation.output("random-key", newOutput)
             fail("Should not happen")
         } catch (e: Exception) {
@@ -68,35 +69,35 @@ class TestFormulaTest {
         }
     }
 
-    @Test fun `output with key emits new output to the parent when key matches`() {
+    @Test fun `output with key emits new output to the parent when key matches`() = runTest {
         val newOutput = SimpleFormula.Output(5, "random")
 
         val formula = TestSimpleFormula()
-        val observer = formula.test().input(SimpleFormula.Input())
+        val observer = formula.test(this).input(SimpleFormula.Input())
         formula.implementation.output("simple-formula-key", newOutput)
         observer.output { assertThat(this).isEqualTo(newOutput) }
     }
 
-    @Test fun `updateOutput uses previous output and emits new one to the parent`() {
+    @Test fun `updateOutput uses previous output and emits new one to the parent`() = runTest {
         val formula = TestSimpleFormula()
-        val observer = formula.test().input(SimpleFormula.Input())
+        val observer = formula.test(this).input(SimpleFormula.Input())
 
         formula.implementation.updateOutput { copy(outputId = outputId.inc()) }
         observer.output { assertThat(this).isEqualTo(SimpleFormula.Output(1, "")) }
     }
 
-    @Test fun `updateOutput with key emits a modified output when key matches a running formula`() {
+    @Test fun `updateOutput with key emits a modified output when key matches a running formula`() = runTest {
         val formula = TestSimpleFormula()
-        val observer = formula.test().input(SimpleFormula.Input())
+        val observer = formula.test(this).input(SimpleFormula.Input())
 
         formula.implementation.updateOutput("simple-formula-key") { copy(outputId = outputId.inc()) }
         observer.output { assertThat(this).isEqualTo(SimpleFormula.Output(1, "")) }
     }
 
-    @Test fun `updateOutput with key throws an error when there is no running formula matching the key`() {
+    @Test fun `updateOutput with key throws an error when there is no running formula matching the key`() = runTest {
         try {
             val formula = TestSimpleFormula()
-            val observer = formula.test().input(SimpleFormula.Input())
+            val observer = formula.test(this).input(SimpleFormula.Input())
 
             formula.implementation.updateOutput("random-key") { copy(outputId = outputId.inc()) }
             observer.output { assertThat(this).isEqualTo(SimpleFormula.Output(1, "")) }
@@ -117,10 +118,10 @@ class TestFormulaTest {
         }
     }
 
-    @Test fun `input() emits the last input provided by the parent`() {
+    @Test fun `input() emits the last input provided by the parent`() = runTest {
         val myInput = SimpleFormula.Input("my-input-id")
         val formula = TestSimpleFormula()
-        val observer = formula.test()
+        val observer = formula.test(this)
 
         // Initial input
         observer.input(myInput)
@@ -132,10 +133,10 @@ class TestFormulaTest {
         formula.implementation.input { assertThat(this).isEqualTo(nextInput) }
     }
 
-    @Test fun `input() throws an error when NO formula that matches the key provided is running`() {
+    @Test fun `input() throws an error when NO formula that matches the key provided is running`() = runTest {
         try {
             val formula = TestSimpleFormula()
-            formula.test().input(SimpleFormula.Input())
+            formula.test(this).input(SimpleFormula.Input())
             formula.implementation.input(key = "random-key") {}
 
             fail("Should not happen")
@@ -144,51 +145,51 @@ class TestFormulaTest {
         }
     }
 
-    @Test fun `input() works as expected when formula that matches the key provided is running`() {
+    @Test fun `input() works as expected when formula that matches the key provided is running`() = runTest {
         val myInput = SimpleFormula.Input()
         val formula = TestSimpleFormula()
-        formula.test().input(myInput)
+        formula.test(this).input(myInput)
         formula.implementation.input(key = "simple-formula-key") {
             assertThat(this).isEqualTo(myInput)
         }
     }
 
-    @Test fun `mostRecentInput returns last input passed by parent`() {
+    @Test fun `mostRecentInput returns last input passed by parent`() = runTest {
         val inputA = SimpleFormula.Input("a")
         val inputB = SimpleFormula.Input("b")
         val formula = TestSimpleFormula()
-        formula.test().input(inputA).input(inputB)
+        formula.test(this).input(inputA).input(inputB)
 
         val mostRecentInput = formula.implementation.mostRecentInput()
         assertThat(mostRecentInput).isEqualTo(inputB)
     }
 
-    @Test fun `mostRecentInputs returns all inputs parent passed`() {
+    @Test fun `mostRecentInputs returns all inputs parent passed`() = runTest {
         val inputA = SimpleFormula.Input("a")
         val inputB = SimpleFormula.Input("b")
         val formula = TestSimpleFormula()
-        formula.test().input(inputA).input(inputB)
+        formula.test(this).input(inputA).input(inputB)
 
         assertThat(formula.implementation.mostRecentInputs()).containsExactly(
             inputA, inputB
         ).inOrder()
     }
 
-    @Test fun `inputByKey returns last input passed by parent`() {
+    @Test fun `inputByKey returns last input passed by parent`() = runTest {
         val inputA = SimpleFormula.Input("a")
         val inputB = SimpleFormula.Input("b")
         val formula = TestSimpleFormula()
-        formula.test().input(inputA).input(inputB)
+        formula.test(this).input(inputA).input(inputB)
 
         val inputByKey = formula.implementation.inputByKey(SimpleFormula.CUSTOM_KEY)
         assertThat(inputByKey).isEqualTo(inputB)
     }
 
-    @Test fun `inputsByKey returns all inputs parent passed`() {
+    @Test fun `inputsByKey returns all inputs parent passed`() = runTest {
         val inputA = SimpleFormula.Input("a")
         val inputB = SimpleFormula.Input("b")
         val formula = TestSimpleFormula()
-        formula.test().input(inputA).input(inputB)
+        formula.test(this).input(inputA).input(inputB)
 
         assertThat(formula.implementation.inputsByKey(SimpleFormula.CUSTOM_KEY)).containsExactly(
             inputA, inputB

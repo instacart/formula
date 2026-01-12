@@ -4,18 +4,19 @@ import com.google.common.truth.Truth
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class TestFormulaObserverTest {
 
-    @Test fun `assertOutput passes if count matches`() {
+    @Test fun `assertOutput passes if count matches`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(input)
             }
         }
 
-        val observer = formula.test()
+        val observer = formula.test(this)
         observer.input(1)
         observer.assertOutputCount(1)
 
@@ -23,14 +24,14 @@ class TestFormulaObserverTest {
         observer.assertOutputCount(2)
     }
 
-    @Test fun `assertOutput throws exception if count does not match`() {
+    @Test fun `assertOutput throws exception if count does not match`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(input)
             }
         }
 
-        val observer = formula.test()
+        val observer = formula.test(this)
         observer.input(1)
         val result = kotlin.runCatching {
             observer.assertOutputCount(5)
@@ -41,7 +42,7 @@ class TestFormulaObserverTest {
         )
     }
 
-    @Test fun `output throws error if formula is not running`() {
+    @Test fun `output throws error if formula is not running`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
                 return Evaluation(input)
@@ -49,7 +50,7 @@ class TestFormulaObserverTest {
         }
 
         val result = runCatching {
-            formula.test().output {  }
+            formula.test(this).output {  }
         }
         Truth.assertThat(result.exceptionOrNull()).hasMessageThat().contains(
             "Formula is not running. Call [TestFormulaObserver.input] to start it."

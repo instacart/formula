@@ -7,11 +7,12 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.invoke
 import com.instacart.formula.test.test
+import kotlinx.coroutines.CoroutineScope
 
-class RootFormulaKeyTestSubject() {
+class RootFormulaKeyTestSubject(scope: CoroutineScope) {
 
     private var input: Int = 0
-    private val subject = MyFormula.test().input(input)
+    private val subject = MyFormula.test(scope).input(input)
 
     fun increment() = apply {
         subject.output { this.increment() }

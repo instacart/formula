@@ -9,8 +9,8 @@ import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.test
 import kotlinx.coroutines.CoroutineScope
 
-class DynamicStreamSubject() {
-    private val subject = TestFormula().test()
+class DynamicStreamSubject(scope: CoroutineScope) {
+    private val subject = TestFormula().test(scope)
 
     fun updateStreams(vararg keys: String) = apply {
         subject.input(keys.asList())

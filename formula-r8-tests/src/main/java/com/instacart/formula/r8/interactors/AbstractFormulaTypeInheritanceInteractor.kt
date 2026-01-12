@@ -6,6 +6,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.r8.fixtures.AbstractClassInheritanceFormulas
 import com.instacart.formula.test.test
+import kotlinx.coroutines.test.TestScope
 
 /**
  * This interactor indirectly checks that
@@ -15,7 +16,7 @@ import com.instacart.formula.test.test
  * Truth.assertThat(firstType.type()).isNotEqualTo(secondType.type())
  * ```
  */
-class AbstractFormulaTypeInheritanceInteractor {
+class AbstractFormulaTypeInheritanceInteractor(testScope: TestScope) {
     private val formula = object : StatelessFormula<Unit, Int>() {
 
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
@@ -26,7 +27,7 @@ class AbstractFormulaTypeInheritanceInteractor {
         }
     }
 
-    private val observer = formula.test()
+    private val observer = formula.test(testScope)
 
     fun start() = apply {
         observer.input(Unit)

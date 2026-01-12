@@ -6,9 +6,10 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
 import com.instacart.formula.test.test
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineScope
 
-class MultiChildIndirectStateChangeRobot {
-    val subject = Parent().test()
+class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
+    val subject = Parent().test(scope)
 
     fun start() = apply {
         subject.input(Unit)

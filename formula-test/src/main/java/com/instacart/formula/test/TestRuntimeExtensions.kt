@@ -12,6 +12,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -20,19 +22,60 @@ import kotlin.coroutines.coroutineContext
  * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
  */
 fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
+    parentScope: CoroutineScope,
     isValidationEnabled: Boolean = true,
     failOnError: Boolean = true,
     inspector: Inspector? = null,
     dispatcher: Dispatcher? = null,
-    coroutineScheduler: TestCoroutineScheduler = TestCoroutineScheduler()
+): TestFormulaObserver<Input, Output, F> {
+    return test(
+        parentContext = parentScope.coroutineContext,
+        isValidationEnabled = isValidationEnabled,
+        failOnError = failOnError,
+        inspector = inspector,
+        dispatcher = dispatcher,
+    )
+}
+
+/**
+ * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
+ *
+ * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
+ */
+fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.test(
+    parentContext: CoroutineContext,
+    isValidationEnabled: Boolean = true,
+    failOnError: Boolean = true,
+    inspector: Inspector? = null,
+    dispatcher: Dispatcher? = null,
 ): TestFormulaObserver<Input, Output, F> {
     return TestFormulaObserver(
+        parentContext = parentContext,
         isValidationEnabled = isValidationEnabled,
         failOnError = failOnError,
         inspector = inspector,
         dispatcher = dispatcher,
         formula = this,
-        coroutineScheduler = coroutineScheduler,
+    )
+}
+
+/**
+ * An extension function to create a [TestFormulaObserver] for a [IFormula] instance.
+ *
+ * Note: Formula won't start until you pass it an [input][TestFormulaObserver.input].
+ */
+fun <Input : Any, Output : Any, F: IFormula<Input, Output>> F.testUnscoped(
+    isValidationEnabled: Boolean = true,
+    failOnError: Boolean = true,
+    inspector: Inspector? = null,
+    dispatcher: Dispatcher? = null,
+): TestFormulaObserver<Input, Output, F> {
+    return test(
+        parentContext = EmptyCoroutineContext,
+        isValidationEnabled = isValidationEnabled,
+        failOnError = failOnError,
+        inspector = inspector,
+        dispatcher = dispatcher,
     )
 }
 

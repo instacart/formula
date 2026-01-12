@@ -3,11 +3,12 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
+import kotlinx.coroutines.CoroutineScope
 
 import com.instacart.formula.test.test
 
-class NestedCallbackCallRobot() {
-    val subject = Parent().test()
+class NestedCallbackCallRobot(scope: CoroutineScope) {
+    val subject = Parent().test(scope)
 
     fun start() = apply {
         subject.input(Unit)

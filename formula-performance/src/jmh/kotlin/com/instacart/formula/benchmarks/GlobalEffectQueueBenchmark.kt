@@ -6,6 +6,7 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
+import com.instacart.formula.test.testUnscoped
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -36,7 +37,7 @@ open class GlobalEffectQueueBenchmark {
 
     @Setup(Level.Iteration)
     fun setup() {
-        observer = EffectQueueFormula(effectCounter).test(isValidationEnabled = false)
+        observer = EffectQueueFormula(effectCounter).testUnscoped(isValidationEnabled = false)
         observer.input(Unit)
         effectCounter.set(0)
     }
