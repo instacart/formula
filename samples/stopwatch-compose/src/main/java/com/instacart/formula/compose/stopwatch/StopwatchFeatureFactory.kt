@@ -27,7 +27,7 @@ class StopwatchFeatureFactory : FeatureFactory<Any, StopwatchKey>() {
     override fun Params.initialize(): Feature {
         return Feature(
             state = StopwatchFormula().toObservable(),
-            viewFactory = StopwatchViewFactory()
+            renderFactory = StopwatchViewFactory(),
         )
     }
 }
