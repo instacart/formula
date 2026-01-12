@@ -4,7 +4,7 @@ import com.examples.todoapp.R
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
-import com.instacart.formula.android.FeatureView
+import com.instacart.formula.android.ViewFeatureView
 import com.instacart.formula.android.LayoutViewFactory
 import com.instacart.formula.android.ViewInstance
 import com.instacart.formula.runAsStateFlow
@@ -24,7 +24,7 @@ class TaskListFeatureFactory : FeatureFactory<TaskListFeatureFactory.Dependencie
     }
 
     class TaskListViewFactory : LayoutViewFactory<TaskListRenderModel>(R.layout.task_list) {
-        override fun ViewInstance.create(): FeatureView<TaskListRenderModel> {
+        override fun ViewInstance.create(): ViewFeatureView<TaskListRenderModel> {
             return featureView(TaskListRenderView(view))
         }
     }

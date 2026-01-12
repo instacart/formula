@@ -5,12 +5,12 @@ import com.instacart.formula.android.views.InflatedViewInstance
 
 /**
  * View factory which uses [layoutId] to inflate an Android view and then passes that view instance
- * to [create] to instantiate [FeatureView].
+ * to [create] to instantiate [ViewFeatureView].
  *
  * ```
  * class TaskViewFactory : LayoutViewFactory<TaskRenderModel>(R.layout.task_screen) {
  *
- *   override ViewInstance.create(): FeatureView<TaskRenderModel> {
+ *   override ViewInstance.create(): ViewFeatureView<TaskRenderModel> {
  *
  *     // We have access the inflated view directly by calling [ViewInstance.view]
  *     val taskNameTextView = view.findViewById(R.id.task_name_text_view)
@@ -28,9 +28,9 @@ import com.instacart.formula.android.views.InflatedViewInstance
  */
 abstract class LayoutViewFactory<RenderModel>(@LayoutRes private val layoutId: Int): ViewFactory<RenderModel> {
 
-    abstract fun ViewInstance.create(): FeatureView<RenderModel>
+    abstract fun ViewInstance.create(): ViewFeatureView<RenderModel>
 
-    override fun create(params: ViewFactory.Params): FeatureView<RenderModel> {
+    override fun create(params: ViewFactory.Params): ViewFeatureView<RenderModel> {
         val view = params.inflater.inflate(layoutId, params.container, false)
         return InflatedViewInstance(view).create()
     }

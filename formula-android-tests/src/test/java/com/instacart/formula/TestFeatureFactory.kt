@@ -13,7 +13,7 @@ class TestFeatureFactory<Key : RouteKey>(
     override fun Params.initialize(): Feature {
         return Feature(
             state = state(key),
-            viewFactory = TestViewFactory { _, value ->
+            renderFactory = TestViewFactory { _, value ->
                 render(key, value)
             }
         )

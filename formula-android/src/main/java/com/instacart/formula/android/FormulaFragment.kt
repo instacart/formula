@@ -37,17 +37,17 @@ class FormulaFragment : Fragment() {
     private val routeDelegate: RouteEnvironment.RouteDelegate
         get() = environment.routeDelegate
 
-    private var featureView: FeatureView<Any>? = null
+    private var featureView: ViewFeatureView<Any>? = null
     private var output: Any? = null
 
     private val lifecycleCallback: FragmentLifecycleCallback?
         get() = featureView?.lifecycleCallbacks
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: run {
-            // No view factory, no view
-            return null
-        }
+        val viewFactory = (navigationStore.getRenderFactory(formulaRouteId) ?: return null)
+            .also { if (it !is ViewFactory<*>) error("Expected ViewFactory but got ${it::class.java.name} for route $formulaRouteId") }
+            as ViewFactory<Any>
+
         val params = ViewFactory.Params(
             context = requireContext(),
             inflater = inflater,

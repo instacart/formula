@@ -22,7 +22,7 @@ class ViewFactoryTest {
                     ActivityStore(
                         navigationStore = NavigationStore.Builder().build {
                             val featureFactory = NoOpFeatureFactory(
-                                viewFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
+                                renderFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
                                     featureView {  }
                                 }
                             )

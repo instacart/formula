@@ -214,7 +214,7 @@ class FragmentStoreTest {
                 override fun Params.initialize(): Feature {
                     return Feature(
                         state = stateSubject,
-                        viewFactory = TestViewFactory(),
+                        renderFactory = TestViewFactory(),
                     )
                 }
             }
@@ -262,7 +262,7 @@ class FragmentStoreTest {
                     override fun Params.initialize(): Feature {
                         return Feature(
                             state = stateSubject,
-                            viewFactory = TestViewFactory(),
+                            renderFactory = TestViewFactory(),
                         )
                     }
                 }
@@ -332,7 +332,7 @@ class FragmentStoreTest {
                 override fun Params.initialize(): Feature {
                     return Feature(
                         state = Observable.just("value"),
-                        viewFactory = TestViewFactory(),
+                        renderFactory = TestViewFactory(),
                     )
                 }
             }
@@ -399,7 +399,7 @@ class FragmentStoreTest {
         override fun Params.initialize(): Feature {
             return Feature(
                 state = dependencies.state(key),
-                viewFactory = TestViewFactory()
+                renderFactory = TestViewFactory()
             )
         }
     }

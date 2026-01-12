@@ -13,7 +13,7 @@ class StateFlowFeatureFactory(
 ) : FeatureFactory<Unit, StateFlowKey>() {
     override fun Params.initialize(): Feature {
         return Feature(
-            viewFactory = TestViewFactory(),
+            renderFactory = TestViewFactory(),
             initAsync = key.initAsync,
         ) {
             formula.runAsStateFlow(it, routeId)
