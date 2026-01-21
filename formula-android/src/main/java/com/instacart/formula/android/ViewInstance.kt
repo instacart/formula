@@ -19,13 +19,11 @@ abstract class ViewInstance {
      * Creates a [FeatureView] from a [render] function
      */
     fun <RenderModel> featureView(
-        lifecycleCallbacks: FragmentLifecycleCallback? = null,
         render: (RenderModel) -> Unit
     ): FeatureView<RenderModel> {
         return FeatureView(
             view = view,
             setOutput = Renderer.create(render),
-            lifecycleCallbacks = lifecycleCallbacks
         )
     }
 
@@ -34,12 +32,10 @@ abstract class ViewInstance {
      */
     fun <RenderModel> featureView(
         renderView: RenderView<RenderModel>,
-        lifecycleCallbacks: FragmentLifecycleCallback? = null,
     ): FeatureView<RenderModel> {
         return FeatureView(
             view = view,
             setOutput = renderView.render,
-            lifecycleCallbacks = lifecycleCallbacks,
         )
     }
 }
