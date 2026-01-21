@@ -1,7 +1,6 @@
 package com.instacart.formula.android.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -25,7 +24,6 @@ abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> 
         return FeatureView(
             view = view,
             setOutput = { outputState.value = it },
-            lifecycleCallbacks = null,
         )
     }
 

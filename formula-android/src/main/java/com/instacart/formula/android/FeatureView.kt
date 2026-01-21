@@ -12,10 +12,8 @@ import android.view.View
  *
  * @param view The root Android view.
  * @param setOutput A function called to apply [RenderModel] to the view.
- * @param lifecycleCallbacks Optional lifecycle callbacks if you need to know the Fragment state.
  */
 class FeatureView<RenderModel>(
     val view: View,
     val setOutput: (RenderModel) -> Unit,
-    val lifecycleCallbacks: FragmentLifecycleCallback?,
 )

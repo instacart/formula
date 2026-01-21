@@ -40,9 +40,6 @@ class FormulaFragment : Fragment() {
     private var featureView: FeatureView<Any>? = null
     private var output: Any? = null
 
-    private val lifecycleCallback: FragmentLifecycleCallback?
-        get() = featureView?.lifecycleCallbacks
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: run {
             // No view factory, no view
@@ -66,47 +63,9 @@ class FormulaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         tryToSetState()
-
-        lifecycleCallback?.onViewCreated(view, savedInstanceState)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        lifecycleCallback?.onActivityCreated(savedInstanceState)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        lifecycleCallback?.onStart()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleCallback?.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        lifecycleCallback?.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        lifecycleCallback?.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        lifecycleCallback?.onSaveInstanceState(outState)
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        lifecycleCallback?.onLowMemory()
     }
 
     override fun onDestroyView() {
-        lifecycleCallback?.onDestroyView()
         super.onDestroyView()
         featureView = null
     }
