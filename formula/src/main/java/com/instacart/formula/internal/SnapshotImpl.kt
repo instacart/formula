@@ -14,8 +14,8 @@ internal class SnapshotImpl<out Input, State>(
     private val delegate: FormulaManagerImpl<Input, State, *>,
     override val input: Input,
     override val state: State,
-    listeners: Listeners,
-) : FormulaContext<Input, State>(listeners), Snapshot<Input, State>, TransitionContext<Input, State> {
+    lifecycleCache: LifecycleCache,
+) : FormulaContext<Input, State>(lifecycleCache), Snapshot<Input, State>, TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
     private var running = false
@@ -68,7 +68,9 @@ internal class SnapshotImpl<out Input, State>(
         transition: Transition<Input, State, Event>
     ): Listener<Event> {
         ensureNotRunning()
-        val listener = listeners.initOrFindListener(key, useIndex, transition)
+        val listener = lifecycleCache.findOrInit(key, useIndex) {
+            ListenerImpl(transition)
+        }
         listener.setDependencies(delegate, this, executionType, transition)
         return listener
     }

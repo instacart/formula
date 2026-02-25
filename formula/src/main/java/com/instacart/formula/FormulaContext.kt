@@ -1,8 +1,7 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.Listeners
+import com.instacart.formula.internal.LifecycleCache
 import com.instacart.formula.internal.UnitListener
-import kotlin.reflect.KClass
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -10,7 +9,7 @@ import kotlin.reflect.KClass
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<out Input, State> internal constructor(
-    @PublishedApi internal val listeners: Listeners,
+    @PublishedApi internal val lifecycleCache: LifecycleCache,
 ) {
 
     /**

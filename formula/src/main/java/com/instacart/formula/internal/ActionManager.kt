@@ -60,35 +60,20 @@ internal class ActionManager(
             map
         }
 
-        // Check if this is a new action (key doesn't exist yet)
-        val isNew = !actionsMap.containsKey(key)
-
-        val holder = actionsMap.findOrInit(key) {
-            DeferredAction(key, action, listener)
-        }
-
-        if (holder.requested) {
-            // Key collision - this is an error
-            val formulaType = manager.formulaType
-            val message = "$formulaType - duplicate action key in same evaluation: $key. " +
-                    "This likely means the same action is being registered multiple times. " +
-                    "Ensure each action has a unique key or is only registered once per evaluation."
-            throw IllegalStateException(message)
-        }
-
-        // Mark as requested for this evaluation cycle
-        holder.requested = true
+        val holder = actionsMap.getOrInitHolder(key)
+        val isNew = holder.isNew() // Call this before requestOrInitValue
+        val value = holder.requestOrInitValue { DeferredAction(key, action, listener) }
 
         // Schedule for starting if it's a new action
         if (isNew) {
             val list = checkToStartActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToStartActionList = it
             }
-            list.add(holder.value)
+            list.add(value)
         }
 
         @Suppress("UNCHECKED_CAST")
-        return holder.value as DeferredAction<Event>
+        return value as DeferredAction<Event>
     }
 
     /**
