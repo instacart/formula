@@ -20,6 +20,11 @@ internal interface ManagerDelegate {
     val onError: (FormulaError) -> Unit
 
     /**
+     * Returns true if the delegate (parent) has been terminated.
+     */
+    fun isTerminated(): Boolean
+
+    /**
      * When a transition happens, we notify the parent if we need to re-evaluate or
      * we have global transition effects that need to be executed or both.
      */

@@ -40,13 +40,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
     )
 
     /**
-     * Determines if formula is still attached. Termination is a two step process,
-     * first [markAsTerminated] is called to set this boolean which prevents us from
-     * start new actions. And then, [performTerminationSideEffects] is called to clean
-     * up this [formula] and its child formulas.
+     * Local termination flag. Use [isTerminated] to check termination status,
+     * which also accounts for parent termination via the delegate.
      */
     @Volatile
-    private var terminated = false
+    private var _terminated = false
 
     /**
      * Identifier used to track state changes of this [formula] and its children. Whenever
@@ -78,12 +76,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun isTerminated(): Boolean {
-        return terminated
+        if (!_terminated && delegate.isTerminated()) {
+            _terminated = true
+        }
+        return _terminated
     }
 
     fun handleTransitionResult(event: Any?, result: Transition.Result<State>) {
         val effects = result.effects
-        if (terminated) {
+        if (isTerminated()) {
             // State transitions are ignored, let's just execute side-effects.
             delegate.onPostTransition(effects, false)
             return
@@ -286,8 +287,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun markAsTerminated() {
-        terminated = true
-        childrenManager?.markAsTerminated()
+        _terminated = true
     }
 
     override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
@@ -308,7 +308,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
-        if (terminated) {
+        if (isTerminated()) {
             transition.execute()
         } else if (isRunning) {
             transitionQueue.addLast(transition)
@@ -351,15 +351,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return true
         }
 
-        if (!terminated && childrenManager?.terminateChildren(evaluationId) == true) {
+        if (!isTerminated() && childrenManager?.terminateChildren(evaluationId) == true) {
             return true
         }
 
-        if (!terminated && actionManager.terminateOld(evaluationId)) {
+        if (!isTerminated() && actionManager.terminateOld(evaluationId)) {
             return true
         }
 
-        if (!terminated && actionManager.startNew(evaluationId)) {
+        if (!isTerminated() && actionManager.startNew(evaluationId)) {
             return true
         }
 

@@ -37,10 +37,6 @@ internal class ChildrenManager(
         return !manager.canUpdatesContinue(evaluationId)
     }
 
-    fun markAsTerminated() {
-        children.forEachValue { it.markAsTerminated() }
-    }
-
     fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
         children.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
     }
