@@ -22,8 +22,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     override val formulaType: Class<*>,
     initialInput: Input,
-    private val listeners: Listeners = Listeners(),
 ) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
+    private val indexer = Indexer()
+    private val listeners = Listeners(indexer)
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -221,6 +222,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         actionManager.prepareForPostEvaluation()
         listeners.prepareForPostEvaluation()
         childrenManager?.prepareForPostEvaluation()
+        indexer.clear()
 
         val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
@@ -383,7 +385,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private fun getOrInitChildrenManager(): ChildrenManager {
         return childrenManager ?: run {
-            val value = ChildrenManager(this)
+            val value = ChildrenManager(this, indexer)
             childrenManager = value
             value
         }

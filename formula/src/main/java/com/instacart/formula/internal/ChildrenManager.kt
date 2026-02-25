@@ -9,9 +9,9 @@ import com.instacart.formula.plugin.FormulaError
  */
 internal class ChildrenManager(
     private val manager: FormulaManagerImpl<*, *, *>,
+    private val indexer: Indexer,
 ) {
     private val children: SingleRequestMap<Any, FormulaManager<*, *>> = LinkedHashMap()
-    private var indexes: MutableMap<Any, Int>? = null
     private var pendingRemoval: MutableList<FormulaManager<*, *>>? = null
 
     private var duplicateKeyLogs: MutableSet<Any>? = null
@@ -22,8 +22,6 @@ internal class ChildrenManager(
      * in post evaluation, which will call [terminateChildren] function.
      */
     fun prepareForPostEvaluation() {
-        indexes?.clear()
-
         children.clearUnrequested(this::prepareForTermination)
     }
 
@@ -77,7 +75,7 @@ internal class ChildrenManager(
                 manager.onError(error)
             }
 
-            val index = nextIndex(key)
+            val index = indexer.nextIndex(key)
             val indexedKey = IndexedKey(key, index)
             findOrInitChild(indexedKey, formula, input)
         } else {
@@ -111,24 +109,4 @@ internal class ChildrenManager(
         return childFormulaHolder as SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>>
     }
 
-    /**
-     * Function which returns next index for a given key. It will
-     * mutate the [indexes] map.
-     */
-    private fun nextIndex(key: Any): Int {
-        val indexes = indexes ?: run {
-            val initialized = mutableMapOf<Any, Int>()
-            this.indexes = initialized
-            initialized
-        }
-
-        val previousIndex = indexes[key]
-        val index = if (previousIndex == null) {
-            0
-        } else {
-            previousIndex + 1
-        }
-        indexes[key] = index
-        return index
-    }
 }

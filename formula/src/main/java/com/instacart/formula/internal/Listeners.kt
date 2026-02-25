@@ -2,9 +2,8 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Transition
 
-internal class Listeners {
+internal class Listeners(private val indexer: Indexer) {
     private var listeners: SingleRequestMap<Any, ListenerImpl<*, *, *>>? = null
-    private var indexes: MutableMap<Any, Int>? = null
 
     fun <Input, State, Event> initOrFindListener(
         key: Any,
@@ -16,7 +15,7 @@ internal class Listeners {
             currentHolder.requested = true
             currentHolder.value as ListenerImpl<Input, State, Event>
         } else if (useIndex) {
-            val index = nextIndex(key)
+            val index = indexer.nextIndex(key)
             val indexedKey = IndexedKey(key, index)
             initOrFindListener(indexedKey, useIndex, transition)
         } else {
@@ -29,7 +28,6 @@ internal class Listeners {
      * event listeners that should not be valid anymore.
      */
     fun prepareForPostEvaluation() {
-        indexes?.clear()
         listeners?.clearUnrequested(this::disableListener)
     }
 
@@ -43,27 +41,6 @@ internal class Listeners {
 
     private fun disableListener(listener: ListenerImpl<*, *, *>) {
         listener.disable()
-    }
-
-    /**
-     * Function which returns next index for a given key. It will
-     * mutate the [indexes] map.
-     */
-    private fun nextIndex(key: Any): Int {
-        val indexes = indexes ?: run {
-            val initialized = mutableMapOf<Any, Int>()
-            this.indexes = initialized
-            initialized
-        }
-
-        val previousIndex = indexes[key]
-        val index = if (previousIndex == null) {
-            0
-        } else {
-            previousIndex + 1
-        }
-        indexes[key] = index
-        return index
     }
 
     private fun <Input, State, Event> listenerHolder(
