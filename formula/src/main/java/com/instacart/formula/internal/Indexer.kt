@@ -7,7 +7,16 @@ internal class Indexer {
      * Function which returns next index for a given key. It will
      * mutate the [indexes] map.
      */
-    fun nextIndex(key: Any): Int {
+    fun nextIndexedKey(key: Any): IndexedKey {
+        val index = nextIndex(key)
+        return IndexedKey(key, index)
+    }
+
+    fun clear() {
+        indexes?.clear()
+    }
+
+    private fun nextIndex(key: Any): Int {
         val indexes = indexes ?: run {
             val initialized = mutableMapOf<Any, Int>()
             this.indexes = initialized
@@ -22,9 +31,5 @@ internal class Indexer {
         }
         indexes[key] = index
         return index
-    }
-
-    fun clear() {
-        indexes?.clear()
     }
 }

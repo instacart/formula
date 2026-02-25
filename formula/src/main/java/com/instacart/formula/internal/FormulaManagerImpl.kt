@@ -8,7 +8,6 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.plugin.FormulaError
 import java.util.LinkedList
-import kotlin.reflect.KClass
 
 /**
  * Responsible for keeping track of formula's state, running actions, and child formulas. The
@@ -24,7 +23,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     initialInput: Input,
 ) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
     private val indexer = Indexer()
-    private val listeners = Listeners(indexer)
+    private val lifecycleCache = LifecycleCache(indexer)
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var childrenManager: ChildrenManager? = null
@@ -40,11 +39,24 @@ internal class FormulaManagerImpl<Input, State, Output>(
     )
 
     /**
-     * Local termination flag. Use [isTerminated] to check termination status,
-     * which also accounts for parent termination via the delegate.
+     * Determines if formula is still attached. Termination is a two step process,
+     * first [markAsTerminated] is called to set this boolean which prevents us from
+     * start new actions. And then, [performTerminationSideEffects] is called to clean
+     * up this [formula] and its child formulas.
      */
     @Volatile
-    private var _terminated = false
+    private var terminated = false
+
+    /**
+     * Controls whether listeners can dispatch events. Unlike [isTerminated] which
+     * is set early to prevent state changes, this remains true throughout
+     * [performTerminationSideEffects] so that termination-triggered events
+     * (e.g. [com.instacart.formula.Action.onTerminate]) can still produce their effects.
+     * Set to false after all actions and children have been torn down.
+     */
+    @Volatile
+    var isEventHandlingEnabled = true
+        private set
 
     /**
      * Identifier used to track state changes of this [formula] and its children. Whenever
@@ -76,15 +88,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun isTerminated(): Boolean {
-        if (!_terminated && delegate.isTerminated()) {
-            _terminated = true
-        }
-        return _terminated
+        return terminated
     }
 
     fun handleTransitionResult(event: Any?, result: Transition.Result<State>) {
         val effects = result.effects
-        if (isTerminated()) {
+        if (terminated) {
             // State transitions are ignored, let's just execute side-effects.
             delegate.onPostTransition(effects, false)
             return
@@ -208,7 +217,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val snapshot = SnapshotImpl(
             input = input,
             state = state,
-            listeners = listeners,
+            lifecycleCache = lifecycleCache,
             delegate = this,
         )
         val result = formula.evaluate(snapshot)
@@ -221,7 +230,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         actionManager.prepareForPostEvaluation()
-        listeners.prepareForPostEvaluation()
+        lifecycleCache.postEvaluationCleanup()
         childrenManager?.prepareForPostEvaluation()
         indexer.clear()
 
@@ -287,7 +296,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun markAsTerminated() {
-        _terminated = true
+        terminated = true
     }
 
     override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
@@ -303,12 +312,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
             transitionQueue.clear()
         }
 
-        listeners.disableAll()
+        isEventHandlingEnabled = false
         inspector?.onFormulaFinished(formulaType)
     }
 
     fun onPendingTransition(transition: DeferredTransition<*, *, *>) {
-        if (isTerminated()) {
+        if (terminated) {
             transition.execute()
         } else if (isRunning) {
             transitionQueue.addLast(transition)
@@ -351,15 +360,15 @@ internal class FormulaManagerImpl<Input, State, Output>(
             return true
         }
 
-        if (!isTerminated() && childrenManager?.terminateChildren(evaluationId) == true) {
+        if (!terminated && childrenManager?.terminateChildren(evaluationId) == true) {
             return true
         }
 
-        if (!isTerminated() && actionManager.terminateOld(evaluationId)) {
+        if (!terminated && actionManager.terminateOld(evaluationId)) {
             return true
         }
 
-        if (!isTerminated() && actionManager.startNew(evaluationId)) {
+        if (!terminated && actionManager.startNew(evaluationId)) {
             return true
         }
 

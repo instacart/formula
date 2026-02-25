@@ -37,6 +37,10 @@ internal class ChildrenManager(
         return !manager.canUpdatesContinue(evaluationId)
     }
 
+    fun markAsTerminated() {
+        children.forEachValue { it.markAsTerminated() }
+    }
+
     fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
         children.forEachValue { it.performTerminationSideEffects(executeTransitionQueue) }
     }
@@ -46,8 +50,8 @@ internal class ChildrenManager(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): FormulaManager<ChildInput, ChildOutput> {
-        val childManagerEntry = getOrInitChildManager(key, formula, input)
-        return if (childManagerEntry.requested) {
+        val holder = getOrInitHolder<ChildInput, ChildOutput>(key)
+        return if (holder.requested) {
             val logs = duplicateKeyLogs ?: run {
                 val newSet = mutableSetOf<Any>()
                 duplicateKeyLogs = newSet
@@ -71,12 +75,18 @@ internal class ChildrenManager(
                 manager.onError(error)
             }
 
-            val index = indexer.nextIndex(key)
-            val indexedKey = IndexedKey(key, index)
+            val indexedKey = indexer.nextIndexedKey(key)
             findOrInitChild(indexedKey, formula, input)
         } else {
-            childManagerEntry.requested = true
-            childManagerEntry.value
+            holder.requestOrInitValue {
+                val implementation = formula.implementation
+                FormulaManagerImpl(
+                    delegate = manager,
+                    formula = implementation,
+                    formulaType = formula.type(),
+                    initialInput = input,
+                )
+            }
         }
     }
 
@@ -87,22 +97,10 @@ internal class ChildrenManager(
         list.add(it)
     }
 
-    private fun <ChildInput, ChildOutput> getOrInitChildManager(
-        key: Any,
-        formula: IFormula<ChildInput, ChildOutput>,
-        input: ChildInput,
+    @Suppress("UNCHECKED_CAST")
+    private fun <ChildInput, ChildOutput> getOrInitHolder(
+        key: Any
     ): SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>> {
-        val childFormulaHolder = children.findOrInit(key) {
-            val implementation = formula.implementation
-            FormulaManagerImpl(
-                delegate = manager,
-                formula = implementation,
-                formulaType = formula.type(),
-                initialInput = input,
-            )
-        }
-        @Suppress("UNCHECKED_CAST")
-        return childFormulaHolder as SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>>
+        return children.getOrInitHolder(key) as SingleRequestHolder<FormulaManager<ChildInput, ChildOutput>>
     }
-
 }

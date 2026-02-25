@@ -165,7 +165,7 @@ class BenchmarkComparator
 
     # Footer
     lines << "---"
-    lines << "*Regression threshold: ±#{(THRESHOLD * 100).round(0)}% with non-overlapping confidence intervals*"
+    lines << "*Regressions: ±#{(THRESHOLD * 100).round(0)}% with non-overlapping confidence intervals. Improvements: ±#{(THRESHOLD * 100).round(0)}% change only.*"
 
     lines.join("\n")
   end
@@ -218,7 +218,11 @@ class BenchmarkComparator
       base = @baseline[key]
       pct_change = curr.percent_change(base)
 
-      if curr.significantly_different?(base, threshold: THRESHOLD) && pct_change < 0
+      # Use only the percentage threshold for improvements (no error bar overlap
+      # requirement). Improvements are informational so false positives are
+      # low-cost, and requiring non-overlapping confidence intervals is overly
+      # conservative — it can miss real gains when baseline error bars are wide.
+      if pct_change < 0 && pct_change.abs >= (THRESHOLD * 100)
         results << [curr, base, pct_change]
       end
     end
@@ -233,7 +237,9 @@ class BenchmarkComparator
       base = @baseline[key]
       pct_change = curr.percent_change(base)
 
-      unless curr.significantly_different?(base, threshold: THRESHOLD)
+      is_regression = curr.significantly_different?(base, threshold: THRESHOLD) && pct_change > 0
+      is_improvement = pct_change < 0 && pct_change.abs >= (THRESHOLD * 100)
+      unless is_regression || is_improvement
         results << [curr, base, pct_change]
       end
     end

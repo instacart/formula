@@ -5,13 +5,12 @@ import com.instacart.formula.Transition
 import com.instacart.formula.plugin.Dispatcher
 
 /**
- * Note: this class is not a data class because equality is based on instance and not [key].
+ * Note: this class is not a data class because equality is based on instance.
  */
 @PublishedApi
 internal class ListenerImpl<Input, State, EventT>(
-    private val key: Any,
     private var transition: Transition<Input, State, EventT>
-) : Listener<EventT> {
+) : Listener<EventT>, LifecycleComponent {
 
     @Volatile private var manager: FormulaManagerImpl<Input, State, *>? = null
     @Volatile private var snapshotImpl: SnapshotImpl<Input, State>? = null
@@ -20,6 +19,7 @@ internal class ListenerImpl<Input, State, EventT>(
     override fun invoke(event: EventT) {
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
+        if (!manager.isEventHandlingEnabled) return
 
         when (val type = executionType) {
             is Transition.Batched -> handleBatched(manager, type, event)
@@ -42,7 +42,7 @@ internal class ListenerImpl<Input, State, EventT>(
         this.transition = transition
     }
 
-    fun disable() {
+    override fun onRemove() {
         manager = null
         snapshotImpl = null
     }

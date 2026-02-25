@@ -165,10 +165,6 @@ class FormulaRuntime<Input : Any, Output : Any>(
         queue.postUpdate(defaultDispatcher, this::terminateInternal)
     }
 
-    override fun isTerminated(): Boolean {
-        return isRuntimeTerminated
-    }
-
     /**
      * Returns an [Output] value or throws an exception if it's not available yet. The two reasons
      * why output would not be available are:
