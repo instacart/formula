@@ -24,15 +24,4 @@ interface FormulaManager<Input, Output> {
     fun lastOutput(): Output?
 
     fun isTerminated(): Boolean
-
-    /**
-     * Called when [Formula] is removed. This is should not trigger any external side-effects,
-     * only mark itself and its children as terminated.
-     */
-    fun markAsTerminated()
-
-    /**
-     * Called when we are ready to perform termination side-effects.
-     */
-    fun performTerminationSideEffects()
 }

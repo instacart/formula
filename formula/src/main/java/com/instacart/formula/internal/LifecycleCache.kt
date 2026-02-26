@@ -1,6 +1,10 @@
 package com.instacart.formula.internal
 
-internal class LifecycleCache(private val indexer: Indexer) : LifecycleScheduler, DuplicateKeyLog {
+internal class LifecycleCache(
+    private val manager: FormulaManagerImpl<*, *, *>,
+) : LifecycleScheduler, DuplicateKeyLog {
+
+    private val indexer = Indexer()
 
     private var entryMap: SingleRequestMap<Any, LifecycleComponent>? = null
     private var terminateEffects: MutableList<() -> Unit>? = null
@@ -26,30 +30,49 @@ internal class LifecycleCache(private val indexer: Indexer) : LifecycleScheduler
     }
 
     fun postEvaluationCleanup() {
-        entryMap?.clearUnrequested { component ->
-            component.onDetached(this)
-        }
+        indexer.clear()
+        entryMap?.clearUnrequested(this::detachComponent)
     }
 
-    fun processTerminateEffects() {
-        val effects = terminateEffects ?: return
+    fun terminateDetached(evaluationId: Long): Boolean {
+        val effects = terminateEffects?.takeIf { it.isNotEmpty() } ?: return false
         terminateEffects = null
-        effects.forEach { it() }
+
+        for (effect in effects) {
+            effect()
+        }
+
+        if (manager.isTerminated()) {
+            return false
+        }
+
+        return !manager.canUpdatesContinue(evaluationId)
     }
 
-    fun forEachValue(callback: (LifecycleComponent) -> Unit) {
-        entryMap?.forEachValue(callback)
+    fun markAsTerminated() {
+        entryMap?.forEachValue { it.markAsTerminated() }
+    }
+
+    fun performTermination() {
+        entryMap?.forEachValue { it.performTermination() }
+    }
+
+    private fun detachComponent(component: LifecycleComponent) {
+        component.onDetached(this)
     }
 
     private fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
         val holder = findEntry<T>(key)
         return if (holder == null) {
             initNewHolder(key)
-        } else if (holder.requested && useIndex) {
+        } else if (!holder.requested) {
+            holder
+        } else if (useIndex) {
             holder.value.onDuplicateKey(this, key)
             val indexedKey = indexer.nextIndexedKey(key)
             getOrInitEntryHolder(indexedKey, true)
         } else {
+            holder.value.onDuplicateKey(this, key)
             holder
         }
     }

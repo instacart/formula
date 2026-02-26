@@ -151,7 +151,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
                 // No need to do anything more here
             } else {
                 // Let's first execute side-effects
-                current.performTerminationSideEffects()
+                current.performTermination()
 
                 // Start new manager
                 startNewManager(input)
@@ -390,8 +390,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Performs formula termination effects and executes transition effects if needed.
      */
-    private fun terminateManager(manager: FormulaManager<Input, Output>) {
-        manager.performTerminationSideEffects()
+    private fun terminateManager(manager: FormulaManagerImpl<Input, *, Output>) {
+        manager.performTermination()
         if (!isExecutingEffects) {
             executeTransitionEffects()
         }

@@ -23,8 +23,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     override val formulaType: Class<*>,
     initialInput: Input,
 ) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate, LifecycleComponent {
-    private val indexer = Indexer()
-    private val lifecycleCache = LifecycleCache(indexer)
+    private val lifecycleCache = LifecycleCache(this)
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var isValidationEnabled: Boolean = false
@@ -41,7 +40,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Determines if formula is still attached. Termination is a two step process,
      * first [markAsTerminated] is called to set this boolean which prevents us from
-     * start new actions. And then, [performTerminationSideEffects] is called to clean
+     * start new actions. And then, [performTermination] is called to clean
      * up this [formula] and its child formulas.
      */
     @Volatile
@@ -50,7 +49,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Controls whether listeners can dispatch events. Unlike [isTerminated] which
      * is set early to prevent state changes, this remains true throughout
-     * [performTerminationSideEffects] so that termination-triggered events
+     * [performTermination] so that termination-triggered events
      * (e.g. [com.instacart.formula.Action.onTerminate]) can still produce their effects.
      * Set to false after all actions and children have been torn down.
      */
@@ -161,7 +160,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 throw e
             } else {
                 markAsTerminated()
-                performTerminationSideEffects()
+                performTermination()
 
                 if (e !is CascadingFormulaException) {
                     val error = FormulaError.Unhandled(formulaType, e)
@@ -231,7 +230,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         actionManager.prepareForPostEvaluation()
         lifecycleCache.postEvaluationCleanup()
-        indexer.clear()
 
         val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
@@ -292,7 +290,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun <ChildInput, ChildOutput> findOrInitChildManager(
         key: Any,
         formula: IFormula<ChildInput, ChildOutput>,
@@ -305,24 +302,16 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 formulaType = formula.type(),
                 initialInput = input,
             )
-        } as FormulaManager<ChildInput, ChildOutput>
+        }
     }
 
     override fun markAsTerminated() {
         terminated = true
-        lifecycleCache.forEachValue { component ->
-            if (component is FormulaManager<*, *>) {
-                component.markAsTerminated()
-            }
-        }
+        lifecycleCache.markAsTerminated()
     }
 
-    override fun performTerminationSideEffects() {
-        lifecycleCache.forEachValue { component ->
-            if (component is FormulaManager<*, *>) {
-                component.performTerminationSideEffects()
-            }
-        }
+    override fun performTermination() {
+        lifecycleCache.performTermination()
         actionManager.terminate()
 
         // Execute deferred transitions
@@ -361,7 +350,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun onDetached(scheduler: LifecycleScheduler) {
         markAsTerminated()
-        scheduler.scheduleTerminateEffect { performTerminationSideEffects() }
+        scheduler.scheduleTerminateEffect(this::performTermination)
     }
 
     override fun onDuplicateKey(log: DuplicateKeyLog, key: Any) {
@@ -388,28 +377,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * @return True if we need to re-evaluate.
      */
     private fun postEvaluation(evaluationId: Long): Boolean {
-        if (isEvaluationNeeded(evaluationId)) {
-            return true
-        }
-
-        if (handleTransitionQueue(evaluationId)) {
-            return true
-        }
-
-        if (!terminated) {
-            lifecycleCache.processTerminateEffects()
-            if (isTerminated()) return false
-            if (!canUpdatesContinue(evaluationId)) return true
-        }
-
-        if (!terminated && actionManager.terminateOld(evaluationId)) {
-            return true
-        }
-
-        if (!terminated && actionManager.startNew(evaluationId)) {
-            return true
-        }
-
+        if (isEvaluationNeeded(evaluationId)) return true
+        if (handleTransitionQueue(evaluationId)) return true
+        if (!terminated && lifecycleCache.terminateDetached(evaluationId)) return true
+        if (!terminated && actionManager.terminateOld(evaluationId)) return true
+        if (!terminated && actionManager.startNew(evaluationId)) return true
         return false
     }
 
