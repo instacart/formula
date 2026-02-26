@@ -4,8 +4,10 @@ package com.instacart.formula.internal
  * Holder tracks when object has already been request and throws an error if requested again. This
  * is used to track duplicate requests for a particular key.
  */
+@PublishedApi
 internal class SingleRequestHolder<T : Any>(val key: Any) {
-    private var _value: T? = null
+    @PublishedApi
+    internal var _value: T? = null
 
     val value: T
         get() = requireNotNull(_value)

@@ -1,8 +1,10 @@
 package com.instacart.formula.internal
 
+@PublishedApi
 internal class LifecycleCache(private val indexer: Indexer) {
 
     private var entryMap: SingleRequestMap<Any, LifecycleComponent>? = null
+
 
     inline fun <T : LifecycleComponent> findOrInit(
         key: Any,
@@ -17,7 +19,8 @@ internal class LifecycleCache(private val indexer: Indexer) {
         entryMap?.clearUnrequested(LifecycleComponent::onRemove)
     }
 
-    private fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
+    @PublishedApi
+    internal fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
         val holder = findEntry<T>(key)
         return if (holder == null) {
             initNewHolder(key)

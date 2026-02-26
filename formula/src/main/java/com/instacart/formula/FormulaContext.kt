@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.LifecycleCache
 import com.instacart.formula.internal.UnitListener
+import com.instacart.formula.remember.RememberComponent
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -122,6 +123,16 @@ abstract class FormulaContext<out Input, State> internal constructor(
         formula: IFormula<Unit, ChildOutput>
     ): ChildOutput? {
         return childOrNull(formula, Unit)
+    }
+
+    inline fun <T> remember(key: Any? = null, crossinline factory: () -> T): T {
+        val componentFactory = {
+            val value = factory()
+            RememberComponent(value)
+        }
+
+        val rememberKey = createScopedKey(componentFactory::class.java, key)
+        return lifecycleCache.findOrInit(rememberKey, useIndex = true, componentFactory).value
     }
 
     /**
