@@ -37,6 +37,11 @@
 - Listeners must be returned in Output or passed to children via Input to remain active.
 - Keying: Listeners use transition type + optional key. Same key + type = same listener.
 
+**Remember:**
+- `context.remember { computeValue() }` - caches a value across re-evaluations, factory called once.
+- Value cleaned up when `remember` is not called in an evaluation (conditional/removed).
+- Keying: Uses factory class (positional memoization) + optional key.
+
 **Actions:**
 - Declarative async operations. Declared in `context.actions { }` block within Evaluation.
 - Actions run when returned in Evaluation, cancelled when not returned or key changes.
@@ -72,6 +77,7 @@
 - `Action` ~ `LaunchedEffect` - declarative side effects tied to keys, cancelled when removed.
 - `Transition` ~ state updates in Compose - deferred effects after state change.
 - `context.child()` ~ calling composables - automatic lifecycle management.
+- `context.remember {}` ~ `remember {}` - cached computation, re-created when removed from composition.
 
 ## Key Classes
 
@@ -103,7 +109,8 @@
 - `FormulaManager` / `FormulaManagerImpl` - Manages formula lifecycle and evaluation
 - `ActionManager` - Manages running actions
 - `ChildrenManager` - Manages running child formulas
-- `Listeners` - Manages active listeners
+- `LifecycleCache` - Caches values across evaluations for object identity and performance (used by listeners and remember)
+- `Indexer` - Handles key collision resolution via index-based disambiguation
 - `SynchronizedUpdateQueue` - Coordinates state updates ensuring thread safe evaluation
 - `Frame` - Represents an evaluation frame
 
