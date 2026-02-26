@@ -2,7 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.LifecycleCache
 import com.instacart.formula.internal.UnitListener
-import com.instacart.formula.remember.RememberComponent
+import com.instacart.formula.remember.RememberFactory
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -10,7 +10,7 @@ import com.instacart.formula.remember.RememberComponent
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<out Input, State> internal constructor(
-    @PublishedApi internal val lifecycleCache: LifecycleCache,
+    internal val lifecycleCache: LifecycleCache,
 ) {
 
     /**
@@ -125,14 +125,9 @@ abstract class FormulaContext<out Input, State> internal constructor(
         return childOrNull(formula, Unit)
     }
 
-    inline fun <T> remember(key: Any? = null, crossinline factory: () -> T): T {
-        val componentFactory = {
-            val value = factory()
-            RememberComponent(value)
-        }
-
-        val rememberKey = createScopedKey(componentFactory::class.java, key)
-        return lifecycleCache.findOrInit(rememberKey, useIndex = true, componentFactory).value
+    fun <T> remember(key: Any? = null, factory: RememberFactory<T>): T {
+        val rememberKey = createScopedKey(factory.type(), key)
+        return lifecycleCache.findOrInit(rememberKey, useIndex = true, factory).value
     }
 
     /**
