@@ -2,6 +2,7 @@ package com.instacart.formula
 
 import com.instacart.formula.internal.LifecycleCache
 import com.instacart.formula.internal.UnitListener
+import com.instacart.formula.remember.RememberFactory
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
@@ -9,7 +10,7 @@ import com.instacart.formula.internal.UnitListener
  * to arbitrary asynchronous events.
  */
 abstract class FormulaContext<out Input, State> internal constructor(
-    @PublishedApi internal val lifecycleCache: LifecycleCache,
+    internal val lifecycleCache: LifecycleCache,
 ) {
 
     /**
@@ -122,6 +123,11 @@ abstract class FormulaContext<out Input, State> internal constructor(
         formula: IFormula<Unit, ChildOutput>
     ): ChildOutput? {
         return childOrNull(formula, Unit)
+    }
+
+    fun <T> remember(key: Any? = null, factory: RememberFactory<T>): T {
+        val rememberKey = createScopedKey(factory.type(), key)
+        return lifecycleCache.findOrInit(rememberKey, useIndex = true, factory).value
     }
 
     /**
