@@ -297,6 +297,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun markAsTerminated() {
         terminated = true
+        childrenManager?.markAsTerminated()
     }
 
     override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
