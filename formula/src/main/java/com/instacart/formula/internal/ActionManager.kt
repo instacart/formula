@@ -34,7 +34,7 @@ internal class ActionManager(
      */
     fun prepareValidationRun() {
         validationFrame = ActionValidationFrame(
-            manager = manager,
+            formulaType = manager.formulaType,
             previousNewActions = checkToStartActionList.orEmpty().toList(),
             previousRemovedActions = checkToRemoveActionList.orEmpty().toList()
         )

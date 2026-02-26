@@ -23,3 +23,6 @@
 
 # Claude Code
 .claude
+
+# AI Plans
+.ai/plans/

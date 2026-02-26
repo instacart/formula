@@ -42,7 +42,7 @@ internal class ListenerImpl<Input, State, EventT>(
         this.transition = transition
     }
 
-    override fun onRemove() {
+    override fun onDetached(scheduler: LifecycleScheduler) {
         manager = null
         snapshotImpl = null
     }

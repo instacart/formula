@@ -15,7 +15,7 @@ import kotlin.collections.map
  * @param previousRemovedActions Removed actions during last evaluation
  */
 internal class ActionValidationFrame(
-    private val manager: FormulaManagerImpl<*, *, *>,
+    private val formulaType: Class<*>,
     private val previousNewActions: List<DeferredAction<*>>,
     private val previousRemovedActions: List<DeferredAction<*>>,
 ) {
@@ -33,7 +33,6 @@ internal class ActionValidationFrame(
             .map { it.key }
 
         if (newActionKeys.isNotEmpty() || removedActionKeys.isNotEmpty()) {
-            val formulaType = manager.formulaType
             throw ValidationException(
                 "$formulaType - actions changed during validation - new: $newActionKeys, removed: $removedActionKeys"
             )

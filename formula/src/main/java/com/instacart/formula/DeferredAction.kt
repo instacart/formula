@@ -37,9 +37,7 @@ class DeferredAction<Event>(
     }
 
     internal fun tearDown(delegate: ActionDelegate) {
-        delegate.runSafe {
-            cancelable?.cancel()
-        }
+        delegate.runSafe { cancelable?.cancel() }
 
         cancelable = null
         isTerminated = true

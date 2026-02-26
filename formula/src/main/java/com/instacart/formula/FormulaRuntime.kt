@@ -30,6 +30,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
         context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
     )
 
+    override val formulaType: Class<*> = formula.type()
+
     override val inspector = FormulaPlugins.inspector(
         type = formula.type(),
         local = config.inspector,
@@ -180,8 +182,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
         isRuntimeTerminated = true
         scope.cancel()
 
-        manager?.apply {
-            markAsTerminated()
+        manager?.let { manager ->
+            manager.markAsTerminated()
 
             /**
              * The way termination side-effects are performed:
@@ -191,7 +193,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
              * This way, we let runFormula() exit out before we terminate everything.
              */
             if (!isRunning) {
-                terminateManager(this)
+                terminateManager(manager)
             }
         }
     }

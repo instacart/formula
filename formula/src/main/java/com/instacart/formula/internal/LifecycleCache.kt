@@ -1,8 +1,20 @@
 package com.instacart.formula.internal
 
-internal class LifecycleCache(private val indexer: Indexer) {
+internal class LifecycleCache(private val indexer: Indexer) : LifecycleScheduler, DuplicateKeyLog {
 
     private var entryMap: SingleRequestMap<Any, LifecycleComponent>? = null
+    private var terminateEffects: MutableList<() -> Unit>? = null
+    private var duplicateKeyLogs: MutableSet<Any>? = null
+
+    override fun scheduleTerminateEffect(effect: () -> Unit) {
+        val list = terminateEffects ?: mutableListOf<() -> Unit>().also { terminateEffects = it }
+        list.add(effect)
+    }
+
+    override fun addLog(key: Any): Boolean {
+        val logs = duplicateKeyLogs ?: mutableSetOf<Any>().also { duplicateKeyLogs = it }
+        return logs.add(key)
+    }
 
     inline fun <T : LifecycleComponent> findOrInit(
         key: Any,
@@ -14,7 +26,19 @@ internal class LifecycleCache(private val indexer: Indexer) {
     }
 
     fun postEvaluationCleanup() {
-        entryMap?.clearUnrequested(LifecycleComponent::onRemove)
+        entryMap?.clearUnrequested { component ->
+            component.onDetached(this)
+        }
+    }
+
+    fun processTerminateEffects() {
+        val effects = terminateEffects ?: return
+        terminateEffects = null
+        effects.forEach { it() }
+    }
+
+    fun forEachValue(callback: (LifecycleComponent) -> Unit) {
+        entryMap?.forEachValue(callback)
     }
 
     private fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
@@ -22,6 +46,7 @@ internal class LifecycleCache(private val indexer: Indexer) {
         return if (holder == null) {
             initNewHolder(key)
         } else if (holder.requested && useIndex) {
+            holder.value.onDuplicateKey(this, key)
             val indexedKey = indexer.nextIndexedKey(key)
             getOrInitEntryHolder(indexedKey, true)
         } else {
