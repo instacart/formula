@@ -59,7 +59,7 @@ import com.instacart.formula.subjects.ParallelChildFormulaFiresEventOnStart
 import com.instacart.formula.subjects.ParentTransitionOnChildActionStart
 import com.instacart.formula.subjects.ParentUpdateChildAndSelfOnEventRobot
 import com.instacart.formula.subjects.PendingActionFormulaTerminatedOnActionInit
-import com.instacart.formula.subjects.RemovingTerminateStreamSendsNoMessagesFormula
+import com.instacart.formula.subjects.RemovingTerminateStreamSendsMessageFormula
 import com.instacart.formula.subjects.ReusableFunctionCreatesUniqueListeners
 import com.instacart.formula.subjects.RootFormulaKeyTestSubject
 import com.instacart.formula.subjects.RunAgainActionFormula
@@ -1597,19 +1597,18 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `canceling terminate action does not emit terminate message`() = runTest {
+    fun `canceling terminate action emits an effect`() = runTest {
         val terminateCallback = TestCallback()
-        RemovingTerminateStreamSendsNoMessagesFormula().test(this)
-            .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = terminateCallback))
-            .input(RemovingTerminateStreamSendsNoMessagesFormula.Input(onTerminate = null))
+        RemovingTerminateStreamSendsMessageFormula().test(this)
+            .input(RemovingTerminateStreamSendsMessageFormula.Input(onTerminate = terminateCallback))
+            .input(RemovingTerminateStreamSendsMessageFormula.Input(onTerminate = null))
             .apply {
-                terminateCallback.assertTimesCalled(0)
+                terminateCallback.assertTimesCalled(1)
             }
     }
 
-    // TODO: I'm not sure if this is the right behavior
     @Test
-    fun `action termination events are ignored`() = runTest {
+    fun `action fires termination when detached from lifecycle`() = runTest {
         val formula = object : Formula<Boolean, Int, Int>() {
             override fun initialState(input: Boolean): Int = 0
 
@@ -1645,7 +1644,7 @@ class FormulaRuntimeTest {
         observer.input(false)
         observer.input(true)
         observer.input(false)
-        observer.output { assertThat(this).isEqualTo(0) }
+        observer.output { assertThat(this).isEqualTo(2) }
     }
 
     @Test

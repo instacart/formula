@@ -2,6 +2,8 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Listener
 import com.instacart.formula.Transition
+import com.instacart.formula.lifecycle.LifecycleComponent
+import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.plugin.Dispatcher
 
 /**
@@ -16,10 +18,13 @@ internal class ListenerImpl<Input, State, EventT>(
     @Volatile private var snapshotImpl: SnapshotImpl<Input, State>? = null
     @Volatile private var executionType: Transition.ExecutionType? = null
 
+    // ==========================================================================
+    // Listener
+    // ==========================================================================
+
     override fun invoke(event: EventT) {
         // TODO: log if null listener (it might be due to formula removal or due to callback removal)
         val manager = manager ?: return
-        if (!manager.isEventHandlingEnabled) return
 
         when (val type = executionType) {
             is Transition.Batched -> handleBatched(manager, type, event)
@@ -29,6 +34,23 @@ internal class ListenerImpl<Input, State, EventT>(
             else -> executeWithDispatcher(manager, manager.defaultDispatcher, event)
         }
     }
+
+    // ==========================================================================
+    // LifecycleComponent
+    // ==========================================================================
+
+    override fun onDetached(scheduler: LifecycleScheduler) {
+        performTermination()
+    }
+
+    override fun performTermination() {
+        manager = null
+        snapshotImpl = null
+    }
+
+    // ==========================================================================
+    // Internal
+    // ==========================================================================
 
     fun setDependencies(
         manager: FormulaManagerImpl<Input, State, *>?,
@@ -40,11 +62,6 @@ internal class ListenerImpl<Input, State, EventT>(
         this.snapshotImpl = snapshot
         this.executionType = executionType
         this.transition = transition
-    }
-
-    override fun onDetached(scheduler: LifecycleScheduler) {
-        manager = null
-        snapshotImpl = null
     }
 
     fun applyInternal(event: EventT) {

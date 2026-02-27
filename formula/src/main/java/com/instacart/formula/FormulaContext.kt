@@ -1,6 +1,6 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.LifecycleCache
+import com.instacart.formula.lifecycle.LifecycleCache
 import com.instacart.formula.internal.UnitListener
 import com.instacart.formula.remember.RememberFactory
 

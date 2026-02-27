@@ -6,6 +6,10 @@ import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.lifecycle.DuplicateKeyLog
+import com.instacart.formula.lifecycle.LifecycleCache
+import com.instacart.formula.lifecycle.LifecycleComponent
+import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
 import java.util.LinkedList
@@ -29,14 +33,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var isValidationEnabled: Boolean = false
 
     /**
-     * Internal accessor for ActionManager.
-     * Required by SnapshotImpl to pass to ActionBuilderImpl.
-     */
-    internal val actionManager: ActionManager = ActionManager(
-        manager = this,
-    )
-
-    /**
      * Determines if formula is still attached. Termination is a two step process,
      * first [markAsTerminated] is called to set this boolean which prevents us from
      * start new actions. And then, [performTermination] is called to clean
@@ -44,17 +40,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     @Volatile
     private var terminated = false
-
-    /**
-     * Controls whether listeners can dispatch events. Unlike [isTerminated] which
-     * is set early to prevent state changes, this remains true throughout
-     * [performTermination] so that termination-triggered events
-     * (e.g. [com.instacart.formula.Action.onTerminate]) can still produce their effects.
-     * Set to false after all actions and children have been torn down.
-     */
-    @Volatile
-    var isEventHandlingEnabled = true
-        private set
 
     /**
      * Identifier used to track state changes of this [formula] and its children. Whenever
@@ -210,7 +195,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        if (isValidationEnabled) actionManager.prepareValidationRun()
+        if (isValidationEnabled) lifecycleCache.prepareValidationRun()
 
         val snapshot = SnapshotImpl(
             input = input,
@@ -227,7 +212,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        actionManager.prepareForPostEvaluation()
         lifecycleCache.postEvaluationCleanup()
 
         val newFrame = Frame(input, state, result, evaluationId)
@@ -284,7 +268,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             manager.run(input)
         } catch (e : ValidationException) {
             throw e
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             null
         }
     }
@@ -311,14 +295,12 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun performTermination() {
         lifecycleCache.performTermination()
-        actionManager.terminate()
 
         // Execute deferred transitions
         while (transitionQueue.isNotEmpty()) {
             transitionQueue.pollFirst().execute()
         }
 
-        isEventHandlingEnabled = false
         inspector?.onFormulaFinished(formulaType)
     }
 
@@ -379,8 +361,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isEvaluationNeeded(evaluationId)) return true
         if (handleTransitionQueue(evaluationId)) return true
         if (!terminated && lifecycleCache.terminateDetached(evaluationId)) return true
-        if (!terminated && actionManager.terminateOld(evaluationId)) return true
-        if (!terminated && actionManager.startNew(evaluationId)) return true
+        if (!terminated && lifecycleCache.startAttached(evaluationId)) return true
         return false
     }
 
