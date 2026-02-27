@@ -3,7 +3,6 @@ package com.instacart.formula.internal
 import com.instacart.formula.Action
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Listener
-import com.instacart.formula.validation.LifecycleValidationManager
 import kotlinx.coroutines.isActive
 
 /**
@@ -17,18 +16,6 @@ internal class ActionManager(
     // For scheduling start/terminate operations in post-evaluation phase
     private var checkToStartActionList: MutableList<DeferredAction<*>>? = null
     private var checkToRemoveActionList: MutableList<DeferredAction<*>>? = null
-
-    private val validationManager: LifecycleValidationManager? =
-        if (manager.isValidationConfigured) LifecycleValidationManager(manager.formulaType)
-        else null
-
-    /**
-     * Called by FormulaManagerImpl before evaluation that will be run as
-     * part of validation.
-     */
-    fun prepareValidationRun() {
-        validationManager?.prepareValidationRun()
-    }
 
     /**
      * Find existing action by key or initialize new one.
@@ -56,8 +43,6 @@ internal class ActionManager(
 
         // Schedule for starting if it's a new action
         if (isNew) {
-            validationManager?.trackNewKey(value.key)
-
             val list = checkToStartActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToStartActionList = it
             }
@@ -74,7 +59,6 @@ internal class ActionManager(
      */
     fun prepareForPostEvaluation() {
         computeRemovedActionList()
-        validationManager?.validate()
     }
 
     /**
@@ -149,8 +133,6 @@ internal class ActionManager(
      */
     private fun computeRemovedActionList() {
         actions?.clearUnrequested { action ->
-            validationManager?.trackRemovedKey(action.key)
-
             val list = checkToRemoveActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToRemoveActionList = it
             }
@@ -159,6 +141,6 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        action.tearDown()
+        action.performTermination()
     }
 }

@@ -214,7 +214,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        if (isValidationEnabled) actionManager.prepareValidationRun()
+        if (isValidationEnabled) lifecycleCache.prepareValidationRun()
 
         val snapshot = SnapshotImpl(
             input = input,
@@ -288,7 +288,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             manager.run(input)
         } catch (e : ValidationException) {
             throw e
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             null
         }
     }
@@ -384,6 +384,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (handleTransitionQueue(evaluationId)) return true
         if (!terminated && lifecycleCache.terminateDetached(evaluationId)) return true
         if (!terminated && actionManager.terminateOld(evaluationId)) return true
+        if (!terminated && lifecycleCache.startAttached(evaluationId)) return true
         if (!terminated && actionManager.startNew(evaluationId)) return true
         return false
     }

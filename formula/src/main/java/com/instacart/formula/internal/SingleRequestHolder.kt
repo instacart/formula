@@ -58,6 +58,19 @@ internal fun <Value : Any> SingleRequestMap<*, Value>.clearUnrequested(onUnreque
     }
 }
 
+internal fun <Key : Any, Value : Any> SingleRequestMap<Key, Value>.clearUnrequested(onUnrequested: (Key, Value) -> Unit) {
+    val callbackIterator = this.iterator()
+    while (callbackIterator.hasNext()) {
+        val entry = callbackIterator.next()
+        if (!entry.value.requested) {
+            onUnrequested(entry.key, entry.value.value)
+            callbackIterator.remove()
+        } else {
+            entry.value.reset()
+        }
+    }
+}
+
 internal inline fun <Value : Any> SingleRequestMap<*, Value>.forEachValue(callback: (Value) -> Unit) {
     forEach {
         callback(it.value.value)

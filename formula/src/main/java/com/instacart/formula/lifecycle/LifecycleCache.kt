@@ -2,10 +2,12 @@ package com.instacart.formula.lifecycle
 
 import com.instacart.formula.internal.FormulaManagerImpl
 import com.instacart.formula.internal.Indexer
+import kotlinx.coroutines.isActive
 import com.instacart.formula.internal.SingleRequestHolder
 import com.instacart.formula.internal.SingleRequestMap
 import com.instacart.formula.internal.clearUnrequested
 import com.instacart.formula.internal.forEachValue
+import com.instacart.formula.validation.LifecycleValidationManager
 
 internal class LifecycleCache(
     private val manager: FormulaManagerImpl<*, *, *>,
@@ -13,9 +15,19 @@ internal class LifecycleCache(
 
     private val indexer = Indexer()
 
+    private val validationManager: LifecycleValidationManager? =
+        if (manager.isValidationConfigured) LifecycleValidationManager(manager.formulaType)
+        else null
+
     private var entryMap: SingleRequestMap<Any, LifecycleComponent>? = null
+    private var startEffects: MutableList<() -> Unit>? = null
     private var terminateEffects: MutableList<() -> Unit>? = null
     private var duplicateKeyLogs: MutableSet<Any>? = null
+
+    override fun scheduleStartEffect(effect: () -> Unit) {
+        val list = startEffects ?: mutableListOf<() -> Unit>().also { startEffects = it }
+        list.add(effect)
+    }
 
     override fun scheduleTerminateEffect(effect: () -> Unit) {
         val list = terminateEffects ?: mutableListOf<() -> Unit>().also { terminateEffects = it }
@@ -33,12 +45,23 @@ internal class LifecycleCache(
         factory: () -> T,
     ): T {
         val holder = getOrInitEntryHolder<T>(key, useIndex)
-        return holder.requestOrInitValue(factory)
+        val isNew = holder.isNew()
+        return holder.requestOrInitValue(factory).apply {
+            if (isNew) {
+                validationManager?.trackNewKey(key)
+                holder.value.onAttached(this@LifecycleCache)
+            }
+        }
+    }
+
+    fun prepareValidationRun() {
+        validationManager?.prepareValidationRun()
     }
 
     fun postEvaluationCleanup() {
         indexer.clear()
         entryMap?.clearUnrequested(this::detachComponent)
+        validationManager?.validate()
     }
 
     fun terminateDetached(evaluationId: Long): Boolean {
@@ -56,6 +79,32 @@ internal class LifecycleCache(
         return !manager.canUpdatesContinue(evaluationId)
     }
 
+    fun startAttached(evaluationId: Long): Boolean {
+        val scheduled = startEffects?.takeIf { it.isNotEmpty() } ?: return false
+
+        val iterator = scheduled.iterator()
+        while (iterator.hasNext()) {
+            if (!manager.scope.isActive) {
+                return false
+            }
+
+            val effect = iterator.next()
+            iterator.remove()
+
+            effect()
+
+            if (manager.isTerminated()) {
+                return false
+            }
+
+            if (!manager.canUpdatesContinue(evaluationId)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     fun markAsTerminated() {
         entryMap?.forEachValue { it.markAsTerminated() }
     }
@@ -64,7 +113,8 @@ internal class LifecycleCache(
         entryMap?.forEachValue { it.performTermination() }
     }
 
-    private fun detachComponent(component: LifecycleComponent) {
+    private fun detachComponent(key: Any, component: LifecycleComponent) {
+        validationManager?.trackRemovedKey(key)
         component.onDetached(this)
     }
 
