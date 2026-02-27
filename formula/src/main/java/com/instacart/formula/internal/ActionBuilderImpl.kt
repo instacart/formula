@@ -2,16 +2,17 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.DeferredAction
-import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.action.ActionComponent
+import com.instacart.formula.lifecycle.LifecycleCache
 
 /**
  * Implements [ActionBuilder] interface.
  */
 internal class ActionBuilderImpl<out Input, State> internal constructor(
-    private val snapshot: Snapshot<Input, State>,
-    private val actionManager: ActionManager,
+    private val manager: FormulaManagerImpl<Input, State, *>,
+    private val snapshot: SnapshotImpl<Input, State>,
+    private val lifecycleCache: LifecycleCache,
 ) : ActionBuilder<Input, State>(
     input = snapshot.input,
     state = snapshot.state,
@@ -22,7 +23,7 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
-        toBoundStream(action, executionType, transition)
+        updateOrInitActionComponent(action, executionType, transition)
     }
 
     override fun <Event> Action<Event>.onEvent(
@@ -39,13 +40,16 @@ internal class ActionBuilderImpl<out Input, State> internal constructor(
         events(stream, executionType, transition)
     }
 
-    private fun <Event> toBoundStream(
+    private fun <Event> updateOrInitActionComponent(
         stream: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
         val key = snapshot.context.createScopedKey(transition.type(), stream.key())
-        val listener = snapshot.context.eventListener(key, useIndex = false, executionType, transition)
-        actionManager.findOrInitAction(key, stream, listener)
+        val action = lifecycleCache.findOrInit(key, useIndex = false) {
+            val listener = ListenerImpl(transition)
+            ActionComponent(manager, stream, listener)
+        }
+        snapshot.applySnapshot(action.listener, executionType, transition)
     }
 }

@@ -5,7 +5,7 @@ import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 
-class RemovingTerminateStreamSendsNoMessagesFormula : StatelessFormula<RemovingTerminateStreamSendsNoMessagesFormula.Input, Unit>() {
+class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerminateStreamSendsMessageFormula.Input, Unit>() {
 
     data class Input(
         val onTerminate: (() -> Unit)? = null

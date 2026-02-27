@@ -27,12 +27,9 @@ internal class SnapshotImpl<out Input, State>(
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
         ensureEvaluationNotFinished()
 
-        // Pass ActionManager from FormulaManagerImpl (via delegate)
-        // delegate is FormulaManagerImpl, which now exposes actionManager
-        val builder = ActionBuilderImpl(this, delegate.actionManager)
+        val builder = ActionBuilderImpl(delegate, this, lifecycleCache)
         builder.init()
 
-        // Always return empty set - actions are tracked internally in ActionManager
         return emptySet()
     }
 
@@ -72,7 +69,7 @@ internal class SnapshotImpl<out Input, State>(
         val listener = lifecycleCache.findOrInit(key, useIndex) {
             ListenerImpl(transition)
         }
-        listener.setDependencies(delegate, this, executionType, transition)
+        applySnapshot(listener, executionType, transition)
         return listener
     }
 
@@ -123,5 +120,16 @@ internal class SnapshotImpl<out Input, State>(
         if (isEvaluationFinished) {
             throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
+    }
+
+    /**
+     * Applies latest snapshot to the listener.
+     */
+    internal fun <Event> applySnapshot(
+        listener: ListenerImpl<@UnsafeVariance Input, State, Event>,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>
+    ) {
+        listener.setDependencies(delegate, this@SnapshotImpl, executionType, transition)
     }
 }

@@ -33,14 +33,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var isValidationEnabled: Boolean = false
 
     /**
-     * Internal accessor for ActionManager.
-     * Required by SnapshotImpl to pass to ActionBuilderImpl.
-     */
-    internal val actionManager: ActionManager = ActionManager(
-        manager = this,
-    )
-
-    /**
      * Determines if formula is still attached. Termination is a two step process,
      * first [markAsTerminated] is called to set this boolean which prevents us from
      * start new actions. And then, [performTermination] is called to clean
@@ -231,7 +223,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
             }
         }
 
-        actionManager.prepareForPostEvaluation()
         lifecycleCache.postEvaluationCleanup()
 
         val newFrame = Frame(input, state, result, evaluationId)
@@ -315,7 +306,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     override fun performTermination() {
         lifecycleCache.performTermination()
-        actionManager.terminate()
 
         // Execute deferred transitions
         while (transitionQueue.isNotEmpty()) {
@@ -383,9 +373,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (isEvaluationNeeded(evaluationId)) return true
         if (handleTransitionQueue(evaluationId)) return true
         if (!terminated && lifecycleCache.terminateDetached(evaluationId)) return true
-        if (!terminated && actionManager.terminateOld(evaluationId)) return true
         if (!terminated && lifecycleCache.startAttached(evaluationId)) return true
-        if (!terminated && actionManager.startNew(evaluationId)) return true
         return false
     }
 

@@ -45,7 +45,7 @@ internal class LifecycleCache(
         factory: () -> T,
     ): T {
         val holder = getOrInitEntryHolder<T>(key, useIndex)
-        val isNew = holder.isNew()
+        val isNew = holder.isNew() // Call this before requestOrInitValue
         return holder.requestOrInitValue(factory).apply {
             if (isNew) {
                 validationManager?.trackNewKey(key)
@@ -64,6 +64,9 @@ internal class LifecycleCache(
         validationManager?.validate()
     }
 
+    /**
+     * Returns true if there was a transition while executing termination effects.
+     */
     fun terminateDetached(evaluationId: Long): Boolean {
         val effects = terminateEffects?.takeIf { it.isNotEmpty() } ?: return false
         terminateEffects = null
@@ -79,6 +82,10 @@ internal class LifecycleCache(
         return !manager.canUpdatesContinue(evaluationId)
     }
 
+    /**
+     * Performs scheduled start effects. Returns true if there was a transition
+     * while executing effect.x x
+     */
     fun startAttached(evaluationId: Long): Boolean {
         val scheduled = startEffects?.takeIf { it.isNotEmpty() } ?: return false
 

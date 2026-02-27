@@ -1,5 +1,5 @@
 package com.instacart.formula.lifecycle
 
-interface DuplicateKeyLog {
+internal interface DuplicateKeyLog {
     fun addLog(key: Any): Boolean
 }

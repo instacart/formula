@@ -2,7 +2,7 @@ package com.instacart.formula.lifecycle
 
 import com.instacart.formula.Formula
 
-interface LifecycleComponent {
+internal interface LifecycleComponent {
 
     /**
      * Called when component is first created in the cache during evaluation.

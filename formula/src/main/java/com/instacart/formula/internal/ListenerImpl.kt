@@ -32,6 +32,11 @@ internal class ListenerImpl<Input, State, EventT>(
         }
     }
 
+    override fun onDetached(scheduler: LifecycleScheduler) {
+        manager = null
+        snapshotImpl = null
+    }
+
     fun setDependencies(
         manager: FormulaManagerImpl<Input, State, *>?,
         snapshot: SnapshotImpl<Input, State>?,
@@ -42,11 +47,6 @@ internal class ListenerImpl<Input, State, EventT>(
         this.snapshotImpl = snapshot
         this.executionType = executionType
         this.transition = transition
-    }
-
-    override fun onDetached(scheduler: LifecycleScheduler) {
-        manager = null
-        snapshotImpl = null
     }
 
     fun applyInternal(event: EventT) {

@@ -45,19 +45,6 @@ internal class SingleRequestHolder<T : Any>(val key: Any) {
 
 internal typealias SingleRequestMap<Key, Value> = MutableMap<Key, SingleRequestHolder<Value>>
 
-internal fun <Value : Any> SingleRequestMap<*, Value>.clearUnrequested(onUnrequested: (Value) -> Unit) {
-    val callbackIterator = this.iterator()
-    while (callbackIterator.hasNext()) {
-        val callback = callbackIterator.next()
-        if (!callback.value.requested) {
-            onUnrequested(callback.value.value)
-            callbackIterator.remove()
-        } else {
-            callback.value.reset()
-        }
-    }
-}
-
 internal fun <Key : Any, Value : Any> SingleRequestMap<Key, Value>.clearUnrequested(onUnrequested: (Key, Value) -> Unit) {
     val callbackIterator = this.iterator()
     while (callbackIterator.hasNext()) {
@@ -74,11 +61,5 @@ internal fun <Key : Any, Value : Any> SingleRequestMap<Key, Value>.clearUnreques
 internal inline fun <Value : Any> SingleRequestMap<*, Value>.forEachValue(callback: (Value) -> Unit) {
     forEach {
         callback(it.value.value)
-    }
-}
-
-internal fun <Key : Any, Value : Any> SingleRequestMap<Key, Value>.getOrInitHolder(key: Key): SingleRequestHolder<Value> {
-    return getOrPut(key) {
-        SingleRequestHolder(key)
     }
 }
