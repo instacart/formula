@@ -37,6 +37,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
         local = config.inspector,
     )
     override val defaultDispatcher: Dispatcher = config.defaultDispatcher ?: FormulaPlugins.defaultDispatcher()
+    override val isValidationConfigured: Boolean = config.isValidationEnabled
 
     override val queue: SynchronizedUpdateQueue = SynchronizedUpdateQueue(
         onEmpty = { emitOutputIfNeeded() }

@@ -18,6 +18,7 @@ internal interface ManagerDelegate {
     val inspector: Inspector?
     val scope: CoroutineScope
     val queue: SynchronizedUpdateQueue
+    val isValidationConfigured: Boolean
     val onError: (FormulaError) -> Unit
 
     /**
