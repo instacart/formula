@@ -1,5 +1,6 @@
 package com.instacart.formula.runtime
 
+import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
@@ -8,6 +9,7 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
+import com.instacart.formula.action.ActionComponent
 import com.instacart.formula.events.EffectDelegate
 import com.instacart.formula.events.ListenerImpl
 import com.instacart.formula.events.TransitionUtils
@@ -20,7 +22,7 @@ internal class SnapshotImpl<out Input, State>(
     override val input: Input,
     override val state: State,
     lifecycleCache: LifecycleCache,
-) : FormulaContext<Input, State>(lifecycleCache), Snapshot<Input, State>, TransitionContext<Input, State> {
+) : FormulaContext<Input, State>(lifecycleCache), Snapshot<Input, State>, TransitionContext<Input, State>, ActionBuilder<Input, State> {
 
     override val effectDelegate: EffectDelegate = delegate
     override val context: FormulaContext<Input, State> = this
@@ -30,10 +32,7 @@ internal class SnapshotImpl<out Input, State>(
 
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
         ensureEvaluationNotFinished()
-
-        val builder = ActionBuilderImpl(delegate, this, lifecycleCache)
-        builder.init()
-
+        init()
         return emptySet()
     }
 
@@ -105,6 +104,41 @@ internal class SnapshotImpl<out Input, State>(
             type = type,
             key = key,
         )
+    }
+
+    override fun <Event> events(
+        action: Action<Event>,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>,
+    ) {
+        updateOrInitActionComponent(action, executionType, transition)
+    }
+
+    override fun <Event> Action<Event>.onEvent(
+        transition: Transition<Input, State, Event>,
+    ) {
+        events(this, null, transition)
+    }
+
+    override fun <Event> Action<Event>.onEventWithExecutionType(
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>
+    ) {
+        val stream = this
+        events(stream, executionType, transition)
+    }
+
+    private fun <Event> updateOrInitActionComponent(
+        stream: Action<Event>,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>,
+    ) {
+        val key = createScopedKey(transition.type(), stream.key())
+        val action = lifecycleCache.findOrInit(key, useIndex = false) {
+            val listener = ListenerImpl(transition)
+            ActionComponent(delegate, stream, listener)
+        }
+        applySnapshot(action.listener, executionType, transition)
     }
 
     fun <Event> dispatch(transition: Transition<Input, State, Event>, event: Event) {
