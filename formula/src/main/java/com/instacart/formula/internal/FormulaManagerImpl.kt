@@ -34,7 +34,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     internal val actionManager: ActionManager = ActionManager(
         manager = this,
-        inspector = inspector,
     )
 
     /**

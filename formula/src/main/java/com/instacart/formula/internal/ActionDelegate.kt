@@ -2,6 +2,7 @@ package com.instacart.formula.internal
 
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.plugin.FormulaError
+import com.instacart.formula.plugin.Inspector
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -10,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 internal interface ActionDelegate {
     val scope: CoroutineScope
     val formulaType: Class<*>
+    val inspector: Inspector?
     val onError: (FormulaError) -> Unit
 }
 

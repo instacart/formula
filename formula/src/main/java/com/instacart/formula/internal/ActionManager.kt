@@ -3,7 +3,6 @@ package com.instacart.formula.internal
 import com.instacart.formula.Action
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Listener
-import com.instacart.formula.plugin.Inspector
 import com.instacart.formula.validation.LifecycleValidationManager
 import kotlinx.coroutines.isActive
 
@@ -12,7 +11,6 @@ import kotlinx.coroutines.isActive
  */
 internal class ActionManager(
     private val manager: FormulaManagerImpl<*, *, *>,
-    private val inspector: Inspector?,
 ) {
     private var actions: SingleRequestMap<Any, DeferredAction<*>>? = null
 
@@ -54,7 +52,7 @@ internal class ActionManager(
 
         val holder = actionsMap.getOrInitHolder(key)
         val isNew = holder.isNew() // Call this before requestOrInitValue
-        val value = holder.requestOrInitValue { DeferredAction(key, action, listener) }
+        val value = holder.requestOrInitValue { DeferredAction(key, action, listener, manager) }
 
         // Schedule for starting if it's a new action
         if (isNew) {
@@ -120,8 +118,7 @@ internal class ActionManager(
             iterator.remove()
 
             if (!action.isTerminated()) {
-                inspector?.onActionStarted(manager.formulaType, action)
-                action.start(manager)
+                action.start()
             }
 
             if (manager.isTerminated()) {
@@ -162,7 +159,6 @@ internal class ActionManager(
     }
 
     private fun finishAction(action: DeferredAction<*>) {
-        inspector?.onActionFinished(manager.formulaType, action)
-        action.tearDown(manager)
+        action.tearDown()
     }
 }
