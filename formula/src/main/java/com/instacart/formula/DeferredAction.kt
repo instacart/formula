@@ -9,16 +9,19 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * An action combined with event listener.
  */
-class DeferredAction<Event>(
+class DeferredAction<Event> internal constructor(
     val key: Any,
     private val action: Action<Event>,
     // We use event listener for equality because it provides better equality performance
-    private val listener: (Event) -> Unit
+    private val listener: (Event) -> Unit,
+    private val delegate: ActionDelegate,
 ) {
     @Volatile private var isTerminated = false
     private var cancelable: Cancelable? = null
 
-    internal fun start(delegate: ActionDelegate) {
+    internal fun start() {
+        delegate.inspector?.onActionStarted(delegate.formulaType, this)
+
         val emitter = object : Action.Emitter<Event> {
             override fun onEvent(event: Event) {
                 if (!isTerminated) {
@@ -36,7 +39,8 @@ class DeferredAction<Event>(
         }
     }
 
-    internal fun tearDown(delegate: ActionDelegate) {
+    internal fun tearDown() {
+        delegate.inspector?.onActionFinished(delegate.formulaType, this)
         delegate.runSafe { cancelable?.cancel() }
 
         cancelable = null
