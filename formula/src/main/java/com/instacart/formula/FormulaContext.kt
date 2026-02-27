@@ -170,4 +170,10 @@ abstract class FormulaContext<out Input, State> internal constructor(
     @PublishedApi internal abstract fun enterScope(key: Any)
     @PublishedApi internal abstract fun endScope()
     @PublishedApi internal abstract fun createScopedKey(type: Class<*>, key: Any?): Any
+
+    /**
+     * Checks that evaluation is currently running. Formula context
+     * should not be used once evaluation completes.
+     */
+    internal abstract fun ensureEvaluationNotFinished()
 }

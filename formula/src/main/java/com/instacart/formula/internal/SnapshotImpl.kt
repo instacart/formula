@@ -17,14 +17,14 @@ internal class SnapshotImpl<out Input, State>(
     lifecycleCache: LifecycleCache,
 ) : FormulaContext<Input, State>(lifecycleCache), Snapshot<Input, State>, TransitionContext<Input, State> {
 
-    private var scopeKey: Any? = null
-    private var running = false
-
     override val effectDelegate: EffectDelegate = delegate
     override val context: FormulaContext<Input, State> = this
 
+    private var scopeKey: Any? = null
+    private var isEvaluationFinished = false
+
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
 
         // Pass ActionManager from FormulaManagerImpl (via delegate)
         // delegate is FormulaManagerImpl, which now exposes actionManager
@@ -39,7 +39,7 @@ internal class SnapshotImpl<out Input, State>(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput
     ): ChildOutput {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
 
         val key = createScopedKey(
             type = formula.type(),
@@ -52,7 +52,7 @@ internal class SnapshotImpl<out Input, State>(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): ChildOutput? {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
 
         val key = createScopedKey(
             type = formula.type(),
@@ -67,7 +67,7 @@ internal class SnapshotImpl<out Input, State>(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>
     ): Listener<Event> {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
         val listener = lifecycleCache.findOrInit(key, useIndex) {
             ListenerImpl(transition)
         }
@@ -76,13 +76,13 @@ internal class SnapshotImpl<out Input, State>(
     }
 
     override fun enterScope(key: Any) {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
 
         scopeKey = scopeKey?.let { JoinedKey(it, key) } ?: key
     }
 
     override fun endScope() {
-        ensureNotRunning()
+        ensureEvaluationNotFinished()
 
         if (scopeKey == null) {
             throw IllegalStateException("Cannot end root scope.")
@@ -114,12 +114,12 @@ internal class SnapshotImpl<out Input, State>(
         delegate.handleTransitionResult(event, result)
     }
 
-    fun markRunning() {
-        running = true
+    fun onEvaluationFinished() {
+        isEvaluationFinished = true
     }
 
-    private fun ensureNotRunning() {
-        if (running) {
+    override fun ensureEvaluationNotFinished() {
+        if (isEvaluationFinished) {
             throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
         }
     }

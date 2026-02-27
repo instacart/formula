@@ -233,7 +233,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
-        snapshot.markRunning()
+        snapshot.onEvaluationFinished()
         if (!isValidationEnabled) {
             inspector?.onEvaluateFinished(formulaType, newFrame.evaluation.output, evaluated = true)
         }
