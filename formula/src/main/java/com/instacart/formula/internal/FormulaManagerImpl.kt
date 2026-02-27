@@ -6,6 +6,7 @@ import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
 import java.util.LinkedList
 
@@ -21,12 +22,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     override val formulaType: Class<*>,
     initialInput: Input,
-) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate {
-    private val indexer = Indexer()
-    private val lifecycleCache = LifecycleCache(indexer)
+) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate, LifecycleComponent {
+    private val lifecycleCache = LifecycleCache(this)
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
-    private var childrenManager: ChildrenManager? = null
     private var isValidationEnabled: Boolean = false
 
     /**
@@ -41,7 +40,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Determines if formula is still attached. Termination is a two step process,
      * first [markAsTerminated] is called to set this boolean which prevents us from
-     * start new actions. And then, [performTerminationSideEffects] is called to clean
+     * start new actions. And then, [performTermination] is called to clean
      * up this [formula] and its child formulas.
      */
     @Volatile
@@ -50,7 +49,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Controls whether listeners can dispatch events. Unlike [isTerminated] which
      * is set early to prevent state changes, this remains true throughout
-     * [performTerminationSideEffects] so that termination-triggered events
+     * [performTermination] so that termination-triggered events
      * (e.g. [com.instacart.formula.Action.onTerminate]) can still produce their effects.
      * Set to false after all actions and children have been torn down.
      */
@@ -70,7 +69,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * Determines if we are executing within [run] block. Enables optimizations
      * such as performing [DeferredTransition] inline.
      */
-    internal var isRunning: Boolean = false
+    private var isRunning: Boolean = false
 
     /**
      * Pending transition queue which will be populated and executed within [run] function
@@ -161,7 +160,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
                 throw e
             } else {
                 markAsTerminated()
-                performTerminationSideEffects()
+                performTermination()
 
                 if (e !is CascadingFormulaException) {
                     val error = FormulaError.Unhandled(formulaType, e)
@@ -231,8 +230,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         actionManager.prepareForPostEvaluation()
         lifecycleCache.postEvaluationCleanup()
-        childrenManager?.prepareForPostEvaluation()
-        indexer.clear()
 
         val newFrame = Frame(input, state, result, evaluationId)
         this.frame = newFrame
@@ -249,8 +246,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): ChildOutput {
-        val childrenManager = getOrInitChildrenManager()
-        val manager = childrenManager.findOrInitChild(key, formula, input)
+        val manager = findOrInitChildManager(key, formula, input)
 
         if (manager.isTerminated()) {
             return manager.lastOutput() ?: run {
@@ -277,8 +273,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
         formula: IFormula<ChildInput, ChildOutput>,
         input: ChildInput,
     ): ChildOutput? {
-        val childrenManager = getOrInitChildrenManager()
-        val manager = childrenManager.findOrInitChild(key, formula, input)
+        val manager = findOrInitChildManager(key, formula, input)
 
         if (manager.isTerminated()) {
             // Manager was already terminated in a previous run. No need to run it again.
@@ -295,22 +290,33 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
     }
 
-    override fun markAsTerminated() {
-        terminated = true
-        childrenManager?.markAsTerminated()
+    private fun <ChildInput, ChildOutput> findOrInitChildManager(
+        key: Any,
+        formula: IFormula<ChildInput, ChildOutput>,
+        input: ChildInput,
+    ): FormulaManager<ChildInput, ChildOutput> {
+        return lifecycleCache.findOrInit(key, useIndex = true) {
+            FormulaManagerImpl(
+                delegate = this,
+                formula = formula.implementation,
+                formulaType = formula.type(),
+                initialInput = input,
+            )
+        }
     }
 
-    override fun performTerminationSideEffects(executeTransitionQueue: Boolean) {
-        childrenManager?.performTerminationSideEffects(executeTransitionQueue)
+    override fun markAsTerminated() {
+        terminated = true
+        lifecycleCache.markAsTerminated()
+    }
+
+    override fun performTermination() {
+        lifecycleCache.performTermination()
         actionManager.terminate()
 
-        if (executeTransitionQueue) {
-            // Execute deferred transitions
-            while (transitionQueue.isNotEmpty()) {
-                transitionQueue.pollFirst().execute()
-            }
-        } else {
-            transitionQueue.clear()
+        // Execute deferred transitions
+        while (transitionQueue.isNotEmpty()) {
+            transitionQueue.pollFirst().execute()
         }
 
         isEventHandlingEnabled = false
@@ -342,6 +348,24 @@ internal class FormulaManagerImpl<Input, State, Output>(
         delegate.onPostTransition(effects, evaluate && !isRunning)
     }
 
+    override fun onDetached(scheduler: LifecycleScheduler) {
+        markAsTerminated()
+        scheduler.scheduleTerminateEffect(this::performTermination)
+    }
+
+    override fun onDuplicateKey(log: DuplicateKeyLog, key: Any) {
+        if (log.addLog(key)) {
+            val error = FormulaError.ChildKeyAlreadyUsed(
+                error = ChildAlreadyUsedException(
+                    parentType = delegate.formulaType,
+                    childType = formulaType,
+                    key = key
+                )
+            )
+            onError(error)
+        }
+    }
+
     override fun lastOutput(): Output? {
         return frame?.evaluation?.output
     }
@@ -353,26 +377,11 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * @return True if we need to re-evaluate.
      */
     private fun postEvaluation(evaluationId: Long): Boolean {
-        if (isEvaluationNeeded(evaluationId)) {
-            return true
-        }
-
-        if (handleTransitionQueue(evaluationId)) {
-            return true
-        }
-
-        if (!terminated && childrenManager?.terminateChildren(evaluationId) == true) {
-            return true
-        }
-
-        if (!terminated && actionManager.terminateOld(evaluationId)) {
-            return true
-        }
-
-        if (!terminated && actionManager.startNew(evaluationId)) {
-            return true
-        }
-
+        if (isEvaluationNeeded(evaluationId)) return true
+        if (handleTransitionQueue(evaluationId)) return true
+        if (!terminated && lifecycleCache.terminateDetached(evaluationId)) return true
+        if (!terminated && actionManager.terminateOld(evaluationId)) return true
+        if (!terminated && actionManager.startNew(evaluationId)) return true
         return false
     }
 
@@ -391,14 +400,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
         }
 
         return false
-    }
-
-    private fun getOrInitChildrenManager(): ChildrenManager {
-        return childrenManager ?: run {
-            val value = ChildrenManager(this, indexer)
-            childrenManager = value
-            value
-        }
     }
 
     private fun Formula<Input, State, Output>.evaluate(

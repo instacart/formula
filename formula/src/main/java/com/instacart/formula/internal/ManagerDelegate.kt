@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 internal interface ManagerDelegate {
     val batchManager: BatchManager
     val defaultDispatcher: Dispatcher
+    val formulaType: Class<*>
     val inspector: Inspector?
     val scope: CoroutineScope
     val queue: SynchronizedUpdateQueue
