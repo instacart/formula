@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.utils
 
 internal data class IndexedKey(
     private val key: Any,

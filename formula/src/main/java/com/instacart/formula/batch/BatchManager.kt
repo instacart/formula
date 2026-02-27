@@ -2,8 +2,6 @@ package com.instacart.formula.batch
 
 import com.instacart.formula.FormulaRuntime
 import com.instacart.formula.Transition
-import com.instacart.formula.internal.SynchronizedUpdateQueue
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The BatchManager is initialized by [FormulaRuntime] and scoped to [FormulaRuntime] root

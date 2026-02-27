@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.utils
 
 internal class Indexer {
     private var indexes: MutableMap<Any, Int>? = null

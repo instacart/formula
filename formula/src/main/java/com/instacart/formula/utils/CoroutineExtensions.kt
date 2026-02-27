@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.utils
 
 import kotlinx.coroutines.CancellationException
 

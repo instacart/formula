@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.runtime
 
 internal data class FormulaKey(
     private val scopeKey: Any?,

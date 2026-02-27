@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.action
 
 import com.instacart.formula.Action
 import com.instacart.formula.DelegateAction

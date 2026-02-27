@@ -1,8 +1,7 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.EffectDelegate
-import com.instacart.formula.internal.onEffectError
-import com.instacart.formula.plugin.FormulaError
+import com.instacart.formula.events.EffectDelegate
+import com.instacart.formula.events.onEffectError
 import com.instacart.formula.plugin.Plugin
 
 /**

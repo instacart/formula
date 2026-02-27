@@ -1,9 +1,9 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.DelegateTransitionContext
-import com.instacart.formula.internal.EffectDelegate
-import com.instacart.formula.internal.combine
-import com.instacart.formula.internal.toResult
+import com.instacart.formula.events.DelegateTransitionContext
+import com.instacart.formula.events.EffectDelegate
+import com.instacart.formula.events.combine
+import com.instacart.formula.events.toResult
 
 /**
  * Transition context provides the current [input], the current [state] and utilities to help
@@ -114,7 +114,8 @@ interface TransitionContext<out Input, State> {
                 combine(this, transition.toResult(this@TransitionContext, event))
             }
             is Transition.Result.Stateful -> {
-                combine(this, transition.toResult(DelegateTransitionContext(effectDelegate, input, this.state), event))
+                val context = DelegateTransitionContext(effectDelegate, input, this.state)
+                combine(this, transition.toResult(context, event))
             }
         }
     }

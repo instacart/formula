@@ -1,9 +1,9 @@
 package com.instacart.formula
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.internal.DelegateTransitionContext
+import com.instacart.formula.events.DelegateTransitionContext
+import com.instacart.formula.events.toResult
 import com.instacart.formula.internal.FakeEffectDelegate
-import com.instacart.formula.internal.toResult
 import com.instacart.formula.test.TestCallback
 import com.instacart.formula.test.TestListener
 import org.junit.Test

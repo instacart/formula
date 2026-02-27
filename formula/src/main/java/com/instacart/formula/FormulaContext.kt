@@ -1,7 +1,7 @@
 package com.instacart.formula
 
+import com.instacart.formula.events.UnitListener
 import com.instacart.formula.lifecycle.LifecycleCache
-import com.instacart.formula.internal.UnitListener
 import com.instacart.formula.remember.RememberFactory
 
 /**
@@ -167,9 +167,12 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): Listener<Event>
 
     // Internal key scope management
-    @PublishedApi internal abstract fun enterScope(key: Any)
-    @PublishedApi internal abstract fun endScope()
-    @PublishedApi internal abstract fun createScopedKey(type: Class<*>, key: Any?): Any
+    @PublishedApi
+    internal abstract fun enterScope(key: Any)
+    @PublishedApi
+    internal abstract fun endScope()
+    @PublishedApi
+    internal abstract fun createScopedKey(type: Class<*>, key: Any?): Any
 
     /**
      * Checks that evaluation is currently running. Formula context

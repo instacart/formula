@@ -4,7 +4,7 @@ import com.instacart.formula.action.FlowAction
 import com.instacart.formula.action.LaunchCoroutineAction
 import com.instacart.formula.action.StartEventAction
 import com.instacart.formula.action.TerminateEventAction
-import com.instacart.formula.internal.runCatchingCoroutines
+import com.instacart.formula.utils.runCatchingCoroutines
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

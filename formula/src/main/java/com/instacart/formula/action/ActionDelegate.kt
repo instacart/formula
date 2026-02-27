@@ -1,12 +1,11 @@
-package com.instacart.formula.internal
+package com.instacart.formula.action
 
-import com.instacart.formula.DeferredAction
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
 import kotlinx.coroutines.CoroutineScope
 
 /**
- * Interface required to start and stop [DeferredAction].
+ * Interface used by [ActionComponent] to start and stop [com.instacart.formula.Action].
  */
 internal interface ActionDelegate {
     val scope: CoroutineScope

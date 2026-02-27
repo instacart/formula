@@ -1,5 +1,6 @@
 package com.instacart.formula.internal
 
+import com.instacart.formula.events.EffectDelegate
 import com.instacart.formula.plugin.FormulaError
 
 class FakeEffectDelegate : EffectDelegate {
