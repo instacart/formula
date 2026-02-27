@@ -10,7 +10,7 @@ import com.instacart.formula.action.ActionDelegate
 import com.instacart.formula.events.DeferredTransition
 import com.instacart.formula.events.EffectDelegate
 import com.instacart.formula.lifecycle.DuplicateKeyLog
-import com.instacart.formula.lifecycle.LifecycleCache
+import com.instacart.formula.lifecycle.LifecycleCacheImpl
 import com.instacart.formula.lifecycle.LifecycleComponent
 import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.lifecycle.ValidationException
@@ -30,8 +30,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private val formula: Formula<Input, State, Output>,
     override val formulaType: Class<*>,
     initialInput: Input,
-) : FormulaManager<Input, Output>, ManagerDelegate by delegate, ActionDelegate, EffectDelegate, LifecycleComponent {
-    private val lifecycleCache = LifecycleCache(this)
+) : FormulaManager<Input, Output>,
+    ManagerDelegate by delegate,
+    ActionDelegate,
+    EffectDelegate,
+    LifecycleComponent {
+
+    private val lifecycleCache = LifecycleCacheImpl(this)
     private var state: State = formula.initialState(initialInput)
     private var frame: Frame<Input, State, Output>? = null
     private var isValidationEnabled: Boolean = false
@@ -205,7 +210,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
             input = input,
             state = state,
             lifecycleCache = lifecycleCache,
-            delegate = this,
+            manager = this,
         )
         val result = formula.evaluate(snapshot)
 
