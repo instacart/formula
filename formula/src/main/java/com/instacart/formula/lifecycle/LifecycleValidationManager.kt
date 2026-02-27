@@ -1,6 +1,4 @@
-package com.instacart.formula.validation
-
-import com.instacart.formula.internal.ValidationException
+package com.instacart.formula.lifecycle
 
 /**
  * Tracks new and removed component keys across evaluations to ensure
@@ -48,7 +46,7 @@ internal class LifecycleValidationManager(private val formulaType: Class<*>) {
         if (unexpectedNew.isNotEmpty() || unexpectedRemoved.isNotEmpty()) {
             throw ValidationException(
                 "$formulaType - components changed during validation" +
-                    " - new: $unexpectedNew, removed: $unexpectedRemoved"
+                        " - new: $unexpectedNew, removed: $unexpectedRemoved"
             )
         }
 

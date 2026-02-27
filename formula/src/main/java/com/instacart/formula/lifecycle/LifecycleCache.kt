@@ -1,13 +1,8 @@
 package com.instacart.formula.lifecycle
 
-import com.instacart.formula.internal.FormulaManagerImpl
-import com.instacart.formula.internal.Indexer
+import com.instacart.formula.runtime.FormulaManagerImpl
+import com.instacart.formula.utils.Indexer
 import kotlinx.coroutines.isActive
-import com.instacart.formula.internal.SingleRequestHolder
-import com.instacart.formula.internal.SingleRequestMap
-import com.instacart.formula.internal.clearUnrequested
-import com.instacart.formula.internal.forEachValue
-import com.instacart.formula.validation.LifecycleValidationManager
 
 internal class LifecycleCache(
     private val manager: FormulaManagerImpl<*, *, *>,

@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.events
 
 /**
  * A deferred transition contains an [event] and a related [transition] which can

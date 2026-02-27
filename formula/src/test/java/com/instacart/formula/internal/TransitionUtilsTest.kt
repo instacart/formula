@@ -3,7 +3,7 @@ package com.instacart.formula.internal
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Effect
 import com.instacart.formula.Transition
-import com.instacart.formula.plugin.FormulaError
+import com.instacart.formula.events.TransitionUtils
 import org.junit.Test
 
 class TransitionUtilsTest {

@@ -1,8 +1,8 @@
-package com.instacart.formula.internal
+package com.instacart.formula.runtime
 
 import com.instacart.formula.Formula
 
-interface FormulaManager<Input, Output> {
+internal interface FormulaManager<Input, Output> {
     /**
      * Sets validation mode before running an identical evaluation to verify that
      * inputs and outputs do not change.

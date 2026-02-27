@@ -4,7 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.actions.EmptyAction
 import com.instacart.formula.batch.StateBatchScheduler
 import com.instacart.formula.internal.ClearPluginsRule
-import com.instacart.formula.internal.FormulaKey
+import com.instacart.formula.runtime.FormulaKey
 import com.instacart.formula.internal.TestDispatcher
 import com.instacart.formula.internal.TestInspector
 import com.instacart.formula.internal.TestPlugin

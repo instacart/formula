@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.events
 
 import com.instacart.formula.TransitionContext
 

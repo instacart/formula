@@ -1,13 +1,12 @@
 package com.instacart.formula
 
 import com.instacart.formula.batch.BatchManager
-import com.instacart.formula.internal.CascadingFormulaException
-import com.instacart.formula.internal.FormulaManager
-import com.instacart.formula.internal.FormulaManagerImpl
-import com.instacart.formula.internal.ManagerDelegate
-import com.instacart.formula.internal.SynchronizedUpdateQueue
+import com.instacart.formula.runtime.CascadingFormulaException
+import com.instacart.formula.runtime.FormulaManagerImpl
+import com.instacart.formula.runtime.ManagerDelegate
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
+import com.instacart.formula.utils.SynchronizedUpdateQueue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -314,7 +313,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Runs formula evaluation.
      */
-    private fun runFormula(manager: FormulaManager<Input, Output>, currentInput: Input) {
+    private fun runFormula(manager: FormulaManagerImpl<Input, *, Output>, currentInput: Input) {
         val newValue = manager.run(currentInput)
         pendingOutput.set(newValue)
         output = newValue

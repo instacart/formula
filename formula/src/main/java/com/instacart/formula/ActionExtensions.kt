@@ -1,7 +1,7 @@
 package com.instacart.formula
 
-import com.instacart.formula.internal.ActionKey
-import com.instacart.formula.internal.OverrideKeyAction
+import com.instacart.formula.action.ActionKey
+import com.instacart.formula.action.OverrideKeyAction
 
 /**
  * Wraps this action with a new key to force it to run again.

@@ -1,4 +1,4 @@
-package com.instacart.formula.internal
+package com.instacart.formula.utils
 
 import com.instacart.formula.plugin.Dispatcher
 import java.util.concurrent.ConcurrentLinkedQueue

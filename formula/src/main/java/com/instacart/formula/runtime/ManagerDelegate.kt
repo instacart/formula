@@ -1,10 +1,11 @@
-package com.instacart.formula.internal
+package com.instacart.formula.runtime
 
 import com.instacart.formula.Effect
 import com.instacart.formula.batch.BatchManager
 import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.plugin.FormulaError
 import com.instacart.formula.plugin.Inspector
+import com.instacart.formula.utils.SynchronizedUpdateQueue
 import kotlinx.coroutines.CoroutineScope
 
 /**
