@@ -8,6 +8,7 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
+import com.instacart.formula.lifecycle.LifecycleCache
 import java.lang.IllegalStateException
 
 internal class SnapshotImpl<out Input, State>(

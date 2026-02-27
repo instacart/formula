@@ -6,6 +6,10 @@ import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
+import com.instacart.formula.lifecycle.DuplicateKeyLog
+import com.instacart.formula.lifecycle.LifecycleCache
+import com.instacart.formula.lifecycle.LifecycleComponent
+import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
 import java.util.LinkedList

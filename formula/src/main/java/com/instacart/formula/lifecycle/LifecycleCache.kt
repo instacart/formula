@@ -1,4 +1,11 @@
-package com.instacart.formula.internal
+package com.instacart.formula.lifecycle
+
+import com.instacart.formula.internal.FormulaManagerImpl
+import com.instacart.formula.internal.Indexer
+import com.instacart.formula.internal.SingleRequestHolder
+import com.instacart.formula.internal.SingleRequestMap
+import com.instacart.formula.internal.clearUnrequested
+import com.instacart.formula.internal.forEachValue
 
 internal class LifecycleCache(
     private val manager: FormulaManagerImpl<*, *, *>,
@@ -61,7 +68,8 @@ internal class LifecycleCache(
         component.onDetached(this)
     }
 
-    private fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
+    @PublishedApi
+    internal fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
         val holder = findEntry<T>(key)
         return if (holder == null) {
             initNewHolder(key)

@@ -1,8 +1,14 @@
-package com.instacart.formula.internal
+package com.instacart.formula.lifecycle
 
 import com.instacart.formula.Formula
 
-internal interface LifecycleComponent {
+interface LifecycleComponent {
+
+    /**
+     * Called when component is first created in the cache during evaluation.
+     * Actions use this to schedule their start effect.
+     */
+    fun onAttached(scheduler: LifecycleScheduler) = Unit
 
     /**
      * Called when component is detached from Formula. This happens when it is not
@@ -11,7 +17,7 @@ internal interface LifecycleComponent {
     fun onDetached(scheduler: LifecycleScheduler) = Unit
 
     /**
-     * Called when [Formula] is removed. This is should not trigger any external side-effects,
+     * Called when [Formula] is removed. This should not trigger any external side-effects,
      * only mark itself and its children as terminated.
      */
     fun markAsTerminated() = Unit
