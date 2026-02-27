@@ -42,17 +42,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
     private var terminated = false
 
     /**
-     * Controls whether listeners can dispatch events. Unlike [isTerminated] which
-     * is set early to prevent state changes, this remains true throughout
-     * [performTermination] so that termination-triggered events
-     * (e.g. [com.instacart.formula.Action.onTerminate]) can still produce their effects.
-     * Set to false after all actions and children have been torn down.
-     */
-    @Volatile
-    var isEventHandlingEnabled = true
-        private set
-
-    /**
      * Identifier used to track state changes of this [formula] and its children. Whenever
      * there is a state change, this identifier is incremented. This allows us to associate
      * each formula output with an identifier value and compare it for validity with
@@ -312,7 +301,6 @@ internal class FormulaManagerImpl<Input, State, Output>(
             transitionQueue.pollFirst().execute()
         }
 
-        isEventHandlingEnabled = false
         inspector?.onFormulaFinished(formulaType)
     }
 

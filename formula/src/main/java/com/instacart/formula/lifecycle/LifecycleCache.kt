@@ -84,7 +84,7 @@ internal class LifecycleCache(
 
     /**
      * Performs scheduled start effects. Returns true if there was a transition
-     * while executing effect.x x
+     * while executing effect.
      */
     fun startAttached(evaluationId: Long): Boolean {
         val scheduled = startEffects?.takeIf { it.isNotEmpty() } ?: return false
@@ -125,8 +125,7 @@ internal class LifecycleCache(
         component.onDetached(this)
     }
 
-    @PublishedApi
-    internal fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
+    private fun <T : LifecycleComponent> getOrInitEntryHolder(key: Any, useIndex: Boolean): SingleRequestHolder<T> {
         val holder = findEntry<T>(key)
         return if (holder == null) {
             initNewHolder(key)
