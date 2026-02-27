@@ -4,7 +4,7 @@ import com.instacart.formula.Action
 import com.instacart.formula.DeferredAction
 import com.instacart.formula.Listener
 import com.instacart.formula.plugin.Inspector
-import com.instacart.formula.validation.ActionValidationFrame
+import com.instacart.formula.validation.LifecycleValidationManager
 import kotlinx.coroutines.isActive
 
 /**
@@ -20,24 +20,16 @@ internal class ActionManager(
     private var checkToStartActionList: MutableList<DeferredAction<*>>? = null
     private var checkToRemoveActionList: MutableList<DeferredAction<*>>? = null
 
-    /**
-     * Validation mode checks that during re-evaluation there were
-     * no changes such as new actions declared or existing actions
-     * removed.
-     */
-    private var validationFrame: ActionValidationFrame? = null
-
+    private val validationManager: LifecycleValidationManager? =
+        if (manager.isValidationConfigured) LifecycleValidationManager(manager.formulaType)
+        else null
 
     /**
      * Called by FormulaManagerImpl before evaluation that will be run as
      * part of validation.
      */
     fun prepareValidationRun() {
-        validationFrame = ActionValidationFrame(
-            formulaType = manager.formulaType,
-            previousNewActions = checkToStartActionList.orEmpty().toList(),
-            previousRemovedActions = checkToRemoveActionList.orEmpty().toList()
-        )
+        validationManager?.prepareValidationRun()
     }
 
     /**
@@ -66,6 +58,8 @@ internal class ActionManager(
 
         // Schedule for starting if it's a new action
         if (isNew) {
+            validationManager?.trackNewKey(value.key)
+
             val list = checkToStartActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToStartActionList = it
             }
@@ -82,7 +76,7 @@ internal class ActionManager(
      */
     fun prepareForPostEvaluation() {
         computeRemovedActionList()
-        runValidationIfNeeded()
+        validationManager?.validate()
     }
 
     /**
@@ -152,21 +146,14 @@ internal class ActionManager(
         actions?.clear()
     }
 
-    private fun runValidationIfNeeded() {
-        // We run validation if validation frame was set for this run
-        validationFrame?.validate(
-            newStartList = checkToStartActionList.orEmpty(),
-            newRemoveList = checkToRemoveActionList.orEmpty()
-        )
-        validationFrame = null
-    }
-
     /**
      * Called after evaluation to compute which actions were not requested in
      * last evaluation and should be removed.
      */
     private fun computeRemovedActionList() {
         actions?.clearUnrequested { action ->
+            validationManager?.trackRemovedKey(action.key)
+
             val list = checkToRemoveActionList ?: mutableListOf<DeferredAction<*>>().also {
                 checkToRemoveActionList = it
             }

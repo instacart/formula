@@ -85,7 +85,7 @@ class FormulaValidationTest {
             formula.test(coroutineContext, isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
-            "actions changed during validation - new:"
+            "components changed during validation - new:"
         )
     }
 
@@ -123,7 +123,7 @@ class FormulaValidationTest {
             formula.test(this, isValidationEnabled = true).input(Unit)
         }
         Truth.assertThat(error.exceptionOrNull()).hasMessageThat().contains(
-            "actions changed during validation - new:"
+            "components changed during validation - new:"
         )
     }
 }
