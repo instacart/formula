@@ -15,19 +15,18 @@ import com.instacart.formula.plugin.Dispatcher
 internal class ListenerImpl<Input, State, EventT>(
     private var transition: Transition<Input, State, EventT>
 ) : Listener<EventT>, LifecycleComponent {
-
-    @Volatile private var manager: FormulaManagerImpl<Input, State, *>? = null
     @Volatile private var snapshotImpl: SnapshotImpl<Input, State>? = null
-    @Volatile private var executionType: Transition.ExecutionType? = null
+    private var executionType: Transition.ExecutionType? = null
 
     // ==========================================================================
     // Listener
     // ==========================================================================
 
     override fun invoke(event: EventT) {
-        // TODO: log if null listener (it might be due to formula removal or due to callback removal)
-        val manager = manager ?: return
+        // volatile read — establishes happens-before
+        val manager = snapshotImpl?.manager ?: return
 
+        // guaranteed visible after the volatile read above
         when (val type = executionType) {
             is Transition.Batched -> handleBatched(manager, type, event)
             Transition.Immediate -> executeWithDispatcher(manager, Dispatcher.None, event)
@@ -46,7 +45,6 @@ internal class ListenerImpl<Input, State, EventT>(
     }
 
     override fun performTermination() {
-        manager = null
         snapshotImpl = null
     }
 
@@ -55,15 +53,13 @@ internal class ListenerImpl<Input, State, EventT>(
     // ==========================================================================
 
     fun setDependencies(
-        manager: FormulaManagerImpl<Input, State, *>?,
         snapshot: SnapshotImpl<Input, State>?,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, EventT>,
     ) {
-        this.manager = manager
-        this.snapshotImpl = snapshot
-        this.executionType = executionType
         this.transition = transition
+        this.executionType = executionType
+        this.snapshotImpl = snapshot // volatile write last — publishes both above
     }
 
     fun applyInternal(event: EventT) {

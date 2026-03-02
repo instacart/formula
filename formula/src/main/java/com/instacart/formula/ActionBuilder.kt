@@ -16,16 +16,15 @@ package com.instacart.formula
  * )
  * ```
  */
-abstract class ActionBuilder<out Input, State>(
+interface ActionBuilder<out Input, State> {
     /**
      * Current input associated with the Formula evaluation.
      */
-    val input: Input,
+    val input: Input
     /**
      * Current state associated with the Formula evaluation.
      */
-    val state: State,
-) {
+    val state: State
 
     /**
      * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
@@ -34,7 +33,7 @@ abstract class ActionBuilder<out Input, State>(
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    abstract fun <Event> events(
+    fun <Event> events(
         action: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
@@ -53,7 +52,7 @@ abstract class ActionBuilder<out Input, State>(
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    abstract fun <Event> Action<Event>.onEvent(
+    fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     )
 
@@ -72,7 +71,7 @@ abstract class ActionBuilder<out Input, State>(
      * @param executionType Defines the execution model for this event such as threading and timing.
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    abstract fun <Event> Action<Event>.onEventWithExecutionType(
+    fun <Event> Action<Event>.onEventWithExecutionType(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     )

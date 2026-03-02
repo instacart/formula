@@ -1,5 +1,6 @@
 package com.instacart.formula.runtime
 
+import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
@@ -8,6 +9,7 @@ import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.TransitionContext
+import com.instacart.formula.action.ActionComponent
 import com.instacart.formula.events.EffectDelegate
 import com.instacart.formula.events.ListenerImpl
 import com.instacart.formula.events.TransitionUtils
@@ -15,25 +17,38 @@ import com.instacart.formula.events.toResult
 import com.instacart.formula.lifecycle.LifecycleCache
 import java.lang.IllegalStateException
 
-internal class SnapshotImpl<out Input, State>(
-    private val delegate: FormulaManagerImpl<Input, State, *>,
+internal class SnapshotImpl<Input, State>(
+    val manager: FormulaManagerImpl<Input, State, *>,
     override val input: Input,
     override val state: State,
     lifecycleCache: LifecycleCache,
-) : FormulaContext<Input, State>(lifecycleCache), Snapshot<Input, State>, TransitionContext<Input, State> {
-
-    override val effectDelegate: EffectDelegate = delegate
-    override val context: FormulaContext<Input, State> = this
+) : FormulaContext<Input, State>(lifecycleCache),
+    Snapshot<Input, State>,
+    TransitionContext<Input, State>,
+    ActionBuilder<Input, State> {
 
     private var scopeKey: Any? = null
     private var isEvaluationFinished = false
 
+    // ==========================================================================
+    // Snapshot
+    // ==========================================================================
+
+    override val context: FormulaContext<Input, State> = this
+
+    // ==========================================================================
+    // TransitionContext
+    // ==========================================================================
+
+    override val effectDelegate: EffectDelegate = manager
+
+    // ==========================================================================
+    // FormulaContext
+    // ==========================================================================
+
     override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
         ensureEvaluationNotFinished()
-
-        val builder = ActionBuilderImpl(delegate, this, lifecycleCache)
-        builder.init()
-
+        init()
         return emptySet()
     }
 
@@ -47,7 +62,7 @@ internal class SnapshotImpl<out Input, State>(
             type = formula.type(),
             key = formula.key(input)
         )
-        return delegate.child(key, formula, input)
+        return manager.child(key, formula, input)
     }
 
     override fun <ChildInput, ChildOutput> childOrNull(
@@ -60,7 +75,7 @@ internal class SnapshotImpl<out Input, State>(
             type = formula.type(),
             key = formula.key(input)
         )
-        return delegate.childOrNull(key, formula, input)
+        return manager.childOrNull(key, formula, input)
     }
 
     override fun <Event> eventListener(
@@ -107,23 +122,53 @@ internal class SnapshotImpl<out Input, State>(
         )
     }
 
+    override fun ensureEvaluationNotFinished() {
+        if (isEvaluationFinished) {
+            throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
+        }
+    }
+
+    // ==========================================================================
+    // ActionBuilder
+    // ==========================================================================
+
+    override fun <Event> events(
+        action: Action<Event>,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>,
+    ) {
+        updateOrInitActionComponent(action, executionType, transition)
+    }
+
+    override fun <Event> Action<Event>.onEvent(
+        transition: Transition<Input, State, Event>,
+    ) {
+        events(this, null, transition)
+    }
+
+    override fun <Event> Action<Event>.onEventWithExecutionType(
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>
+    ) {
+        val stream = this
+        events(stream, executionType, transition)
+    }
+
+    // ==========================================================================
+    // Internal
+    // ==========================================================================
+
     fun <Event> dispatch(transition: Transition<Input, State, Event>, event: Event) {
         val result = transition.toResult(this, event)
         if (TransitionUtils.isEmpty(result)) {
             return
         }
 
-        delegate.handleTransitionResult(event, result)
+        manager.handleTransitionResult(event, result)
     }
 
     fun onEvaluationFinished() {
         isEvaluationFinished = true
-    }
-
-    override fun ensureEvaluationNotFinished() {
-        if (isEvaluationFinished) {
-            throw IllegalStateException("Cannot call this transition after evaluation finished. See https://instacart.github.io/formula/faq/#after-evaluation-finished")
-        }
     }
 
     /**
@@ -134,6 +179,19 @@ internal class SnapshotImpl<out Input, State>(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>
     ) {
-        listener.setDependencies(delegate, this@SnapshotImpl, executionType, transition)
+        listener.setDependencies(this@SnapshotImpl, executionType, transition)
+    }
+
+    private fun <Event> updateOrInitActionComponent(
+        stream: Action<Event>,
+        executionType: Transition.ExecutionType?,
+        transition: Transition<Input, State, Event>,
+    ) {
+        val key = createScopedKey(transition.type(), stream.key())
+        val action = lifecycleCache.findOrInit(key, useIndex = false) {
+            val listener = ListenerImpl(transition)
+            ActionComponent(manager, stream, listener)
+        }
+        applySnapshot(action.listener, executionType, transition)
     }
 }
