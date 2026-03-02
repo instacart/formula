@@ -6,7 +6,7 @@ This skill guides you through a review of a Formula implementation.
 ### 1. Identify the formula(s) to review
 - [ ] Identify the formula class(es) to review
 - [ ] Start a review document at `.ai/workplace/formula-reviews/$name.md`
-- [ ] Read `/docs/Performance.md` for background on Formula's evaluation model
+- [ ] Read `/docs/performance.md` for background on Formula's evaluation model
 
 ## Correctness Review
 
