@@ -25,6 +25,7 @@ nav:
   - 'Testing': testing.md
   - 'Declarative API': Declarative-API.md
   - 'Formula Android': Formula-Android.md
+  - 'Formula Performance': Performance.md
   - 'Using Android View Model': using_android_view_model.md
   - 'FAQ': faq.md
   - 'Contributing': CONTRIBUTING.md
