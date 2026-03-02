@@ -15,6 +15,7 @@ import com.instacart.formula.events.ListenerImpl
 import com.instacart.formula.events.TransitionUtils
 import com.instacart.formula.events.toResult
 import com.instacart.formula.lifecycle.LifecycleCache
+import com.instacart.formula.lifecycle.TerminateLifecycleComponent
 import java.lang.IllegalStateException
 
 internal class SnapshotImpl<Input, State>(
@@ -152,6 +153,14 @@ internal class SnapshotImpl<Input, State>(
     ) {
         val stream = this
         events(stream, executionType, transition)
+    }
+
+    override fun Action.Companion.onTerminate(key: Any?, effect: () -> Unit) {
+        val compositeKey = createScopedKey(effect::class.java, key)
+        val component = lifecycleCache.findOrInit(compositeKey, useIndex = false) {
+            TerminateLifecycleComponent(manager)
+        }
+        component.terminationEffect = effect
     }
 
     // ==========================================================================

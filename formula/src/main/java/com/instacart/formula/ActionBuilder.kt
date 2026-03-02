@@ -75,4 +75,15 @@ interface ActionBuilder<out Input, State> {
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     )
+
+    /**
+     * Registers an [effect] that will be executed when component is terminated. You
+     * can use this to be notified when [Formula] is terminated.
+     * ```kotlin
+     * Action.onTerminate {
+     *     analytics.trackCloseEvent()
+     * }
+     * ```
+     */
+    fun Action.Companion.onTerminate(key: Any? = null, effect: () -> Unit)
 }

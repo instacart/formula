@@ -45,7 +45,8 @@
 **Actions:**
 - Declarative async operations. Declared in `context.actions { }` block within Evaluation.
 - Actions run when returned in Evaluation, cancelled when not returned or key changes.
-- Common: `Action.onInit()`, `Action.onData(value)`, `Action.onTerminate()`, `Action.fromFlow { }`, `Action.launch { }`.
+- Common: `Action.onInit()`, `Action.onData(value)`, `Action.fromFlow { }`, `Action.launch { }`.
+- Termination: `Action.onTerminate { }`
 - Attach handler: `action.onEvent { event -> transition() }`.
 - Actions identified by key + call site (positional memoization).
 
