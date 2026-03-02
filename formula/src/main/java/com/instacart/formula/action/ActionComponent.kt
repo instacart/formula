@@ -15,7 +15,14 @@ internal class ActionComponent<Input, State, Event> internal constructor(
     private val action: Action<Event>,
     internal val listener: ListenerImpl<Input, State, Event>,
 ) : DeferredAction<Event>, Action.Emitter<Event>, LifecycleComponent {
-    @Volatile private var isTerminated = false
+    enum class ActiveState {
+        DEFAULT,
+        TERMINATING,
+        TERMINATED
+    }
+
+    @Volatile private var state = ActiveState.DEFAULT
+
     private var cancelable: Cancelable? = null
 
     // ==========================================================================
@@ -31,11 +38,12 @@ internal class ActionComponent<Input, State, Event> internal constructor(
     }
 
     override fun performTermination() {
+        state = ActiveState.TERMINATING
         delegate.inspector?.onActionFinished(delegate.formulaType, this)
         delegate.runSafe { cancelable?.cancel() }
 
         cancelable = null
-        isTerminated = true
+        state = ActiveState.TERMINATED
     }
 
     // ==========================================================================
@@ -43,7 +51,7 @@ internal class ActionComponent<Input, State, Event> internal constructor(
     // ==========================================================================
 
     override fun onEvent(event: Event) {
-        if (!isTerminated) {
+        if (canFireEvent()) {
             listener.invoke(event)
         }
     }
@@ -57,12 +65,22 @@ internal class ActionComponent<Input, State, Event> internal constructor(
     // ==========================================================================
 
     internal fun start() {
-        if (isTerminated) return
+        if (state != ActiveState.DEFAULT) return
 
         delegate.inspector?.onActionStarted(delegate.formulaType, this)
 
         delegate.runSafe {
             cancelable = action.start(delegate.scope, this)
+        }
+    }
+
+    private fun canFireEvent(): Boolean {
+        return when (state) {
+            ActiveState.DEFAULT -> true
+            ActiveState.TERMINATED -> false
+            ActiveState.TERMINATING -> {
+                action is TerminateEventAction
+            }
         }
     }
 }

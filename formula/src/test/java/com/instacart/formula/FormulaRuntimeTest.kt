@@ -1608,7 +1608,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `action fires termination when detached from lifecycle`() = runTest {
+    fun `action emitter ignores events once action is terminated`() = runTest {
         val formula = object : Formula<Boolean, Int, Int>() {
             override fun initialState(input: Boolean): Int = 0
 
@@ -1644,7 +1644,7 @@ class FormulaRuntimeTest {
         observer.input(false)
         observer.input(true)
         observer.input(false)
-        observer.output { assertThat(this).isEqualTo(2) }
+        observer.output { assertThat(this).isEqualTo(0) }
     }
 
     @Test
