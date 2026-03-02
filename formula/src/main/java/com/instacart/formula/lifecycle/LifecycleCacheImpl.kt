@@ -15,7 +15,7 @@ internal class LifecycleCacheImpl(
         else null
 
     private var entryMap: SingleRequestMap<Any, LifecycleComponent>? = null
-    private var startEffects: MutableList<() -> Unit>? = null
+    private var startEffects: ArrayDeque<() -> Unit>? = null
     private var terminateEffects: MutableList<() -> Unit>? = null
     private var duplicateKeyLogs: MutableSet<Any>? = null
 
@@ -24,8 +24,8 @@ internal class LifecycleCacheImpl(
     // ==========================================================================
 
     override fun scheduleStartEffect(effect: () -> Unit) {
-        val list = startEffects ?: mutableListOf<() -> Unit>().also { startEffects = it }
-        list.add(effect)
+        val list = startEffects ?: ArrayDeque<() -> Unit>().also { startEffects = it }
+        list.addLast(effect)
     }
 
     override fun scheduleTerminateEffect(effect: () -> Unit) {
@@ -100,14 +100,12 @@ internal class LifecycleCacheImpl(
     fun startAttached(evaluationId: Long): Boolean {
         val scheduled = startEffects?.takeIf { it.isNotEmpty() } ?: return false
 
-        val iterator = scheduled.iterator()
-        while (iterator.hasNext()) {
+        while (scheduled.isNotEmpty()) {
             if (!manager.scope.isActive) {
                 return false
             }
 
-            val effect = iterator.next()
-            iterator.remove()
+            val effect = scheduled.removeFirst()
 
             effect()
 
