@@ -76,9 +76,8 @@ class TestFormula<Input, Output> internal constructor(
         return Evaluation(
             output = state.output,
             actions = context.actions {
-                Action.onTerminate().onEvent {
+                Action.onTerminate {
                     runningInstanceManager.onTerminate(state.uniqueIdentifier)
-                    none()
                 }
             }
         )

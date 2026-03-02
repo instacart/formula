@@ -17,9 +17,7 @@ class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerm
             actions = context.actions {
                 val onTerminate = input.onTerminate
                 if (onTerminate != null) {
-                    Action.onTerminate().onEvent {
-                        transition(onTerminate)
-                    }
+                    Action.onTerminate(effect = onTerminate)
                 }
             }
         )

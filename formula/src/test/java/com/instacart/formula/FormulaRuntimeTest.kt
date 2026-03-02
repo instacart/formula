@@ -232,10 +232,8 @@ class FormulaRuntimeTest {
                 return Evaluation(
                     output = input,
                     actions = context.actions {
-                        Action.onTerminate().onEvent {
-                            transition {
-                                terminationCallback.invoke(input)
-                            }
+                        Action.onTerminate {
+                            terminationCallback.invoke(input)
                         }
 
                         if (input == 0) {
@@ -270,10 +268,8 @@ class FormulaRuntimeTest {
                 return Evaluation(
                     output = input,
                     actions = context.actions {
-                        Action.onTerminate().onEvent {
-                            transition {
-                                terminationCallback.invoke(input)
-                            }
+                        Action.onTerminate {
+                            terminationCallback.invoke(input)
                         }
 
                         if (input == 0) {
@@ -307,10 +303,8 @@ class FormulaRuntimeTest {
                 return Evaluation(
                     output = input,
                     actions = context.actions {
-                        Action.onTerminate().onEvent {
-                            transition {
-                                terminationCallback.invoke(input)
-                            }
+                        Action.onTerminate {
+                            terminationCallback.invoke(input)
                         }
 
                         if (input == 0) {
@@ -1261,11 +1255,9 @@ class FormulaRuntimeTest {
         var emissions = 0
         var terminateCallback = -1
         val formula = OnlyUpdateFormula<Int> { input ->
-            Action.onTerminate().onEvent {
-                transition {
-                    emissions += 1
-                    terminateCallback = input
-                }
+            Action.onTerminate {
+                emissions += 1
+                terminateCallback = input
             }
         }
 
@@ -1494,9 +1486,8 @@ class FormulaRuntimeTest {
                 return Evaluation(
                     output = Unit,
                     actions = context.actions {
-                        Action.onTerminate().onEvent {
+                        Action.onTerminate {
                             relay.triggerEvent()
-                            none()
                         }
                     }
                 )
@@ -1540,9 +1531,8 @@ class FormulaRuntimeTest {
                 return Evaluation(
                     output = Unit,
                     actions = context.actions {
-                        Action.onTerminate().onEvent {
+                        Action.onTerminate {
                             terminate()
-                            none()
                         }
                     }
                 )
@@ -1608,7 +1598,7 @@ class FormulaRuntimeTest {
     }
 
     @Test
-    fun `action fires termination when detached from lifecycle`() = runTest {
+    fun `action emitter ignores events once action is terminated`() = runTest {
         val formula = object : Formula<Boolean, Int, Int>() {
             override fun initialState(input: Boolean): Int = 0
 
@@ -1644,7 +1634,7 @@ class FormulaRuntimeTest {
         observer.input(false)
         observer.input(true)
         observer.input(false)
-        observer.output { assertThat(this).isEqualTo(2) }
+        observer.output { assertThat(this).isEqualTo(0) }
     }
 
     @Test

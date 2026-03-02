@@ -15,8 +15,8 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
         return Evaluation(
             output = Unit,
             actions = context.actions {
-                Action.onTerminate().onEvent {
-                    transition { timesTerminateCalled += 1 }
+                Action.onTerminate {
+                    timesTerminateCalled += 1
                 }
             }
         )

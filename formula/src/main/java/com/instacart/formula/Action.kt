@@ -3,7 +3,6 @@ package com.instacart.formula
 import com.instacart.formula.action.FlowAction
 import com.instacart.formula.action.LaunchCoroutineAction
 import com.instacart.formula.action.StartEventAction
-import com.instacart.formula.action.TerminateEventAction
 import com.instacart.formula.utils.runCatchingCoroutines
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,22 +70,6 @@ interface Action<Event> {
          */
         fun <Data> onData(data: Data): Action<Data> {
             return StartEventAction(data)
-        }
-
-        /**
-         * Creates an [action][Action] which emits an event when action is terminated. You
-         * can use this to be notified when [Formula] is terminated. Note that transitions
-         * to new state will be discarded because [Formula] is terminated. This event
-         * is usually used to notify other services/analytics of [Formula] termination.
-         *
-         * ```
-         * Action.onTerminate().onEvent {
-         *   transition { analytics.trackCloseEvent() }
-         * }
-         * ```
-         */
-        fun onTerminate(): Action<Unit> {
-            return TerminateEventAction
         }
 
         /**

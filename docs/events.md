@@ -118,8 +118,8 @@ Evaluation(
     }
 
     // Performs a side effect when formula is terminated
-    Action.onTerminate().onEvent {
-      transition { analytics.trackClose() }
+    Action.onTerminate {
+      analytics.trackClose()
     }
 
     // Performs a side-effect when data changes

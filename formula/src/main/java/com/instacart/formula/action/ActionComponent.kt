@@ -31,11 +31,11 @@ internal class ActionComponent<Input, State, Event> internal constructor(
     }
 
     override fun performTermination() {
+        isTerminated = true
+
         delegate.inspector?.onActionFinished(delegate.formulaType, this)
         delegate.runSafe { cancelable?.cancel() }
-
         cancelable = null
-        isTerminated = true
     }
 
     // ==========================================================================
