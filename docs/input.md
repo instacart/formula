@@ -1,178 +1,80 @@
-Input is a Kotlin data class used to pass data and event listeners to the Formula instance. Let's say we need to 
-pass an item id to `ItemDetailFormula`. 
+Input is an immutable data class that defines a formula's contract with its host — the
+component that runs it. A host can be a ViewModel running the formula via `runAsStateFlow`,
+or a parent formula using `context.child()`. Input specifies what data the host provides
+and what events the formula reports back. When input changes, the formula re-evaluates.
+
 ```kotlin
-class ItemDetailFormula() : Formula<ItemDetailFormula.Input, ..., ...> {
+class ItemFormula : Formula<Input, State, Output>() {
 
-  // Input declaration
-  data class Input(val itemId: String)
-
-  // Use input to initialize state
-  override fun initialState(input: Input): State = ...
-  
-  // Respond to Input changes.
-  override fun onInputChanged(oldInput: Input, input: Input, state: State): State {
-      // We can compare old and new inputs and create
-      // a new state before `Formula.evaluate` is called.
-      return state 
-  }
-  
-  // Using input within evaluate block
-  override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val itemId = input.itemId
-    // We can use the input here to fetch the item from the repo.
-  }
+  data class Input(
+    val itemId: String,
+    val onItemNotFound: () -> Unit,
+  )
 }
 ```
 
-To pass the input to `ItemDetailFormula`
-```kotlin
-val itemDetailFormula: ItemDetailFormula = ...
-itemDetailFormula
-  .toObservable(ItemDetailFormula.Input(itemId = "1"))
-  .subscribe { renderModel ->
-    
-  }
-```
+## Using Input in Evaluate
 
-You could also pass an `Observable<ItemDetailFormula.Input>`
-```kotlin
-val itemDetailInput: Observable<ItemDetailFormula.Input> = ...
-itemDetailFormula
-  .toObservable(itemDetailInput)
-  .subscribe { renderModel ->
-    
-  }
-```
+Input is available within `evaluate()` via the `input` property. When input changes,
+`evaluate()` is called again with the new values. Input data can be used to create output,
+drive actions, and determine what the formula does.
 
-## Equality
-Formula uses input equality to determine if it should re-evaluate. A parent can cause 
-a child formula to re-evaluate by changing the input it passes. This will also trigger
-`Formula.onInputChanged` on the child formula.
-
-This is a desired behavior as we do want the child to react when the data that we pass changes.
-```kotlin
-data class ItemInput(
-    val itemId: String
-)
-```
-
-Making `Input` a data class and passing data as part of its properties makes it easy to reason
-about its equality. In some cases though, we want to pass objects that don't have property based
-equality such as listeners or observables. 
-
-### Maintaining listener equality
-In many cases we want to pass listeners to listen to formula events. 
+To report events back to the host, call the callbacks defined on input within a transition.
 
 ```kotlin
-data class ItemListInput(
-    val onItemSelected: Listener<Item>
-)
-```
-
-Formula provides an easy way to maintain listener equality. Within your parent formula, 
-you can use `FormulaContext.onEvent` to instantiate listeners.
-
-**Don't:** Don't instantiate functions within `Formula.evaluate`.
-```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val itemListInput = ItemListInput(
-        onItemSelected = {
-            analytics.track("item_selected")
+override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+  return Evaluation(
+    output = ...,
+    actions = context.actions {
+      Action.launchCatching(key = input.itemId) {
+        repo.fetchItem(input.itemId)
+      }.onEvent { result ->
+        if (result.isSuccess) {
+          transition(state.copy(item = result.getOrNull()))
+        } else {
+          // Notify host that item was not found
+          transition { input.onItemNotFound() }
         }
-    )
+      }
+    }
+  )
 }
 ```
 
-**Do:** Use `onEvent`
-```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val itemListInput = ItemListInput(
-        onItemSelected = context.onEvent { _ ->
-            transition { analytics.track("item_selected") }
-        }
-    )
-}
-```
+If `input.itemId` changes, the formula re-evaluates — the action's key changes so the
+runtime cancels the old fetch and starts a new one.
 
-**Do:** Use already constructed listeners 
-```kotlin
-// Listener is constructed outside of the "evaluate" function block
-val onItemSelectedListener = Listener<Item> {
-    
-}
+## Hosting as a StateFlow
 
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val itemListInput = ItemListInput(
-        onItemSelected = onItemSelectedListener
-    )
-}
-```
+A formula can be run as a `StateFlow` using `runAsStateFlow`. The host creates input
+directly and collects output.
 
-**Do:** Delegate to parent input directly
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val itemListInput = ItemListInput(
-        onItemSelected = input.onItemSelected
-    )
-}
-```
-
-### Passing observables
-Observables have identity equality which make maintaining input equality a bit tricky.
-```kotlin
-data class MyInput(
-  val eventObservable: Observable<Event>
+val output: StateFlow<Output> = formula.runAsStateFlow(
+  scope = viewModelScope,
+  input = Input(
+    itemId = "1",
+    onItemNotFound = { navigateBack() },
+  ),
 )
 ```
 
-**Don't:** create a new observable within `Formula.evaluate`
-```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val input = MyInput(
-        eventObservable = relay.map { Event() }
-    )
-}
-```
+## Hosting Within Another Formula
 
-**Do:** create observable outside of `Formula.evaluate`
+A parent formula hosts a child via `context.child()`, building input from its own state
+and callbacks.
 
 ```kotlin
-private val eventObservable = relay.map { Event() }
-
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val input = MyInput(
-        eventObservable = eventObservable
-    )
-}
-```
-
-**Do:** use State to instantiate observable once
-```kotlin
-data class State(
-    val eventObservable: Observable<Event>
-)
-
-override fun initialState(input: Input) = State(
-  eventObservable = input.eventObservable.map { Event() }
-)
-
-override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
-    val input = MyInput(
-        eventObservable = state.eventObservable
-    )
-}
-```
-
-**Don't:** pass data observables
-```kotlin
-data class Input(
-    val dataObservable: Observable<Data>
+val childOutput = context.child(
+  formula = itemFormula,
+  input = ItemFormula.Input(
+    itemId = state.selectedId,
+    onItemNotFound = context.callback {
+      transition(state.copy(selectedId = null))
+    },
+  ),
 )
 ```
 
-**Do:** pass data directly
-```kotlin
-data class Input(
-    val data: Data?
-)
-```
+See [Composition](composition.md) for details on child lifecycle, listener stability,
+and formula keys.
