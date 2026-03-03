@@ -1,13 +1,13 @@
 Event handling in Formula is based on event listeners. A listener is just a function
-that is called when an event happens and could be described by a simple `(Event) -> Unit` 
+that is called when an event happens and could be described by a simple `(Event) -> Unit`
 function type. We pass listeners to other parts of the codebase such as the view layer by
-adding the listener to the `Render Model`.
+adding the listener to the `Output`.
 
 ### UI Events
-To handle UI events, declare a `Listener` on the `Render Model` for each type of UI event you care about.
+To handle UI events, declare a `Listener` on the `Output` for each type of UI event you care about.
 ```kotlin
-data class FormRenderModel(
-  // A listener where event contains no information (We use kotlin.Unit type).  
+data class FormOutput(
+  // A listener where event contains no information (We use kotlin.Unit type).
   val onSaveSelected: Listener<Unit>,
 
   // A listener where name string is passed as part of the event.
@@ -17,9 +17,9 @@ data class FormRenderModel(
 
 To create a listener use `FormulaContext.onEvent`. Note: All listeners should be created within `Formula.evaluate` block.
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<FormRenderModel> {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<FormOutput> {
   return Evaluation(
-    output = FormRenderModel(
+    output = FormOutput(
       onNameChanged = context.onEvent<String> { newName ->
         // Use "newName" to perform a transition
         transition(state.copy(name = newName))
@@ -27,7 +27,7 @@ override fun Snapshot<Input, State>.evaluate(): Evaluation<FormRenderModel> {
       onSaveSelected = context.onEvent<Unit> {
         // No state change, performing side-effects.
         transition {
-          userService.updateName(state.name)  
+          userService.updateName(state.name)
           analytics.trackNameUpdated(state.name)
         }
       }
@@ -39,7 +39,7 @@ override fun Snapshot<Input, State>.evaluate(): Evaluation<FormRenderModel> {
 This example is dense, but it shows almost every kind of scenario. Let's go over it.
 
 To create a listener, we pass a function that returns a `Transition<State>`. Formula
-uses transitions to update internal state and/or perform side-effects to other components. 
+uses transitions to update internal state and/or perform side-effects to other components.
 Listeners are scoped to the current state. Any time we transition to a new state, evaluate
 is called again and the listeners are recreated.
 
@@ -86,7 +86,7 @@ class ItemListFormula() : Formula<ItemListInput, ..., ...>
 
 Now, we can use the `input` passed to us in `Formula.evaluate` to communicate with the parent.
 ```kotlin
-override fun evaluate(input: ItemListInput, state, context): ... {
+override fun Snapshot<ItemListInput, State>.evaluate(): Evaluation<...> {
   return Evaluation(
     output = state.items.map { item ->
       context.key(item.id) {
@@ -145,9 +145,9 @@ a couple of cases when this is not sufficient and you need to explicitly provide
 For example, if you are mapping list of items and creating a listener within the `map` function.
 ```kotlin
 // This will not work unless your list of items never changes (removal of item or position change).
-ItemListRenderModel(
+ItemListOutput(
   items = state.items.map { item ->
-    ItemRenderModel(
+    ItemOutput(
       name = item.name,
       onSelected = context.onEvent {
         // perform a transition
@@ -157,10 +157,10 @@ ItemListRenderModel(
 )
 ```
 
-To fix it, you should wrap `ItemRenderModel` creation block in `context.key` where you pass it an `item id`.
+To fix it, you should wrap `ItemOutput` creation block in `context.key` where you pass it an `item id`.
 ```kotlin
 context.key(item.id) {
-  ItemRenderModel(
+  ItemOutput(
     name = item.name,
     onSelected = context.onEvent {
       // perform a transition
@@ -171,10 +171,10 @@ context.key(item.id) {
 
 #### Case 2: Delegating to another function
 There is an issue with listeners when passing `FormulaContext` to another function.
-Let's say you have a function that takes FormulaContext and creates a ChildRenderModel.
+Let's say you have a function that takes FormulaContext and creates a ChildOutput.
 ```kotlin
-fun createChildRenderModel(context: FormulaContext<...>): ChildRenderModel {
-  return ChildRenderModel(
+fun createChildOutput(context: FormulaContext<...>): ChildOutput {
+  return ChildOutput(
     onClick = context.onEvent {}
   )
 }
@@ -182,18 +182,18 @@ fun createChildRenderModel(context: FormulaContext<...>): ChildRenderModel {
 
 There is no problem calling it once, but there will be key collisions if you call it multiple times:
 ```kotlin
-RenderModel(
+Output(
   // First child is created with no problem
-  first = createChildRenderModel(context),
+  first = createChildOutput(context),
   // Calling it again will crash
-  second = createChildRenderModel(context)
+  second = createChildOutput(context)
 )
 ```
 
-To fix it, wrap `createChildRenderModel` with `context.key` block.
+To fix it, wrap `createChildOutput` with `context.key` block.
 ```kotlin
-RenderModel(
-  first = context.key("first") { createChildRenderModel(context) },
-  second = context.key("second") { createChildRenderModel(context) }
+Output(
+  first = context.key("first") { createChildOutput(context) },
+  second = context.key("second") { createChildOutput(context) }
 )
 ```

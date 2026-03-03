@@ -17,11 +17,7 @@ class ItemDetailFormula() : Formula<ItemDetailFormula.Input, ..., ...> {
   }
   
   // Using input within evaluate block
-  override fun evaluate(
-    input: Input,
-    state: ..,
-    context: ..
-  ): Evaluation<...> {
+  override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val itemId = input.itemId
     // We can use the input here to fetch the item from the repo.
   }
@@ -78,7 +74,7 @@ you can use `FormulaContext.onEvent` to instantiate listeners.
 
 **Don't:** Don't instantiate functions within `Formula.evaluate`.
 ```kotlin
-override fun evaluate(...) {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val itemListInput = ItemListInput(
         onItemSelected = {
             analytics.track("item_selected")
@@ -89,7 +85,7 @@ override fun evaluate(...) {
 
 **Do:** Use `onEvent`
 ```kotlin
-override fun evaluate(...) {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val itemListInput = ItemListInput(
         onItemSelected = context.onEvent { _ ->
             transition { analytics.track("item_selected") }
@@ -105,7 +101,7 @@ val onItemSelectedListener = Listener<Item> {
     
 }
 
-override fun evaluate(...): ... {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val itemListInput = ItemListInput(
         onItemSelected = onItemSelectedListener
     )
@@ -114,7 +110,7 @@ override fun evaluate(...): ... {
 
 **Do:** Delegate to parent input directly
 ```kotlin
-override fun evaluate(input: Input, ...): ... {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val itemListInput = ItemListInput(
         onItemSelected = input.onItemSelected
     )
@@ -131,7 +127,7 @@ data class MyInput(
 
 **Don't:** create a new observable within `Formula.evaluate`
 ```kotlin
-override fun evaluate(...) {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val input = MyInput(
         eventObservable = relay.map { Event() }
     )
@@ -143,7 +139,7 @@ override fun evaluate(...) {
 ```kotlin
 private val eventObservable = relay.map { Event() }
 
-override fun evaluate(...) {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val input = MyInput(
         eventObservable = eventObservable
     )
@@ -160,7 +156,7 @@ override fun initialState(input: Input) = State(
   eventObservable = input.eventObservable.map { Event() }
 )
 
-override fun evaluate(...) {
+override fun Snapshot<Input, State>.evaluate(): Evaluation<...> {
     val input = MyInput(
         eventObservable = state.eventObservable
     )

@@ -1,5 +1,5 @@
 ## Formula Android
-The Android module provides a declarative API to connect reactive state management to Android Fragments. 
+The Android module provides a declarative API to connect reactive state management to Android Fragments.
 This module has been designed for gradual adoption. You can use as much or as little of it as you like.
 
 Some of the goals for this module are:
@@ -10,29 +10,29 @@ Some of the goals for this module are:
     - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
 
 ## Using Fragments
-This module provides an API to connect state management and view rendering logic to Android 
-fragments. For this example, we will connect `CounterRenderView` and `CounterFormula` from the 
-main getting started [guide](index.md). 
+This module provides an API to connect state management and view rendering logic to Android
+fragments. For this example, we will connect `CounterRenderView` and `CounterFormula` from the
+main getting started [guide](index.md).
 
 ### Define a fragment key
-Fragment key is used to instantiate `FormulaFragment` and to identify which `FeatureFactory` to 
-use. You can also use it to add arguments that the fragment instance needs. 
+Fragment key is used to instantiate `FormulaFragment` and to identify which `FeatureFactory` to
+use. You can also use it to add arguments that the fragment instance needs.
 
 ```kotlin
 /**
- * Fragment key has to provide Parcelable implementation because it is passed 
- * to the fragment as an argument. 
- *   
+ * Fragment key has to provide Parcelable implementation because it is passed
+ * to the fragment as an argument.
+ *
  * Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
  */
 @Parcelize
 data class CounterKey(
     override val tag: String = "counter"
-) : FragmentKey
+) : RouteKey
 ```
 
 ### Define a feature factory
-A feature factory creates the state observable and a view factory for a fragment. To continue our 
+A feature factory creates the state observable and a view factory for a fragment. To continue our
 example, we define a `CounterFeatureFactory` which will handle `CounterKey` fragments.
 
 ```kotlin
@@ -46,8 +46,8 @@ class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
 }
 
 // View factory which uses XML layout resource.
-class CounterViewFactory : LayoutViewFactory<CounterRenderModel>(R.layout.counter) {
-    override fun ViewInstance.create(): FeatureView<CounterRenderModel> {
+class CounterViewFactory : LayoutViewFactory<CounterOutput>(R.layout.counter) {
+    override fun ViewInstance.create(): FeatureView<CounterOutput> {
         // We use [ViewInstance.view] to access the inflated view
         val counterView = CounterRenderView(view)
 
@@ -60,10 +60,10 @@ class CounterViewFactory : LayoutViewFactory<CounterRenderModel>(R.layout.counte
 We now need to register our feature factory with the activity in which the counter will be shown.
 ```kotlin
 class MyApp : Application() {
-    
+
     override fun onCreate() {
         super.onCreate()
-        
+
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
                 store {
@@ -83,15 +83,15 @@ class MyActivity : FormulaAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.my_activity)
-        
+
         if (savedInstanceState == null) {
             val key = CounterKey()
             val fragment = FormulaFragment.newInstance(key)
-            
+
             // Add the fragment using the fragment transaction API.
             supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, fragment, key.tag)            
-                .commit()    
+                .add(R.id.activity_content, fragment, key.tag)
+                .commit()
         }
     }
 }
@@ -109,47 +109,49 @@ The state management observable continues to run during configuration changes or
 to another fragment.
 
 ## Passing arguments to a fragment
-Arguments can be passed using fragment key class. For example, we want to pass initial count 
+Arguments can be passed using fragment key class. For example, we want to pass initial count
 value to the `CounterFormula` used in the previous examples. To accomplish that, let's update the
 `CounterKey`.
 
 ```kotlin
 @Parcelize
 data class CounterKey(
-    val initialCount: Int = 0,    
+    val initialCount: Int = 0,
     override val tag: String = "counter"
-) : FragmentKey
+) : RouteKey
 ```
 
 You can access the `CounterKey` within `CounterFeatureFactory`
 ```kotlin
-class CounterFeatureFactory : FeatureFactory<Any, CounterKey> {
-    override fun initialize(dependencies: Any, key: CounterKey): Feature {
-        val initialCount = key.initialCount    
-        val counterFormula = CounterFormula(initialCount)        
-        ...                
+class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
+    override fun Params.initialize(): Feature {
+        val initialCount = key.initialCount
+        val counterFormula = CounterFormula(initialCount)
+        return Feature(CounterViewFactory()) { scope ->
+            counterFormula.runAsStateFlow(scope, input = Unit)
+        }
     }
 }
 ```
 
 ## Fragment Event Handling
-Very frequently we need to pass events from a fragment to the parent/activity which trigger 
+Very frequently we need to pass events from a fragment to the parent/activity which trigger
 things like navigation.
- 
+
 Let's say we want to add the following behaviors to the previous counter example:
 
-- show a toast notification when user increments to 10 
-- navigate to a new "victory" screen when user increments to 100. 
+- show a toast notification when user increments to 10
+- navigate to a new "victory" screen when user increments to 100.
 
 First, let's define a class that defines our events.
 ```kotlin
 data class CounterEventRouter(
-  val onToastNotification: (String) -> Unit, 
+  val onToastNotification: (String) -> Unit,
   val onVictoryReached: () -> Unit
 )
 ```
 
-We can now request this dependency within our feature factory 
+We can now request this dependency within our feature factory
 ```kotlin
 class CounterFeatureFactory : FeatureFactory<Dependencies, CounterKey>() {
 
@@ -173,14 +175,14 @@ To provide dependencies, the parent component needs to extend `CounterFeatureFac
 ```kotlin
 class MyActivityComponent(
     private val store: ActivityStoreContext<MyActivity>
-) : CounterFeatureFactory.Dependencies { 
+) : CounterFeatureFactory.Dependencies {
 
     override fun counterEventRouter(): CounterEventRouter {
         return CounterEventRouter(
-            onToastNotification = this::showToast,    
+            onToastNotification = this::showToast,
             onVictoryReached = {
-                // VictoryFragmentKey implementation is left to readers imagination.
-                val key = VictoryFragmentKey()
+                // VictoryRouteKey implementation is left to readers imagination.
+                val key = VictoryRouteKey()
                 navigateTo(key)
             }
         )
@@ -189,31 +191,31 @@ class MyActivityComponent(
     private fun showToast(message: String) {
         store.send {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        }        
-    }    
+        }
+    }
 
-    private fun navigateTo(key: FragmentKey) {
+    private fun navigateTo(key: RouteKey) {
        store.send {
-           // Sample fragment transaction 
+           // Sample fragment transaction
            val fragment = FormulaFragment.newInstance(key)
            supportFragmentManager.beginTransaction()
                .add(R.id.activity_content, fragment, key.tag)
                .addToBackStack(null)
                .commit()
-       }  
-    }    
+       }
+    }
 }
 ```
 
-To pass this component to feature factories, we need to update the configuration that lives 
+To pass this component to feature factories, we need to update the configuration that lives
 within our `Application`.
 
 ```kotlin
 class MyApp : Application() {
-    
+
     override fun onCreate() {
         super.onCreate()
-        
+
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
                 ActivityStore(
@@ -228,11 +230,11 @@ class MyApp : Application() {
 ```
 
 ## Handling back button events
-To override how the back button works for a particular navigation destination, your render model needs to implement
+To override how the back button works for a particular navigation destination, your output needs to implement
 `BackCallback` interface.
 
 ```kotlin
-data class FormRenderModel(
+data class FormOutput(
     private val confirmBeforeExiting: Boolean,
     private val confirmUserWantsToExit: () -> Unit
 ): BackCallback {
@@ -243,9 +245,9 @@ data class FormRenderModel(
             confirmUserWantsToExit()
             return true
         }
-        
+
         // Use default behavior (which closes the screen)
-        return false 
+        return false
     }
 }
 ```
@@ -265,21 +267,21 @@ class MyActivity : FragmentActivity() {
 This is already in place for you if you use `FormulaAppCompatActivity`.
 
 ## Managing dependencies
-Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity, 
+Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity,
 you can create your activity specific dependencies or Dagger components. These objects will survive configuration changes.
 ```kotlin
 class MyApp : Application() {
-    
+
     override fun onCreate() {
         super.onCreate()
-        
+
         val appComponent: AppComponent = ...
-        
+
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
                 // This component will survive configuration changes.
                 val activityComponent = appComponent.createMyActivityComponent()
-                
+
                 store { }
             }
         }
@@ -296,13 +298,13 @@ FormulaAndroid.init(this) {
     activity(MyActivity::class) {
         // This component will survive configuration changes.
         val activityComponent = appComponent.createMyActivityComponent()
-        
+
         ActivityStore(
             configureActivity = {
                 // in this callback `this` is the instance of MyActivity
                 // so we can use it to inject dependencies
                 activityComponent.inject(this)
-                
+
                 // Or you can use setters to provide dependencies to your activity.
                 // This dependency object won't survive configuration changes.
                 val dependency = MyActivityDependency(activity = this)

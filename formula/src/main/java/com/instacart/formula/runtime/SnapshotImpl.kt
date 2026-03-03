@@ -137,21 +137,20 @@ internal class SnapshotImpl<Input, State>(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
-        updateOrInitActionComponent(action, executionType, transition)
+        requestAction(action, executionType, transition)
     }
 
     override fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     ) {
-        events(this, null, transition)
+        requestAction(this, null, transition)
     }
 
     override fun <Event> Action<Event>.onEventWithExecutionType(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>
     ) {
-        val stream = this
-        events(stream, executionType, transition)
+        requestAction(this, executionType, transition)
     }
 
     // ==========================================================================
@@ -182,16 +181,16 @@ internal class SnapshotImpl<Input, State>(
         listener.setDependencies(this@SnapshotImpl, executionType, transition)
     }
 
-    private fun <Event> updateOrInitActionComponent(
-        stream: Action<Event>,
+    private fun <Event> requestAction(
+        action: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     ) {
-        val key = createScopedKey(transition.type(), stream.key())
-        val action = lifecycleCache.findOrInit(key, useIndex = false) {
+        val key = createScopedKey(transition.type(), action.key())
+        val actionComponent = lifecycleCache.findOrInit(key, useIndex = false) {
             val listener = ListenerImpl(transition)
-            ActionComponent(manager, stream, listener)
+            ActionComponent(manager, action, listener)
         }
-        applySnapshot(action.listener, executionType, transition)
+        applySnapshot(actionComponent.listener, executionType, transition)
     }
 }
