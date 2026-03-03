@@ -1,34 +1,27 @@
 State is an internal object managed by a formula. It is typically an immutable data class —
-transitions provide a new state instance which triggers re-evaluation.
-
-```kotlin
-data class State(
-  val count: Int,
-)
-```
-
-State is created by `initialState()` when the formula starts and used within `evaluate()`
-to build output.
+transitions provide a new state instance which triggers re-evaluation. State is created by 
+`initialState(input)` when the formula starts and used within `evaluate()` to define actions, 
+child formulas, and build output.
 
 ```kotlin
 class CounterFormula : Formula<Unit, CounterFormula.State, CounterOutput>() {
 
-  data class State(
-    val count: Int,
-  )
-
-  override fun initialState(input: Unit) = State(count = 0)
-
-  override fun Snapshot<Unit, State>.evaluate(): Evaluation<CounterOutput> {
-    return Evaluation(
-      output = CounterOutput(
-        count = state.count,
-        onIncrement = context.onEvent {
-          transition(state.copy(count = state.count + 1))
-        },
-      )
+    data class State(
+        val count: Int,
     )
-  }
+
+    override fun initialState(input: Unit) = State(count = 0)
+
+    override fun Snapshot<Unit, State>.evaluate(): Evaluation<CounterOutput> {
+        return Evaluation(
+            output = CounterOutput(
+                count = state.count,
+                onIncrement = context.onEvent {
+                    transition(state.copy(count = state.count + 1))
+                },
+            )
+        )
+    }
 }
 ```
 
@@ -39,8 +32,8 @@ seed values.
 
 ```kotlin
 override fun initialState(input: Input) = State(
-  itemId = input.itemId,
-  item = null,
+    itemId = input.itemId,
+    item = null,
 )
 ```
 
@@ -54,7 +47,7 @@ Update state — triggers re-evaluation:
 
 ```kotlin
 context.onEvent { newName: String ->
-  transition(state.copy(name = newName))
+    transition(state.copy(name = newName))
 }
 ```
 
@@ -62,9 +55,9 @@ Side effect only — no state change:
 
 ```kotlin
 context.callback {
-  transition {
-    analytics.trackSaveClicked()
-  }
+    transition {
+        analytics.trackSaveClicked()
+    }
 }
 ```
 
@@ -72,9 +65,9 @@ Both — update state and execute a side effect:
 
 ```kotlin
 context.callback {
-  transition(state.copy(saved = true)) {
-    userService.save(state.data)
-  }
+    transition(state.copy(saved = true)) {
+        userService.save(state.data)
+    }
 }
 ```
 
@@ -82,7 +75,7 @@ Do nothing:
 
 ```kotlin
 context.callback {
-  none()
+    none()
 }
 ```
 
@@ -96,15 +89,15 @@ state to use for evaluation.
 
 ```kotlin
 override fun onInputChanged(
-  oldInput: Input,
-  input: Input,
-  state: State,
+    oldInput: Input,
+    input: Input,
+    state: State,
 ): State {
-  return if (oldInput.itemId != input.itemId) {
-    state.copy(item = null)
-  } else {
-    state
-  }
+    return if (oldInput.itemId != input.itemId) {
+        state.copy(item = null)
+    } else {
+        state
+    }
 }
 ```
 

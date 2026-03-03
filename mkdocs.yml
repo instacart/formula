@@ -28,4 +28,5 @@ nav:
   - 'Performance': performance.md
   - 'Formula Android': Formula-Android.md
   - 'Using Android View Model': android-view-model.md
+  - 'Advanced: Extending Action Interface': action-custom.md
   - 'Contributing': CONTRIBUTING.md

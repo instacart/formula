@@ -2,3 +2,19 @@
     font-weight: bold;
     color: #353535;
 }
+
+.md-typeset h1 {
+    font-size: 1.5em;
+}
+
+.md-typeset h2 {
+    font-size: 1.25em;
+}
+
+.md-typeset h3 {
+    font-size: 1.1em;
+}
+
+.md-typeset h4 {
+    font-size: 1em;
+}

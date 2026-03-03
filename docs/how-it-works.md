@@ -29,7 +29,7 @@ it is reused; if not, a new one is started. Actions not declared during an evalu
 are cancelled afterward.
 
 ```kotlin
-  // Conditional: action only runs when userId is set.
+// Conditional: action only runs when userId is set.
 // If userId becomes null, the runtime cancels it.
 if (state.userId != null) {
     // Key: if userId changes, runtime cancels the old action and starts a new one.

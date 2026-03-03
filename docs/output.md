@@ -3,9 +3,9 @@ consumer and defines events the consumer can trigger back.
 
 ```kotlin
 data class CounterOutput(
-  val count: Int,
-  val onIncrement: () -> Unit,
-  val onDecrement: () -> Unit,
+    val count: Int,
+    val onIncrement: () -> Unit,
+    val onDecrement: () -> Unit,
 )
 ```
 
@@ -15,17 +15,17 @@ hierarchy state changes.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-  return Evaluation(
-    output = CounterOutput(
-      count = state.count,
-      onIncrement = context.onEvent {
-        transition(state.copy(count = state.count + 1))
-      },
-      onDecrement = context.onEvent {
-        transition(state.copy(count = state.count - 1))
-      }
+    return Evaluation(
+        output = CounterOutput(
+            count = state.count,
+            onIncrement = context.onEvent {
+                transition(state.copy(count = state.count + 1))
+            },
+            onDecrement = context.onEvent {
+                transition(state.copy(count = state.count - 1))
+            }
+        )
     )
-  )
 }
 ```
 
@@ -38,9 +38,9 @@ When an event carries data, use `context.onEvent`:
 
 ```kotlin
 FormOutput(
-  onNameChanged = context.onEvent { newName ->
-    transition(state.copy(name = newName))
-  }
+    onNameChanged = context.onEvent { newName ->
+        transition(state.copy(name = newName))
+    }
 )
 ```
 
@@ -48,9 +48,9 @@ When no data is needed, use `context.callback`:
 
 ```kotlin
 FormOutput(
-  onSaveSelected = context.callback {
-    transition { userService.updateName(state.name) }
-  }
+    onSaveSelected = context.callback {
+        transition { userService.updateName(state.name) }
+    }
 )
 ```
 
@@ -77,12 +77,12 @@ an explicit key.
 
 ```kotlin
 state.items.map { item ->
-  ItemOutput(
-    name = item.name,
-    onSelected = context.onEvent(key = item.id) {
-      transition(state.copy(selectedItem = item))
-    }
-  )
+    ItemOutput(
+        name = item.name,
+        onSelected = context.onEvent(key = item.id) {
+            transition(state.copy(selectedItem = item))
+        }
+    )
 }
 ```
 
@@ -93,10 +93,10 @@ Design your Output to reflect the structure of your feature.
 
 ```kotlin
 data class OrderDetailOutput(
-  val orderSummary: OrderSummaryOutput,
-  val itemList: ItemListOutput,
-  val paymentInfo: PaymentInfoOutput,
-  val cancelOrder: ButtonOutput?,
+    val orderSummary: OrderSummaryOutput,
+    val itemList: ItemListOutput,
+    val paymentInfo: PaymentInfoOutput,
+    val cancelOrder: ButtonOutput?,
 )
 ```
 
@@ -107,7 +107,7 @@ Output can represent different states such as loading, content, and error. The
 
 ```kotlin
 data class ItemDetailOutput(
-  val item: UCT<Item>,
+    val item: UCT<Item>,
 )
 ```
 
