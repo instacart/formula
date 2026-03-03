@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../composition/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../performance/">
+        <link rel="next" href="../input/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Testing - Formula</title>
+        <title>How It Works - Formula</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dependency" class="md-skip">
+        <a href="#how-it-works" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Testing
+              How It Works
             
           </span>
         </div>
@@ -254,10 +254,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../how-it-works/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How It Works
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -273,6 +300,98 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintaining-components-across-evaluations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintaining components across evaluations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintaining components across evaluations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#child-formula-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Child Formula Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listener-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listener Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-collisions-and-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Collisions and Indexing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -416,35 +535,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -460,96 +554,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -679,6 +683,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -687,10 +693,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
+  <a href="#transitions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency
+        Transitions
       
     </span>
   </a>
@@ -698,33 +704,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
+  <a href="#maintaining-components-across-evaluations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic example
+        Maintaining components across evaluations
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
+    <nav class="md-nav" aria-label="Maintaining components across evaluations">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
+  <a href="#action-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Mockito example
+        Action Lifecycle
       
     </span>
   </a>
@@ -732,10 +727,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
+  <a href="#child-formula-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using interfaces and fakes in your testing
+        Child Formula Lifecycle
       
     </span>
   </a>
@@ -743,10 +738,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
+  <a href="#listener-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interacting with Test Formula
+        Listener Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-collisions-and-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Collisions and Indexing
       
     </span>
   </a>
@@ -778,72 +784,76 @@
   
 
 
-  <h1>Testing</h1>
-
-<h3 id="dependency">Dependency</h3>
-<p>To simplify testing your Formulas, use <code>formula-test</code> module.
-<div class="highlight"><pre><span></span><code>testImplementation &#39;com.instacart.formula:formula-test:{latest_version}&#39;
-</code></pre></div></p>
-<h3 id="basic-example">Basic example</h3>
-<p>Use <code>test</code> extension to start testing your formula. Then, you can use <code>output</code> 
-function to make assertions on the output or invoke event listeners.</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">CounterFormula</span><span class="p">()</span>
-<span class="w">    </span><span class="p">.</span><span class="na">test</span><span class="p">()</span>
-<span class="w">    </span><span class="c1">// Making assertion on the initial output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 0&quot;</span><span class="p">)</span>
+<h1 id="how-it-works">How It Works</h1>
+<p>Formula has a similar mental model to Jetpack Compose — it has a declarative <code>evaluate()</code>
+function which describes what should exist right now. It produces output and actions based
+on current input, state, and child outputs. It re-runs when <strong>input changes</strong>, <strong>state
+changes</strong>, or <strong>child hierarchy state changes</strong>. For every change, the root formula
+re-evaluates all the way down to the changed area.</p>
+<h2 id="transitions">Transitions</h2>
+<p>Formula provides a mechanism to declare event listeners which respond to events by
+producing transitions. A transition can update the formula's state and optionally execute
+side effects. When state changes, it propagates up to the root, which re-runs <code>evaluate()</code>
+down to the changed area.</p>
+<h2 id="maintaining-components-across-evaluations">Maintaining components across evaluations</h2>
+<p><code>evaluate()</code> is called many times over a formula's lifetime. Actions, child formulas, and
+listeners need to persist across these evaluations — actions should keep running, children
+should keep their state, and listeners should maintain stable identity. Formula uses a
+key-based mechanism to match components across evaluations and manage their lifecycle.</p>
+<h3 id="action-lifecycle">Action Lifecycle</h3>
+<p>Actions declared during evaluation are started by the runtime. If an action is no longer
+declared in a subsequent evaluation, the runtime cancels it. If an action's key changes,
+the runtime cancels the old one and starts a new one.</p>
+<p>To match actions across evaluations, the runtime uses a composite key (positional key
+based on anonymous class type + optional user-provided key). During evaluation, each
+action declaration looks up its key in <code>LifecycleCache</code> — if a matching action exists,
+it is reused; if not, a new one is started. Actions not declared during an evaluation
+are cancelled afterward.</p>
+<div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Conditional: action only runs when userId is set.</span>
+<span class="w">  </span><span class="c1">// If userId becomes null, the runtime cancels it.</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Key: if userId changes, runtime cancels the old action and starts a new one.</span>
+<span class="w">    </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">      </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Invoking an event listener that live on the output.</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Making assertion on final output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">       </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 2&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-</code></pre></div>
-Note: you can find the <code>CounterFormula</code> in the <code>samples</code> folder in the repository.</p>
-<h3 id="fakes-and-mocks">Fakes and Mocks</h3>
-<p>In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.</p>
-<h4 id="mockito-example">Mockito example</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="c1">// We only want to override the `implementation()` function and keep default `type()`.</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mock</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="o">&gt;</span><span class="p">(</span><span class="n">defaultAnswer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CallsRealMethods</span><span class="p">())</span>
-<span class="n">whenever</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="na">implementation</span><span class="p">()).</span><span class="na">thenReturn</span><span class="p">(</span><span class="n">testFormula</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="using-interfaces-and-fakes-in-your-testing">Using interfaces and fakes in your testing</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">MyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyInput</span><span class="p">()</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyOutput</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="c1">// Test fake implementation</span>
-<span class="kd">class</span><span class="w"> </span><span class="nc">FakeMyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MyFormula</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">implementation</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testFormula</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h4 id="interacting-with-test-formula">Interacting with Test Formula</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="p">()</span>
+<h3 id="child-formula-lifecycle">Child Formula Lifecycle</h3>
+<p>Child formulas declared via <code>context.child()</code> during evaluation are started by the runtime.
+If a child is no longer declared in a subsequent evaluation, the runtime terminates it.</p>
+<p>To match child formulas across evaluations, the runtime uses a composite key of formula
+type + <code>formula.key(input)</code>. If <code>key(input)</code> changes, the runtime terminates the old
+instance and starts a new one with <code>initialState</code>.</p>
+<p>A child only re-evaluates if its input changed or state changed within its hierarchy.
+Otherwise, <code>context.child()</code> returns the previously computed output.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">headerOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">headerFormula</span><span class="p">,</span><span class="w"> </span><span class="n">HeaderInput</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">title</span><span class="p">))</span>
 
-<span class="c1">// Assert on the data passed</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
-<span class="w">    </span><span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">dialog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">showDialog</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">dialogFormula</span><span class="p">,</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kc">null</span>
 <span class="p">}</span>
-
-<span class="c1">// Trigger an event </span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Emit a new output</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
 </code></pre></div>
+<h3 id="listener-lifecycle">Listener Lifecycle</h3>
+<p>Listeners created via <code>context.onEvent</code> and <code>context.callback</code> maintain the same instance
+across evaluations. This is important because listeners are placed on outputs and passed
+to child formulas via input — if a new instance were created every evaluation, equality
+checks would always fail, triggering unnecessary re-evaluation.</p>
+<p>Like actions, listeners are matched across evaluations using a composite key (positional
+key + optional user-provided key). The listener's internal transition is updated each
+evaluation to reference the latest state, but the instance itself stays the same.</p>
+<p>Listeners not requested during an evaluation are disabled and cleaned up.</p>
+<h3 id="key-collisions-and-indexing">Key Collisions and Indexing</h3>
+<p>When multiple components share the same positional key — for example, creating listeners
+inside a <code>map</code> loop — Formula disambiguates them by index. The first occurrence gets
+index 0, the second gets index 1, and so on.</p>
+<p>This is fragile: if item order changes or items are removed, indexes shift and components
+can get matched to wrong instances. To avoid this, provide stable, explicit keys such as
+a unique identifier for the object.</p>
 
 
 

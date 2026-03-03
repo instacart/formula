@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../composition/">
+        <link rel="prev" href="../input/">
       
       
-        <link rel="next" href="../performance/">
+        <link rel="next" href="../state/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Testing - Formula</title>
+        <title>Output - Formula</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dependency" class="md-skip">
+        <a href="#event-listeners-and-transitions" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Testing
+              Output
             
           </span>
         </div>
@@ -308,10 +308,35 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../output/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Output
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -327,6 +352,85 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#event-listeners-and-transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Listeners and Transitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#listener-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listener Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Listener Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#listener-keying" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listener Keying
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composing-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composing Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-and-error-states-in-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading and Error States in Output
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -416,35 +520,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -460,96 +539,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -687,10 +676,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
+  <a href="#event-listeners-and-transitions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency
+        Event Listeners and Transitions
       
     </span>
   </a>
@@ -698,55 +687,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
+  <a href="#listener-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic example
+        Listener Lifecycle
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
+    <nav class="md-nav" aria-label="Listener Lifecycle">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
+  <a href="#listener-keying" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
+        Listener Keying
       
     </span>
   </a>
@@ -755,6 +711,28 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composing-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composing Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-and-error-states-in-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading and Error States in Output
+      
+    </span>
+  </a>
   
 </li>
       
@@ -778,72 +756,92 @@
   
 
 
-  <h1>Testing</h1>
+  <h1>Output</h1>
 
-<h3 id="dependency">Dependency</h3>
-<p>To simplify testing your Formulas, use <code>formula-test</code> module.
-<div class="highlight"><pre><span></span><code>testImplementation &#39;com.instacart.formula:formula-test:{latest_version}&#39;
-</code></pre></div></p>
-<h3 id="basic-example">Basic example</h3>
-<p>Use <code>test</code> extension to start testing your formula. Then, you can use <code>output</code> 
-function to make assertions on the output or invoke event listeners.</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">CounterFormula</span><span class="p">()</span>
-<span class="w">    </span><span class="p">.</span><span class="na">test</span><span class="p">()</span>
-<span class="w">    </span><span class="c1">// Making assertion on the initial output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 0&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Invoking an event listener that live on the output.</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Making assertion on final output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">       </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 2&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-</code></pre></div>
-Note: you can find the <code>CounterFormula</code> in the <code>samples</code> folder in the repository.</p>
-<h3 id="fakes-and-mocks">Fakes and Mocks</h3>
-<p>In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.</p>
-<h4 id="mockito-example">Mockito example</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
+<p>Output is an immutable data class returned from <code>evaluate()</code>. It passes data out to the
+consumer and defines events the consumer can trigger back.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CounterOutput</span><span class="p">(</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onIncrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onDecrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="c1">// We only want to override the `implementation()` function and keep default `type()`.</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mock</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="o">&gt;</span><span class="p">(</span><span class="n">defaultAnswer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CallsRealMethods</span><span class="p">())</span>
-<span class="n">whenever</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="na">implementation</span><span class="p">()).</span><span class="na">thenReturn</span><span class="p">(</span><span class="n">testFormula</span><span class="p">)</span>
 </code></pre></div>
-<h4 id="using-interfaces-and-fakes-in-your-testing">Using interfaces and fakes in your testing</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">MyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyInput</span><span class="p">()</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyOutput</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="c1">// Test fake implementation</span>
-<span class="kd">class</span><span class="w"> </span><span class="nc">FakeMyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MyFormula</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
+<p>Output is created within <code>evaluate()</code> from the current state, input, and child outputs.
+It is recreated every time <code>evaluate()</code> runs — triggered by input, state, or child
+hierarchy state changes.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
+<span class="w">      </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="p">,</span>
+<span class="w">      </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">implementation</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testFormula</span>
 <span class="p">}</span>
 </code></pre></div>
-<h4 id="interacting-with-test-formula">Interacting with Test Formula</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="p">()</span>
-
-<span class="c1">// Assert on the data passed</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
-<span class="w">    </span><span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Trigger an event </span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Emit a new output</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
+<p>Every time <code>evaluate()</code> runs, a new output is produced. This makes Formula reactive —
+state changes automatically propagate as updated output to the consumer.</p>
+<h2 id="event-listeners-and-transitions">Event Listeners and Transitions</h2>
+<p>When an event carries data, use <code>context.onEvent</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">FormOutput</span><span class="p">(</span>
+<span class="w">  </span><span class="n">onNameChanged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">newName</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newName</span><span class="p">))</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">)</span>
 </code></pre></div>
+<p>When no data is needed, use <code>context.callback</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">FormOutput</span><span class="p">(</span>
+<span class="w">  </span><span class="n">onSaveSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">userService</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Both trigger a transition when called — updating state, executing side effects, or both.</p>
+<h2 id="listener-lifecycle">Listener Lifecycle</h2>
+<p>Output is recreated every evaluation, but listeners need stable identity. If a listener
+were a new instance every time, output equality would always fail — even when nothing
+actually changed.</p>
+<p><code>context.onEvent</code> and <code>context.callback</code> maintain the same instance across evaluations.
+The runtime matches them via composite key (positional key based on anonymous class type
++ optional user-provided key) in <code>LifecycleCache</code>. The internal transition is updated
+each evaluation to reference the latest state, but the instance itself stays the same.</p>
+<p>Listeners not requested during an evaluation are disabled and cleaned up.</p>
+<h3 id="listener-keying">Listener Keying</h3>
+<p>The default positional key works when each listener has a unique call site. When multiple
+listeners share the same call site — such as creating listeners inside a loop — provide
+an explicit key.</p>
+<div class="highlight"><pre><span></span><code><span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">  </span><span class="n">ItemOutput</span><span class="p">(</span>
+<span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">onSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="composing-outputs">Composing Outputs</h2>
+<p>Outputs are data classes — they naturally compose by nesting smaller outputs as fields.
+Design your Output to reflect the structure of your feature.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">OrderDetailOutput</span><span class="p">(</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">orderSummary</span><span class="p">:</span><span class="w"> </span><span class="n">OrderSummaryOutput</span><span class="p">,</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">itemList</span><span class="p">:</span><span class="w"> </span><span class="n">ItemListOutput</span><span class="p">,</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">paymentInfo</span><span class="p">:</span><span class="w"> </span><span class="n">PaymentInfoOutput</span><span class="p">,</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">cancelOrder</span><span class="p">:</span><span class="w"> </span><span class="n">ButtonOutput?,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="loading-and-error-states-in-output">Loading and Error States in Output</h2>
+<p>Output can represent different states such as loading, content, and error. The
+<a href="https://github.com/Laimiux/lce/">LCE library</a> provides type-safe wrappers for this.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">ItemDetailOutput</span><span class="p">(</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">item</span><span class="p">:</span><span class="w"> </span><span class="n">UCT</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><code>UCT&lt;Content&gt;</code> is an alias for <code>Lce&lt;Unit, Content, Throwable&gt;</code> — it can be loading,
+content, or error.</p>
 
 
 

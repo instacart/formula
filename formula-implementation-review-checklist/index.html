@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="../composition/">
-      
-      
-        <link rel="next" href="../performance/">
       
       
         
@@ -23,7 +19,7 @@
     
     
       
-        <title>Testing - Formula</title>
+        <title>Formula Implementation Review - Formula</title>
       
     
     
@@ -74,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dependency" class="md-skip">
+        <a href="#formula-implementation-review" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Testing
+              Formula Implementation Review
             
           </span>
         </div>
@@ -416,35 +412,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -460,96 +431,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -679,6 +560,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -687,44 +570,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
+  <a href="#setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency
+        Setup
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
+    <nav class="md-nav" aria-label="Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
+  <a href="#1-identify-the-formulas-to-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Mockito example
+        1. Identify the formula(s) to review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correctness-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correctness Review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Correctness Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2-review-input-and-state-equality-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Review input and state equality guarantees
       
     </span>
   </a>
@@ -732,10 +621,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
+  <a href="#3-review-evaluate-for-side-effects" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using interfaces and fakes in your testing
+        3. Review evaluate() for side effects
       
     </span>
   </a>
@@ -743,10 +632,115 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
+  <a href="#4-review-formulacontext-usage-outside-of-evaluate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interacting with Test Formula
+        4. Review FormulaContext usage outside of evaluate()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-review-child-formula-action-and-listener-usage-within-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Review child formula, action, and listener usage within loops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-review-action-lifecycle-assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Review action lifecycle assumptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7-review-child-inputs-used-within-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Review child inputs used within evaluate()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-review-keys-used-within-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Review keys used within evaluate()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-review-expensive-work-in-evaluate-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Review expensive work in evaluate() body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-review-the-frequency-of-state-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Review the frequency of state changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-review-tree-depth-and-breadth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Review tree depth and breadth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-summarize-performance-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Summarize performance findings
       
     </span>
   </a>
@@ -778,72 +772,98 @@
   
 
 
-  <h1>Testing</h1>
-
-<h3 id="dependency">Dependency</h3>
-<p>To simplify testing your Formulas, use <code>formula-test</code> module.
-<div class="highlight"><pre><span></span><code>testImplementation &#39;com.instacart.formula:formula-test:{latest_version}&#39;
-</code></pre></div></p>
-<h3 id="basic-example">Basic example</h3>
-<p>Use <code>test</code> extension to start testing your formula. Then, you can use <code>output</code> 
-function to make assertions on the output or invoke event listeners.</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">CounterFormula</span><span class="p">()</span>
-<span class="w">    </span><span class="p">.</span><span class="na">test</span><span class="p">()</span>
-<span class="w">    </span><span class="c1">// Making assertion on the initial output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 0&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Invoking an event listener that live on the output.</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Making assertion on final output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">       </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 2&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-</code></pre></div>
-Note: you can find the <code>CounterFormula</code> in the <code>samples</code> folder in the repository.</p>
-<h3 id="fakes-and-mocks">Fakes and Mocks</h3>
-<p>In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.</p>
-<h4 id="mockito-example">Mockito example</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="c1">// We only want to override the `implementation()` function and keep default `type()`.</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mock</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="o">&gt;</span><span class="p">(</span><span class="n">defaultAnswer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CallsRealMethods</span><span class="p">())</span>
-<span class="n">whenever</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="na">implementation</span><span class="p">()).</span><span class="na">thenReturn</span><span class="p">(</span><span class="n">testFormula</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="using-interfaces-and-fakes-in-your-testing">Using interfaces and fakes in your testing</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">MyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyInput</span><span class="p">()</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyOutput</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="c1">// Test fake implementation</span>
-<span class="kd">class</span><span class="w"> </span><span class="nc">FakeMyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MyFormula</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">implementation</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testFormula</span>
+<h1 id="formula-implementation-review">Formula Implementation Review</h1>
+<p>This skill guides you through a review of a Formula implementation.</p>
+<h2 id="setup">Setup</h2>
+<h3 id="1-identify-the-formulas-to-review">1. Identify the formula(s) to review</h3>
+<ul>
+<li>[ ] Identify the formula class(es) to review</li>
+<li>[ ] Start a review document at <code>.ai/workplace/formula-reviews/$name.md</code></li>
+<li>[ ] Read <code>/docs/performance.md</code> for background on Formula's evaluation model</li>
+</ul>
+<h2 id="correctness-review">Correctness Review</h2>
+<h3 id="2-review-input-and-state-equality-guarantees">2. Review input and state equality guarantees</h3>
+<p>Input and state need correct equality. Data classes, primitive types (String, Int, etc.),
+and other types with proper <code>equals</code>/<code>hashCode</code> implementations all work.
+- [ ] Verify input types are data classes or have stable equality (non-data class defaults
+      to referential equality, which causes child formulas to either always or never re-evaluate)
+- [ ] Verify state types are data classes or have stable equality (non-data class breaks
+      the <code>state != result.state</code> check in transition handling)
+- [ ] Document findings in review doc</p>
+<h3 id="3-review-evaluate-for-side-effects">3. Review evaluate() for side effects</h3>
+<p><code>evaluate()</code> should be pure — no logging, analytics, network calls, or other side effects.
+Side effects belong in transition effects or actions. Since evaluate re-runs on every
+input/state/child change, side effects here execute unpredictably many times.
+- [ ] Check for side effects in evaluate() body
+- [ ] Document findings in review doc</p>
+<h3 id="4-review-formulacontext-usage-outside-of-evaluate">4. Review FormulaContext usage outside of evaluate()</h3>
+<p><code>FormulaContext</code> methods (<code>context.onEvent</code>, <code>context.child</code>, <code>context.remember</code>, etc.)
+should only be called during <code>evaluate()</code>. Calling them inside transition blocks produces
+components not tracked by <code>LifecycleCache</code>.
+- [ ] Check that transitions don't call <code>context</code> methods. Example of incorrect usage:
+      <div class="highlight"><pre><span></span><code><span class="n">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span>
+<span class="w">        </span><span class="n">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">newState</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
-<h4 id="interacting-with-test-formula">Interacting with Test Formula</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="p">()</span>
-
-<span class="c1">// Assert on the data passed</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
-<span class="w">    </span><span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Trigger an event </span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Emit a new output</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
-</code></pre></div>
+- [ ] Document findings in review doc</p>
+<h3 id="5-review-child-formula-action-and-listener-usage-within-loops">5. Review child formula, action, and listener usage within loops</h3>
+<p>Positional keys are unreliable within loops. Formula internally uses indexing in such cases,
+but indexes are brittle — item ordering changes cause wrong component matching. Use unique
+identifiers instead.
+- [ ] Check that child formulas within loops declare <code>key(input)</code> with a simple identifier.
+      Avoid complicated string concatenation.
+- [ ] Check that listeners within loops have a unique key or the block is wrapped
+      in <code>context.key() {}</code>
+- [ ] Check that actions within loops use unique keys
+- [ ] Document findings in review doc</p>
+<h3 id="6-review-action-lifecycle-assumptions">6. Review action lifecycle assumptions</h3>
+<p>Actions with no key fire once on attach (can be controlled by conditional logic). Actions
+with a key restart when the key changes, indicating request invalidation. Both are valid —
+verify the assumption matches the intended behavior.
+- [ ] For each action, check if the keying strategy matches the intended lifecycle
+- [ ] Check if conditional logic around actions correctly controls when they run
+- [ ] Document findings in review doc</p>
+<h2 id="performance-review">Performance Review</h2>
+<h3 id="7-review-child-inputs-used-within-evaluate">7. Review child inputs used within evaluate()</h3>
+<p>Runtime uses input equality to short-circuit child formula evaluation. Verify if input
+<code>equals</code> and <code>hashCode</code> could be expensive.
+- [ ] Check each <code>context.child()</code> call for the input being passed
+- [ ] Flag inputs with large collections, nested objects, or non-data-class types
+- [ ] Flag inline collection transformations (<code>.filter {}</code>, <code>.map {}</code>, <code>.sorted()</code>) that
+      create new instances every evaluation
+- [ ] Document findings in review doc</p>
+<h3 id="8-review-keys-used-within-evaluate">8. Review keys used within evaluate()</h3>
+<p>We use equality to maintain listeners, actions, and child formulas across evaluations via
+<code>LifecycleCache</code>. Expensive key equality can cause performance issues.
+- [ ] Check keys passed to <code>context.onEvent</code>, <code>context.callback</code>, actions, and <code>context.child</code>
+- [ ] Verify keys are simple values (strings, ints, small data classes) or referentially stable
+- [ ] Document findings in review doc</p>
+<h3 id="9-review-expensive-work-in-evaluate-body">9. Review expensive work in evaluate() body</h3>
+<p><code>evaluate()</code> re-runs on every input/state/child change. Expensive work here multiplies with
+re-evaluation frequency.
+- [ ] Check for sorting, filtering, mapping, or other transformations on large collections
+- [ ] Suggest moving expensive computations to <code>context.remember</code> or state transitions
+- [ ] Document findings in review doc</p>
+<h3 id="10-review-the-frequency-of-state-changes">10. Review the frequency of state changes</h3>
+<p>Frequent state changes drive frequent re-evaluations across the tree.
+- [ ] Review actions for high-frequency emissions (timers, streams, rapidly updating data)
+- [ ] Review listeners for state changes that could cascade (one change triggering another)
+- [ ] Document findings in review doc</p>
+<h3 id="11-review-tree-depth-and-breadth">11. Review tree depth and breadth</h3>
+<p>On every state change, evaluation propagates from root down to the changed area. Deep nesting
+means more equality checks to reach the changed subtree. Wide formulas with many children,
+listeners, or actions increase work per evaluation even when most children skip.
+- [ ] Note formula tree depth — how many levels from root to leaf
+- [ ] Note formulas with many <code>context.child()</code> calls, listeners, or actions
+- [ ] Document findings in review doc</p>
+<h3 id="12-summarize-performance-findings">12. Summarize performance findings</h3>
+<ul>
+<li>[ ] Update review doc with a summary of performance concerns and recommendations</li>
+<li>[ ] Prioritize findings by expected impact</li>
+</ul>
 
 
 

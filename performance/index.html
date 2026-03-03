@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../composition/">
+        <link rel="prev" href="../testing/">
       
       
-        <link rel="next" href="../performance/">
+        <link rel="next" href="../Formula-Android/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Testing - Formula</title>
+        <title>Performance - Formula</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dependency" class="md-skip">
+        <a href="#performance-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Testing
+              Performance
             
           </span>
         </div>
@@ -416,6 +416,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -425,6 +452,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -433,7 +462,7 @@
   <span class="md-ellipsis">
     
   
-    Testing
+    Performance
   
 
     
@@ -451,7 +480,7 @@
   <span class="md-ellipsis">
     
   
-    Testing
+    Performance
   
 
     
@@ -467,6 +496,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -475,44 +506,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
+  <a href="#evaluation-performance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency
+        Evaluation performance
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
+    <nav class="md-nav" aria-label="Evaluation performance">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
+  <a href="#maintaining-state-across-evaluations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Mockito example
+        Maintaining state across evaluations
       
     </span>
   </a>
@@ -520,10 +529,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
+  <a href="#equality-matters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using interfaces and fakes in your testing
+        Equality matters
       
     </span>
   </a>
@@ -531,10 +540,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
+  <a href="#equality-cost" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interacting with Test Formula
+        Equality cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Computation cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-output-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downstream output cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
       
     </span>
   </a>
@@ -550,33 +603,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../performance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Performance
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -679,6 +705,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -687,44 +715,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dependency" class="md-nav__link">
+  <a href="#evaluation-performance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependency
+        Evaluation performance
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fakes and Mocks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
+    <nav class="md-nav" aria-label="Evaluation performance">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
+  <a href="#maintaining-state-across-evaluations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Mockito example
+        Maintaining state across evaluations
       
     </span>
   </a>
@@ -732,10 +738,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
+  <a href="#equality-matters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using interfaces and fakes in your testing
+        Equality matters
       
     </span>
   </a>
@@ -743,10 +749,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
+  <a href="#equality-cost" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interacting with Test Formula
+        Equality cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Computation cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-output-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downstream output cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
       
     </span>
   </a>
@@ -778,72 +828,75 @@
   
 
 
-  <h1>Testing</h1>
-
-<h3 id="dependency">Dependency</h3>
-<p>To simplify testing your Formulas, use <code>formula-test</code> module.
-<div class="highlight"><pre><span></span><code>testImplementation &#39;com.instacart.formula:formula-test:{latest_version}&#39;
-</code></pre></div></p>
-<h3 id="basic-example">Basic example</h3>
-<p>Use <code>test</code> extension to start testing your formula. Then, you can use <code>output</code> 
-function to make assertions on the output or invoke event listeners.</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">CounterFormula</span><span class="p">()</span>
-<span class="w">    </span><span class="p">.</span><span class="na">test</span><span class="p">()</span>
-<span class="w">    </span><span class="c1">// Making assertion on the initial output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 0&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Invoking an event listener that live on the output.</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// Making assertion on final output</span>
-<span class="w">    </span><span class="p">.</span><span class="na">output</span><span class="w"> </span><span class="p">{</span>
-<span class="w">       </span><span class="n">assertThat</span><span class="p">(</span><span class="n">count</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="s">&quot;Count: 2&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-</code></pre></div>
-Note: you can find the <code>CounterFormula</code> in the <code>samples</code> folder in the repository.</p>
-<h3 id="fakes-and-mocks">Fakes and Mocks</h3>
-<p>In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.</p>
-<h4 id="mockito-example">Mockito example</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="c1">// We only want to override the `implementation()` function and keep default `type()`.</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mock</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="o">&gt;</span><span class="p">(</span><span class="n">defaultAnswer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CallsRealMethods</span><span class="p">())</span>
-<span class="n">whenever</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="na">implementation</span><span class="p">()).</span><span class="na">thenReturn</span><span class="p">(</span><span class="n">testFormula</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="using-interfaces-and-fakes-in-your-testing">Using interfaces and fakes in your testing</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">MyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyInput</span><span class="p">()</span>
-<span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyOutput</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="c1">// Test fake implementation</span>
-<span class="kd">class</span><span class="w"> </span><span class="nc">FakeMyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MyFormula</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">implementation</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testFormula</span>
-<span class="p">}</span>
-</code></pre></div>
-<h4 id="interacting-with-test-formula">Interacting with Test Formula</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="p">()</span>
-
-<span class="c1">// Assert on the data passed</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
-<span class="w">    </span><span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Trigger an event </span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="c1">// Emit a new output</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
-</code></pre></div>
+<h1 id="performance-guide">Performance Guide</h1>
+<h2 id="evaluation-performance">Evaluation performance</h2>
+<p><code>evaluate()</code> is the core formula mechanism — it produces output and actions based on current input, 
+state, and child outputs. It re-runs when <strong>input changes</strong>, <strong>state changes</strong>, or 
+<strong>child hierarchy state changes</strong>. For every change, the root formula re-evaluates all the way down 
+to the changed area.</p>
+<h3 id="maintaining-state-across-evaluations">Maintaining state across evaluations</h3>
+<p>Actions, child formulas, and listeners are maintained across evaluations using composite
+keys (positional key based on anonymous class type + optional user-provided key). During
+evaluation, each <code>context.child()</code>, <code>context.onEvent()</code>, or action declaration looks up
+its key in <code>LifecycleCache</code> — if a matching component exists, it is reused; if not, a new
+one is initialized. Components not requested during an evaluation are cleaned up afterward.</p>
+<h3 id="equality-matters">Equality matters</h3>
+<p>Formula relies on equality checks to prune the evaluation tree and to maintain components across
+evaluations. Input and state equality determine whether a subtree needs to recompute. Key equality
+determines whether actions, listeners, and child formulas are matched to their previous instances
+in <code>LifecycleCache</code>.</p>
+<h3 id="equality-cost">Equality cost</h3>
+<p>Kotlin data class <code>equals()</code> checks referential equality (<code>===</code>) first — if same instance,
+comparison is instant. Structural equality (field-by-field) only runs when references differ.
+This means fields that maintain the same instance across evaluations are cheap to compare.
+Listeners and remembered values get this automatically via <code>LifecycleCache</code>. Data fields
+passed through from parent state (e.g., <code>state.items</code>) also keep the same reference when
+unchanged.</p>
+<p>Equality cost has two dimensions:</p>
+<ul>
+<li><strong>How often structural equality runs</strong> — every new instance that could have been the
+  same reference forces a structural check. Common cause: rebuilding collections inline
+  (<code>.filter {}</code>, <code>.map {}</code>) in evaluate() instead of caching via <code>context.remember</code> or
+  computing in state transitions.</li>
+<li><strong>How expensive each check is</strong> — cost is proportional to data size and depth. Large
+  collections and deeply nested objects are expensive to compare field-by-field. Keys used
+  for listeners, actions, and child formulas also pay <code>hashCode()</code> on every lookup — Kotlin
+  data classes recompute <code>hashCode()</code> on every call (no caching), so complex keys add cost
+  on every evaluation.</li>
+</ul>
+<h3 id="computation-cost">Computation cost</h3>
+<p><code>evaluate()</code> runs on every input, state, or child change. Expensive operations in the body
+multiply with re-evaluation frequency. Common examples:</p>
+<ul>
+<li><strong>String operations</strong> — concatenation, formatting, parsing</li>
+<li><strong>Collection transformations</strong> — sorting, filtering, mapping, grouping</li>
+<li><strong>Data parsing/conversion</strong> — JSON parsing, date formatting, number formatting</li>
+</ul>
+<p>Move expensive computations to <code>context.remember</code> so they are cached across evaluations,
+or compute during state transitions so they run only when data actually changes.</p>
+<h3 id="downstream-output-cost">Downstream output cost</h3>
+<p>Output produced by the root formula is consumed downstream — typically by UI rendering
+(RecyclerView diffing, Compose recomposition, view binding). The cost of processing each
+output is outside Formula's control but is driven by how often Formula produces new output
+and how large/complex the output is.</p>
+<h3 id="evaluation-frequency">Evaluation frequency</h3>
+<p>Each state change triggers a re-evaluation pass from root down to the changed area. The
+total cost is both the evaluation itself and the downstream output consumption. High-frequency
+changes compound quickly, especially when multiple sources fire concurrently.</p>
+<p>Common patterns to watch for:</p>
+<ul>
+<li><strong>Multiple child formulas making requests</strong> — X formulas each making N requests, responses
+  arrive at different times. Each triggers a separate evaluation pass through the tree.</li>
+<li><strong>Scroll events with position data</strong> — continuous stream of position updates during
+  scrolling, each triggering evaluation during a critical user experience where jank is
+  most noticeable.</li>
+<li><strong>View events from list components</strong> — e.g., visibility tracking or impression events for
+  each list item. Multiple items becoming visible at once fires multiple events in quick
+  succession.</li>
+</ul>
+<h3 id="summary">Summary</h3>
+<p>Performance is affected by: evaluation complexity, number of evaluations in a given time window,
+and what thread they execute on.</p>
 
 
 
