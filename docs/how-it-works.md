@@ -1,9 +1,9 @@
 # How It Works
 Formula has a similar mental model to Jetpack Compose — it has a declarative `evaluate()`
 function which describes what should exist right now. It produces output and actions based
-on current input, state, and child outputs. It re-runs when **input changes**, **state
-changes**, or **child hierarchy state changes**. For every change, the root formula
-re-evaluates all the way down to the changed area.
+on current input, state, and child outputs. It re-runs when **inputs**, **state**, or 
+**child hierarchy state changes**. For every change, the root formula re-evaluates all the 
+way down to the changed area.
 
 ## Transitions
 Formula provides a mechanism to declare event listeners which respond to events by
@@ -29,17 +29,15 @@ it is reused; if not, a new one is started. Actions not declared during an evalu
 are cancelled afterward.
 
 ```kotlin
-context.actions {
   // Conditional: action only runs when userId is set.
-  // If userId becomes null, the runtime cancels it.
-  if (state.userId != null) {
+// If userId becomes null, the runtime cancels it.
+if (state.userId != null) {
     // Key: if userId changes, runtime cancels the old action and starts a new one.
     Action.fromFlow(key = state.userId) {
-      repository.observeUser(state.userId)
+        repository.observeUser(state.userId)
     }.onEvent { user ->
-      transition(state.copy(user = user))
+        transition(state.copy(user = user))
     }
-  }
 }
 ```
 

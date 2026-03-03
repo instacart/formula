@@ -28,6 +28,7 @@ passed through from parent state (e.g., `state.items`) also keep the same refere
 unchanged.
 
 Equality cost has two dimensions:
+
 - **How often structural equality runs** — every new instance that could have been the
   same reference forces a structural check. Common cause: rebuilding collections inline
   (`.filter {}`, `.map {}`) in evaluate() instead of caching via `context.remember` or
@@ -41,6 +42,7 @@ Equality cost has two dimensions:
 ### Computation cost
 `evaluate()` runs on every input, state, or child change. Expensive operations in the body
 multiply with re-evaluation frequency. Common examples:
+
 - **String operations** — concatenation, formatting, parsing
 - **Collection transformations** — sorting, filtering, mapping, grouping
 - **Data parsing/conversion** — JSON parsing, date formatting, number formatting
@@ -60,6 +62,7 @@ total cost is both the evaluation itself and the downstream output consumption. 
 changes compound quickly, especially when multiple sources fire concurrently.
 
 Common patterns to watch for:
+
 - **Multiple child formulas making requests** — X formulas each making N requests, responses
   arrive at different times. Each triggers a separate evaluation pass through the tree.
 - **Scroll events with position data** — continuous stream of position updates during

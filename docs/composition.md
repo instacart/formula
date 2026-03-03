@@ -16,9 +16,9 @@ override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
 ### Input and Re-evaluation
 
 The parent creates a new Input for each child every time `evaluate()` runs. Evaluation
-is triggered when the parent's own input changes, its state changes, or a child's output
-changes. This is how data flows to children — when the parent's state updates, the child
-receives new Input reflecting those changes.
+is triggered when the parent's own input, its state  or a child's output changes. This is 
+how data flows to children — when the parent's state updates, the child receives new Input 
+reflecting those changes.
 
 ```kotlin
 val listOutput = context.child(

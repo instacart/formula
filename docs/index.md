@@ -127,7 +127,7 @@ Formula is agnostic to other layers of abstraction. It can be used within activi
 convert `Formula` to a Kotlin `StateFlow` by using `runAsStateFlow` function.
 ```kotlin
 val formula = CounterFormula()
-val scope = CoroutineScope(Dispatchers.Main)
+val scope = CoroutineScope()
 val outputs: StateFlow<CounterOutput> = formula.runAsStateFlow(scope, input = Unit)
 ```
 
