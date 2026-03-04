@@ -16,9 +16,9 @@ Output is an immutable representation of your view. It will be used to update th
 it will also contain event listeners that will be invoked when user interacts with the UI.
 ```kotlin
 data class CounterOutput(
-  val count: String,
-  val onDecrement: () -> Unit,
-  val onIncrement: () -> Unit,
+    val count: String,
+    val onDecrement: () -> Unit,
+    val onIncrement: () -> Unit,
 )
 ```
 
@@ -28,22 +28,22 @@ Once we define an Output, we can create a Composable function that renders it.
 ```kotlin
 @Composable
 fun CounterScreen(output: CounterOutput) {
-  Column(
-    modifier = Modifier.fillMaxSize(),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    Text(text = output.count)
-    Row {
-      Button(onClick = { output.onDecrement() }) {
-        Text("Decrement")
-      }
-      Spacer(Modifier.size(8.dp))
-      Button(onClick = { output.onIncrement() }) {
-        Text("Increment")
-      }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(text = output.count)
+        Row {
+            Button(onClick = { output.onDecrement() }) {
+                Text("Decrement")
+            }
+            Spacer(Modifier.size(8.dp))
+            Button(onClick = { output.onIncrement() }) {
+                Text("Increment")
+            }
+        }
     }
-  }
 }
 ```
 
@@ -69,22 +69,24 @@ various events by transitioning to a new state.
 ```kotlin
 class CounterFormula : Formula<Unit, CounterState, CounterOutput>() {
 
-  override fun initialState(input: Unit): CounterState = CounterState(count = 0)
+    override fun initialState(input: Unit): CounterState {
+        return CounterState(count = 0)
+    }
 
-  override fun Snapshot<Unit, CounterState>.evaluate(): Evaluation<CounterOutput> {
-    val count = state.count
-    return Evaluation(
-      output = CounterOutput(
-        count = "Count: $count",
-        onDecrement = context.onEvent {
-          transition(state.copy(count = count - 1))
-        },
-        onIncrement = context.onEvent {
-          transition(state.copy(count = count + 1))
-        }
-      )
-    )
-  }
+    override fun Snapshot<Unit, CounterState>.evaluate(): Evaluation<CounterOutput> {
+        val count = state.count
+        return Evaluation(
+            output = CounterOutput(
+                count = "Count: $count",
+                onDecrement = context.onEvent {
+                    transition(state.copy(count = count - 1))
+                },
+                onIncrement = context.onEvent {
+                    transition(state.copy(count = count + 1))
+                }
+            )
+        )
+    }
 }
 ```
 
@@ -98,7 +100,7 @@ functions closer.
 
 ```kotlin
 onDecrement = context.onEvent {
-  transition(state.copy(count = count - 1))
+    transition(state.copy(count = count - 1))
 }
 ```
 
@@ -109,11 +111,11 @@ If you notice, our logic currently allows user to decrement to a number below 0.
 prevent this.
 ```kotlin
 onDecrement = context.onEvent {
-  if (count == 0) {
-    none()
-  } else {
-    transition(state.copy(count = count - 1))
-  }
+    if (count == 0) {
+        none()
+    } else {
+        transition(state.copy(count = count - 1))
+    }
 }
 ```
 
@@ -127,8 +129,10 @@ Formula is agnostic to other layers of abstraction. It can be used within activi
 convert `Formula` to a Kotlin `StateFlow` by using `runAsStateFlow` function.
 ```kotlin
 val formula = CounterFormula()
-val scope = CoroutineScope(Dispatchers.Main)
-val outputs: StateFlow<CounterOutput> = formula.runAsStateFlow(scope, input = Unit)
+val scope = CoroutineScope()
+
+// Returns StateFlow<CounterOutput> 
+val outputs = formula.runAsStateFlow(scope, input = Unit)
 ```
 
 Ideally, it would be placed within a surface that survives configuration changes such as [Android Components ViewModel](android-view-model.md). You can

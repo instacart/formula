@@ -26,51 +26,38 @@ CounterFormula()
 Note: you can find the `CounterFormula` in the `samples` folder in the repository.
 
 
-### Fakes and Mocks
-In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.
+### Fakes
+In some tests, we want to provide a fake implementation of a formula that can emit
+an output, check data passed by the parent, or pass events back to the parent.
 
-#### Mockito example
-```kotlin
-val testFormula = TestFormula<MyFormula.Input, MyFormula.Output>(
-    initialOutput = MyFormula.Output()
-)
-// We only want to override the `implementation()` function and keep default `type()`.
-val formula = mock<MyFormula>(defaultAnswer = CallsRealMethods())
-whenever(formula.implementation()).thenReturn(testFormula)
-```
-  
-#### Using interfaces and fakes in your testing
 ```kotlin
 interface MyFormula : IFormula<MyFormula.Input, MyFormula.Output> {
     class MyInput()
     class MyOutput()
 }
 
-// Test fake implementation
 class FakeMyFormula : MyFormula {
-  val testFormula = TestFormula<MyFormula.Input, MyFormula.Output>(
-      initialOutput = MyFormula.Output()
-  )
-  
-  override fun implementation() = testFormula
+    override val implementation = TestFormula<MyFormula.Input, MyFormula.Output>(
+        initialOutput = MyFormula.Output()
+    )
 }
 ```
 
-#### Interacting with Test Formula
+Once you have a fake, you can assert on input, trigger events, and emit new output.
+
 ```kotlin
-val testFormula = TestFormula()
+val fake = FakeMyFormula()
 
 // Assert on the data passed
-testFormula.input {  
+fake.implementation.input {
     assertThat(this.id).isEqualTo(1)
 }
 
-// Trigger an event 
-testFormula.input {
+// Trigger an event
+fake.implementation.input {
     this.onTextChanged("new text")
 }
 
 // Emit a new output
-testFormula.output(MyFormula.Output())
+fake.implementation.output(MyFormula.Output())
 ```

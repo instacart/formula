@@ -1,21 +1,18 @@
-The Action API provides access to formula evaluation lifecycle, enabling event streams, async 
-operations, and side effects to be tied to the current evaluation state.
-
-Actions can emit events. To declare an action and handle its events, you use `.onEvent { }` which 
-registers the action with the runtime and provides a transition handler for emitted events. A 
-transition can update the formula's state, execute side effects, or both.
+Actions perform work and emit events back to the formula — observing streams, running
+async operations, and responding to lifecycle. Declared within `evaluate()`, the runtime
+manages their lifecycle: starting them when declared, cancelling them when removed.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-  return Evaluation(
-    output = createOutput(state),
-    actions = context.actions {
-      // actions are declared here
-      Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
-        transition(state.copy(user = user))
-      }
-    }
-  )
+    return Evaluation(
+        output = ...,
+        actions = context.actions {
+            // actions are declared here
+            Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
+                transition(state.copy(user = user))
+            }
+        }
+    )
 }
 ```
 
@@ -44,8 +41,8 @@ Action.launchCatching { fetchUser(userId) }.onEvent { result ->
 To start and collect Flow events:
 ```kotlin
 Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
-  // Update state
-  transition(state.copy(user = user))
+    // Update state
+    transition(state.copy(user = user))
 }
 ```
 
@@ -54,21 +51,22 @@ Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
 Emits when action is initialized:
 ```kotlin
 Action.onInit().onEvent {
-  transition { analytics.trackScreenOpen() }
+    transition { analytics.trackScreenOpen() }
 }
 ```
 
 Emits when action is terminated (state transitions are discarded, only side effects):
 ```kotlin
 Action.onTerminate().onEvent {
-  transition { analytics.trackCloseEvent() }
+    transition { analytics.trackCloseEvent() }
 }
 ```
 
-Emits `data` on initialization and re-emits whenever `data` changes:
+Emits `data` on initialization and re-emits whenever `data` changes. This uses the key
+mechanism — the data is the key, so when it changes the runtime restarts the action:
 ```kotlin
 Action.onData(itemId).onEvent {
-  transition { analytics.trackItemLoaded(itemId) }
+    transition { analytics.trackItemLoaded(itemId) }
 }
 ```
 
@@ -90,7 +88,7 @@ The `key` parameter enables distinguishing between different actions. If the key
 the runtime cancels the old action and starts a new one.
 ```kotlin
 Action.fromFlow(key = input.taskId) { taskRepo.fetchTask(input.taskId) }.onEvent { taskResponse ->
-  transition(state.copy(task = taskResponse))
+    transition(state.copy(task = taskResponse))
 }
 ```
 
@@ -102,64 +100,11 @@ Since the runtime manages actions based on what's declared in evaluation, condit
 logic controls when actions run.
 ```kotlin
 if (state.locationTrackingEnabled) {
-  Action.fromFlow { locationManager.updates() }.onEvent { event ->
-    transition(state.copy(location = event.location))
-  }
+    Action.fromFlow { locationManager.updates() }.onEvent { event ->
+        transition(state.copy(location = event.location))
+    }
 }
 ```
 
 If `state.locationTrackingEnabled` changes from `true` to `false`, the action is no
 longer declared and the runtime cancels it.
-
-
-## Extending Action Interface
-
-If you need to use a different mechanism for asynchronous events, you can extend `Action` interface.
-```kotlin
-interface Action<Event> {
-  fun start(scope: CoroutineScope, emitter: Emitter<Event>): Cancelable?
-  fun key(): Any?
-}
-```
-
-For example, let's say we want to track network status (I'm going to use mock network status APIs).
-```kotlin
-class GetNetworkStatusAction(
-  val manager: NetworkStatusManager
-) : Action<NetworkStatus> {
-
-  override fun start(scope: CoroutineScope, emitter: Emitter<NetworkStatus>): Cancelable? {
-    val listener = object: NetworkStatusListener {
-      override fun onNetworkStatusChanged(status: NetworkStatus) {
-          emitter.onEvent(status)
-      }
-    }
-
-    manager.addNetworkStatusListener(listener)
-    return Cancelable {
-      manager.removeNetworkStatusListener(listener)
-    }
-  }
-
-  override fun key(): Any? = null
-}
-```
-
-We can now hook this up within our Formula:
-```kotlin
-class MyFormula(
-    private val getNetworkStatusAction: GetNetworkStatusAction,
-): Formula<Input, State, Output> {
-
-  override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    return Evaluation(
-      actions = context.actions {
-        getNetworkStatusAction.onEvent { status ->
-          val newState = state.copy(isOnline = status.isOnline)
-          transition(newState)
-        }
-      }
-    )
-  }
-}
-```

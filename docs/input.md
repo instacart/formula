@@ -2,14 +2,15 @@ Input is an immutable data class that defines a formula's contract with its host
 component that runs it. A host can be a ViewModel running the formula via `runAsStateFlow`,
 or a parent formula using `context.child()`. Input specifies what data the host provides
 and what events the formula reports back. When input changes, the formula re-evaluates.
+It can be `Unit` if no input is required.
 
 ```kotlin
 class ItemFormula : Formula<Input, State, Output>() {
 
-  data class Input(
-    val itemId: String,
-    val onItemNotFound: () -> Unit,
-  )
+    data class Input(
+        val itemId: String,
+        val onItemNotFound: () -> Unit,
+    )
 }
 ```
 
@@ -23,21 +24,21 @@ To report events back to the host, call the callbacks defined on input within a 
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-  return Evaluation(
-    output = ...,
-    actions = context.actions {
-      Action.launchCatching(key = input.itemId) {
-        repo.fetchItem(input.itemId)
-      }.onEvent { result ->
-        if (result.isSuccess) {
-          transition(state.copy(item = result.getOrNull()))
-        } else {
-          // Notify host that item was not found
-          transition { input.onItemNotFound() }
+    return Evaluation(
+        output = ...,
+        actions = context.actions {
+            Action.launchCatching(key = input.itemId) {
+                repo.fetchItem(input.itemId)
+            }.onEvent { result ->
+                if (result.isSuccess) {
+                    transition(state.copy(item = result.getOrNull()))
+                } else {
+                    // Notify host that item was not found
+                    transition { input.onItemNotFound() }
+                }
+            }
         }
-      }
-    }
-  )
+    )
 }
 ```
 
@@ -51,11 +52,11 @@ directly and collects output.
 
 ```kotlin
 val output: StateFlow<Output> = formula.runAsStateFlow(
-  scope = viewModelScope,
-  input = Input(
-    itemId = "1",
-    onItemNotFound = { navigateBack() },
-  ),
+    scope = viewModelScope,
+    input = Input(
+        itemId = "1",
+        onItemNotFound = { navigateBack() },
+    ),
 )
 ```
 
@@ -66,13 +67,13 @@ and callbacks.
 
 ```kotlin
 val childOutput = context.child(
-  formula = itemFormula,
-  input = ItemFormula.Input(
-    itemId = state.selectedId,
-    onItemNotFound = context.callback {
-      transition(state.copy(selectedId = null))
-    },
-  ),
+    formula = itemFormula,
+    input = ItemFormula.Input(
+        itemId = state.selectedId,
+        onItemNotFound = context.callback {
+            transition(state.copy(selectedId = null))
+        },
+    ),
 )
 ```
 

@@ -146,8 +146,8 @@ Let's say we want to add the following behaviors to the previous counter example
 First, let's define a class that defines our events.
 ```kotlin
 data class CounterEventRouter(
-  val onToastNotification: (String) -> Unit,
-  val onVictoryReached: () -> Unit
+    val onToastNotification: (String) -> Unit,
+    val onVictoryReached: () -> Unit
 )
 ```
 

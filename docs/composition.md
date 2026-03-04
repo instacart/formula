@@ -1,13 +1,13 @@
-Formula supports composition — a parent formula can run child formulas via
-`context.child(formula, input)` within `evaluate()`, passing data and callbacks down
-through Input and receiving the child's Output.
+Formula supports composition — a parent can run child formulas within `evaluate()` via
+`context.child(formula, input)`, passing data and callbacks down through Input and
+receiving the child's Output.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-  val listOutput = context.child(formula = itemListFormula, input = ...)
-  return Evaluation(
-    output = Output(list = listOutput)
-  )
+    val listOutput = context.child(itemListFormula, childInput)
+    return Evaluation(
+        output = Output(list = listOutput)
+    )
 }
 ```
 
@@ -16,19 +16,19 @@ override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
 ### Input and Re-evaluation
 
 The parent creates a new Input for each child every time `evaluate()` runs. Evaluation
-is triggered when the parent's own input changes, its state changes, or a child's output
-changes. This is how data flows to children — when the parent's state updates, the child
-receives new Input reflecting those changes.
+is triggered when the parent's own input, its state  or a child's output changes. This is 
+how data flows to children — when the parent's state updates, the child receives new Input 
+reflecting those changes.
 
 ```kotlin
 val listOutput = context.child(
-  formula = itemListFormula,
-  input = ItemListFormula.Input(
-    items = state.items,
-    onItemSelected = context.onEvent<ItemId> { itemId ->
-      transition(state.copy(selectedItemId = itemId))
-    }
-  )
+    formula = itemListFormula,
+    input = ItemListFormula.Input(
+        items = state.items,
+        onItemSelected = context.onEvent<ItemId> { itemId ->
+            transition(state.copy(selectedItemId = itemId))
+        }
+    )
 )
 ```
 
@@ -65,9 +65,9 @@ Since children are declared in `evaluate()`, conditional logic controls their ex
 
 ```kotlin
 val dialog = if (state.showDialog) {
-  context.child(formula = dialogFormula, input = Unit)
+    context.child(formula = dialogFormula, input = Unit)
 } else {
-  null
+    null
 }
 ```
 
@@ -82,7 +82,10 @@ type. For example, rendering a list of items where each item is managed by the s
 
 ```kotlin
 state.items.map { item ->
-  context.child(formula = itemFormula, input = ItemFormula.Input(itemId = item.id))
+    context.child(
+        formula = itemFormula, 
+        input = ItemFormula.Input(itemId = item.id),
+    )
 }
 ```
 
