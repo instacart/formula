@@ -686,6 +686,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -994,8 +1021,8 @@ things like navigation.</p>
 </ul>
 <p>First, let's define a class that defines our events.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CounterEventRouter</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onToastNotification</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onVictoryReached</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onToastNotification</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onVictoryReached</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span>
 <span class="p">)</span>
 </code></pre></div></p>
 <p>We can now request this dependency within our feature factory

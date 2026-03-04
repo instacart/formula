@@ -497,52 +497,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
+  <a href="#fakes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fakes and Mocks
+        Fakes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -642,6 +603,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -709,52 +697,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fakes-and-mocks" class="md-nav__link">
+  <a href="#fakes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fakes and Mocks
+        Fakes
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Fakes and Mocks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mockito-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mockito example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-interfaces-and-fakes-in-your-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using interfaces and fakes in your testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-test-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with Test Formula
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -802,47 +751,35 @@ function to make assertions on the output or invoke event listeners.</p>
 <span class="w">    </span><span class="p">}</span>
 </code></pre></div>
 Note: you can find the <code>CounterFormula</code> in the <code>samples</code> folder in the repository.</p>
-<h3 id="fakes-and-mocks">Fakes and Mocks</h3>
-<p>In some tests, we want to provide a fake/mock implementation of formula that
-can emit an output, check data passed by the parent or pass events back to the parent.</p>
-<h4 id="mockito-example">Mockito example</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="c1">// We only want to override the `implementation()` function and keep default `type()`.</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mock</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="o">&gt;</span><span class="p">(</span><span class="n">defaultAnswer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CallsRealMethods</span><span class="p">())</span>
-<span class="n">whenever</span><span class="p">(</span><span class="n">formula</span><span class="p">.</span><span class="na">implementation</span><span class="p">()).</span><span class="na">thenReturn</span><span class="p">(</span><span class="n">testFormula</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="using-interfaces-and-fakes-in-your-testing">Using interfaces and fakes in your testing</h4>
+<h3 id="fakes">Fakes</h3>
+<p>In some tests, we want to provide a fake implementation of a formula that can emit
+an output, check data passed by the parent, or pass events back to the parent.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">MyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyInput</span><span class="p">()</span>
 <span class="w">    </span><span class="kd">class</span><span class="w"> </span><span class="nc">MyOutput</span><span class="p">()</span>
 <span class="p">}</span>
 
-<span class="c1">// Test fake implementation</span>
 <span class="kd">class</span><span class="w"> </span><span class="nc">FakeMyFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">MyFormula</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
-<span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">implementation</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testFormula</span>
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">implementation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="o">&lt;</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">,</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="n">initialOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">()</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
-<h4 id="interacting-with-test-formula">Interacting with Test Formula</h4>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">testFormula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestFormula</span><span class="p">()</span>
+<p>Once you have a fake, you can assert on input, trigger events, and emit new output.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">fake</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FakeMyFormula</span><span class="p">()</span>
 
 <span class="c1">// Assert on the data passed</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
+<span class="n">fake</span><span class="p">.</span><span class="na">implementation</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">assertThat</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">id</span><span class="p">).</span><span class="na">isEqualTo</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="c1">// Trigger an event </span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">// Trigger an event</span>
+<span class="n">fake</span><span class="p">.</span><span class="na">implementation</span><span class="p">.</span><span class="na">input</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">onTextChanged</span><span class="p">(</span><span class="s">&quot;new text&quot;</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="c1">// Emit a new output</span>
-<span class="n">testFormula</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
+<span class="n">fake</span><span class="p">.</span><span class="na">implementation</span><span class="p">.</span><span class="na">output</span><span class="p">(</span><span class="n">MyFormula</span><span class="p">.</span><span class="na">Output</span><span class="p">())</span>
 </code></pre></div>
 
 

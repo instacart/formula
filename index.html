@@ -673,6 +673,33 @@
   
   
     <li class="md-nav__item">
+      <a href="action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="CONTRIBUTING/" class="md-nav__link">
         
   
@@ -857,31 +884,31 @@ actions the user will be able to take. This concept is called an <code>Output</c
 <p>Output is an immutable representation of your view. It will be used to update the UI. Typically,
 it will also contain event listeners that will be invoked when user interacts with the UI.
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CounterOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onDecrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onIncrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onDecrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onIncrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div></p>
 <p>Once we define an Output, we can create a Composable function that renders it.</p>
 <h4 id="compose-ui">Compose UI</h4>
 <div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
 <span class="kd">fun</span><span class="w"> </span><span class="nf">CounterScreen</span><span class="p">(</span><span class="n">output</span><span class="p">:</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">Column</span><span class="p">(</span>
-<span class="w">    </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">fillMaxSize</span><span class="p">(),</span>
-<span class="w">    </span><span class="n">verticalArrangement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arrangement</span><span class="p">.</span><span class="na">Center</span><span class="p">,</span>
-<span class="w">    </span><span class="n">horizontalAlignment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Alignment</span><span class="p">.</span><span class="na">CenterHorizontally</span><span class="p">,</span>
-<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">count</span><span class="p">)</span>
-<span class="w">    </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">Button</span><span class="p">(</span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">onDecrement</span><span class="p">()</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Decrement&quot;</span><span class="p">)</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">      </span><span class="n">Spacer</span><span class="p">(</span><span class="n">Modifier</span><span class="p">.</span><span class="na">size</span><span class="p">(</span><span class="m">8.</span><span class="n">dp</span><span class="p">))</span>
-<span class="w">      </span><span class="n">Button</span><span class="p">(</span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Increment&quot;</span><span class="p">)</span>
-<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Column</span><span class="p">(</span>
+<span class="w">        </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">fillMaxSize</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">verticalArrangement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arrangement</span><span class="p">.</span><span class="na">Center</span><span class="p">,</span>
+<span class="w">        </span><span class="n">horizontalAlignment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Alignment</span><span class="p">.</span><span class="na">CenterHorizontally</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">count</span><span class="p">)</span>
+<span class="w">        </span><span class="n">Row</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Button</span><span class="p">(</span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">onDecrement</span><span class="p">()</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Decrement&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">Spacer</span><span class="p">(</span><span class="n">Modifier</span><span class="p">.</span><span class="na">size</span><span class="p">(</span><span class="m">8.</span><span class="n">dp</span><span class="p">))</span>
+<span class="w">            </span><span class="n">Button</span><span class="p">(</span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="na">onIncrement</span><span class="p">()</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Increment&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>We now defined a single entry-point to our rendering (this makes debugging issues a lot easier). Anytime
@@ -899,22 +926,24 @@ example, we need to keep track of the current count.
 various events by transitioning to a new state.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">CounterFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Formula</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">CounterState</span><span class="p">,</span><span class="w"> </span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="kt">Unit</span><span class="p">):</span><span class="w"> </span><span class="n">CounterState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterState</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="kt">Unit</span><span class="p">):</span><span class="w"> </span><span class="n">CounterState</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">CounterState</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">CounterState</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">      </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
-<span class="w">        </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Count: </span><span class="si">$</span><span class="n">count</span><span class="s">&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">)</span>
-<span class="w">    </span><span class="p">)</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">CounterState</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">            </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
+<span class="w">                </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Count: </span><span class="si">$</span><span class="n">count</span><span class="s">&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>The most important part is the <code>Formula.evaluate</code> function. It gives us the current <code>State</code> and expects an
@@ -924,7 +953,7 @@ is created.</p>
 declaring transitions. We use <code>context.onEvent</code> for both <code>onIncrement</code> and <code>onDecrement</code>. Let's look at one of these
 functions closer.</p>
 <div class="highlight"><pre><span></span><code><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>In response to the decrement event, we take the current <code>count</code> and subtract <code>1</code> from it. Then, we call <code>transition</code>
@@ -932,11 +961,11 @@ to create a new state and return it as a <code>Transition.Result</code>.</p>
 <p>If you notice, our logic currently allows user to decrement to a number below 0. We can update the transition logic to
 prevent this.
 <div class="highlight"><pre><span></span><code><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">none</span><span class="p">()</span>
-<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">none</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>The listener block uses a DSL provided by <code>TransitionContext</code> which has the <code>transition</code> and <code>none</code>
@@ -946,8 +975,10 @@ utility functions (take a look at that class for other utility functions).</p>
 <p>Formula is agnostic to other layers of abstraction. It can be used within activity or a fragment. You can
 convert <code>Formula</code> to a Kotlin <code>StateFlow</code> by using <code>runAsStateFlow</code> function.
 <div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterFormula</span><span class="p">()</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">(</span><span class="n">Dispatchers</span><span class="p">.</span><span class="na">Main</span><span class="p">)</span>
-<span class="kd">val</span><span class="w"> </span><span class="nv">outputs</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formula</span><span class="p">.</span><span class="na">runAsStateFlow</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">()</span>
+
+<span class="c1">// Returns StateFlow&lt;CounterOutput&gt; </span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formula</span><span class="p">.</span><span class="na">runAsStateFlow</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span>
 </code></pre></div></p>
 <p>Ideally, it would be placed within a surface that survives configuration changes such as <a href="android-view-model/">Android Components ViewModel</a>. You can
 see the full <a href="https://github.com/instacart/formula/tree/master/samples/counter" target="_blank">sample here</a>.</p>

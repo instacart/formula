@@ -659,6 +659,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -814,30 +841,30 @@
 
   <h1>Composition</h1>
 
-<p>Formula supports composition — a parent formula can run child formulas via
-<code>context.child(formula, input)</code> within <code>evaluate()</code>, passing data and callbacks down
-through Input and receiving the child's Output.</p>
+<p>Formula supports composition — a parent can run child formulas within <code>evaluate()</code> via
+<code>context.child(formula, input)</code>, passing data and callbacks down through Input and
+receiving the child's Output.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">listOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemListFormula</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...)</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Output</span><span class="p">(</span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOutput</span><span class="p">)</span>
-<span class="w">  </span><span class="p">)</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">listOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">itemListFormula</span><span class="p">,</span><span class="w"> </span><span class="n">childInput</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Output</span><span class="p">(</span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOutput</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="passing-input-to-children">Passing Input to Children</h2>
 <h3 id="input-and-re-evaluation">Input and Re-evaluation</h3>
 <p>The parent creates a new Input for each child every time <code>evaluate()</code> runs. Evaluation
-is triggered when the parent's own input changes, its state changes, or a child's output
-changes. This is how data flows to children — when the parent's state updates, the child
-receives new Input reflecting those changes.</p>
+is triggered when the parent's own input, its state  or a child's output changes. This is 
+how data flows to children — when the parent's state updates, the child receives new Input 
+reflecting those changes.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">listOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span>
-<span class="w">  </span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemListFormula</span><span class="p">,</span>
-<span class="w">  </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ItemListFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">(</span>
-<span class="w">    </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">,</span>
-<span class="w">    </span><span class="n">onItemSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="n">ItemId</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">itemId</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">      </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedItemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemId</span><span class="p">))</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">)</span>
+<span class="w">    </span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemListFormula</span><span class="p">,</span>
+<span class="w">    </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ItemListFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">(</span>
+<span class="w">        </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">,</span>
+<span class="w">        </span><span class="n">onItemSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="o">&lt;</span><span class="n">ItemId</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">itemId</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedItemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemId</span><span class="p">))</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">)</span>
 </code></pre></div>
 <h3 id="input-equality">Input Equality</h3>
@@ -863,9 +890,9 @@ starts a new one with <code>initialState</code>.</p>
 <h3 id="conditional-children">Conditional Children</h3>
 <p>Since children are declared in <code>evaluate()</code>, conditional logic controls their existence.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">dialog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">showDialog</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dialogFormula</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span>
+<span class="w">    </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dialogFormula</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span>
 <span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kc">null</span>
+<span class="w">    </span><span class="kc">null</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>When the condition becomes false, the child is terminated — its state is lost and its
@@ -875,7 +902,10 @@ with <code>initialState</code>.</p>
 <p>Override <code>formula.key(input)</code> when a parent runs multiple instances of the same formula
 type. For example, rendering a list of items where each item is managed by the same formula:</p>
 <div class="highlight"><pre><span></span><code><span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">  </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemFormula</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ItemFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">(</span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">))</span>
+<span class="w">    </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span>
+<span class="w">        </span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemFormula</span><span class="p">,</span><span class="w"> </span>
+<span class="w">        </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ItemFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">(</span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">),</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Without a key, the runtime cannot distinguish between instances. Override <code>key(input)</code> to

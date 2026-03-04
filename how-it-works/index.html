@@ -646,6 +646,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -787,9 +814,9 @@
 <h1 id="how-it-works">How It Works</h1>
 <p>Formula has a similar mental model to Jetpack Compose — it has a declarative <code>evaluate()</code>
 function which describes what should exist right now. It produces output and actions based
-on current input, state, and child outputs. It re-runs when <strong>input changes</strong>, <strong>state
-changes</strong>, or <strong>child hierarchy state changes</strong>. For every change, the root formula
-re-evaluates all the way down to the changed area.</p>
+on current input, state, and child outputs. It re-runs when <strong>inputs</strong>, <strong>state</strong>, or 
+<strong>child hierarchy state changes</strong>. For every change, the root formula re-evaluates all the 
+way down to the changed area.</p>
 <h2 id="transitions">Transitions</h2>
 <p>Formula provides a mechanism to declare event listeners which respond to events by
 producing transitions. A transition can update the formula's state and optionally execute
@@ -809,17 +836,15 @@ based on anonymous class type + optional user-provided key). During evaluation, 
 action declaration looks up its key in <code>LifecycleCache</code> — if a matching action exists,
 it is reused; if not, a new one is started. Actions not declared during an evaluation
 are cancelled afterward.</p>
-<div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// Conditional: action only runs when userId is set.</span>
-<span class="w">  </span><span class="c1">// If userId becomes null, the runtime cancels it.</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Conditional: action only runs when userId is set.</span>
+<span class="c1">// If userId becomes null, the runtime cancels it.</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Key: if userId changes, runtime cancels the old action and starts a new one.</span>
 <span class="w">    </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="p">)</span>
+<span class="w">        </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">userId</span><span class="p">)</span>
 <span class="w">    </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">      </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="child-formula-lifecycle">Child Formula Lifecycle</h3>

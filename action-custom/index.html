@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../how-it-works/">
+        <link rel="prev" href="../android-view-model/">
       
       
-        <link rel="next" href="../output/">
+        <link rel="next" href="../CONTRIBUTING/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>Input - Formula</title>
+        <title>Advanced: Extending Action Interface - Formula</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-input-in-evaluate" class="md-skip">
+        <a href="#extending-action-interface" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Input
+              Advanced: Extending Action Interface
             
           </span>
         </div>
@@ -281,35 +281,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Input
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../input/" class="md-nav__link">
         
   
   
@@ -325,57 +300,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#using-input-in-evaluate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Input in Evaluate
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hosting-as-a-stateflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosting as a StateFlow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hosting-within-another-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosting Within Another Formula
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -600,10 +524,35 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../action-custom/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -619,6 +568,35 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extending-action-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending Action Interface
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -675,32 +653,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#using-input-in-evaluate" class="md-nav__link">
+  <a href="#extending-action-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using Input in Evaluate
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hosting-as-a-stateflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosting as a StateFlow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hosting-within-another-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosting Within Another Formula
+        Extending Action Interface
       
     </span>
   </a>
@@ -727,72 +683,53 @@
   
 
 
-  <h1>Input</h1>
+  <h1>Advanced: Extending Action Interface</h1>
 
-<p>Input is an immutable data class that defines a formula's contract with its host — the
-component that runs it. A host can be a ViewModel running the formula via <code>runAsStateFlow</code>,
-or a parent formula using <code>context.child()</code>. Input specifies what data the host provides
-and what events the formula reports back. When input changes, the formula re-evaluates.
-It can be <code>Unit</code> if no input is required.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">ItemFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Formula</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="p">,</span><span class="w"> </span><span class="n">Output</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Input</span><span class="p">(</span>
-<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">itemId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
-<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">onItemNotFound</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
-<span class="w">    </span><span class="p">)</span>
+<h2 id="extending-action-interface">Extending Action Interface</h2>
+<p>If you need to use a different mechanism for asynchronous events, you can extend <code>Action</code> interface.
+<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">Action</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">scope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">,</span><span class="w"> </span><span class="n">emitter</span><span class="p">:</span><span class="w"> </span><span class="n">Emitter</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Cancelable?</span>
+<span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">key</span><span class="p">():</span><span class="w"> </span><span class="kt">Any?</span>
 <span class="p">}</span>
-</code></pre></div>
-<h2 id="using-input-in-evaluate">Using Input in Evaluate</h2>
-<p>Input is available within <code>evaluate()</code> via the <code>input</code> property. When input changes,
-<code>evaluate()</code> is called again with the new values. Input data can be used to create output,
-drive actions, and determine what the formula does.</p>
-<p>To report events back to the host, call the callbacks defined on input within a transition.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...,</span>
-<span class="w">        </span><span class="n">actions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">Action</span><span class="p">.</span><span class="na">launchCatching</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="n">repo</span><span class="p">.</span><span class="na">fetchItem</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span>
-<span class="w">            </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">isSuccess</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="na">getOrNull</span><span class="p">()))</span>
-<span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                    </span><span class="c1">// Notify host that item was not found</span>
-<span class="w">                    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">onItemNotFound</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
-<span class="w">                </span><span class="p">}</span>
+</code></pre></div></p>
+<p>For example, let's say we want to track network status (I'm going to use mock network status APIs).
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">GetNetworkStatusAction</span><span class="p">(</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">manager</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatusManager</span>
+<span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NetworkStatus</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">scope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">,</span><span class="w"> </span><span class="n">emitter</span><span class="p">:</span><span class="w"> </span><span class="n">Emitter</span><span class="o">&lt;</span><span class="n">NetworkStatus</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Cancelable? </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">object</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatusListener</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onNetworkStatusChanged</span><span class="p">(</span><span class="n">status</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatus</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">emitter</span><span class="p">.</span><span class="na">onEvent</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">)</span>
+
+<span class="w">        </span><span class="n">manager</span><span class="p">.</span><span class="na">addNetworkStatusListener</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Cancelable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">manager</span><span class="p">.</span><span class="na">removeNetworkStatusListener</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">key</span><span class="p">():</span><span class="w"> </span><span class="kt">Any?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span>
 <span class="p">}</span>
-</code></pre></div>
-<p>If <code>input.itemId</code> changes, the formula re-evaluates — the action's key changes so the
-runtime cancels the old fetch and starts a new one.</p>
-<h2 id="hosting-as-a-stateflow">Hosting as a StateFlow</h2>
-<p>A formula can be run as a <code>StateFlow</code> using <code>runAsStateFlow</code>. The host creates input
-directly and collects output.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">output</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formula</span><span class="p">.</span><span class="na">runAsStateFlow</span><span class="p">(</span>
-<span class="w">    </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
-<span class="w">    </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Input</span><span class="p">(</span>
-<span class="w">        </span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;1&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="n">onItemNotFound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">navigateBack</span><span class="p">()</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-<h2 id="hosting-within-another-formula">Hosting Within Another Formula</h2>
-<p>A parent formula hosts a child via <code>context.child()</code>, building input from its own state
-and callbacks.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">childOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">child</span><span class="p">(</span>
-<span class="w">    </span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">itemFormula</span><span class="p">,</span>
-<span class="w">    </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ItemFormula</span><span class="p">.</span><span class="na">Input</span><span class="p">(</span>
-<span class="w">        </span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">selectedId</span><span class="p">,</span>
-<span class="w">        </span><span class="n">onItemNotFound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">))</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">    </span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>See <a href="../composition/">Composition</a> for details on child lifecycle, listener stability,
-and formula keys.</p>
+</code></pre></div></p>
+<p>We can now hook this up within our Formula:
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">MyFormula</span><span class="p">(</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">getNetworkStatusAction</span><span class="p">:</span><span class="w"> </span><span class="n">GetNetworkStatusAction</span><span class="p">,</span>
+<span class="p">):</span><span class="w"> </span><span class="n">Formula</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="p">,</span><span class="w"> </span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">            </span><span class="n">actions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">getNetworkStatusAction</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">                    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">isOnline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">status</span><span class="p">.</span><span class="na">isOnline</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">transition</span><span class="p">(</span><span class="n">newState</span><span class="p">)</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
 
 
 

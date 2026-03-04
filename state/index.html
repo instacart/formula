@@ -614,6 +614,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -725,39 +752,35 @@
   <h1>State</h1>
 
 <p>State is an internal object managed by a formula. It is typically an immutable data class —
-transitions provide a new state instance which triggers re-evaluation.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>State is created by <code>initialState()</code> when the formula starts and used within <code>evaluate()</code>
-to build output.</p>
+transitions provide a new state instance which triggers re-evaluation. State is created by 
+<code>initialState(input)</code> when the formula starts and used within <code>evaluate()</code> to define actions, 
+child formulas, and build output.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">CounterFormula</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Formula</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">CounterFormula</span><span class="p">.</span><span class="na">State</span><span class="p">,</span><span class="w"> </span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">  </span><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span>
-<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
-<span class="w">  </span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">State</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">      </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
-<span class="w">        </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="p">,</span>
-<span class="w">        </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">      </span><span class="p">)</span>
+<span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span>
+<span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
 <span class="w">    </span><span class="p">)</span>
-<span class="w">  </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="kt">Unit</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">State</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="kt">Unit</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">CounterOutput</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">            </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
+<span class="w">                </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="p">,</span>
+<span class="w">                </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="initial-state">Initial State</h2>
 <p><code>initialState(input)</code> is called once when the formula first starts. It can use input to
 seed values.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">initialState</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="n">Input</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">State</span><span class="p">(</span>
-<span class="w">  </span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">,</span>
-<span class="w">  </span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="n">itemId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">,</span>
+<span class="w">    </span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>It is also called again if <code>key(input)</code> changes — covered in <a href="#formula-key">Formula Key</a>.</p>
@@ -765,26 +788,26 @@ seed values.</p>
 <p>State changes happen via the <code>transition()</code> DSL within event listeners and action handlers.</p>
 <p>Update state — triggers re-evaluation:</p>
 <div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">newName</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">  </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newName</span><span class="p">))</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newName</span><span class="p">))</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Side effect only — no state change:</p>
 <div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackSaveClicked</span><span class="p">()</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackSaveClicked</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Both — update state and execute a side effect:</p>
 <div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">saved</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">userService</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">data</span><span class="p">)</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">saved</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">userService</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">data</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Do nothing:</p>
 <div class="highlight"><pre><span></span><code><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">none</span><span class="p">()</span>
+<span class="w">    </span><span class="n">none</span><span class="p">()</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Side effects execute after state changes — the formula is in the correct state before
@@ -793,15 +816,15 @@ any effect runs.</p>
 <p><code>onInputChanged</code> is called before <code>evaluate()</code> when input changes. It returns the new
 state to use for evaluation.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onInputChanged</span><span class="p">(</span>
-<span class="w">  </span><span class="n">oldInput</span><span class="p">:</span><span class="w"> </span><span class="n">Input</span><span class="p">,</span>
-<span class="w">  </span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="n">Input</span><span class="p">,</span>
-<span class="w">  </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="n">State</span><span class="p">,</span>
+<span class="w">    </span><span class="n">oldInput</span><span class="p">:</span><span class="w"> </span><span class="n">Input</span><span class="p">,</span>
+<span class="w">    </span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="n">Input</span><span class="p">,</span>
+<span class="w">    </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="n">State</span><span class="p">,</span>
 <span class="p">):</span><span class="w"> </span><span class="n">State</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">oldInput</span><span class="p">.</span><span class="na">itemId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
-<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">state</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">oldInput</span><span class="p">.</span><span class="na">itemId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">itemId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">state</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Use this to reset or adjust state when a key piece of input changes.</p>

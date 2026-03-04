@@ -631,6 +631,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -761,26 +788,26 @@
 <p>Output is an immutable data class returned from <code>evaluate()</code>. It passes data out to the
 consumer and defines events the consumer can trigger back.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CounterOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onIncrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">onDecrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onIncrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">onDecrement</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>Output is created within <code>evaluate()</code> from the current state, input, and child outputs.
 It is recreated every time <code>evaluate()</code> runs — triggered by input, state, or child
 hierarchy state changes.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
-<span class="w">      </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="p">,</span>
-<span class="w">      </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
-<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CounterOutput</span><span class="p">(</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="p">,</span>
+<span class="w">            </span><span class="n">onIncrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="n">onDecrement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">))</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">)</span>
 <span class="w">    </span><span class="p">)</span>
-<span class="w">  </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Every time <code>evaluate()</code> runs, a new output is produced. This makes Formula reactive —
@@ -788,16 +815,16 @@ state changes automatically propagate as updated output to the consumer.</p>
 <h2 id="event-listeners-and-transitions">Event Listeners and Transitions</h2>
 <p>When an event carries data, use <code>context.onEvent</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="n">FormOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="n">onNameChanged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">newName</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newName</span><span class="p">))</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="n">onNameChanged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">newName</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newName</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>When no data is needed, use <code>context.callback</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="n">FormOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="n">onSaveSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">userService</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="n">onSaveSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">callback</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">userService</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>Both trigger a transition when called — updating state, executing side effects, or both.</p>
@@ -815,29 +842,29 @@ each evaluation to reference the latest state, but the instance itself stays the
 listeners share the same call site — such as creating listeners inside a loop — provide
 an explicit key.</p>
 <div class="highlight"><pre><span></span><code><span class="n">state</span><span class="p">.</span><span class="na">items</span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">  </span><span class="n">ItemOutput</span><span class="p">(</span>
-<span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
-<span class="w">    </span><span class="n">onSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">))</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">)</span>
+<span class="w">    </span><span class="n">ItemOutput</span><span class="p">(</span>
+<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">onSelected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">onEvent</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="na">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">selectedItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">))</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="composing-outputs">Composing Outputs</h2>
 <p>Outputs are data classes — they naturally compose by nesting smaller outputs as fields.
 Design your Output to reflect the structure of your feature.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">OrderDetailOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">orderSummary</span><span class="p">:</span><span class="w"> </span><span class="n">OrderSummaryOutput</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">itemList</span><span class="p">:</span><span class="w"> </span><span class="n">ItemListOutput</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">paymentInfo</span><span class="p">:</span><span class="w"> </span><span class="n">PaymentInfoOutput</span><span class="p">,</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">cancelOrder</span><span class="p">:</span><span class="w"> </span><span class="n">ButtonOutput?,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">orderSummary</span><span class="p">:</span><span class="w"> </span><span class="n">OrderSummaryOutput</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">itemList</span><span class="p">:</span><span class="w"> </span><span class="n">ItemListOutput</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">paymentInfo</span><span class="p">:</span><span class="w"> </span><span class="n">PaymentInfoOutput</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">cancelOrder</span><span class="p">:</span><span class="w"> </span><span class="n">ButtonOutput?,</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="loading-and-error-states-in-output">Loading and Error States in Output</h2>
 <p>Output can represent different states such as loading, content, and error. The
 <a href="https://github.com/Laimiux/lce/">LCE library</a> provides type-safe wrappers for this.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">ItemDetailOutput</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">item</span><span class="p">:</span><span class="w"> </span><span class="n">UCT</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">item</span><span class="p">:</span><span class="w"> </span><span class="n">UCT</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p><code>UCT&lt;Content&gt;</code> is an alias for <code>Lce&lt;Unit, Content, Throwable&gt;</code> — it can be loading,

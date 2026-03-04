@@ -481,17 +481,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#extending-action-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Extending Action Interface
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -642,6 +631,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../action-custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced: Extending Action Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
@@ -747,17 +763,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#extending-action-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Extending Action Interface
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -780,21 +785,19 @@
 
   <h1>Actions</h1>
 
-<p>The Action API provides access to formula evaluation lifecycle, enabling event streams, async 
-operations, and side effects to be tied to the current evaluation state.</p>
-<p>Actions can emit events. To declare an action and handle its events, you use <code>.onEvent { }</code> which 
-registers the action with the runtime and provides a transition handler for emitted events. A 
-transition can update the formula's state, execute side effects, or both.</p>
+<p>Actions perform work and emit events back to the formula — observing streams, running
+async operations, and responding to lifecycle. Declared within <code>evaluate()</code>, the runtime
+manages their lifecycle: starting them when declared, cancelling them when removed.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createOutput</span><span class="p">(</span><span class="n">state</span><span class="p">),</span>
-<span class="w">    </span><span class="n">actions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="c1">// actions are declared here</span>
-<span class="w">      </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">userId</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
+<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...,</span>
+<span class="w">        </span><span class="n">actions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// actions are declared here</span>
+<span class="w">            </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">userId</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">                </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="integrating-coroutine-actions">Integrating Coroutine actions</h2>
@@ -816,24 +819,25 @@ transition can update the formula's state, execute side effects, or both.</p>
 </code></pre></div></p>
 <p>To start and collect Flow events:
 <div class="highlight"><pre><span></span><code><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">repository</span><span class="p">.</span><span class="na">observeUser</span><span class="p">(</span><span class="n">userId</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">  </span><span class="c1">// Update state</span>
-<span class="w">  </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
+<span class="w">    </span><span class="c1">// Update state</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">))</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <h2 id="responding-to-lifecycle-events">Responding to lifecycle events</h2>
 <p>Emits when action is initialized:
 <div class="highlight"><pre><span></span><code><span class="n">Action</span><span class="p">.</span><span class="na">onInit</span><span class="p">().</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackScreenOpen</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackScreenOpen</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>Emits when action is terminated (state transitions are discarded, only side effects):
 <div class="highlight"><pre><span></span><code><span class="n">Action</span><span class="p">.</span><span class="na">onTerminate</span><span class="p">().</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackCloseEvent</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackCloseEvent</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<p>Emits <code>data</code> on initialization and re-emits whenever <code>data</code> changes:
+<p>Emits <code>data</code> on initialization and re-emits whenever <code>data</code> changes. This uses the key
+mechanism — the data is the key, so when it changes the runtime restarts the action:
 <div class="highlight"><pre><span></span><code><span class="n">Action</span><span class="p">.</span><span class="na">onData</span><span class="p">(</span><span class="n">itemId</span><span class="p">).</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackItemLoaded</span><span class="p">(</span><span class="n">itemId</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">transition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">analytics</span><span class="p">.</span><span class="na">trackItemLoaded</span><span class="p">(</span><span class="n">itemId</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <h2 id="action-lifecycle">Action Lifecycle</h2>
@@ -849,7 +853,7 @@ are cancelled afterward.</p>
 <p>The <code>key</code> parameter enables distinguishing between different actions. If the key changes,
 the runtime cancels the old action and starts a new one.
 <div class="highlight"><pre><span></span><code><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">taskId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">taskRepo</span><span class="p">.</span><span class="na">fetchTask</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="na">taskId</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">taskResponse</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">  </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">taskResponse</span><span class="p">))</span>
+<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">taskResponse</span><span class="p">))</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>If <code>input.taskId</code> changes, the runtime cancels the old flow and starts a new one.</p>
@@ -857,58 +861,13 @@ the runtime cancels the old action and starts a new one.
 <p>Since the runtime manages actions based on what's declared in evaluation, conditional
 logic controls when actions run.
 <div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">locationTrackingEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locationManager</span><span class="p">.</span><span class="na">updates</span><span class="p">()</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">    </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">event</span><span class="p">.</span><span class="na">location</span><span class="p">))</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Action</span><span class="p">.</span><span class="na">fromFlow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locationManager</span><span class="p">.</span><span class="na">updates</span><span class="p">()</span><span class="w"> </span><span class="p">}.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">event</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">event</span><span class="p">.</span><span class="na">location</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
 <p>If <code>state.locationTrackingEnabled</code> changes from <code>true</code> to <code>false</code>, the action is no
 longer declared and the runtime cancels it.</p>
-<h2 id="extending-action-interface">Extending Action Interface</h2>
-<p>If you need to use a different mechanism for asynchronous events, you can extend <code>Action</code> interface.
-<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">Action</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">scope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">,</span><span class="w"> </span><span class="n">emitter</span><span class="p">:</span><span class="w"> </span><span class="n">Emitter</span><span class="o">&lt;</span><span class="n">Event</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Cancelable?</span>
-<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">key</span><span class="p">():</span><span class="w"> </span><span class="kt">Any?</span>
-<span class="p">}</span>
-</code></pre></div></p>
-<p>For example, let's say we want to track network status (I'm going to use mock network status APIs).
-<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">GetNetworkStatusAction</span><span class="p">(</span>
-<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">manager</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatusManager</span>
-<span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Action</span><span class="o">&lt;</span><span class="n">NetworkStatus</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">scope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">,</span><span class="w"> </span><span class="n">emitter</span><span class="p">:</span><span class="w"> </span><span class="n">Emitter</span><span class="o">&lt;</span><span class="n">NetworkStatus</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Cancelable? </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">object</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatusListener</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onNetworkStatusChanged</span><span class="p">(</span><span class="n">status</span><span class="p">:</span><span class="w"> </span><span class="n">NetworkStatus</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="n">emitter</span><span class="p">.</span><span class="na">onEvent</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="n">manager</span><span class="p">.</span><span class="na">addNetworkStatusListener</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Cancelable</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">manager</span><span class="p">.</span><span class="na">removeNetworkStatusListener</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">key</span><span class="p">():</span><span class="w"> </span><span class="kt">Any?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span>
-<span class="p">}</span>
-</code></pre></div></p>
-<p>We can now hook this up within our Formula:
-<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">MyFormula</span><span class="p">(</span>
-<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">getNetworkStatusAction</span><span class="p">:</span><span class="w"> </span><span class="n">GetNetworkStatusAction</span><span class="p">,</span>
-<span class="p">):</span><span class="w"> </span><span class="n">Formula</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="p">,</span><span class="w"> </span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">Snapshot</span><span class="o">&lt;</span><span class="n">Input</span><span class="p">,</span><span class="w"> </span><span class="n">State</span><span class="o">&gt;</span><span class="p">.</span><span class="na">evaluate</span><span class="p">():</span><span class="w"> </span><span class="n">Evaluation</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Evaluation</span><span class="p">(</span>
-<span class="w">      </span><span class="n">actions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">actions</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">getNetworkStatusAction</span><span class="p">.</span><span class="na">onEvent</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">-&gt;</span>
-<span class="w">          </span><span class="kd">val</span><span class="w"> </span><span class="nv">newState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">isOnline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">status</span><span class="p">.</span><span class="na">isOnline</span><span class="p">)</span>
-<span class="w">          </span><span class="n">transition</span><span class="p">(</span><span class="n">newState</span><span class="p">)</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">)</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
 
 
 
