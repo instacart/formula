@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
 import com.instacart.formula.android.compose.ComposeViewFactory
+import com.instacart.formula.invoke
 import com.instacart.formula.runAsStateFlow
 
 class StopwatchFeatureFactory : FeatureFactory<Any, StopwatchKey>() {
@@ -57,7 +58,7 @@ class StopwatchViewFactory : ComposeViewFactory<StopwatchRenderModel>() {
     @Composable
     fun StopwatchButton(model: ButtonRenderModel) {
         Button(
-            onClick = model.onSelected::invoke,
+            onClick = { model.onSelected.invoke() },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color.Gray,
             ),
