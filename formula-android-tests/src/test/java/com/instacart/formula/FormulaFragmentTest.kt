@@ -22,6 +22,7 @@ import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.showFragment
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -397,6 +398,7 @@ class FormulaFragmentTest {
  * until values are explicitly pushed. This mimics Observable behavior where
  * no initial value is emitted.
  */
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 private class DeferredStateFlow(
     private val sharedFlow: MutableSharedFlow<Any>,
 ) : StateFlow<Any> {
@@ -408,6 +410,5 @@ private class DeferredStateFlow(
 
     override suspend fun collect(collector: FlowCollector<Any>): Nothing {
         sharedFlow.collect(collector)
-        error("SharedFlow.collect should never return")
     }
 }
