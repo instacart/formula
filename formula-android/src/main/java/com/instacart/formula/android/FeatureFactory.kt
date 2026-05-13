@@ -12,16 +12,17 @@ package com.instacart.formula.android
  *     fun taskListInput(): TaskListFormula.Input
  *   }
  *
- *   override fun initialize(dependencies: Dependencies, key: TaskListKey): Feature {
+ *   override fun Params.initialize(): Feature {
  *     // Note: we could create our own internal dagger component here using the dependencies.
  *     val formula = TaskListFormula(dependencies.taskRepo())
  *     return Feature(
- *       state = formula.toObservable(dependencies.taskListInput()),
  *       viewFactory = ViewFactory.fromLayout(R.layout.task_list) { view ->
  *         val renderView = TaskListRenderView(view)
  *         featureView(renderView)
  *       }
- *     )
+ *     ) {
+ *       formula.runAsStateFlow(it, dependencies.taskListInput())
+ *     }
  *   }
  * }
  * ```

@@ -8,9 +8,7 @@ import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.testutils.android.TestViewFactory
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.TestObserver
-import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,11 +47,11 @@ class FragmentStoreTest {
                 store.onLifecycleEvent(master.asAddedEvent())
                 store.onLifecycleEvent(detail.asAddedEvent())
 
-                component.updateRelay.accept(master to "main-update")
+                component.updateState(master, "main-update")
                 store.onLifecycleEvent(detail.asRemovedEvent())
                 store.onLifecycleEvent(master.asRemovedEvent())
 
-                component.updateRelay.accept(master to "main-update-2")
+                component.updateState(master, "main-update-2")
             }
             .assertValues(
                 expectedState(),
@@ -132,13 +130,13 @@ class FragmentStoreTest {
 
         // Pass feature updates on a background thread
         executor.execute {
-            component.updateRelay.accept(MainKey(1) to "main-state-1")
-            component.updateRelay.accept(MainKey(1) to "main-state-2")
-            component.updateRelay.accept(MainKey(1) to "main-state-3")
+            component.updateState(MainKey(1), "main-state-1")
+            component.updateState(MainKey(1), "main-state-2")
+            component.updateState(MainKey(1), "main-state-3")
 
-            component.updateRelay.accept(DetailKey(2) to "detail-state-1")
-            component.updateRelay.accept(DetailKey(2) to "detail-state-2")
-            component.updateRelay.accept(DetailKey(2) to "detail-state-3")
+            component.updateState(DetailKey(2), "detail-state-1")
+            component.updateState(DetailKey(2), "detail-state-2")
+            component.updateState(DetailKey(2), "detail-state-3")
             latch.countDown()
         }
 
@@ -207,15 +205,14 @@ class FragmentStoreTest {
     }
 
     @Test fun `fragment store ignores events after key is removed`() {
-        val stateSubject = PublishSubject.create<Any>()
+        val stateFlow = MutableStateFlow<Any>("value")
 
         val store = NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
-                        state = stateSubject,
                         viewFactory = TestViewFactory(),
-                    )
+                    ) { stateFlow }
                 }
             }
             bind(featureFactory)
@@ -226,9 +223,8 @@ class FragmentStoreTest {
         store.onLifecycleEvent(
             RouteLifecycleEvent.Added(routeId = routeId)
         )
-        stateSubject.onNext("value")
 
-        // Check that first event was shown
+        // Check that initial value was emitted
         val firstModel = observer.values().last().outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
@@ -238,20 +234,20 @@ class FragmentStoreTest {
         )
 
         // Check that new events are ignored
-        stateSubject.onNext("new-value")
+        stateFlow.value = "new-value"
 
         // Output should not exist
         val secondModel = observer.values().last().outputs[routeId]
         assertThat(secondModel).isNull()
     }
 
-    @Test fun `feature observable error emits on screen error and finishes`() {
-        val stateSubject = PublishSubject.create<Any>()
+    @Test fun `feature factory crash emits on screen error`() {
+        val error = RuntimeException("factory crashed")
 
         val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
         val environment = RouteEnvironment(
-            onScreenError = { key, error ->
-                screenErrors.add(key to error)
+            onScreenError = { key, err ->
+                screenErrors.add(key to err)
             }
         )
 
@@ -261,39 +257,32 @@ class FragmentStoreTest {
                 val featureFactory = object : FeatureFactory<Any, MainKey>() {
                     override fun Params.initialize(): Feature {
                         return Feature(
-                            state = stateSubject,
                             viewFactory = TestViewFactory(),
-                        )
+                        ) {
+                            throw error
+                        }
                     }
                 }
                 bind(featureFactory)
             }
-
 
         val observer = store.state().test()
         val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
             RouteLifecycleEvent.Added(routeId = routeId)
         )
-        stateSubject.onNext("value")
 
-        val firstModel = observer.values().last().outputs[routeId]?.renderModel
-        assertThat(firstModel).isEqualTo("value")
-
-        // Emit error
-        val error = RuntimeException("error")
-        stateSubject.onError(error)
-
-        // Model didn't change
-        val secondModel = observer.values().last().outputs[routeId]?.renderModel
-        assertThat(secondModel).isEqualTo("value")
+        // No output should be emitted for the crashed feature
+        val model = observer.values().last().outputs[routeId]?.renderModel
+        assertThat(model).isNull()
 
         // Store observable didn't crash
         observer.assertNoErrors()
 
-        assertThat(screenErrors).containsExactly(
-            routeId.key to error
-        )
+        // Error was reported via onScreenError
+        assertThat(screenErrors).hasSize(1)
+        assertThat(screenErrors.first().first).isEqualTo(routeId.key)
+        assertThat(screenErrors.first().second).isEqualTo(error)
     }
 
     @Test fun `state flow feature`() {
@@ -309,7 +298,7 @@ class FragmentStoreTest {
         }
 
         val observer = store.toStates()
-        
+
         // Add fragment key
         val key = MainKey(1)
         val routeId = RouteId("", key)
@@ -327,13 +316,13 @@ class FragmentStoreTest {
     }
 
     @Test fun `fragment store visible output`() {
+        val stateFlow = MutableStateFlow<Any>("value")
         val store = NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
-                        state = Observable.just("value"),
                         viewFactory = TestViewFactory(),
-                    )
+                    ) { stateFlow }
                 }
             }
             bind(featureFactory)
@@ -363,7 +352,7 @@ class FragmentStoreTest {
         val third = observer.values().last().visibleOutput()
         assertThat(third).isNull()
     }
-    
+
     private fun NavigationStore.toStates(): TestObserver<Map<RouteKey, RouteOutput>> {
         return state()
             .map { it.outputs.mapKeys { entry -> entry.key.key } }
@@ -398,9 +387,10 @@ class FragmentStoreTest {
     class TestFeatureFactory<FragmentKeyT : RouteKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
         override fun Params.initialize(): Feature {
             return Feature(
-                state = dependencies.state(key),
-                viewFactory = TestViewFactory()
-            )
+                viewFactory = TestViewFactory(),
+            ) {
+                dependencies.getOrCreateState(key)
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ class ViewFactoryTest {
                 activity<TestFormulaActivity> {
                     ActivityStore(
                         navigationStore = NavigationStore.Builder().build {
-                            val featureFactory = NoOpFeatureFactory(
+                            val featureFactory = NoOpFeatureFactory<TestKey>(
                                 viewFactory = ViewFactory.fromLayout(TestR.layout.test_fragment_layout) {
                                     featureView {  }
                                 }

@@ -8,7 +8,7 @@ import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.RouteKey
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.testutils.android.TestViewFactory
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 
 class GetViewFactoryTest {
@@ -80,9 +80,10 @@ class GetViewFactoryTest {
             routeId to FeatureEvent.Init(
                 id = routeId,
                 feature = Feature(
-                    state = Observable.empty(),
-                    viewFactory = expectedViewFactory
-                )
+                    viewFactory = expectedViewFactory,
+                ) {
+                    MutableStateFlow(Unit)
+                }
             )
         )
 

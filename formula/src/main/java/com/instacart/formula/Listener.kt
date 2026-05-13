@@ -25,7 +25,7 @@ package com.instacart.formula
 fun interface Listener<Event> : (Event) -> Unit
 
 /**
- * A convenience extension function that allows you do invoke Listener<Unit> without
+ * A convenience extension function that allows you to invoke Listener<Unit> without
  * having to pass Unit value yourself.
  */
 operator fun Listener<Unit>.invoke() = invoke(Unit)

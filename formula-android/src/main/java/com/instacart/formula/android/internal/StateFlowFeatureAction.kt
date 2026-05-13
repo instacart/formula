@@ -4,7 +4,7 @@ import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
 import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.RouteId
-import com.instacart.formula.android.StateFlowFeature
+import com.instacart.formula.android.Feature
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +17,7 @@ class StateFlowFeatureAction internal constructor(
     private val asyncDispatcher: CoroutineDispatcher,
     private val routeEnvironment: RouteEnvironment,
     private val routeId: RouteId<*>,
-    private val feature: StateFlowFeature,
+    private val feature: Feature,
 ) : Action<Any> {
 
     override fun key(): Any = routeId
