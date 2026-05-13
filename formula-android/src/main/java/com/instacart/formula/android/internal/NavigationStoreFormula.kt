@@ -11,8 +11,6 @@ import com.instacart.formula.android.NavigationState
 import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.RouteOutput
 import kotlinx.coroutines.flow.MutableSharedFlow
-import com.instacart.formula.android.RxJavaFeature
-import com.instacart.formula.android.StateFlowFeature
 import kotlinx.coroutines.CoroutineDispatcher
 
 @PublishedApi
@@ -80,23 +78,12 @@ internal class NavigationStoreFormula(
                     val routeId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
-                        val action = when (feature) {
-                            is RxJavaFeature -> {
-                                FeatureObservableAction(
-                                    routeEnvironment = environment,
-                                    routeId = routeId,
-                                    feature = feature,
-                                )
-                            }
-                            is StateFlowFeature -> {
-                                StateFlowFeatureAction(
-                                    asyncDispatcher = asyncDispatcher,
-                                    routeEnvironment = environment,
-                                    routeId = routeId,
-                                    feature = feature,
-                                )
-                            }
-                        }
+                        val action = StateFlowFeatureAction(
+                            asyncDispatcher = asyncDispatcher,
+                            routeEnvironment = environment,
+                            routeId = routeId,
+                            feature = feature,
+                        )
 
                         action.onEvent {
                             val keyState = RouteOutput(routeId.key, it)

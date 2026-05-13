@@ -1,14 +1,16 @@
 package com.instacart.formula.android.fakes
 
 import com.instacart.formula.android.RouteKey
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeComponent {
-    val updateRelay: PublishRelay<Pair<RouteKey, String>> = PublishRelay.create()
+    private val states = mutableMapOf<RouteKey, MutableStateFlow<String>>()
 
-    fun state(key: RouteKey): Observable<String> {
-        val updates = updateRelay.filter { it.first == key }.map { it.second }
-        return updates.startWithItem("${key.tag}-state")
+    fun getOrCreateState(key: RouteKey): MutableStateFlow<String> {
+        return states.getOrPut(key) { MutableStateFlow("${key.tag}-state") }
+    }
+
+    fun updateState(key: RouteKey, value: String) {
+        getOrCreateState(key).value = value
     }
 }

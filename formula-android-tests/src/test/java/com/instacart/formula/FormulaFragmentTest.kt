@@ -21,14 +21,17 @@ import com.instacart.testutils.android.HeadlessFragment
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.activity
 import com.instacart.testutils.android.showFragment
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -37,7 +40,7 @@ import java.util.concurrent.TimeUnit
 class FormulaFragmentTest {
 
     private var lastState: NavigationState? = null
-    private val stateChangeRelay = PublishRelay.create<Pair<RouteKey, Any>>()
+    private val stateFlows = ConcurrentHashMap<String, MutableSharedFlow<Any>>()
     private var updateThreads = linkedSetOf<Thread>()
     private val errors = mutableListOf<Throwable>()
     private val routeLifecycleEvents = mutableListOf<RouteLifecycleEvent>()
@@ -68,7 +71,7 @@ class FormulaFragmentTest {
                                         render = { key, value ->
                                             renderCalls.add(key to value)
                                         },
-                                        state = { stateChanges(it) }
+                                        state = { key -> stateProvider(key) }
                                     )
                                 )
                                 bind(
@@ -79,8 +82,8 @@ class FormulaFragmentTest {
                                             throw IllegalStateException("crashing")
                                         }
                                     },
-                                    state = {
-                                        stateChanges(it)
+                                    state = { key ->
+                                        stateProvider(key)
                                     }
                                 ))
                             },
@@ -93,6 +96,7 @@ class FormulaFragmentTest {
             lastState = null
             updateThreads = linkedSetOf()
             routeLifecycleEvents.clear()
+            stateFlows.clear()
         }
     )
 
@@ -373,14 +377,37 @@ class FormulaFragmentTest {
     }
 
     private fun sendStateUpdate(contract: RouteKey, update: Any) {
-        stateChangeRelay.accept(Pair(contract, update))
+        val flow = getOrCreateFlow(contract)
+        flow.tryEmit(update)
     }
 
-    private fun stateChanges(contract: RouteKey): Observable<Any> {
-        return stateChangeRelay
-            .filter { event ->
-                event.first == contract
-            }
-            .map { it.second }
+    private fun stateProvider(contract: RouteKey): (CoroutineScope) -> StateFlow<Any> = {
+        DeferredStateFlow(getOrCreateFlow(contract))
+    }
+
+    private fun getOrCreateFlow(contract: RouteKey): MutableSharedFlow<Any> {
+        return stateFlows.getOrPut(contract.tag) {
+            MutableSharedFlow(replay = 1, extraBufferCapacity = 100)
+        }
+    }
+}
+
+/**
+ * A StateFlow implementation backed by a MutableSharedFlow that doesn't emit
+ * until values are explicitly pushed. This mimics Observable behavior where
+ * no initial value is emitted.
+ */
+private class DeferredStateFlow(
+    private val sharedFlow: MutableSharedFlow<Any>,
+) : StateFlow<Any> {
+    override val value: Any
+        get() = sharedFlow.replayCache.firstOrNull() ?: Unit
+
+    override val replayCache: List<Any>
+        get() = sharedFlow.replayCache
+
+    override suspend fun collect(collector: FlowCollector<Any>): Nothing {
+        sharedFlow.collect(collector)
+        error("SharedFlow.collect should never return")
     }
 }
