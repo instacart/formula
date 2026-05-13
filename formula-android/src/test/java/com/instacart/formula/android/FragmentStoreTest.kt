@@ -9,10 +9,7 @@ import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.testutils.android.TestViewFactory
 import io.reactivex.rxjava3.observers.TestObserver
-import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
@@ -244,9 +241,8 @@ class FragmentStoreTest {
         assertThat(secondModel).isNull()
     }
 
-    @Test fun `feature error emits on screen error and finishes`() {
-        val stateFlow = MutableStateFlow<Any>("value")
-        val error = RuntimeException("error")
+    @Test fun `feature factory crash emits on screen error`() {
+        val error = RuntimeException("factory crashed")
 
         val screenErrors = mutableListOf<Pair<RouteKey, Throwable>>()
         val environment = RouteEnvironment(
@@ -263,7 +259,7 @@ class FragmentStoreTest {
                         return Feature(
                             viewFactory = TestViewFactory(),
                         ) {
-                            ThrowOnSecondCollectStateFlow(stateFlow, error)
+                            throw error
                         }
                     }
                 }
@@ -276,23 +272,17 @@ class FragmentStoreTest {
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
-        val firstModel = observer.values().last().outputs[routeId]?.renderModel
-        assertThat(firstModel).isEqualTo("value")
-
-        // Trigger second collect which throws
-        stateFlow.value = "trigger"
-
-        // Model didn't change (error was swallowed, no new emission)
-        val secondModel = observer.values().last().outputs[routeId]?.renderModel
-        assertThat(secondModel).isEqualTo("value")
+        // No output should be emitted for the crashed feature
+        val model = observer.values().last().outputs[routeId]?.renderModel
+        assertThat(model).isNull()
 
         // Store observable didn't crash
         observer.assertNoErrors()
 
+        // Error was reported via onScreenError
         assertThat(screenErrors).hasSize(1)
         assertThat(screenErrors.first().first).isEqualTo(routeId.key)
-        assertThat(screenErrors.first().second).isInstanceOf(RuntimeException::class.java)
-        assertThat(screenErrors.first().second).hasMessageThat().isEqualTo("error")
+        assertThat(screenErrors.first().second).isEqualTo(error)
     }
 
     @Test fun `state flow feature`() {
@@ -401,25 +391,6 @@ class FragmentStoreTest {
             ) {
                 dependencies.getOrCreateState(key)
             }
-        }
-    }
-}
-
-/**
- * A StateFlow that delegates to [delegate] but throws [error] on the second collected value.
- * This simulates a stream that emits a value then errors during collection.
- */
-@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
-private class ThrowOnSecondCollectStateFlow(
-    private val delegate: StateFlow<Any>,
-    private val error: Throwable,
-) : StateFlow<Any> by delegate {
-    override suspend fun collect(collector: FlowCollector<Any>): Nothing {
-        var count = 0
-        delegate.collect {
-            count++
-            if (count > 1) throw error
-            collector.emit(it)
         }
     }
 }
