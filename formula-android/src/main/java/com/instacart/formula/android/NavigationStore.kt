@@ -1,5 +1,6 @@
 package com.instacart.formula.android
 
+import androidx.annotation.MainThread
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
@@ -83,7 +84,8 @@ class NavigationStore @PublishedApi internal constructor(
 
     private val features = mutableMapOf<RouteId<*>, FeatureEvent>()
 
-    internal fun onLifecycleEvent(event: RouteLifecycleEvent) {
+    @MainThread
+    fun onLifecycleEvent(event: RouteLifecycleEvent) {
         val routeId = event.routeId
         when (event) {
             is RouteLifecycleEvent.Added -> {
@@ -103,7 +105,8 @@ class NavigationStore @PublishedApi internal constructor(
         onRouteLifecycleEvent?.invoke(event)
     }
 
-    internal fun onVisibilityChanged(routeId: RouteId<*>, visible: Boolean) {
+    @MainThread
+    fun onVisibilityChanged(routeId: RouteId<*>, visible: Boolean) {
         if (visible) {
             formula.routeVisible(routeId)
         } else {
