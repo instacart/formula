@@ -121,7 +121,8 @@ class NavigationStore @PublishedApi internal constructor(
         return formula.toObservable(config)
     }
 
-    internal fun getViewFactory(routeId: RouteId<*>): ViewFactory<Any>? {
+    @MainThread
+    fun getViewFactory(routeId: RouteId<*>): ViewFactory<Any>? {
         return features.getViewFactory(environment, routeId)
     }
 }
