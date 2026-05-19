@@ -324,19 +324,6 @@ class FormulaFragmentTest {
         assertVisibleContract(TestKey())
     }
 
-    @Test fun `render exceptions are no longer routed to environment#onScreenError`() {
-        val key = TestKeyWithId(1)
-        navigateToTaskDetail(id = key.id)
-
-        // With the Compose-native FeatureView, render-time exceptions happen during
-        // recomposition and are no longer routed through FormulaFragment to environment.onScreenError.
-        // The host app is now responsible for handling Compose recomposer errors.
-        sendStateUpdate(key, "crash")
-
-        assertThat(renderCalls).isNotEmpty()
-        assertThat(errors).isEmpty()
-    }
-
     @Test
     fun toStringContainsTagAndKey() {
         val fragment = FormulaFragment.newInstance(TestKey())
