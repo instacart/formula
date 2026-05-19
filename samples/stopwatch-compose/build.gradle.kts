@@ -39,7 +39,6 @@ android {
 dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(project(":formula-android"))
-    implementation(project(":formula-android-compose"))
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)

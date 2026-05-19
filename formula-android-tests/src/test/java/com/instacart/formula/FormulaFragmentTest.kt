@@ -324,14 +324,17 @@ class FormulaFragmentTest {
         assertVisibleContract(TestKey())
     }
 
-    @Test fun `notify fragment environment if setOutput throws an error`() {
+    @Test fun `render exceptions are no longer routed to environment#onScreenError`() {
         val key = TestKeyWithId(1)
         navigateToTaskDetail(id = key.id)
 
+        // With the Compose-native FeatureView, render-time exceptions happen during
+        // recomposition and are no longer routed through FormulaFragment to environment.onScreenError.
+        // The host app is now responsible for handling Compose recomposer errors.
         sendStateUpdate(key, "crash")
-        assertThat(renderCalls).isNotEmpty()
 
-        assertThat(errors).hasSize(1)
+        assertThat(renderCalls).isNotEmpty()
+        assertThat(errors).isEmpty()
     }
 
     @Test
@@ -380,6 +383,12 @@ class FormulaFragmentTest {
     private fun sendStateUpdate(contract: RouteKey, update: Any) {
         val flow = getOrCreateFlow(contract)
         flow.tryEmit(update)
+        // Drain the Compose recomposer so assertions observe a settled state.
+        // Skipped when called from a background thread; in that case the caller
+        // is responsible for idling the main looper after synchronization.
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+        }
     }
 
     private fun stateProvider(contract: RouteKey): (CoroutineScope) -> StateFlow<Any> = {

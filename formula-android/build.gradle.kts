@@ -1,5 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaTask
-
 plugins {
     id("com.android.library")
     id("kotlin-android")
@@ -13,6 +11,14 @@ apply {
 
 android {
     namespace = "com.instacart.formula.android"
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
 
     testOptions {
         unitTests.isReturnDefaultValues = true
@@ -29,6 +35,7 @@ dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
     implementation(libs.lifecycle.runtime.ktx)
+    api(libs.compose.ui)
 
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)

@@ -14,6 +14,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -33,7 +41,6 @@ dependencies {
     implementation(project(":formula-android"))
 
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.constraintlayout)
 
     implementation(libs.kotlin)
@@ -41,11 +48,15 @@ dependencies {
 
     implementation(libs.lifecycle.extensions)
 
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material)
+    implementation(libs.androidx.activity.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.kotlin.reflect)
     testImplementation(project(":formula-test"))
-    testImplementation(libs.androidx.test.runner)
     testImplementation(libs.androidx.test.runner)
     testImplementation(libs.espresso.core)
     testImplementation(libs.robolectric)
