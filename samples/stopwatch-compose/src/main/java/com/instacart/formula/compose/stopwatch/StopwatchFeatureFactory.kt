@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import com.instacart.formula.android.ComposeViewFactory
 import com.instacart.formula.android.Feature
 import com.instacart.formula.android.FeatureFactory
-import com.instacart.formula.android.compose.ComposeViewFactory
 import com.instacart.formula.invoke
 import com.instacart.formula.runAsStateFlow
 

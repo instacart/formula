@@ -1,16 +1,20 @@
 package com.instacart.testutils.android
 
-import android.view.View
 import com.instacart.formula.android.FeatureView
-import com.instacart.formula.android.LayoutViewFactory
-import com.instacart.formula.android.ViewInstance
+import com.instacart.formula.android.ViewFactory
 
+/**
+ * Test [ViewFactory] that records each render call without producing UI.
+ * The [onRender] callback is invoked from a `@Composable` body, so it fires
+ * on each non-skipped recomposition (Compose may skip recompositions when the
+ * input model is structurally equal to the previous one).
+ */
 class TestViewFactory<RenderModel>(
-    private val render: (View, RenderModel) -> Unit = { _, _ -> },
-) : LayoutViewFactory<RenderModel>(R.layout.test_fragment_layout) {
-    override fun ViewInstance.create(): FeatureView<RenderModel> {
-        return featureView {
-            render(view, it)
-        }
+    private val onRender: (RenderModel) -> Unit = {},
+) : ViewFactory<RenderModel> {
+    override fun create(params: ViewFactory.Params): FeatureView<RenderModel> {
+        return FeatureView(
+            content = { model -> onRender(model) },
+        )
     }
 }
