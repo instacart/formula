@@ -3,8 +3,7 @@
 ## Project Structure
 
 - `formula/` - Core framework (state management, actions, formulas)
-- `formula-android/` - Android integration (fragments, activities, views)
-- `formula-android-compose/` - Jetpack Compose integration
+- `formula-android/` - Android integration (fragments, activities, views, Jetpack Compose)
 - `formula-android-tests/` - Android tests
 - `formula-test/` - Testing utilities and test formulas
 - `formula-rxjava3/` - RxJava3 interop

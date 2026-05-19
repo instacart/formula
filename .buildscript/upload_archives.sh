@@ -9,7 +9,6 @@ GRADLE_ARGS="-P$TARGET"
 ./gradlew :formula:build $GRADLE_ARGS
 ./gradlew :formula-android:build $GRADLE_ARGS
 ./gradlew :formula-test:build $GRADLE_ARGS
-./gradlew :formula-android-compose:build $GRADLE_ARGS
 ./gradlew :formula-lint:build $GRADLE_ARGS
 ./gradlew :formula-rxjava3:build $GRADLE_ARGS
 
