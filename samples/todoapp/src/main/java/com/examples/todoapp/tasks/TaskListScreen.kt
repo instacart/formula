@@ -10,12 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Checkbox
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,12 +25,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.examples.todoapp.R
 import com.instacart.formula.invoke
+
+private val TodoColors = lightColors(
+    primary = Color(0xFF008577),
+    primaryVariant = Color(0xFF00574B),
+    secondary = Color(0xFFD81B60),
+)
 
 @Composable
 fun TaskListScreen(model: TaskListRenderModel) {
-    MaterialTheme {
+    MaterialTheme(colors = TodoColors) {
         Surface {
             Scaffold(
                 topBar = { TaskListAppBar(model.filterOptions) },
@@ -54,7 +65,10 @@ private fun TaskListAppBar(filters: List<TaskFilterRenderModel>) {
         title = { Text("Tasks") },
         actions = {
             IconButton(onClick = { menuExpanded = true }) {
-                Text("Filter")
+                Icon(
+                    painter = painterResource(R.drawable.ic_filter_list),
+                    contentDescription = "Filter Tasks",
+                )
             }
             DropdownMenu(
                 expanded = menuExpanded,
