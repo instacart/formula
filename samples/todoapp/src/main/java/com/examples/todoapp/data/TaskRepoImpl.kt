@@ -21,7 +21,10 @@ class TaskRepoImpl : TaskRepo {
 
     override fun tasks(): Flow<List<Task>> {
         // Fake initial network request
-        return flow<Unit> { delay(5.seconds) }.flatMapLatest { localStore }
+        return flow {
+            delay(5.seconds)
+            emit(Unit)
+        }.flatMapLatest { localStore }
     }
 
     override fun onTaskCompleted(event: TaskCompletedEvent) {
