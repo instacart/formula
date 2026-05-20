@@ -52,9 +52,6 @@ jobs:
       - name: Build formula-test module
         run: ./gradlew :formula-test:build $GRADLE_ARGS
 
-      - name: Build formula-android-compose module
-        run: ./gradlew :formula-android-compose:build $GRADLE_ARGS
-
       - name: Build formula-lint module
         run: ./gradlew :formula-lint:build $GRADLE_ARGS
 

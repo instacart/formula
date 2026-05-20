@@ -4,6 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.instacart.formula.android.internal.getOrSetArguments
 import java.lang.Exception
@@ -22,7 +26,7 @@ class FormulaFragment : Fragment() {
     }
 
     private val key: RouteKey by lazy(LazyThreadSafetyMode.NONE) {
-        requireArguments().getParcelable<RouteKey>(ARG_CONTRACT)!!
+        requireArguments().getParcelable(ARG_CONTRACT)!!
     }
 
     private val formulaRouteId: RouteId<*> by lazy {
@@ -37,47 +41,34 @@ class FormulaFragment : Fragment() {
     private val routeDelegate: RouteEnvironment.RouteDelegate
         get() = environment.routeDelegate
 
-    private var featureView: FeatureView<Any>? = null
-    private var output: Any? = null
+    private val outputState: MutableState<Any?> = mutableStateOf(null)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: run {
-            // No view factory, no view
-            return null
+        val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: return null
+        val initial: Any? = when (viewFactory) {
+            is ComposeViewFactory -> viewFactory.initialModel()
         }
-        val params = ViewFactory.Params(
-            context = requireContext(),
-            inflater = inflater,
-            container = container,
-        )
-
-        val featureView = environment.routeDelegate.createView(
-            routeId = formulaRouteId,
-            viewFactory = viewFactory,
-            params = params,
-        )
-        this.featureView = featureView
-        return featureView.view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        tryToSetState()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        featureView = null
+        return ComposeView(requireContext()).apply {
+            // Based-on: https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views#compose-in-fragments
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val output = outputState.value ?: initial
+                if (output != null) {
+                    routeDelegate.Content(formulaRouteId, viewFactory, output)
+                }
+            }
+        }
     }
 
     fun setState(state: Any) {
-        output = state
-        tryToSetState()
+        try {
+            routeDelegate.setOutput(formulaRouteId, state) { outputState.value = it }
+        } catch (exception: Exception) {
+            environment.onScreenError(key, exception)
+        }
     }
 
-    fun currentState(): Any? {
-        return output
-    }
+    fun currentState(): Any? = outputState.value
 
     fun getRouteKey(): RouteKey {
         return key
@@ -85,16 +76,5 @@ class FormulaFragment : Fragment() {
 
     override fun toString(): String {
         return "${key.tag} -> $key"
-    }
-
-    private fun tryToSetState() {
-        val output = output ?: return
-        val view = featureView ?: return
-
-        try {
-            routeDelegate.setOutput(formulaRouteId, output, view.setOutput)
-        } catch (exception: Exception) {
-            environment.onScreenError(key, exception)
-        }
     }
 }

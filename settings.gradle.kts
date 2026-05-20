@@ -1,7 +1,6 @@
 include(
     ":formula",
     ":formula-android",
-    ":formula-android-compose",
     ":formula-android-tests",
     ":formula-r8-tests",
     ":formula-lint",

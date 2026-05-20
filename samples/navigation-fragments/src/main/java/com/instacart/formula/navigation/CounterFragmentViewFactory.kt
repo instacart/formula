@@ -3,7 +3,7 @@ package com.instacart.formula.navigation
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import com.instacart.formula.android.compose.ComposeViewFactory
+import com.instacart.formula.android.ComposeViewFactory
 
 class CounterFragmentViewFactory : ComposeViewFactory<CounterFragmentRenderModel>() {
 

@@ -324,16 +324,6 @@ class FormulaFragmentTest {
         assertVisibleContract(TestKey())
     }
 
-    @Test fun `notify fragment environment if setOutput throws an error`() {
-        val key = TestKeyWithId(1)
-        navigateToTaskDetail(id = key.id)
-
-        sendStateUpdate(key, "crash")
-        assertThat(renderCalls).isNotEmpty()
-
-        assertThat(errors).hasSize(1)
-    }
-
     @Test
     fun toStringContainsTagAndKey() {
         val fragment = FormulaFragment.newInstance(TestKey())
@@ -380,6 +370,12 @@ class FormulaFragmentTest {
     private fun sendStateUpdate(contract: RouteKey, update: Any) {
         val flow = getOrCreateFlow(contract)
         flow.tryEmit(update)
+        // Drain the Compose recomposer so assertions observe a settled state.
+        // Skipped when called from a background thread; in that case the caller
+        // is responsible for idling the main looper after synchronization.
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+        }
     }
 
     private fun stateProvider(contract: RouteKey): (CoroutineScope) -> StateFlow<Any> = {

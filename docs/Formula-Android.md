@@ -45,14 +45,11 @@ class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
     }
 }
 
-// View factory which uses XML layout resource.
-class CounterViewFactory : LayoutViewFactory<CounterOutput>(R.layout.counter) {
-    override fun ViewInstance.create(): FeatureView<CounterOutput> {
-        // We use [ViewInstance.view] to access the inflated view
-        val counterView = CounterRenderView(view)
-
-        // We create a [FeatureView] by passing a [RenderView]
-        return featureView(counterView)
+// View factory that renders the output with Jetpack Compose.
+class CounterViewFactory : ComposeViewFactory<CounterOutput>() {
+    @Composable
+    override fun Content(model: CounterOutput) {
+        CounterScreen(model)
     }
 }
 ```
