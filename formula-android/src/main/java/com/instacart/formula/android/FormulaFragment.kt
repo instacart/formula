@@ -26,7 +26,7 @@ class FormulaFragment : Fragment() {
     }
 
     private val key: RouteKey by lazy(LazyThreadSafetyMode.NONE) {
-        requireArguments().getParcelable<RouteKey>(ARG_CONTRACT)!!
+        requireArguments().getParcelable(ARG_CONTRACT)!!
     }
 
     private val formulaRouteId: RouteId<*> by lazy {
@@ -41,43 +41,34 @@ class FormulaFragment : Fragment() {
     private val routeDelegate: RouteEnvironment.RouteDelegate
         get() = environment.routeDelegate
 
-    private var outputState: MutableState<Any?>? = null
-    private var output: Any? = null
+    private val outputState: MutableState<Any?> = mutableStateOf(null)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: return null
         val initial: Any? = when (viewFactory) {
             is ComposeViewFactory -> viewFactory.initialModel()
         }
-        val state = mutableStateOf(initial)
-        this.outputState = state
         return ComposeView(requireContext()).apply {
             // Based-on: https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views#compose-in-fragments
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                state.value?.let { routeDelegate.Content(formulaRouteId, viewFactory, it) }
+                val output = outputState.value ?: initial
+                if (output != null) {
+                    routeDelegate.Content(formulaRouteId, viewFactory, output)
+                }
             }
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        tryToSetState()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        outputState = null
-    }
-
     fun setState(state: Any) {
-        output = state
-        tryToSetState()
+        try {
+            routeDelegate.setOutput(formulaRouteId, state) { outputState.value = it }
+        } catch (exception: Exception) {
+            environment.onScreenError(key, exception)
+        }
     }
 
-    fun currentState(): Any? {
-        return output
-    }
+    fun currentState(): Any? = outputState.value
 
     fun getRouteKey(): RouteKey {
         return key
@@ -85,15 +76,5 @@ class FormulaFragment : Fragment() {
 
     override fun toString(): String {
         return "${key.tag} -> $key"
-    }
-
-    private fun tryToSetState() {
-        val output = output ?: return
-        val state = outputState ?: return
-        try {
-            routeDelegate.setOutput(formulaRouteId, output) { state.value = it }
-        } catch (exception: Exception) {
-            environment.onScreenError(key, exception)
-        }
     }
 }
