@@ -3,7 +3,9 @@ package com.instacart.formula.android
 import androidx.compose.runtime.Composable
 
 /**
- * Convenience [ViewFactory] base class for Compose-rendered routes.
+ * [ViewFactory] subtype for Compose-rendered routes. Subclasses implement
+ * [Content] to render the route's render model, and may optionally override
+ * [initialModel] to supply a model rendered before the first state emission.
  *
  * ```
  * class MyViewFactory : ComposeViewFactory<MyRenderModel>() {
@@ -16,18 +18,9 @@ import androidx.compose.runtime.Composable
  */
 abstract class ComposeViewFactory<RenderModel : Any> : ViewFactory<RenderModel> {
 
-    final override fun create(params: ViewFactory.Params): FeatureView<RenderModel> {
-        return FeatureView(
-            content = { model -> Content(model) },
-            initialModel = initialModel(),
-        )
-    }
-
-    /** Optional initial model rendered before the first state emission. Defaults to null. */
-    open fun initialModel(): RenderModel? {
-        return null
-    }
-
     @Composable
     abstract fun Content(model: RenderModel)
+
+    /** Optional initial model rendered before the first state emission. Defaults to null. */
+    open fun initialModel(): RenderModel? = null
 }

@@ -1,22 +1,9 @@
 package com.instacart.formula.android
 
-import android.content.Context
-
 /**
- * View factory is used by [FormulaFragment] (and Compose-native hosts) to create a [FeatureView]
- * describing how a route's render model is rendered.
+ * Marker interface for a route's renderable surface. Used by [FormulaFragment]
+ * (and Compose-native hosts) to dispatch over the sealed hierarchy.
  *
- * The typical implementation extends [ComposeViewFactory].
+ * Implementations must extend a known sealed subtype such as [ComposeViewFactory].
  */
-fun interface ViewFactory<RenderModel> {
-
-    class Params(
-        val context: Context,
-    )
-
-    /**
-     * Returns a [FeatureView] describing how to render the route. May be invoked from
-     * [FormulaFragment.onCreateView] or directly by a Compose-native host.
-     */
-    fun create(params: Params): FeatureView<RenderModel>
-}
+sealed interface ViewFactory<RenderModel : Any>

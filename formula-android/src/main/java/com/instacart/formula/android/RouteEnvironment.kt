@@ -1,5 +1,7 @@
 package com.instacart.formula.android
 
+import androidx.compose.runtime.Composable
+
 data class RouteEnvironment(
     val logger: (String) -> Unit = {},
     val onScreenError: (RouteKey, Throwable) -> Unit = { _, it -> throw it },
@@ -14,7 +16,7 @@ data class RouteEnvironment(
         /**
          * Instantiates the feature.
          */
-        open fun <DependenciesT, KeyT: RouteKey> initializeFeature(
+        open fun <DependenciesT, KeyT : RouteKey> initializeFeature(
             routeId: RouteId<KeyT>,
             factory: FeatureFactory<DependenciesT, KeyT>,
             dependencies: DependenciesT,
@@ -23,14 +25,16 @@ data class RouteEnvironment(
         }
 
         /**
-         * Called from [FormulaFragment.onCreateView] to instantiate the view.
+         * Renders the route's content. The default implementation dispatches over the
+         * sealed [ViewFactory] hierarchy. Hosts may override to wrap rendering with
+         * telemetry, [androidx.compose.runtime.CompositionLocalProvider] for side-band
+         * data (e.g. page keys), or error boundaries.
          */
-        open fun createView(
-            routeId: RouteId<*>,
-            viewFactory: ViewFactory<Any>,
-            params: ViewFactory.Params,
-        ): FeatureView<Any> {
-            return viewFactory.create(params)
+        @Composable
+        open fun Content(routeId: RouteId<*>, viewFactory: ViewFactory<Any>, model: Any) {
+            when (viewFactory) {
+                is ComposeViewFactory -> viewFactory.Content(model)
+            }
         }
 
         /**

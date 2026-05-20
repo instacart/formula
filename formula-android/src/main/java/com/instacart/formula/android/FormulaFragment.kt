@@ -46,19 +46,16 @@ class FormulaFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val viewFactory = navigationStore.getViewFactory(formulaRouteId) ?: return null
-        val params = ViewFactory.Params(context = requireContext())
-        val featureView = environment.routeDelegate.createView(
-            routeId = formulaRouteId,
-            viewFactory = viewFactory,
-            params = params,
-        )
-        val state = mutableStateOf(featureView.initialModel)
+        val initial: Any? = when (viewFactory) {
+            is ComposeViewFactory -> viewFactory.initialModel()
+        }
+        val state = mutableStateOf(initial)
         this.outputState = state
         return ComposeView(requireContext()).apply {
             // Based-on: https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views#compose-in-fragments
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                state.value?.let { featureView.content(it) }
+                state.value?.let { routeDelegate.Content(formulaRouteId, viewFactory, it) }
             }
         }
     }
