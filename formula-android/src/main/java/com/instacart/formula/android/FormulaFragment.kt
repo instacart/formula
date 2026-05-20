@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.instacart.formula.android.internal.getOrSetArguments
-import java.lang.Exception
 
 class FormulaFragment : Fragment() {
     companion object {
@@ -29,7 +28,7 @@ class FormulaFragment : Fragment() {
         requireArguments().getParcelable(ARG_CONTRACT)!!
     }
 
-    private val formulaRouteId: RouteId<*> by lazy {
+    private val formulaRouteId: RouteId<*> by lazy(LazyThreadSafetyMode.NONE) {
         getFormulaRouteId()
     }
 

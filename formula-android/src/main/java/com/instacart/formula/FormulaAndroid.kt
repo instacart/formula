@@ -9,7 +9,6 @@ import com.instacart.formula.android.ActivityConfigurator
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.internal.AppManager
-import java.lang.IllegalStateException
 
 object FormulaAndroid {
 

@@ -21,9 +21,3 @@ interface RouteKey : Parcelable {
      */
     val tag: String
 }
-
-@Deprecated(
-    message = "FragmentKey has been renamed to RouteKey",
-    replaceWith = ReplaceWith("RouteKey", "com.instacart.formula.android.RouteKey")
-)
-typealias FragmentKey = RouteKey

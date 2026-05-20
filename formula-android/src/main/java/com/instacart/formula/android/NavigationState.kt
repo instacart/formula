@@ -15,9 +15,3 @@ data class NavigationState(
 ) {
     fun visibleOutput() = visibleIds.lastOrNull()?.let { outputs[it] }
 }
-
-@Deprecated(
-    message = "FragmentState has been renamed to NavigationState",
-    replaceWith = ReplaceWith("NavigationState", "com.instacart.formula.android.NavigationState")
-)
-typealias FragmentState = NavigationState

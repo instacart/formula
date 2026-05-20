@@ -3,7 +3,6 @@ package com.instacart.formula.android
 import com.instacart.formula.android.internal.FeatureBinding
 import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.MappedFeatureFactory
-import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
 /**
