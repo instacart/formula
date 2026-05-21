@@ -4,7 +4,6 @@ import com.instacart.formula.android.FeatureEvent
 import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.ViewFactory
-import java.lang.IllegalStateException
 
 /** Functionally the same as [Iterable.forEach] except it generates an index-based loop that doesn't use an [Iterator]. */
 internal inline fun <T> List<T>.forEachIndices(action: (T) -> Unit) {

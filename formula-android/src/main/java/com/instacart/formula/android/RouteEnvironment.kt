@@ -45,9 +45,3 @@ data class RouteEnvironment(
         }
     }
 }
-
-@Deprecated(
-    message = "FragmentEnvironment has been renamed to RouteEnvironment",
-    replaceWith = ReplaceWith("RouteEnvironment", "com.instacart.formula.android.RouteEnvironment")
-)
-typealias FragmentEnvironment = RouteEnvironment

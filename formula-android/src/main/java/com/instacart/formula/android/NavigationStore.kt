@@ -126,9 +126,3 @@ class NavigationStore @PublishedApi internal constructor(
         return features.getViewFactory(environment, routeId)
     }
 }
-
-@Deprecated(
-    message = "FragmentStore has been renamed to NavigationStore",
-    replaceWith = ReplaceWith("NavigationStore", "com.instacart.formula.android.NavigationStore")
-)
-typealias FragmentStore = NavigationStore
