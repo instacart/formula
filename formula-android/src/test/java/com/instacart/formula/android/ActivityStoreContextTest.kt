@@ -2,10 +2,11 @@ package com.instacart.formula.android
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.internal.ActivityStoreContextImpl
-import kotlinx.coroutines.rx3.asObservable
+import kotlinx.coroutines.test.runTest
 import kotlinx.parcelize.Parcelize
-import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -16,11 +17,7 @@ class ActivityStoreContextTest {
         fun doSomething() {}
     }
 
-    private lateinit var context: ActivityStoreContextImpl<FakeActivity>
-
-    @Before fun setup() {
-        context = ActivityStoreContextImpl()
-    }
+    private val context: ActivityStoreContextImpl<FakeActivity> = ActivityStoreContextImpl()
 
     @Test fun `send drops events if activity is not started`() {
         val activity = createFakeActivity()
@@ -45,65 +42,74 @@ class ActivityStoreContextTest {
         verify(activity).doSomething()
     }
 
-    @Test fun `is fragment started`() {
+    @Test fun `is fragment started`() = runTest {
         val contract = createContract()
-        context.isRouteStarted(contract)
-            .asObservable()
-            .test()
-            .apply {
-                val instance = RouteId("", contract)
-                context.updateRouteLifecycleState(instance, Lifecycle.State.STARTED)
-            }
-            .assertValues(false, true)
+        context.isRouteStarted(contract).test {
+            // Initial emission reflects the current (not started) state.
+            assertThat(awaitItem()).isFalse()
+
+            val instance = RouteId("", contract)
+            context.updateRouteLifecycleState(instance, Lifecycle.State.STARTED)
+            assertThat(awaitItem()).isTrue()
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test fun `isFragmentStarted emits latest value first`() {
+    @Test fun `isFragmentStarted emits latest value first`() = runTest {
         val contract = createContract()
         val fragment = RouteId("", contract)
-        val observable = context.isRouteStarted(contract).asObservable()
 
         // 1st subscription
-        observable
-            .test()
-            .apply {
-                context.updateRouteLifecycleState(fragment, Lifecycle.State.STARTED)
-            }
-            .assertValues(false, true)
+        context.isRouteStarted(contract).test {
+            assertThat(awaitItem()).isFalse()
+            context.updateRouteLifecycleState(fragment, Lifecycle.State.STARTED)
+            assertThat(awaitItem()).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
 
-        // 2nd subscription - should receive latest emission first
-        observable
-            .test()
-            .assertValues(true)
+        // 2nd subscription - should receive latest value first
+        context.isRouteStarted(contract).test {
+            assertThat(awaitItem()).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test fun `is fragment resumed`() {
+    @Test fun `is fragment resumed`() = runTest {
         val contract = createContract()
-        context.isRouteResumed(contract)
-            .asObservable()
-            .test()
-            .apply {
-                val instance = RouteId("", contract)
-                context.updateRouteLifecycleState(instance, Lifecycle.State.RESUMED)
-            }
-            .assertValues(false, true)
+        context.isRouteResumed(contract).test {
+            // Initial emission reflects the current (not resumed) state.
+            assertThat(awaitItem()).isFalse()
+
+            val instance = RouteId("", contract)
+            context.updateRouteLifecycleState(instance, Lifecycle.State.RESUMED)
+            assertThat(awaitItem()).isTrue()
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test fun `navigation store forwards route lifecycle state to context`() {
+    @Test fun `navigation store forwards route lifecycle state to context`() = runTest {
         // Mirror the ActivityManager wiring so a non-Fragment host (e.g. Compose Nav 3) can drive
         // route lifecycle state through the NavigationStore seam.
         val store = NavigationStore.EMPTY
         store.onRouteLifecycleState = context::updateRouteLifecycleState
 
         val contract = createContract()
-        context.isRouteStarted(contract)
-            .asObservable()
-            .test()
-            .apply {
-                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
-                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.CREATED)
-                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
-            }
-            .assertValues(false, true, false, true)
+        context.isRouteStarted(contract).test {
+            assertThat(awaitItem()).isFalse()
+
+            store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
+            assertThat(awaitItem()).isTrue()
+
+            store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.CREATED)
+            assertThat(awaitItem()).isFalse()
+
+            store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
+            assertThat(awaitItem()).isTrue()
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     private fun createContract(): RouteKey {

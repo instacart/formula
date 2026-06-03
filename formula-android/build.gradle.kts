@@ -48,6 +48,7 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
+    testImplementation(libs.turbine)
     testImplementation(project(":test-utils:android"))
 }
 
