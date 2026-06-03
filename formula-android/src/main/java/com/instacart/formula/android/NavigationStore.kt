@@ -1,6 +1,7 @@
 package com.instacart.formula.android
 
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
@@ -84,6 +85,15 @@ class NavigationStore @PublishedApi internal constructor(
 
     private val features = mutableMapOf<RouteId<*>, FeatureEvent>()
 
+    /**
+     * Forwards per-route [Lifecycle.State] changes to the owning [ActivityStoreContext] (which backs
+     * [ActivityStoreContext.isRouteStarted] / [ActivityStoreContext.isRouteResumed]). Wired by
+     * `ActivityManager`. The Fragment host populates route lifecycle state automatically via
+     * `NavigationFlowRenderView`; a non-Fragment host (e.g. Compose Nav 3) reports it through
+     * [onRouteLifecycleStateChanged].
+     */
+    internal var onRouteLifecycleState: ((RouteId<*>, Lifecycle.State) -> Unit)? = null
+
     @MainThread
     fun onLifecycleEvent(event: RouteLifecycleEvent) {
         val routeId = event.routeId
@@ -112,6 +122,17 @@ class NavigationStore @PublishedApi internal constructor(
         } else {
             formula.routeHidden(routeId)
         }
+    }
+
+    /**
+     * Reports a per-route Android [Lifecycle.State] change so [ActivityStoreContext.isRouteStarted]
+     * and [ActivityStoreContext.isRouteResumed] reflect it. The Fragment host drives this
+     * automatically via `NavigationFlowRenderView`; a non-Fragment navigation host (e.g. Compose
+     * Nav 3) calls this directly as routes are pushed, brought to the foreground, and torn down.
+     */
+    @MainThread
+    fun onRouteLifecycleStateChanged(routeId: RouteId<*>, state: Lifecycle.State) {
+        onRouteLifecycleState?.invoke(routeId, state)
     }
 
     internal fun state(): Observable<NavigationState> {

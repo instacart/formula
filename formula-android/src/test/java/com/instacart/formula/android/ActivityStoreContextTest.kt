@@ -52,7 +52,7 @@ class ActivityStoreContextTest {
             .test()
             .apply {
                 val instance = RouteId("", contract)
-                context.updateFragmentLifecycleState(instance, Lifecycle.State.STARTED)
+                context.updateRouteLifecycleState(instance, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
     }
@@ -66,7 +66,7 @@ class ActivityStoreContextTest {
         observable
             .test()
             .apply {
-                context.updateFragmentLifecycleState(fragment, Lifecycle.State.STARTED)
+                context.updateRouteLifecycleState(fragment, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
 
@@ -83,9 +83,27 @@ class ActivityStoreContextTest {
             .test()
             .apply {
                 val instance = RouteId("", contract)
-                context.updateFragmentLifecycleState(instance, Lifecycle.State.RESUMED)
+                context.updateRouteLifecycleState(instance, Lifecycle.State.RESUMED)
             }
             .assertValues(false, true)
+    }
+
+    @Test fun `navigation store forwards route lifecycle state to context`() {
+        // Mirror the ActivityManager wiring so a non-Fragment host (e.g. Compose Nav 3) can drive
+        // route lifecycle state through the NavigationStore seam.
+        val store = NavigationStore.EMPTY
+        store.onRouteLifecycleState = context::updateRouteLifecycleState
+
+        val contract = createContract()
+        context.isRouteStarted(contract)
+            .asObservable()
+            .test()
+            .apply {
+                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
+                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.CREATED)
+                store.onRouteLifecycleStateChanged(RouteId("", contract), Lifecycle.State.STARTED)
+            }
+            .assertValues(false, true, false, true)
     }
 
     private fun createContract(): RouteKey {

@@ -27,11 +27,16 @@ internal class ActivityManager<Activity : FragmentActivity>(
         // Give store a chance to initialize the activity.
         store.configureActivity?.invoke(activity)
 
+        // Route lifecycle state can be driven by either host, both forwarding to the same delegate:
+        //  - Fragment host: NavigationFlowRenderView, from Fragment lifecycle callbacks.
+        //  - Non-Fragment host (e.g. Compose Nav 3): directly via NavigationStore.onRouteLifecycleStateChanged.
+        store.navigationStore.onRouteLifecycleState = delegate::updateRouteLifecycleState
+
         // Initialize render view
         navigationRenderView = NavigationFlowRenderView(
             activity = activity,
             store = store.navigationStore,
-            onLifecycleState = delegate::updateFragmentLifecycleState,
+            onLifecycleState = delegate::updateRouteLifecycleState,
             onFragmentViewStateChanged = store.navigationStore::onVisibilityChanged
         )
     }

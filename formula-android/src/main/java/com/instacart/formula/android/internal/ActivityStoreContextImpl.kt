@@ -24,11 +24,11 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
-    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
+    private val routeLifecycleStates = mutableMapOf<String, Lifecycle.State>()
 
     private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
 
-    private val fragmentStateUpdated = MutableSharedFlow<String>(
+    private val routeStateUpdated = MutableSharedFlow<String>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
 
@@ -47,7 +47,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     override fun navigationState(): Flow<NavigationState> = navigationStateRelay
 
     override fun isRouteStarted(tag: String): Flow<Boolean> {
-        return fragmentLifecycleState(tag)
+        return routeLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.STARTED) }
             .distinctUntilChanged()
     }
@@ -57,7 +57,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     }
 
     override fun isRouteResumed(tag: String): Flow<Boolean> {
-        return fragmentLifecycleState(tag)
+        return routeLifecycleState(tag)
             .map { it.isAtLeast(Lifecycle.State.RESUMED) }
             .distinctUntilChanged()
     }
@@ -100,26 +100,26 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun updateFragmentLifecycleState(id: RouteId<*>, newState: Lifecycle.State) {
+    fun updateRouteLifecycleState(id: RouteId<*>, newState: Lifecycle.State) {
         // TODO: should probably start using [id] instead of [contract] here.
         val contract = id.key
         if (newState == Lifecycle.State.DESTROYED) {
-            fragmentLifecycleStates.remove(contract.tag)
+            routeLifecycleStates.remove(contract.tag)
         } else {
-            fragmentLifecycleStates[contract.tag] = newState
+            routeLifecycleStates[contract.tag] = newState
         }
 
-        fragmentStateUpdated.tryEmit(contract.tag)
+        routeStateUpdated.tryEmit(contract.tag)
     }
 
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }
 
-    private fun fragmentLifecycleState(tag: String): Flow<Lifecycle.State> {
-        return fragmentStateUpdated
+    private fun routeLifecycleState(tag: String): Flow<Lifecycle.State> {
+        return routeStateUpdated
             .filter { it == tag }
             .onStart { emit(tag) }
             .map {
-                fragmentLifecycleStates[tag] ?: Lifecycle.State.DESTROYED
+                routeLifecycleStates[tag] ?: Lifecycle.State.DESTROYED
             }
     }
 }
