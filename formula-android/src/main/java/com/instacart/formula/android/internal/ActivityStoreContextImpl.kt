@@ -88,6 +88,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     fun attachActivity(activity: Activity) {
         hasStarted = false
         this.activity = activity
+        clearRouteLifecycleState()
     }
 
     fun onActivityStarted(activity: Activity) {
@@ -110,6 +111,24 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
 
         routeStateUpdated.tryEmit(contract.tag)
+    }
+
+    /**
+     * Clears all stored route lifecycle state. Route lifecycle state is tied to the activity/view
+     * instance rather than durable store state, so it must be reset when the activity is destroyed.
+     *
+     * The Fragment host self-heals via [NavigationFlowRenderView.onFragmentViewDestroyed], but a
+     * non-Fragment host (e.g. Compose Nav 3) has no such teardown. Since [ActivityStoreContextImpl]
+     * is reused across configuration changes (see [AppManager]), without this the delegate would
+     * retain stale STARTED/RESUMED entries from the previous activity instance.
+     */
+    fun clearRouteLifecycleState() {
+        if (routeLifecycleStates.isEmpty()) return
+
+        val tags = routeLifecycleStates.keys.toList()
+        routeLifecycleStates.clear()
+        // Notify any active collectors so they re-read the (now absent) state.
+        tags.forEach(routeStateUpdated::tryEmit)
     }
 
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }

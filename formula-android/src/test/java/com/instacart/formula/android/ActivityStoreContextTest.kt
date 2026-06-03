@@ -112,6 +112,36 @@ class ActivityStoreContextTest {
         }
     }
 
+    @Test fun `attaching a new activity instance resets stale route state for a new subscription`() = runTest {
+        val contract = createContract()
+        context.updateRouteLifecycleState(RouteId("", contract), Lifecycle.State.STARTED)
+
+        // Simulates configuration change: the delegate is reused, but route lifecycle state from the
+        // previous activity instance must not replay as `true` to the next host. Resetting on attach
+        // (rather than on the old activity's destroy) is safe under overlapping activity lifecycles.
+        context.attachActivity(createFakeActivity())
+
+        context.isRouteStarted(contract).test {
+            assertThat(awaitItem()).isFalse()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test fun `clearRouteLifecycleState flips active subscriptions back to false`() = runTest {
+        val contract = createContract()
+        context.isRouteStarted(contract).test {
+            assertThat(awaitItem()).isFalse()
+
+            context.updateRouteLifecycleState(RouteId("", contract), Lifecycle.State.STARTED)
+            assertThat(awaitItem()).isTrue()
+
+            context.clearRouteLifecycleState()
+            assertThat(awaitItem()).isFalse()
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun createContract(): RouteKey {
         return TestRouteKey()
     }
