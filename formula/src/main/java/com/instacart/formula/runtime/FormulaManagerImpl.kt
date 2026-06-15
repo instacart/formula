@@ -16,7 +16,6 @@ import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.lifecycle.ValidationException
 import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
-import java.util.LinkedList
 
 /**
  * Responsible for keeping track of formula's state, running actions, and child formulas. The
@@ -69,7 +68,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * while [isRunning] is true. If [isRunning] is false, we will pass the transitions
      * to [ManagerDelegate].
      */
-    private val transitionQueue = LinkedList<DeferredTransition<*, *, *>>()
+    private val transitionQueue = ArrayDeque<DeferredTransition<*, *, *>>()
 
     fun canUpdatesContinue(evaluationId: Long): Boolean {
         return !isEvaluationNeeded(evaluationId) && transitionQueue.isEmpty()
@@ -307,7 +306,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         // Execute deferred transitions
         while (transitionQueue.isNotEmpty()) {
-            transitionQueue.pollFirst().execute()
+            transitionQueue.removeFirst().execute()
         }
 
         inspector?.onFormulaFinished(formulaType)
@@ -381,7 +380,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     private fun handleTransitionQueue(evaluationId: Long): Boolean {
         while (transitionQueue.isNotEmpty()) {
-            val event = transitionQueue.pollFirst()
+            val event = transitionQueue.removeFirst()
             event.execute()
             if (isEvaluationNeeded(evaluationId)) {
                 return true

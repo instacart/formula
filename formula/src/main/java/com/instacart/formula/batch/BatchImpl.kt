@@ -1,6 +1,5 @@
 package com.instacart.formula.batch
 
-import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class BatchImpl internal constructor(
@@ -10,10 +9,10 @@ internal class BatchImpl internal constructor(
 ) : BatchScheduler.Batch {
 
     private val isScheduled = AtomicBoolean(false)
-    private val updates = LinkedList<() -> Unit>()
+    private val updates = ArrayDeque<() -> Unit>()
 
     fun add(update: () -> Unit) {
-        updates.add(update)
+        updates.addLast(update)
     }
 
     override fun execute() {

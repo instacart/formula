@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
@@ -82,7 +81,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     /**
      * Global transition effect queue which executes side-effects after all formulas are idle.
      */
-    private val globalEffectQueue = LinkedList<Effect>()
+    private val globalEffectQueue = ArrayDeque<Effect>()
 
     /**
      * Determines if we are iterating through [globalEffectQueue]. It prevents us from
@@ -342,7 +341,7 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private fun executeTransitionEffects() {
         isExecutingEffects = true
         while (globalEffectQueue.isNotEmpty()) {
-            val effect = globalEffectQueue.pollFirst()
+            val effect = globalEffectQueue.removeFirst()
             val dispatcher = when (effect.type) {
                 Effect.Unconfined -> Dispatcher.None
                 Effect.Main -> Dispatcher.Main
