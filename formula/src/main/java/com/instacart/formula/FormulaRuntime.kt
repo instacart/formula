@@ -24,6 +24,15 @@ class FormulaRuntime<Input : Any, Output : Any>(
     private val formula: IFormula<Input, Output>,
     private val config: RuntimeConfig,
 ) : ManagerDelegate, BatchManager.Executor {
+    private companion object {
+        // Sized for the common case — a few effects per drain cycle. Stays under the stdlib
+        // default of 10 (which only kicks in on the no-arg constructor's first add).
+        private const val INITIAL_GLOBAL_EFFECT_QUEUE_CAPACITY = 8
+        // After a drain, replace the deque if we observed a burst this large. Picked well above
+        // typical cascading-transition depth so steady-state workloads never trigger a replace.
+        private const val GLOBAL_EFFECT_QUEUE_SHRINK_THRESHOLD = 64
+    }
+
     override val scope = CoroutineScope(
         context = coroutineContext + SupervisorJob(parent = coroutineContext[Job])
     )
@@ -80,8 +89,12 @@ class FormulaRuntime<Input : Any, Output : Any>(
 
     /**
      * Global transition effect queue which executes side-effects after all formulas are idle.
+     * Replaced with a fresh deque after a drain that observed a burst exceeding
+     * [GLOBAL_EFFECT_QUEUE_SHRINK_THRESHOLD] — [ArrayDeque] never shrinks its backing array on its
+     * own, so the deque would otherwise stay pinned at the peak size for the life of the runtime.
      */
-    private val globalEffectQueue = ArrayDeque<Effect>()
+    private var globalEffectQueue = ArrayDeque<Effect>(INITIAL_GLOBAL_EFFECT_QUEUE_CAPACITY)
+    private var globalEffectQueuePeakSize = 0
 
     /**
      * Determines if we are iterating through [globalEffectQueue]. It prevents us from
@@ -203,6 +216,8 @@ class FormulaRuntime<Input : Any, Output : Any>(
             for (index in effects.indices) {
                 globalEffectQueue.addLast(effects[index])
             }
+            val size = globalEffectQueue.size
+            if (size > globalEffectQueuePeakSize) globalEffectQueuePeakSize = size
         }
 
         pendingEvaluation = pendingEvaluation || evaluate
@@ -349,6 +364,10 @@ class FormulaRuntime<Input : Any, Output : Any>(
             }
             dispatcher.dispatch(effect)
         }
+        if (globalEffectQueuePeakSize > GLOBAL_EFFECT_QUEUE_SHRINK_THRESHOLD) {
+            globalEffectQueue = ArrayDeque(INITIAL_GLOBAL_EFFECT_QUEUE_CAPACITY)
+        }
+        globalEffectQueuePeakSize = 0
         isExecutingEffects = false
     }
 
