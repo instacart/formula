@@ -24,8 +24,7 @@ internal class SnapshotImpl<Input, State>(
     lifecycleCache: LifecycleCache,
 ) : FormulaContext<Input, State>(lifecycleCache),
     Snapshot<Input, State>,
-    TransitionContext<Input, State>,
-    ActionBuilder<Input, State> {
+    TransitionContext<Input, State> {
 
     private var scopeKey: Any? = null
     private var isEvaluationFinished = false
