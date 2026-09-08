@@ -12,13 +12,12 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
     var timesTerminateCalled = 0
 
     override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+        Action.onTerminate().onEvent {
+            transition { timesTerminateCalled += 1 }
+        }
+
         return Evaluation(
             output = Unit,
-            actions = context.actions {
-                Action.onTerminate().onEvent {
-                    transition { timesTerminateCalled += 1 }
-                }
-            }
         )
     }
 
