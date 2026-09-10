@@ -2048,7 +2048,10 @@ class FormulaRuntimeTest {
     @Test
     fun `formula multi-thread handoff to executing thread`() = runTest {
         with(MultiThreadRobot(this)) {
-            thread("thread-a", 50)
+            // Wait until thread-a has claimed the SynchronizedUpdateQueue before submitting
+            // thread-b, otherwise the two executor threads race for the takeOver CAS and the
+            // assertion below (which hard-codes thread-a as the executing thread) flakes.
+            thread("thread-a", 50, awaitTakeOver = true)
             thread("thread-b", 10)
             awaitCompletion()
             thread("thread-b", 10)
