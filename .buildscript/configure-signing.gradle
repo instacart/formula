@@ -14,18 +14,28 @@ String propOrEnv(String... names) {
     return result
 }
 
+// GROUP, POM_ARTIFACT_ID and VERSION_NAME drive the published coordinates; the
+// plugin reads them from Gradle properties automatically.
+
 if (project.hasProperty('artifactoryRelease')) {
     // Artifactory publishing (no signing required)
-    mavenPublish {
-        releaseSigningEnabled = false
-        targets {
-            uploadArchives {
-                releaseRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
-                snapshotRepositoryUrl = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
-                repositoryUsername = propOrEnv("ARTIFACTORY_USERNAME", "instacart_artifactory_username")
-                repositoryPassword = propOrEnv("ARTIFACTORY_PASSWORD", "instacart_artifactory_password")
+    publishing {
+        repositories {
+            maven {
+                name = "artifactory"
+                url = propOrEnv("ARTIFACTORY_URL", "instacart_artifactory_url")
+                credentials {
+                    username = propOrEnv("ARTIFACTORY_USERNAME", "instacart_artifactory_username")
+                    password = propOrEnv("ARTIFACTORY_PASSWORD", "instacart_artifactory_password")
+                }
             }
         }
+    }
+    // The old plugin exposed `uploadArchives`; keep it as the release entry point.
+    tasks.register("uploadArchives") {
+        group = "publishing"
+        description = "Publishes all publications to Artifactory."
+        dependsOn "publishAllPublicationsToArtifactoryRepository"
     }
 } else if (project.hasProperty('mavenCentralRelease')) {
     // Maven Central publishing (requires signing)
@@ -34,38 +44,47 @@ if (project.hasProperty('artifactoryRelease')) {
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
     }
 
-    signing {
-        // Support both env vars (CI) and local.properties (local dev)
-        def signingKeyEnv = System.getenv('SIGNING_KEY')
-        def signingKey
-        if (signingKeyEnv) {
-            // CI: key content directly from env var
-            signingKey = signingKeyEnv
-        } else {
-            // Local: read from file specified in local.properties
-            def signingKeyFilename = properties.signingKey
-            if (signingKeyFilename) {
-                signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
-            }
+    // Support both env vars (CI) and local.properties (local dev)
+    def signingKeyEnv = System.getenv('SIGNING_KEY')
+    def signingKey
+    if (signingKeyEnv) {
+        // CI: key content directly from env var
+        signingKey = signingKeyEnv
+    } else {
+        // Local: read from file specified in local.properties
+        def signingKeyFilename = properties.signingKey
+        if (signingKeyFilename) {
+            signingKey = "${project.rootProject.file(signingKeyFilename).newDataInputStream()}"
         }
-        def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
+    }
+    def signingPassword = System.getenv('SIGNING_PASSWORD') ?: properties.signingPassword
 
+    signing {
         if (signingKey && signingPassword) {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
     }
 
-    mavenPublish {
-        targets {
-            uploadArchives {
-                repositoryUsername = System.getenv('SONATYPE_NEXUS_USERNAME') ?: properties.SONATYPE_NEXUS_USERNAME
-                repositoryPassword = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: properties.SONATYPE_NEXUS_PASSWORD
-            }
-        }
+    // Map the legacy Sonatype credential names to the ones this plugin reads.
+    def centralUsername = System.getenv('SONATYPE_NEXUS_USERNAME') ?: properties.SONATYPE_NEXUS_USERNAME
+    def centralPassword = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: properties.SONATYPE_NEXUS_PASSWORD
+    if (centralUsername != null) {
+        project.ext.mavenCentralUsername = centralUsername
     }
-} else {
-    // Local development (no publishing)
-    mavenPublish {
-        releaseSigningEnabled = false
+    if (centralPassword != null) {
+        project.ext.mavenCentralPassword = centralPassword
+    }
+
+    mavenPublishing {
+        publishToMavenCentral()
+        signAllPublications()
+    }
+    // The old plugin exposed `uploadArchives`; keep it as the release entry point.
+    tasks.register("uploadArchives") {
+        group = "publishing"
+        description = "Publishes all publications to Maven Central."
+        dependsOn "publishToMavenCentral"
     }
 }
+// Local development (no publishing) needs no target: the plugin still registers
+// the publication so publishToMavenLocal works.

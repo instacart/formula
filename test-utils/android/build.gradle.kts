@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -10,16 +11,14 @@ android {
     buildFeatures {
         compose = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
 
 dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(project(":formula-android"))
     api(libs.rxrelay)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)

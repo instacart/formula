@@ -1,21 +1,117 @@
-apply plugin: "com.vanniktech.android.junit.jacoco"
+// Gradle 9 compatible replacement for the discontinued gradle-android-junit-jacoco plugin.
+// It instruments the formula modules' unit tests and aggregates their coverage into a
+// single XML report consumed by CI (jacocoTestReportMerged).
 
-junitJacoco {
-    jacocoVersion = '0.8.8'
-    excludes = [
-            // Defaults
-            '**/androidx/**/*.*',
-            '**/*$$*',
-            '**/BuildConfig.*',
-            '**/Manifest*.*',
-            '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
-            '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
-            '**/com/instacart/formula/test/**/*.*',
-            '**/com/instacart/testutils/**/*.*'
-    ]
-    ignoreProjects = [
-            "samples/*",
-    ]
-    includeNoLocationClasses = true
-    includeInstrumentationCoverageInMergedReport = true
+apply plugin: "jacoco"
+
+def jacocoVersion = "0.8.14"
+def coverageExcludes = [
+        // Defaults
+        '**/androidx/**/*.*',
+        '**/*$$*',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
+        '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
+        '**/com/instacart/formula/test/**/*.*',
+        '**/com/instacart/testutils/**/*.*'
+]
+
+def isCovered = { project ->
+    project.name.contains("formula") && !project.path.startsWith(":samples")
+}
+
+def mergedReport = tasks.register("jacocoTestReportMerged", JacocoReport) {
+    group = "Reporting"
+    description = "Generate a merged Jacoco coverage report."
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+        xml.outputLocation = rootProject.file("$rootProject.buildDir/reports/jacoco/jacoco.xml")
+        html.outputLocation = rootProject.file("$rootProject.buildDir/reports/jacoco")
+    }
+    classDirectories.setFrom(files())
+    sourceDirectories.setFrom(files())
+    additionalSourceDirs.setFrom(files())
+    executionData.setFrom(files())
+}
+
+def addToMerged = { reportProvider ->
+    mergedReport.configure { merged ->
+        merged.classDirectories.from(reportProvider.map { it.classDirectories })
+        merged.sourceDirectories.from(reportProvider.map { it.sourceDirectories })
+        merged.additionalSourceDirs.from(reportProvider.map { it.additionalSourceDirs })
+        merged.executionData.from(reportProvider.map { it.executionData })
+    }
+}
+
+def configureJvm = { sub ->
+    sub.plugins.apply("jacoco")
+    sub.jacoco.toolVersion = jacocoVersion
+    sub.afterEvaluate {
+        // The jacoco plugin already registered jacocoTestReport for JVM projects.
+        def report = sub.tasks.named("jacocoTestReport", JacocoReport)
+        report.configure {
+            group = "Reporting"
+            description = "Generate Jacoco coverage reports."
+            dependsOn sub.tasks.named("test")
+            reports {
+                xml.required = true
+                csv.required = false
+                html.required = true
+                xml.outputLocation = sub.file("$sub.buildDir/reports/jacoco/test/jacoco.xml")
+                html.outputLocation = sub.file("$sub.buildDir/reports/jacoco/test")
+            }
+            classDirectories.setFrom(
+                    sub.fileTree(dir: "$sub.buildDir/classes/kotlin/main", excludes: coverageExcludes),
+                    sub.fileTree(dir: "$sub.buildDir/classes/java/main", excludes: coverageExcludes))
+            sourceDirectories.setFrom(sub.files("src/main/java", "src/main/kotlin"))
+            additionalSourceDirs.setFrom(sub.files("src/main/java", "src/main/kotlin"))
+            executionData.setFrom(sub.file("$sub.buildDir/jacoco/test.exec"))
+        }
+        sub.tasks.named("check").configure { it.dependsOn(report) }
+        addToMerged(report)
+    }
+}
+
+def configureAndroid = { sub ->
+    sub.plugins.apply("jacoco")
+    sub.jacoco.toolVersion = jacocoVersion
+    sub.tasks.withType(Test).configureEach {
+        it.jacoco.includeNoLocationClasses = true
+    }
+    sub.afterEvaluate {
+        def report = sub.tasks.register("jacocoTestReportRelease", JacocoReport) {
+            group = "Reporting"
+            description = "Generate Jacoco coverage reports after running release unit tests."
+            dependsOn "testReleaseUnitTest"
+            reports {
+                xml.required = true
+                csv.required = false
+                html.required = true
+                xml.outputLocation = sub.file("$sub.buildDir/reports/jacoco/release/jacoco.xml")
+                html.outputLocation = sub.file("$sub.buildDir/reports/jacoco/release")
+            }
+            classDirectories.setFrom(
+                    sub.fileTree(dir: "$sub.buildDir/intermediates/javac/release/classes", excludes: coverageExcludes),
+                    sub.fileTree(dir: "$sub.buildDir/tmp/kotlin-classes/release", excludes: coverageExcludes))
+            sourceDirectories.setFrom(sub.files("src/main/java", "src/main/kotlin"))
+            additionalSourceDirs.setFrom(sub.files("src/main/java", "src/main/kotlin"))
+            executionData.setFrom(sub.file("$sub.buildDir/jacoco/testReleaseUnitTest.exec"))
+        }
+        sub.tasks.named("check").configure { it.dependsOn(report) }
+        addToMerged(report)
+    }
+}
+
+subprojects { sub ->
+    if (!isCovered(sub)) {
+        return
+    }
+    sub.plugins.withId("org.jetbrains.kotlin.jvm") { configureJvm(sub) }
+    sub.plugins.withId("java") { configureJvm(sub) }
+    sub.plugins.withId("java-library") { configureJvm(sub) }
+    sub.plugins.withId("com.android.library") { configureAndroid(sub) }
+    sub.plugins.withId("com.android.application") { configureAndroid(sub) }
 }

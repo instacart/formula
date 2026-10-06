@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.compose)
 }
 
 apply {
@@ -16,17 +17,9 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
-
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
-    }
-
-    publishing {
-        singleVariant("release")
     }
 }
 
@@ -34,8 +27,14 @@ dependencies {
     implementation(project(":formula-rxjava3"))
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
-    implementation(libs.lifecycle.runtime.ktx)
+
+    api(platform(libs.compose.bom))
     api(libs.compose.ui)
+    api(libs.coroutines)
+    api(libs.androidx.activity.compose)
+    api(libs.lifecycle.runtime.ktx)
+    api(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
 
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.runner)
