@@ -1,6 +1,8 @@
 [versions]
 android-gradle = "8.9.1"
 dokka-gradle = "1.9.10"
+# AGP 8.9.1 bundles R8 8.9.32, which cannot parse Kotlin 2.3 metadata.
+r8 = "8.13.19"
 
 kotlin = "2.3.21"
 coroutines = "1.9.0"
@@ -17,6 +19,7 @@ autoService = "1.1.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
+r8 = { module = "com.android.tools:r8", version.ref = "r8" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-gradle" }
 dokka-android-gradle = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka-gradle" }

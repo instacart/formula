@@ -18,6 +18,8 @@ buildscript {
 
     dependencies {
         classpath(libs.android.gradle)
+        // Override the R8 bundled with AGP so it can parse Kotlin 2.3 metadata.
+        classpath(libs.r8)
         classpath(libs.kotlin.gradle)
         classpath(libs.jacoco.gradle)
         classpath(libs.version.gradle)
