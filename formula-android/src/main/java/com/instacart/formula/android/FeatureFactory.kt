@@ -44,13 +44,13 @@ abstract class FeatureFactory<in Dependencies, in Key : RouteKey> {
         val dependencies: @UnsafeVariance Dependencies,
         val routeId: RouteId<@UnsafeVariance Key>,
     ) {
-        val key = routeId.key
+        val key: @UnsafeVariance Key = routeId.key
     }
 
     /**
      * Initializes the [Feature] using [Params] provided.
      */
-    abstract fun Params.initialize(): Feature
+    abstract fun FeatureFactory<@UnsafeVariance Dependencies, @UnsafeVariance Key>.Params.initialize(): Feature
 
     /**
      * Initializes state observable and a view factory for a specific [key].

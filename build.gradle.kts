@@ -50,13 +50,31 @@ subprojects {
         }
     }
 
+    // Robolectric on JDK 17+ needs access to these JDK internals.
+    val robolectricJvmArgs = listOf(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
+    )
+
     // Common android config
     val commonAndroidConfig: CommonExtension<*, *, *, *, *, *>.() -> Unit = {
-        compileSdk = 34
+        compileSdk = 36
 
         compileOptions {
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion
+        }
+
+        testOptions.unitTests.all {
+            it.jvmArgs(robolectricJvmArgs)
         }
     }
 
@@ -64,7 +82,7 @@ subprojects {
     pluginManager.withPlugin("com.android.library") {
         with(extensions.getByType<LibraryExtension>()) {
             commonAndroidConfig()
-            defaultConfig { minSdk = 21 }
+            defaultConfig { minSdk = 23 }
         }
     }
 
@@ -73,7 +91,7 @@ subprojects {
         with(extensions.getByType<ApplicationExtension>()) {
             commonAndroidConfig()
             defaultConfig {
-                minSdk = 21
+                minSdk = 23
                 //noinspection ExpiredTargetSdkVersion
                 targetSdk = 30
             }
@@ -99,8 +117,8 @@ subprojects {
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = javaVersion.toString()
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 }
