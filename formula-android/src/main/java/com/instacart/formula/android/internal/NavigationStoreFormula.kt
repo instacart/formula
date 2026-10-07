@@ -74,7 +74,7 @@ internal class NavigationStoreFormula(
                     delegate(update)
                 }
 
-                state.features.entries.forEach { entry ->
+                for (entry in state.features.entries) {
                     val routeId = entry.key
                     val feature = (entry.value as? FeatureEvent.Init)?.feature
                     if (feature != null) {
