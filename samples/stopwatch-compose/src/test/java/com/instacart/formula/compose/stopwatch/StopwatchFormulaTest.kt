@@ -9,8 +9,9 @@ import kotlin.time.Duration.Companion.milliseconds
 class StopwatchFormulaTest {
 
     @Test
-    fun `ticks while running and stops when paused`() = runTest {
-        val observer = StopwatchFormula()
+    fun `elapsed time follows boot clock across pause and resume`() = runTest {
+        var elapsedSinceBoot = 10_000L
+        val observer = StopwatchFormula { elapsedSinceBoot }
             .test(this)
             .input(Unit)
 
@@ -19,17 +20,30 @@ class StopwatchFormulaTest {
             startStopButton.onSelected(Unit)
         }
 
-        testScheduler.advanceTimeBy(11.milliseconds)
+        elapsedSinceBoot += 125
+        testScheduler.advanceTimeBy(2.milliseconds)
         observer.output {
-            assertThat(timePassed).isEqualTo("0s 01")
+            assertThat(timePassed).isEqualTo("0s 12")
             startStopButton.onSelected(Unit)
         }
 
+        elapsedSinceBoot += 10_000
         testScheduler.advanceTimeBy(100.milliseconds)
         observer.output {
-            assertThat(timePassed).isEqualTo("0s 01")
+            assertThat(timePassed).isEqualTo("0s 12")
+            startStopButton.onSelected(Unit)
         }
 
+        elapsedSinceBoot += 250
+        testScheduler.advanceTimeBy(2.milliseconds)
+        observer.output {
+            assertThat(timePassed).isEqualTo("0s 37")
+            resetButton.onSelected(Unit)
+        }
+
+        observer.output {
+            assertThat(timePassed).isEqualTo("0s 00")
+        }
         observer.dispose()
     }
 }
