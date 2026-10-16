@@ -64,10 +64,10 @@ store.onVisibilityChanged(routeId, visible = true)
 
 // When the route is permanently removed:
 store.onVisibilityChanged(routeId, visible = false)
-store.onLifecycleEvent(RouteLifecycleEvent.Removed(routeId, lastState = lastRenderModel))
+store.onLifecycleEvent(RouteLifecycleEvent.Removed(routeId))
 ```
 
-Supply `lastState` when consumers need the final render model during removal. The store exposes navigation state through the activity-store context. A host can render a feature through its configured route delegate:
+The store exposes navigation state through the activity-store context. A host can render a feature through its configured route delegate:
 
 ```kotlin
 routeEnvironment.routeDelegate.Content(routeId, viewFactory, renderModel)
