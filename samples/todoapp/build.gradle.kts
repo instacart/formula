@@ -41,8 +41,6 @@ dependencies {
     implementation(project(":formula-android"))
 
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraintlayout)
-
     implementation(libs.kotlin)
     implementation(libs.rxrelay)
 

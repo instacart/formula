@@ -1,23 +1,19 @@
 package com.instacart.formula.android
 
 import android.os.Parcelable
-import androidx.fragment.app.FragmentManager
 
 /**
- * A key is used to identify a specific [FormulaFragment] and to connect the correct [FeatureFactory].
+ * Identifies a route type and its navigation arguments. A host uses [tag] to distinguish route
+ * types and to derive route-specific behavior.
  *
- * ```
- * data class TaskDetailKey(
- *   val taskID: String
- * ) : RouteKey {
- *   override val tag: String = "task-detail-$taskId"
+ * ```kotlin
+ * @Parcelize
+ * data class TaskDetailKey(val taskId: String) : RouteKey {
+ *     override val tag: String = "task-detail"
  * }
  * ```
  */
 interface RouteKey : Parcelable {
-
-    /**
-     * Tag is a unique identifier used to distinguish each route instance by the [FragmentManager].
-     */
+    /** Identifier used by the navigation host to distinguish route types. */
     val tag: String
 }

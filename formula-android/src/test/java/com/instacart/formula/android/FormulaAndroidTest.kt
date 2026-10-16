@@ -117,6 +117,25 @@ class FormulaAndroidTest {
     }
 
     @Test
+    fun `navigation state is sent to pre render callback`() {
+        val states = mutableListOf<NavigationState>()
+        withFormulaAndroid(
+            configure = {
+                activity<TestFormulaActivity> {
+                    val navigationStore = NavigationStore.Builder()
+                        .setOnPreRenderNavigationState { states.add(it) }
+                        .build { }
+                    ActivityStore(navigationStore = navigationStore)
+                }
+            }
+        ) {
+            ActivityScenario.launch(TestFormulaActivity::class.java)
+
+            assertThat(states).isNotEmpty()
+        }
+    }
+
+    @Test
     fun `activity results are emitted`() {
         withFormulaAndroid(
             configure = {

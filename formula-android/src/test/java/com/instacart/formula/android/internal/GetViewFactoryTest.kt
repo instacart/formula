@@ -48,7 +48,7 @@ class GetViewFactoryTest {
 
         assertThat(screenErrors).hasSize(1)
         assertThat(screenErrors.last().first).isEqualTo(MainKey(1))
-        assertThat(screenErrors.last().second).hasMessageThat().contains("Missing feature factory or integration for ${routeId.key}. Please check your FragmentStore configuration")
+        assertThat(screenErrors.last().second).hasMessageThat().contains("Missing feature factory or integration for ${routeId.key}. Check the NavigationStore bindings.")
     }
 
     @Test fun `getViewFactory with feature initialization error`() {

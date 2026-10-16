@@ -9,7 +9,7 @@ data class RouteEnvironment(
 ) {
 
     /**
-     * Introspection API to track various formula fragment events and their performance.
+     * Hooks for observing feature initialization and customizing route rendering.
      */
     open class RouteDelegate {
 

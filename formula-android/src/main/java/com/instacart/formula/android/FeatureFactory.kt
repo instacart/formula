@@ -30,9 +30,9 @@ package com.instacart.formula.android
  * ```
  *
  * Once we define a [FeatureFactory], we need to [bind][FeaturesBuilder.bind] it to a
- * [NavigationStore]. The navigation flow store will call [initialize] the first time
- * [FormulaFragment] with a new [Key] is attached. It will subscribe to the state management
- * and persist it across configuration changes.
+ * [NavigationStore]. The navigation host reports route lifecycle events to the store; the store
+ * initializes the feature for a route the first time it is added and manages its state flow.
+ * The host owns route identity and configuration-change restoration.
  *
  * @param Dependencies dependencies to instantiate this feature. Usually defined by an interface.
  * @param Key a type of route key that is used to identify this feature.
@@ -53,7 +53,7 @@ abstract class FeatureFactory<in Dependencies, in Key : RouteKey> {
     abstract fun Params.initialize(): Feature
 
     /**
-     * Initializes state observable and a view factory for a specific [key].
+     * Initializes a state flow and view factory for a specific route.
      */
     fun initialize(dependencies: Dependencies, routeId: RouteId<@UnsafeVariance Key>): Feature {
         return Params(dependencies, routeId).initialize()

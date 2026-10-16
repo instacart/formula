@@ -4,8 +4,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
+import com.instacart.formula.android.events.ActivityResult
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 
@@ -21,18 +21,13 @@ internal class ActivityManager<Activity : FragmentActivity>(
     internal val stateSubscription = store.navigationStore.state().subscribe { newState ->
         delegate.navigationStateRelay.tryEmit(newState)
     }
-    private var navigationRenderView: NavigationFlowRenderView? = null
+    private var fragmentLifecycleTracker: FragmentLifecycleTracker? = null
 
     fun onPreCreate(activity: Activity) {
-        // Give store a chance to initialize the activity.
         store.configureActivity?.invoke(activity)
-
-        // Initialize render view
-        navigationRenderView = NavigationFlowRenderView(
+        fragmentLifecycleTracker = FragmentLifecycleTracker(
             activity = activity,
-            store = store.navigationStore,
-            onLifecycleState = delegate::updateFragmentLifecycleState,
-            onFragmentViewStateChanged = store.navigationStore::onVisibilityChanged
+            onLifecycleStateChanged = delegate::updateFragmentLifecycleState,
         )
     }
 
@@ -40,12 +35,11 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.attachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
 
-        val renderView = navigationRenderView ?: throw callOnPreCreateException(activity)
         with(activity) {
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    delegate.navigationState().collect {
-                        renderView.render(it)
+                    delegate.navigationState().collect { state ->
+                        store.navigationStore.onPreRenderNavigationState?.invoke(state)
                     }
                 }
             }
@@ -70,7 +64,8 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onActivityDestroyed(activity: Activity) {
-        navigationRenderView = null
+        fragmentLifecycleTracker?.dispose()
+        fragmentLifecycleTracker = null
 
         delegate.detachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.DESTROYED)
@@ -80,16 +75,10 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onActivityResult(result)
     }
 
-    fun onBackPressed(): Boolean {
-        return navigationRenderView?.onBackPressed() ?: false
-    }
+    fun onBackPressed(): Boolean = false
 
     fun dispose() {
         stateSubscription.dispose()
         store.onCleared?.invoke()
-    }
-
-    private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
-        return IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): ${activity::class.java.simpleName}")
     }
 }

@@ -2,25 +2,36 @@ package com.examples.todoapp
 
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
+import com.examples.todoapp.data.TaskRepoImpl
+import com.examples.todoapp.tasks.TaskListFeatureFactory
 import com.examples.todoapp.tasks.TaskListKey
-import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FormulaAppCompatActivity
+import com.instacart.formula.android.RouteEnvironment
+import com.instacart.formula.android.RouteId
 
-class TodoActivity : FormulaAppCompatActivity() {
-
+class TodoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.todo_activity)
 
-        if (savedInstanceState == null) {
-            val key = TaskListKey()
-            supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
-                .commit()
+        val routeId = RouteId(instanceId = "todo-task-list", key = TaskListKey())
+        val component = TodoAppComponent { message ->
+            onEffect(TodoActivityEffect.ShowToast(message))
+        }
+        val feature = TaskListFeatureFactory().initialize(component, routeId)
+        val state = feature.factory(lifecycleScope)
+        val routeDelegate = RouteEnvironment().routeDelegate
+
+        setContent {
+            val model by state.collectAsState()
+            routeDelegate.Content(routeId, feature.viewFactory, model)
         }
     }
 
-    fun onEffect(effect: TodoActivityEffect) {
+    private fun onEffect(effect: TodoActivityEffect) {
         when (effect) {
             is TodoActivityEffect.ShowToast -> {
                 Toast.makeText(this, effect.message, Toast.LENGTH_LONG).show()

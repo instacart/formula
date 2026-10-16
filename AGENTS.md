@@ -96,10 +96,10 @@
 - `DeferredAction` - Action combined with event listener returned in Evaluation
 
 **Android:**
-- `FormulaFragment` - Base fragment for Formula integration
-- `FeatureFactory` - Creates features from fragments/keys
+- `NavigationStore` - Manages feature state for host-provided route instances
+- `FeatureFactory` - Creates features from route keys and dependencies
+- `ActivityStore` / `ActivityStoreContext` - Provides activity-scoped setup and lifecycle APIs
 - `ViewFactory` - Creates views for render models
-- `RenderView` - Interface for rendering output to views
 - `ComposeViewFactory` - Creates Jetpack Compose views for render models
 
 ## Key Implementation Classes
