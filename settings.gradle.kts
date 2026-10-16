@@ -14,8 +14,6 @@ include(
     ":samples:custom-network-state-stream",
     ":samples:navigation-fragments",
     ":samples:stopwatch",
-    ":samples:stopwatch-coroutines",
-    ":samples:stopwatch-compose",
     ":samples:todoapp"
 )
 include(

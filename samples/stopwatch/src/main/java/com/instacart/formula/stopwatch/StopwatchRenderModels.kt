@@ -10,5 +10,5 @@ data class StopwatchRenderModel(
 
 data class ButtonRenderModel(
     val text: String,
-    val onSelected: Listener<Unit>
+    val onSelected: Listener<Unit>,
 )
