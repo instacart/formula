@@ -1,11 +1,11 @@
 package com.instacart.formula.compose.stopwatch
 
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxAction
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
 
 class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel>() {
@@ -29,11 +29,14 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
             ),
             actions = context.actions {
                 if (state.isRunning) {
-                    val incrementTimePassed = RxAction.fromObservable {
-                        Observable.interval(1, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
-                    }
-
-                    incrementTimePassed.onEvent {
+                    Action.fromFlow {
+                        flow {
+                            while (true) {
+                                delay(1)
+                                emit(Unit)
+                            }
+                        }
+                    }.onEvent {
                         transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
                     }
                 }

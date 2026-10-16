@@ -11,7 +11,7 @@ Some of the goals for this module are:
 
 ## Using Fragments
 This module provides an API to connect state management and view rendering logic to Android
-fragments. For this example, we will connect `CounterRenderView` and `CounterFormula` from the
+fragments. For this example, we will connect `CounterScreen` and `CounterFormula` from the
 main getting started [guide](index.md).
 
 ### Define a fragment key

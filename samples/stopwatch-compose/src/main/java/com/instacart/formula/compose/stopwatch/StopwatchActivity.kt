@@ -1,33 +1,21 @@
 package com.instacart.formula.compose.stopwatch
 
-import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.FormulaFragment
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class StopwatchActivity : AppCompatActivity() {
+
+    private val viewModel by viewModels<StopwatchViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.stopwatch_activity)
-
-        if (savedInstanceState == null) {
-            val key = StopwatchKey()
-            supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
-                .commit()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        FormulaAndroid.onActivityResult(this, requestCode, resultCode, data)
-    }
-
-    override fun onBackPressed() {
-        if (!FormulaAndroid.onBackPressed(this)) {
-            super.onBackPressed()
+        setContent {
+            val model by viewModel.outputs.collectAsStateWithLifecycle()
+            StopwatchScreen(model)
         }
     }
 }
