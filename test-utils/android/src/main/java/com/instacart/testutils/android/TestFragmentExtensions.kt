@@ -3,7 +3,6 @@ package com.instacart.testutils.android
 import android.os.Looper
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.RouteKey
 import org.robolectric.Shadows.shadowOf
 
@@ -25,7 +24,7 @@ fun FragmentActivity.showFragment(
         }
 
         val tag = routeKey.tag
-        add(R.id.activity_content, FormulaFragment.newInstance(routeKey), tag)
+        add(R.id.activity_content, TestRouteFragment(), tag)
         addToBackStack(tag)
     }.apply {
         if (allowStateLoss) {

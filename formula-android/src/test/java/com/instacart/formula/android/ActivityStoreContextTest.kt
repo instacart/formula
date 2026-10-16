@@ -51,22 +51,20 @@ class ActivityStoreContextTest {
             .asObservable()
             .test()
             .apply {
-                val instance = RouteId("", contract)
-                context.updateFragmentLifecycleState(instance, Lifecycle.State.STARTED)
+                context.updateFragmentLifecycleState(contract.tag, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
     }
 
     @Test fun `isFragmentStarted emits latest value first`() {
         val contract = createContract()
-        val fragment = RouteId("", contract)
         val observable = context.isRouteStarted(contract).asObservable()
 
         // 1st subscription
         observable
             .test()
             .apply {
-                context.updateFragmentLifecycleState(fragment, Lifecycle.State.STARTED)
+                context.updateFragmentLifecycleState(contract.tag, Lifecycle.State.STARTED)
             }
             .assertValues(false, true)
 
@@ -82,8 +80,7 @@ class ActivityStoreContextTest {
             .asObservable()
             .test()
             .apply {
-                val instance = RouteId("", contract)
-                context.updateFragmentLifecycleState(instance, Lifecycle.State.RESUMED)
+                context.updateFragmentLifecycleState(contract.tag, Lifecycle.State.RESUMED)
             }
             .assertValues(false, true)
     }

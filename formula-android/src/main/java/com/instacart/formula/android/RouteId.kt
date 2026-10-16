@@ -1,29 +1,12 @@
 package com.instacart.formula.android
 
-import androidx.fragment.app.Fragment
-import com.instacart.formula.android.internal.getFragmentInstanceId
-import com.instacart.formula.android.internal.getRouteKey
-
 /**
- * An object used to identify a route. It combines both a user generated [key] and
- * a generated [String] id.
+ * Identifies a route instance by combining its key and host-provided unique instance id.
  *
- * @param instanceId Unique identifier used to distinguish a route. Since there
- * can be multiple routes with the same [key], we use this as an extra identifier.
- *
+ * @param instanceId Unique identifier used to distinguish route instances with the same [key].
  * @param key Route key used to create this route.
  */
 data class RouteId<out Type : RouteKey>(
     val instanceId: String,
     val key: Type,
 )
-
-/**
- * Gets a [RouteId] for a given [Fragment].
- */
-fun Fragment.getFormulaRouteId(): RouteId<*> {
-    return RouteId(
-        instanceId = getFragmentInstanceId(),
-        key = this@getFormulaRouteId.getRouteKey()
-    )
-}

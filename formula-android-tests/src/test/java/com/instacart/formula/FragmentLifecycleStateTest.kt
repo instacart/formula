@@ -3,12 +3,10 @@ package com.instacart.formula
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.NavigationStore
 import com.instacart.formula.android.RouteKey
 import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.testutils.android.FormulaAndroidInteractor
-import com.instacart.testutils.android.NoOpFeatureFactory
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.showFragment
 import com.instacart.testutils.android.withFormulaAndroid
@@ -24,12 +22,7 @@ class FragmentLifecycleStateTest {
         withFormulaAndroid(
             configure = {
                 activity<TestFormulaActivity> {
-                    ActivityStore(
-                        navigationStore = NavigationStore.Builder().build {
-                            bind(NoOpFeatureFactory<TestKey>())
-                            bind(NoOpFeatureFactory<TestKeyWithId>())
-                        }
-                    )
+                    ActivityStore()
                 }
             },
         ) {

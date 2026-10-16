@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.NavigationState
 import com.instacart.formula.android.RouteKey
-import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.ActivityStoreContext
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -100,16 +99,14 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun updateFragmentLifecycleState(id: RouteId<*>, newState: Lifecycle.State) {
-        // TODO: should probably start using [id] instead of [contract] here.
-        val contract = id.key
+    fun updateFragmentLifecycleState(tag: String, newState: Lifecycle.State) {
         if (newState == Lifecycle.State.DESTROYED) {
-            fragmentLifecycleStates.remove(contract.tag)
+            fragmentLifecycleStates.remove(tag)
         } else {
-            fragmentLifecycleStates[contract.tag] = newState
+            fragmentLifecycleStates[tag] = newState
         }
 
-        fragmentStateUpdated.tryEmit(contract.tag)
+        fragmentStateUpdated.tryEmit(tag)
     }
 
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }

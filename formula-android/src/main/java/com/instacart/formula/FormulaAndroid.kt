@@ -51,19 +51,8 @@ object FormulaAndroid {
     }
 
     /**
-     * This method checks if the current fragments render model implements [com.instacart.formula.integration.BackCallback]
-     * and will invoke that, otherwise returns false.
-     *
-     * It is commonly used as follows
-     * ```
-     * class MyActivity : FragmentActivity() {
-     *     override fun onBackPressed() {
-     *          if (!FormulaAndroid.onBackPressed(this)) {
-     *              super.onBackPressed()
-     *          }
-     *     }
-     * }
-     * ```
+     * Legacy back-press hook retained for source compatibility. Navigation hosts should own route
+     * back handling and return whether they consumed the event.
      */
     fun onBackPressed(activity: FragmentActivity): Boolean {
         return appManagerOrThrow().onBackPressed(activity)

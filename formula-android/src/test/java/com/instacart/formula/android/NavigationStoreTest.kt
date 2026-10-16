@@ -18,7 +18,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class FragmentStoreTest {
+class NavigationStoreTest {
 
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
@@ -63,7 +63,7 @@ class FragmentStoreTest {
             )
     }
 
-    @Test fun `various fragments added`() {
+    @Test fun `various routes added`() {
 
         val component = FakeComponent()
         val store = createStore(component)
@@ -204,7 +204,7 @@ class FragmentStoreTest {
         )
     }
 
-    @Test fun `fragment store ignores events after key is removed`() {
+    @Test fun `store ignores events after route is removed`() {
         val stateFlow = MutableStateFlow<Any>("value")
 
         val store = NavigationStore.Builder().build {
@@ -228,7 +228,7 @@ class FragmentStoreTest {
         val firstModel = observer.values().last().outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
-        // Remove fragment
+        // Remove route
         store.onLifecycleEvent(
             RouteLifecycleEvent.Removed(routeId = routeId)
         )
@@ -299,7 +299,7 @@ class FragmentStoreTest {
 
         val observer = store.toStates()
 
-        // Add fragment key
+        // Add route
         val key = MainKey(1)
         val routeId = RouteId("", key)
         store.onLifecycleEvent(RouteLifecycleEvent.Added(routeId = routeId))
@@ -315,7 +315,7 @@ class FragmentStoreTest {
         )
     }
 
-    @Test fun `fragment store visible output`() {
+    @Test fun `store visible output`() {
         val stateFlow = MutableStateFlow<Any>("value")
         val store = NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
@@ -384,7 +384,7 @@ class FragmentStoreTest {
     private fun RouteKey.asAddedEvent() = RouteLifecycleEvent.Added(RouteId("", this))
     private fun RouteKey.asRemovedEvent() = RouteLifecycleEvent.Removed(RouteId("", this))
 
-    class TestFeatureFactory<FragmentKeyT : RouteKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
+    class TestFeatureFactory<KeyT : RouteKey>: FeatureFactory<FakeComponent, KeyT>() {
         override fun Params.initialize(): Feature {
             return Feature(
                 viewFactory = TestViewFactory(),
