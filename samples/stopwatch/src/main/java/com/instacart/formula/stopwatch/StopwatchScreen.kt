@@ -1,4 +1,4 @@
-package com.instacart.formula.compose.stopwatch
+package com.instacart.formula.stopwatch
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

@@ -4,6 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.instacart.formula.runAsStateFlow
 
-class StopWatchViewModel(formula: StopwatchFormula = StopwatchFormula()) : ViewModel() {
-    val viewOutputs = formula.runAsStateFlow(viewModelScope)
+class StopwatchViewModel : ViewModel() {
+    val outputs = StopwatchFormula().runAsStateFlow(viewModelScope)
 }

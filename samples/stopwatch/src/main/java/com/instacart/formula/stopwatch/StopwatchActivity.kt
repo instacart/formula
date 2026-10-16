@@ -1,27 +1,21 @@
 package com.instacart.formula.stopwatch
 
 import android.os.Bundle
-import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-class StopwatchActivity : FragmentActivity() {
+class StopwatchActivity : AppCompatActivity() {
 
-    private val disposables = CompositeDisposable()
+    private val viewModel by viewModels<StopwatchViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.stopwatch_activity)
-
-        val renderView = StopwatchRenderView(findViewById(R.id.activity_content))
-
-        val renderModels: Observable<StopwatchRenderModel> = StopwatchFormula().toObservable()
-        disposables.add(renderModels.subscribe(renderView.render))
-    }
-
-    override fun onDestroy() {
-        disposables.clear()
-        super.onDestroy()
+        setContent {
+            val model by viewModel.outputs.collectAsStateWithLifecycle()
+            StopwatchScreen(model)
+        }
     }
 }
