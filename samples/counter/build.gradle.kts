@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-parcelize")
 }
 
 android {
@@ -12,6 +11,14 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
     buildTypes {
@@ -29,13 +36,18 @@ android {
 }
 
 dependencies {
-    implementation(project(":formula-rxjava3"))
-    implementation(project(":formula-android"))
+    implementation(project(":formula"))
 
     implementation(libs.kotlin)
     implementation(libs.androidx.appcompat)
-    implementation(libs.rxrelay)
-    implementation(libs.rxandroid)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.runtime.compose)
+
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)

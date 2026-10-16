@@ -1,43 +1,56 @@
 package com.instacart.formula.compose.stopwatch
 
+import android.os.SystemClock
+import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxAction
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
 
-class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel>() {
+class StopwatchFormula(
+    private val elapsedSinceBoot: () -> Long = { SystemClock.elapsedRealtime() },
+) : Formula<Unit, StopwatchFormula.State, StopwatchRenderModel>() {
 
     data class State(
-        val timePassedInMillis: Long,
+        val elapsedBeforeCurrentRunMillis: Long = 0,
+        val startedAtElapsedRealtimeMillis: Long? = null,
+        val currentElapsedRealtimeMillis: Long = 0,
+    ) {
         val isRunning: Boolean
-    )
+            get() = startedAtElapsedRealtimeMillis != null
+
+        val elapsedTimeMillis: Long
+            get() = elapsedBeforeCurrentRunMillis +
+                (startedAtElapsedRealtimeMillis?.let { currentElapsedRealtimeMillis - it } ?: 0)
+    }
 
     override fun initialState(input: Unit): State = State(
-        timePassedInMillis = 0,
-        isRunning = false
+        currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
         return Evaluation(
             output = StopwatchRenderModel(
-                timePassed = formatTimePassed(state.timePassedInMillis),
+                timePassed = formatTimePassed(state.elapsedTimeMillis),
                 startStopButton = startStopButton(),
-                resetButton = resetButton()
+                resetButton = resetButton(),
             ),
             actions = context.actions {
                 if (state.isRunning) {
-                    val incrementTimePassed = RxAction.fromObservable {
-                        Observable.interval(1, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread())
-                    }
-
-                    incrementTimePassed.onEvent {
-                        transition(state.copy(timePassedInMillis = state.timePassedInMillis + 1))
+                    Action.fromFlow {
+                        flow {
+                            while (true) {
+                                delay(1)
+                                emit(elapsedSinceBoot())
+                            }
+                        }
+                    }.onEvent { currentElapsedRealtimeMillis ->
+                        transition(state.copy(currentElapsedRealtimeMillis = currentElapsedRealtimeMillis))
                     }
                 }
-            }
+            },
         )
     }
 
@@ -56,11 +69,11 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
             append(' ')
 
             // Always show millis as two digits
-            val millisPassed = (timePassedInMillis % 1000) / 10
-            if (millisPassed < 10) {
+            val millis = (timePassedInMillis % 1000) / 10
+            if (millis < 10) {
                 append('0')
             }
-            append(millisPassed)
+            append(millis)
         }
     }
 
@@ -68,12 +81,26 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return ButtonRenderModel(
             text = when {
                 state.isRunning -> "Stop"
-                state.timePassedInMillis > 0 -> "Resume"
+                state.elapsedTimeMillis > 0 -> "Resume"
                 else -> "Start"
             },
             onSelected = context.onEvent {
-                transition(state.copy(isRunning = !state.isRunning))
-            }
+                val now = elapsedSinceBoot()
+                val nextState = if (state.isRunning) {
+                    state.copy(
+                        elapsedBeforeCurrentRunMillis = state.elapsedBeforeCurrentRunMillis +
+                            (now - checkNotNull(state.startedAtElapsedRealtimeMillis)),
+                        startedAtElapsedRealtimeMillis = null,
+                        currentElapsedRealtimeMillis = now,
+                    )
+                } else {
+                    state.copy(
+                        startedAtElapsedRealtimeMillis = now,
+                        currentElapsedRealtimeMillis = now,
+                    )
+                }
+                transition(nextState)
+            },
         )
     }
 
@@ -81,8 +108,10 @@ class StopwatchFormula : Formula<Unit, StopwatchFormula.State, StopwatchRenderMo
         return ButtonRenderModel(
             text = "Reset",
             onSelected = context.onEvent {
-                transition(state.copy(timePassedInMillis = 0, isRunning = false))
-            }
+                transition(
+                    State(currentElapsedRealtimeMillis = elapsedSinceBoot()),
+                )
+            },
         )
     }
 }

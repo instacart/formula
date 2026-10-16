@@ -1,26 +1,21 @@
 package com.instacart.formula.counter
 
 import android.os.Bundle
-import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-class CounterActivity : FragmentActivity() {
+class CounterActivity : AppCompatActivity() {
 
-    private val disposables = CompositeDisposable()
+    private val viewModel by viewModels<CounterViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.counter_activity)
-
-        val renderView = CounterRenderView(findViewById(R.id.activity_content))
-
-        val formula = CounterFormula()
-        disposables.add(formula.toObservable().subscribe(renderView.render))
-    }
-
-    override fun onDestroy() {
-        disposables.clear()
-        super.onDestroy()
+        setContent {
+            val model by viewModel.outputs.collectAsStateWithLifecycle()
+            CounterScreen(model)
+        }
     }
 }
