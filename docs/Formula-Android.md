@@ -76,8 +76,9 @@ class MyApp : Application() {
 The only thing left is navigating to this screen. We create `FormulaFragment` instance using
 our `CounterKey` and use fragment transactions to add it.
 ```kotlin
-class MyActivity : FormulaAppCompatActivity() {
+class MyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.my_activity)
 
@@ -94,7 +95,7 @@ class MyActivity : FormulaAppCompatActivity() {
 }
 ```
 
-If your `Activity` has another base class, you can just copy logic from `FormulaAppCompatActivity` into your `Activity`.
+Call `FormulaAndroid.onPreCreate` before `super.onCreate`. Forward activity results to `FormulaAndroid.onActivityResult` after calling the superclass implementation. Route back handling through `FormulaAndroid.onBackPressed` as shown below.
 
 ### And that's it
 Formula takes care of the rest. This is how the state observable works:
@@ -261,7 +262,7 @@ class MyActivity : FragmentActivity() {
      }
 }
 ```
-This is already in place for you if you use `FormulaAppCompatActivity`.
+Call `FormulaAndroid.onBackPressed` from your activity's back handler, as shown above.
 
 ## Managing dependencies
 Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity,

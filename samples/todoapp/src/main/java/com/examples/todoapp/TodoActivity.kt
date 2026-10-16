@@ -1,14 +1,16 @@
 package com.examples.todoapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.examples.todoapp.tasks.TaskListKey
+import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.FormulaFragment
-import com.instacart.formula.android.FormulaAppCompatActivity
 
-class TodoActivity : FormulaAppCompatActivity() {
-
+class TodoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.todo_activity)
 
@@ -17,6 +19,17 @@ class TodoActivity : FormulaAppCompatActivity() {
             supportFragmentManager.beginTransaction()
                 .add(R.id.activity_content, FormulaFragment.newInstance(key), key.tag)
                 .commit()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        FormulaAndroid.onActivityResult(this, requestCode, resultCode, data)
+    }
+
+    override fun onBackPressed() {
+        if (!FormulaAndroid.onBackPressed(this)) {
+            super.onBackPressed()
         }
     }
 

@@ -1,19 +1,26 @@
 package com.instacart.formula.navigation
 
+import android.content.Intent
 import android.os.Bundle
-import com.instacart.formula.android.FormulaAppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
+import com.instacart.formula.FormulaAndroid
 import com.instacart.formula.android.FormulaFragment
 
-class NavigationActivity : FormulaAppCompatActivity() {
+class NavigationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.navigation_activity)
 
-        // Display initial fragment
         if (savedInstanceState == null) {
             showNextFragment(id = 0)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        FormulaAndroid.onActivityResult(this, requestCode, resultCode, data)
     }
 
     fun showNextFragment(id: Int) {
