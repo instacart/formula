@@ -1,4 +1,4 @@
-package com.instacart.formula.stopwatch
+package com.instacart.formula.samples.networkstate
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action

@@ -1,28 +1,21 @@
 package com.instacart.formula.samples.networkstate
 
 import android.os.Bundle
-import android.widget.TextView
-import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-class NetworkStateActivity : FragmentActivity() {
+class NetworkStateActivity : AppCompatActivity() {
 
-    private val disposables = CompositeDisposable()
+    private val viewModel by viewModels<NetworkStateViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
-
-        val networkStatusTextView = findViewById<TextView>(R.id.network_status_text)
-        val renderModels = NetworkStateFormula(NetworkStateStreamImpl(application)).toObservable()
-        disposables.add(renderModels.subscribe {
-            networkStatusTextView.text = it.status
-        })
-    }
-
-    override fun onDestroy() {
-        disposables.clear()
-        super.onDestroy()
+        setContent {
+            val model by viewModel.outputs.collectAsStateWithLifecycle()
+            NetworkStateScreen(model)
+        }
     }
 }
