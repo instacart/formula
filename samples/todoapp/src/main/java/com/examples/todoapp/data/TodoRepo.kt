@@ -3,7 +3,7 @@ package com.examples.todoapp.data
 import com.examples.todoapp.tasks.TaskCompletedEvent
 import kotlinx.coroutines.flow.Flow
 
-interface TaskRepo {
+interface TodoRepo {
 
     fun tasks(): Flow<List<Task>>
 

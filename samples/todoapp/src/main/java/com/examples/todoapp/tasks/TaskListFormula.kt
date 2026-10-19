@@ -1,14 +1,14 @@
 package com.examples.todoapp.tasks
 
 import com.examples.todoapp.data.Task
-import com.examples.todoapp.data.TaskRepo
+import com.examples.todoapp.data.TodoRepo
 import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
 class TaskListFormula(
-    private val repo: TaskRepo
+    private val repo: TodoRepo
 ) : Formula<TaskListFormula.Input, TaskListState, TaskListRenderModel>() {
 
     class Input(
