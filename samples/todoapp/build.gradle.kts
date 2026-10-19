@@ -37,6 +37,7 @@ android {
 
 dependencies {
     implementation(project(":formula"))
+    implementation(project(":formula-android"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.ktx)

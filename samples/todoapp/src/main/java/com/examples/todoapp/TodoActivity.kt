@@ -10,18 +10,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.examples.todoapp.data.TaskRepoImpl
+import androidx.lifecycle.ViewModelProvider
 import com.examples.todoapp.tasks.TaskListScreen
 import com.examples.todoapp.tasks.TodoViewModel
+import com.instacart.formula.FormulaAndroid
 import kotlinx.coroutines.launch
 
 class TodoActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<TodoViewModel> {
-        TodoViewModel.Factory(TaskRepoImpl())
-    }
+    internal lateinit var todoViewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel by viewModels<TodoViewModel> { todoViewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
         setContent {
             val model by viewModel.outputs.collectAsStateWithLifecycle()
