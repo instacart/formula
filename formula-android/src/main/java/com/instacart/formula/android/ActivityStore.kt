@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentActivity
  * @param onCleared This is invoked when the activity store should be disposed of.
  */
 class ActivityStore<Activity : FragmentActivity>(
-    val navigationStore: NavigationStore = NavigationStore.EMPTY,
+    val navigationStore: NavigationStore? = null,
     val configureActivity: ((Activity) -> Unit)? = null,
     val onCleared: (() -> Unit)? = null,
 )

@@ -26,11 +26,6 @@ abstract class ActivityStoreContext<out Activity : FragmentActivity> {
     abstract fun activityLifecycleState(): StateFlow<Lifecycle.State>
 
     /**
-     * Returns Flow that emits [NavigationStore] state changes.
-     */
-    abstract fun navigationState(): Flow<NavigationState>
-
-    /**
      * Performs an [effect] on the current activity instance. If there is no activity connected,
      * it will do nothing.
      */
