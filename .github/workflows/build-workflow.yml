@@ -126,10 +126,6 @@ jobs:
         run: ./gradlew :samples:custom-network-state-stream:assembleDebug
       - name: Assemble Composition Sample
         run: ./gradlew :samples:composition:assembleDebug
-      - name: Assemble Stopwatch Compose Sample
-        run: ./gradlew :samples:stopwatch-compose:assembleDebug
-      - name: Assemble Stopwatch Kotlin Coroutine Sample
-        run: ./gradlew :samples:stopwatch-coroutines:assembleDebug
       - name: Assemble Fragments Navigation Sample
         run: ./gradlew :samples:navigation-fragments:assembleDebug
       - name: Run Samples Unit Tests
