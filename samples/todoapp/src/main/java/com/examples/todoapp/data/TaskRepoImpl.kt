@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TodoRepoImpl : TodoRepo {
+class TaskRepoImpl : TaskRepo {
     private val localStore = MutableStateFlow(
         listOf(
             Task("Mow the lawn."),

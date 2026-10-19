@@ -1,7 +1,7 @@
 package com.examples.todoapp.tasks
 
 import com.examples.todoapp.data.Task
-import com.examples.todoapp.data.TodoRepo
+import com.examples.todoapp.data.TaskRepo
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.test.test
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +17,7 @@ class TaskListFormulaTest {
 
     @Test
     fun `change filter type`() = runTest {
-        val repo = TodoRepoFake()
+        val repo = TaskRepoFake()
 
         TaskListFormula(repo)
             .test(coroutineContext)
@@ -33,7 +33,7 @@ class TaskListFormulaTest {
             }
     }
 
-    class TodoRepoFake : TodoRepo {
+    class TaskRepoFake : TaskRepo {
 
         override fun tasks(): Flow<List<Task>> {
             return flow {
