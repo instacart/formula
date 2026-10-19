@@ -45,7 +45,11 @@ class StateFlowFeatureTest {
         private val executors = Executor { command -> tasks.add(command) }
 
         private val store = NavigationStore.Builder()
-            .setAsyncCoroutineDispatcher(executors.asCoroutineDispatcher())
+            .setRouteEnvironment(
+                environment = RouteEnvironment(
+                    asyncCoroutineDispatcher = executors.asCoroutineDispatcher(),
+                )
+            )
             .build {
                 val featureFactory = StateFlowFeatureFactory(formula)
                 bind(featureFactory)
