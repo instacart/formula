@@ -1,7 +1,6 @@
 package com.examples.todoapp.tasks
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.examples.todoapp.TodoActivityEffect
 import com.examples.todoapp.data.TaskRepo
@@ -23,14 +22,4 @@ class TodoViewModel(
             effectChannel.trySend(TodoActivityEffect.ShowToast(message))
         },
     )
-
-    class Factory(private val taskRepo: TaskRepo) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (!modelClass.isAssignableFrom(TodoViewModel::class.java)) {
-                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-            }
-            @Suppress("UNCHECKED_CAST")
-            return TodoViewModel(taskRepo) as T
-        }
-    }
 }
