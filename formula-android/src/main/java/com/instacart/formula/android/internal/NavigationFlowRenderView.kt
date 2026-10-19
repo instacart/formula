@@ -6,7 +6,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.NavigationState
@@ -26,7 +25,6 @@ import java.util.LinkedList
 internal class NavigationFlowRenderView(
     private val activity: FragmentActivity,
     private val store: NavigationStore,
-    private val onLifecycleState: (RouteId<*>, Lifecycle.State) -> Unit,
     private val onFragmentViewStateChanged: (RouteId<*>, isVisible: Boolean) -> Unit
 ) {
     private var navigationState: NavigationState? = null
@@ -49,34 +47,12 @@ internal class NavigationFlowRenderView(
             updateVisibleFragments()
 
             onFragmentViewStateChanged(f.getFormulaRouteId(), true)
-            notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
-        }
-
-        override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
-            super.onFragmentStarted(fm, f)
-            notifyLifecycleStateChanged(f, Lifecycle.State.STARTED)
-        }
-
-        override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-            super.onFragmentResumed(fm, f)
-            notifyLifecycleStateChanged(f, Lifecycle.State.RESUMED)
-        }
-
-        override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-            super.onFragmentPaused(fm, f)
-            notifyLifecycleStateChanged(f, Lifecycle.State.STARTED)
-        }
-
-        override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
-            super.onFragmentStopped(fm, f)
-            notifyLifecycleStateChanged(f, Lifecycle.State.CREATED)
         }
 
         override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
             super.onFragmentViewDestroyed(fm, f)
             visibleFragments.remove(f)
 
-            notifyLifecycleStateChanged(f, Lifecycle.State.DESTROYED)
             onFragmentViewStateChanged(f.getFormulaRouteId(), false)
         }
 
@@ -86,9 +62,10 @@ internal class NavigationFlowRenderView(
                 f.navigationStore = store
             }
 
+            val routeId = f.getFormulaRouteId()
             if (FragmentLifecycle.shouldTrack(f)) {
                 val event = RouteLifecycleEvent.Added(
-                    routeId = f.getFormulaRouteId(),
+                    routeId = routeId,
                 )
 
                 store.onLifecycleEvent(event)
@@ -123,10 +100,6 @@ internal class NavigationFlowRenderView(
 
         navigationState = state
         updateVisibleFragments()
-    }
-
-    private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {
-        onLifecycleState.invoke(fragment.getFormulaRouteId(), newState)
     }
 
     private fun updateVisibleFragments() {
