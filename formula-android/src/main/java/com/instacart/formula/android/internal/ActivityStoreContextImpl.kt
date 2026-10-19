@@ -4,18 +4,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.NavigationState
-import com.instacart.formula.android.RouteKey
-import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.ActivityStoreContext
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 
 /**
  * Implementation of [ActivityStoreContext].
@@ -24,13 +18,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     private var activity: Activity? = null
     private var hasStarted: Boolean = false
-    private val fragmentLifecycleStates = mutableMapOf<String, Lifecycle.State>()
-
     private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
-
-    private val fragmentStateUpdated = MutableSharedFlow<String>(
-        extraBufferCapacity = Int.MAX_VALUE,
-    )
 
     private val activityResultRelay = MutableSharedFlow<ActivityResult>(
         extraBufferCapacity = Int.MAX_VALUE,
@@ -45,26 +33,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     override fun activityResults(): Flow<ActivityResult> = activityResultRelay
 
     override fun navigationState(): Flow<NavigationState> = navigationStateRelay
-
-    override fun isRouteStarted(tag: String): Flow<Boolean> {
-        return fragmentLifecycleState(tag)
-            .map { it.isAtLeast(Lifecycle.State.STARTED) }
-            .distinctUntilChanged()
-    }
-
-    override fun isRouteStarted(key: RouteKey): Flow<Boolean> {
-        return isRouteStarted(key.tag)
-    }
-
-    override fun isRouteResumed(tag: String): Flow<Boolean> {
-        return fragmentLifecycleState(tag)
-            .map { it.isAtLeast(Lifecycle.State.RESUMED) }
-            .distinctUntilChanged()
-    }
-
-    override fun isRouteResumed(key: RouteKey): Flow<Boolean> {
-        return isRouteResumed(key.tag)
-    }
 
     override fun send(effect: Activity.() -> Unit) {
         // We allow emitting effects only after activity has started
@@ -100,26 +68,5 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
         }
     }
 
-    fun updateFragmentLifecycleState(id: RouteId<*>, newState: Lifecycle.State) {
-        // TODO: should probably start using [id] instead of [contract] here.
-        val contract = id.key
-        if (newState == Lifecycle.State.DESTROYED) {
-            fragmentLifecycleStates.remove(contract.tag)
-        } else {
-            fragmentLifecycleStates[contract.tag] = newState
-        }
-
-        fragmentStateUpdated.tryEmit(contract.tag)
-    }
-
     internal fun startedActivity(): Activity? = activity.takeIf { hasStarted }
-
-    private fun fragmentLifecycleState(tag: String): Flow<Lifecycle.State> {
-        return fragmentStateUpdated
-            .filter { it == tag }
-            .onStart { emit(tag) }
-            .map {
-                fragmentLifecycleStates[tag] ?: Lifecycle.State.DESTROYED
-            }
-    }
 }

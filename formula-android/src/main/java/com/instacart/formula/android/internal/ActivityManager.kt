@@ -31,7 +31,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
         navigationRenderView = NavigationFlowRenderView(
             activity = activity,
             store = store.navigationStore,
-            onLifecycleState = delegate::updateFragmentLifecycleState,
             onFragmentViewStateChanged = store.navigationStore::onVisibilityChanged
         )
     }
