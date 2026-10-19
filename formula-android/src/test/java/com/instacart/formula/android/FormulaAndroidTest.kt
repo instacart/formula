@@ -40,9 +40,9 @@ class FormulaAndroidTest {
     }
 
     @Test
-    fun `crashes if accessed before initialization`() {
+    fun `crashes if activity result is forwarded before initialization`() {
         val result = runCatching {
-            FormulaAndroid.onBackPressed(TestFormulaActivity())
+            FormulaAndroid.onActivityResult(TestFormulaActivity(), 1, 2, null)
         }
         val errorMessage = result.exceptionOrNull()?.message
         assertThat(errorMessage).isEqualTo(

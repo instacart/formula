@@ -9,12 +9,10 @@ import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.android.ActivityStore
 import com.instacart.formula.android.NavigationState
 import com.instacart.formula.android.RouteKey
-import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.NavigationStore
 import com.instacart.formula.android.events.RouteLifecycleEvent
-import com.instacart.formula.test.TestBackCallbackRenderModel
 import com.instacart.testutils.android.TestKey
 import com.instacart.formula.test.TestKeyWithId
 import com.instacart.testutils.android.HeadlessFragment
@@ -175,23 +173,6 @@ class FormulaFragmentTest {
         assertThat(renderCalls).containsExactly(contract to "update").inOrder()
     }
 
-    @Test fun `delegates back press to current render model`() {
-        navigateToTaskDetail()
-
-        var backPressed = 0
-
-        val contract = TestKeyWithId(1)
-        sendStateUpdate(contract, BackCallback {
-            backPressed += 1
-            true
-        })
-
-        navigateBack()
-        navigateBack()
-
-        assertThat(backPressed).isEqualTo(2)
-    }
-
     @Test fun `activity restart`() {
         navigateToTaskDetail()
 
@@ -291,37 +272,6 @@ class FormulaFragmentTest {
         assertThat(currentState).isEqualTo(expected)
         assertThat(updateThreads).hasSize(1)
         assertThat(updateThreads).containsExactly(Thread.currentThread())
-    }
-
-    @Test fun `back callback blocks navigation`() {
-        val key = TestKeyWithId(1)
-        navigateToTaskDetail(id = key.id)
-
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-        var onBackPressed = 0
-        sendStateUpdate(key, TestBackCallbackRenderModel(
-            onBackPressed = {
-                onBackPressed += 1
-            },
-            blockBackCallback = true
-        ))
-
-        navigateBack()
-
-        // We blocked navigation so visible fragment should still be details
-        assertThat(onBackPressed).isEqualTo(1)
-        assertVisibleContract(key)
-
-        sendStateUpdate(key, TestBackCallbackRenderModel(
-            onBackPressed = { onBackPressed += 1 },
-            blockBackCallback = false
-        ))
-
-        navigateBack()
-
-        assertThat(onBackPressed).isEqualTo(2)
-        assertVisibleContract(TestKey())
     }
 
     @Test

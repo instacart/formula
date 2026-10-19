@@ -11,7 +11,6 @@ import com.instacart.formula.android.FormulaFragment
 import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.NavigationState
 import com.instacart.formula.android.events.RouteLifecycleEvent
-import com.instacart.formula.android.BackCallback
 import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.NavigationStore
 import com.instacart.formula.android.getFormulaRouteId
@@ -124,15 +123,6 @@ internal class NavigationFlowRenderView(
 
         navigationState = state
         updateVisibleFragments()
-    }
-
-    fun onBackPressed(): Boolean {
-        val lastFragment = visibleFragments.lastOrNull()
-        if (lastFragment is FormulaFragment) {
-            val state = navigationState?.outputs?.get(lastFragment.getFormulaRouteId())?.renderModel
-            return state is BackCallback && state.onBackPressed()
-        }
-        return false
     }
 
     private fun notifyLifecycleStateChanged(fragment: Fragment, newState: Lifecycle.State) {

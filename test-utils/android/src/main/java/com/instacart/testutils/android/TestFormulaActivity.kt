@@ -17,9 +17,4 @@ class TestFormulaActivity : AppCompatActivity() {
         FormulaAndroid.onActivityResult(this, requestCode, resultCode, data)
     }
 
-    override fun onBackPressed() {
-        if (!FormulaAndroid.onBackPressed(this)) {
-            super.onBackPressed()
-        }
-    }
 }

@@ -51,25 +51,6 @@ object FormulaAndroid {
     }
 
     /**
-     * This method checks if the current fragments render model implements [com.instacart.formula.integration.BackCallback]
-     * and will invoke that, otherwise returns false.
-     *
-     * It is commonly used as follows
-     * ```
-     * class MyActivity : FragmentActivity() {
-     *     override fun onBackPressed() {
-     *          if (!FormulaAndroid.onBackPressed(this)) {
-     *              super.onBackPressed()
-     *          }
-     *     }
-     * }
-     * ```
-     */
-    fun onBackPressed(activity: FragmentActivity): Boolean {
-        return appManagerOrThrow().onBackPressed(activity)
-    }
-
-    /**
      * Used in testing to clear current store manager.
      */
     @VisibleForTesting fun reset() {

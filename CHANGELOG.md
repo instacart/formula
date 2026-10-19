@@ -1,7 +1,8 @@
 # Changelog
 ## [0.8.0] - TBD
 - **Breaking**: Remove deprecated `com.instacart.formula.android.compose.ComposeViewFactory` typealias; use `com.instacart.formula.android.ComposeViewFactory`.
-- **Breaking**: Remove `FormulaAppCompatActivity`; activities must forward Formula lifecycle, result, and back callbacks directly.
+- **Breaking**: Remove `FormulaAndroid.onBackPressed` and the `BackCallback` integration.
+- **Breaking**: Remove `FormulaAppCompatActivity`; activities must forward Formula lifecycle and activity-result callbacks directly.
 - **Breaking**: ActivityStoreContext.selectActivityEvents and StreamConfigurator.update now explicitly requires a non-null type. This allows Formula to be compatible with Kotlin 1.8
 - **Breaking**: Remove `Integration` and `FragmentContract`
 - **Breaking**: Remove `Stream`, `StreamBuilder` and `StreamFormula`
