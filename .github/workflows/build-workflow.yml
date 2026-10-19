@@ -126,8 +126,6 @@ jobs:
         run: ./gradlew :samples:custom-network-state-stream:assembleDebug
       - name: Assemble Composition Sample
         run: ./gradlew :samples:composition:assembleDebug
-      - name: Assemble Fragments Navigation Sample
-        run: ./gradlew :samples:navigation-fragments:assembleDebug
       - name: Run Samples Unit Tests
         run: |
           set -euo pipefail
