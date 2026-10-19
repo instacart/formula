@@ -6,7 +6,6 @@ import com.instacart.formula.Action
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
-import com.instacart.formula.rxjava3.RxAction
 
 class TaskListFormula(
     private val repo: TaskRepo
