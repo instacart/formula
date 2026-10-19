@@ -95,7 +95,7 @@ class MyActivity : AppCompatActivity() {
 }
 ```
 
-Call `FormulaAndroid.onPreCreate` before `super.onCreate`. Forward activity results to `FormulaAndroid.onActivityResult` after calling the superclass implementation. Route back handling through `FormulaAndroid.onBackPressed` as shown below.
+Call `FormulaAndroid.onPreCreate` before `super.onCreate`. Forward activity results to `FormulaAndroid.onActivityResult` after calling the superclass implementation.
 
 ### And that's it
 Formula takes care of the rest. This is how the state observable works:
@@ -226,43 +226,6 @@ class MyApp : Application() {
     }
 }
 ```
-
-## Handling back button events
-To override how the back button works for a particular navigation destination, your output needs to implement
-`BackCallback` interface.
-
-```kotlin
-data class FormOutput(
-    private val confirmBeforeExiting: Boolean,
-    private val confirmUserWantsToExit: () -> Unit
-): BackCallback {
-
-    fun onBackPressed(): Boolean {
-        // Check if we need to override back handling
-        if (confirmBeforeExiting) {
-            confirmUserWantsToExit()
-            return true
-        }
-
-        // Use default behavior (which closes the screen)
-        return false
-    }
-}
-```
-
-Your `Activity` needs to call `FormulaAndroid.onBackPressed()`. It will check if your current screen
-implements `BackCallback` and will invoke it.
-```kotlin
-class MyActivity : FragmentActivity() {
-
-     override fun onBackPressed() {
-         if (!FormulaAndroid.onBackPressed(this)) {
-             super.onBackPressed()
-         }
-     }
-}
-```
-Call `FormulaAndroid.onBackPressed` from your activity's back handler, as shown above.
 
 ## Managing dependencies
 Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity,

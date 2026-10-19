@@ -80,10 +80,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
         delegate.onActivityResult(result)
     }
 
-    fun onBackPressed(): Boolean {
-        return navigationRenderView?.onBackPressed() ?: false
-    }
-
     fun dispose() {
         stateSubscription.dispose()
         store.onCleared?.invoke()
