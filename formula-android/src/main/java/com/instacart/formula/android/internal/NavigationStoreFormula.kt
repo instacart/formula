@@ -11,11 +11,9 @@ import com.instacart.formula.android.NavigationState
 import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.RouteOutput
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.CoroutineDispatcher
 
 @PublishedApi
 internal class NavigationStoreFormula(
-    private val asyncDispatcher: CoroutineDispatcher,
     private val environment: RouteEnvironment,
 ) : Formula<Unit, NavigationState, NavigationState>(){
     private val stateChanges = MutableSharedFlow<Transition<Unit, NavigationState, Unit>>(
@@ -75,17 +73,15 @@ internal class NavigationStoreFormula(
                 }
 
                 state.features.entries.forEach { entry ->
-                    val routeId = entry.key
-                    val feature = (entry.value as? FeatureEvent.Init)?.feature
-                    if (feature != null) {
+                    val event = entry.value
+                    if (event is FeatureEvent.Init) {
                         val action = StateFlowFeatureAction(
-                            asyncDispatcher = asyncDispatcher,
                             routeEnvironment = environment,
-                            routeId = routeId,
-                            feature = feature,
+                            init = event,
                         )
 
                         action.onEvent {
+                            val routeId = event.id
                             val keyState = RouteOutput(routeId.key, it)
                             transition(state.copy(outputs = state.outputs.plus(routeId to keyState)))
                         }

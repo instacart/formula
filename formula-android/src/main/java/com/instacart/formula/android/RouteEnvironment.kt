@@ -1,11 +1,14 @@
 package com.instacart.formula.android
 
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 data class RouteEnvironment(
     val logger: (String) -> Unit = {},
     val onScreenError: (RouteKey, Throwable) -> Unit = { _, it -> throw it },
     val routeDelegate: RouteDelegate = RouteDelegate(),
+    val asyncCoroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
 
     /**

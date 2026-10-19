@@ -8,10 +8,9 @@ import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.NavigationStoreFormula
 import com.instacart.formula.android.internal.getViewFactory
 import com.instacart.formula.android.utils.MainThreadDispatcher
+import com.instacart.formula.plugin.Dispatcher
 import com.instacart.formula.rxjava3.toObservable
 import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 
 /**
  * A NavigationStore is responsible for managing the state of multiple [RouteKey] instances.
@@ -28,16 +27,11 @@ class NavigationStore @PublishedApi internal constructor(
         private var environment: RouteEnvironment? = null
         private var onPreRenderNavigationState: ((NavigationState) -> Unit)? = null
         private var onRouteLifecycleEvent: ((RouteLifecycleEvent) -> Unit)? = null
-        private var asyncCoroutineDispatcher = Dispatchers.Default
 
         fun setRouteEnvironment(environment: RouteEnvironment) = apply {
             this.environment = environment
         }
 
-        fun setAsyncCoroutineDispatcher(dispatcher: CoroutineDispatcher) = apply {
-            asyncCoroutineDispatcher = dispatcher
-        }
-        
         fun setOnPreRenderNavigationState(callback: ((NavigationState) -> Unit)?): Builder = apply {
             this.onPreRenderNavigationState = callback
         }
@@ -68,7 +62,6 @@ class NavigationStore @PublishedApi internal constructor(
             return NavigationStore(
                 environment = routeEnvironment,
                 formula = NavigationStoreFormula(
-                    asyncDispatcher = asyncCoroutineDispatcher,
                     environment = routeEnvironment,
                 ),
                 featureComponent = FeatureComponent(component, features.bindings),
