@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-parcelize")
 }
 
 android {
@@ -37,21 +36,19 @@ android {
 }
 
 dependencies {
-    implementation(project(":formula-rxjava3"))
+    implementation(project(":formula"))
     implementation(project(":formula-android"))
 
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.runtime.compose)
 
     implementation(libs.kotlin)
-    implementation(libs.rxrelay)
-
-    implementation(libs.lifecycle.extensions)
-
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material)
-    implementation(libs.androidx.activity.compose)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)
