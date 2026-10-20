@@ -4,9 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Feature is based on uni-directional state management where a single state model drives
- * the view rendering logic. It is used to support [FormulaFragment] by providing [ViewFactory]
- * and the state [factory] that creates a [StateFlow].
+ * Feature is based on unidirectional state management where a single state model drives
+ * a route's output. It provides a [ViewFactory] and a [factory] that creates a [StateFlow].
  *
  * To define a feature, we need to create a [FeatureFactory] for a specific [RouteKey] type
  * and [bind][FeaturesBuilder.bind] it to the [NavigationStore].

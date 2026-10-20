@@ -4,7 +4,7 @@ import com.google.common.truth.Truth
 import com.instacart.formula.android.fakes.MainKey
 import org.junit.Test
 
-class FragmentStateTest {
+class NavigationStateTest {
     @Test fun `visibleOutput is null when visible ids are empty`() {
         val state = NavigationState(
             visibleIds = emptyList(),
@@ -14,11 +14,11 @@ class FragmentStateTest {
     }
 
     @Test
-    fun `visible output is null until output is set`() {
-        val fragmentKey = MainKey(id = 1)
+    fun `visible output is null until route output is set`() {
+        val routeKey = MainKey(id = 1)
         val routeId = RouteId(
             instanceId = "instanceId",
-            key = fragmentKey
+            key = routeKey
         )
 
         val state = NavigationState(
@@ -29,15 +29,15 @@ class FragmentStateTest {
     }
 
     @Test
-    fun `visible output is not null when visible fragment has an output`() {
-        val fragmentKey = MainKey(id = 1)
+    fun `visible output is not null when the visible route has output`() {
+        val routeKey = MainKey(id = 1)
         val routeId = RouteId(
             instanceId = "instanceId",
-            key = fragmentKey
+            key = routeKey
         )
 
         val routeOutput = RouteOutput(
-            key = fragmentKey,
+            key = routeKey,
             renderModel = "value"
         )
 

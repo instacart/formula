@@ -3,8 +3,8 @@
 ## Project Structure
 
 - `formula/` - Core framework (state management, actions, formulas)
-- `formula-android/` - Android integration (fragments, activities, views, Jetpack Compose)
-- `formula-android-tests/` - Android tests
+- `formula-android/` - Android activity lifecycle and NavigationStore integration
+- `formula-android-tests/` - NavigationStore API tests
 - `formula-test/` - Testing utilities and test formulas
 - `formula-rxjava3/` - RxJava3 interop
 - `formula-lint/` - Custom lint rules
@@ -96,11 +96,10 @@
 - `DeferredAction` - Action combined with event listener returned in Evaluation
 
 **Android:**
-- `FormulaFragment` - Base fragment for Formula integration
-- `FeatureFactory` - Creates features from fragments/keys
-- `ViewFactory` - Creates views for render models
-- `RenderView` - Interface for rendering output to views
-- `ComposeViewFactory` - Creates Jetpack Compose views for render models
+- `NavigationStore` - Manages route feature state and emits navigation state
+- `FeatureFactory` - Creates features from route keys
+- `ViewFactory` - Describes a route's rendering surface
+- `ComposeViewFactory` - Creates Jetpack Compose content for render models
 
 ## Key Implementation Classes
 

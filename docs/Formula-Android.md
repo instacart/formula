@@ -1,277 +1,74 @@
-## Formula Android
-The Android module provides a declarative API to connect reactive state management to Android Fragments.
-This module has been designed for gradual adoption. You can use as much or as little of it as you like.
+# Formula Android
 
-Some of the goals for this module are:
+The Android module provides activity lifecycle helpers and a route-oriented `NavigationStore`.
+It does not provide a fragment implementation or render views for you; the host application owns
+presentation and forwards route lifecycle events to the store.
 
-    - Use a single reactive stream to drive the UI.
-    - Separate state management from Android UI lifecycle.
-    - Ability to group multiple fragments into a flow and share state between them.
-    - Type-safe and scoped fragment event handling. (Avoid casting activity to a listener)
+## Define a route feature
 
-## Using Fragments
-This module provides an API to connect state management and view rendering logic to Android
-fragments. For this example, we will connect `CounterScreen` and `CounterFormula` from the
-main getting started [guide](index.md).
-
-### Define a fragment key
-Fragment key is used to instantiate `FormulaFragment` and to identify which `FeatureFactory` to
-use. You can also use it to add arguments that the fragment instance needs.
-
-```kotlin
-/**
- * Fragment key has to provide Parcelable implementation because it is passed
- * to the fragment as an argument.
- *
- * Read more about Parcelize: https://kotlinlang.org/docs/tutorials/android-plugin.html
- */
-@Parcelize
-data class CounterKey(
-    override val tag: String = "counter"
-) : RouteKey
-```
-
-### Define a feature factory
-A feature factory creates the state observable and a view factory for a fragment. To continue our
-example, we define a `CounterFeatureFactory` which will handle `CounterKey` fragments.
-
-```kotlin
-class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
-    override fun Params.initialize(): Feature {
-        val counterFormula = CounterFormula()
-        return Feature(CounterViewFactory()) { scope ->
-            counterFormula.runAsStateFlow(scope, input = Unit)
-        }
-    }
-}
-
-// View factory that renders the output with Jetpack Compose.
-class CounterViewFactory : ComposeViewFactory<CounterOutput>() {
-    @Composable
-    override fun Content(model: CounterOutput) {
-        CounterScreen(model)
-    }
-}
-```
-
-We now need to register our feature factory with the activity in which the counter will be shown.
-```kotlin
-class MyApp : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-
-        FormulaAndroid.init(this) {
-            activity(MyActivity::class) {
-                store {
-                    bind(CounterFeatureFactory())
-                }
-            }
-        }
-    }
-}
-```
-
-### Use formula fragment
-The only thing left is navigating to this screen. We create `FormulaFragment` instance using
-our `CounterKey` and use fragment transactions to add it.
-```kotlin
-class MyActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        FormulaAndroid.onPreCreate(this, savedInstanceState)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.my_activity)
-
-        if (savedInstanceState == null) {
-            val key = CounterKey()
-            val fragment = FormulaFragment.newInstance(key)
-
-            // Add the fragment using the fragment transaction API.
-            supportFragmentManager.beginTransaction()
-                .add(R.id.activity_content, fragment, key.tag)
-                .commit()
-        }
-    }
-}
-```
-
-Call `FormulaAndroid.onPreCreate` before `super.onCreate`. Forward activity results to `FormulaAndroid.onActivityResult` after calling the superclass implementation.
-
-### And that's it
-Formula takes care of the rest. This is how the state observable works:
-
-- When `FormulaFragment` is added, we instantiate and subscribe to the state observable.
-- When `FormulaFragment` is removed, we destroy the state observable.
-
-The state management observable continues to run during configuration changes or if you navigate
-to another fragment.
-
-## Passing arguments to a fragment
-Arguments can be passed using fragment key class. For example, we want to pass initial count
-value to the `CounterFormula` used in the previous examples. To accomplish that, let's update the
-`CounterKey`.
+A `RouteKey` identifies a route. A `FeatureFactory` creates the feature state flow and its
+`ViewFactory` for that route.
 
 ```kotlin
 @Parcelize
 data class CounterKey(
-    val initialCount: Int = 0,
-    override val tag: String = "counter"
+    override val tag: String = "counter",
 ) : RouteKey
-```
 
-You can access the `CounterKey` within `CounterFeatureFactory`
-```kotlin
-class CounterFeatureFactory : FeatureFactory<Any, CounterKey>() {
+class CounterFeatureFactory : FeatureFactory<Unit, CounterKey>() {
     override fun Params.initialize(): Feature {
-        val initialCount = key.initialCount
-        val counterFormula = CounterFormula(initialCount)
+        val formula = CounterFormula()
         return Feature(CounterViewFactory()) { scope ->
-            counterFormula.runAsStateFlow(scope, input = Unit)
+            formula.runAsStateFlow(scope, Unit)
         }
     }
 }
 ```
 
-## Fragment Event Handling
-Very frequently we need to pass events from a fragment to the parent/activity which trigger
-things like navigation.
+## Build and drive a NavigationStore
 
-Let's say we want to add the following behaviors to the previous counter example:
+Bind feature factories when building the store. The host creates route IDs, sends lifecycle and
+visibility events, and observes `stateFlow` to render route outputs.
 
-- show a toast notification when user increments to 10
-- navigate to a new "victory" screen when user increments to 100.
-
-First, let's define a class that defines our events.
 ```kotlin
-data class CounterEventRouter(
-    val onToastNotification: (String) -> Unit,
-    val onVictoryReached: () -> Unit
-)
-```
-
-We can now request this dependency within our feature factory
-```kotlin
-class CounterFeatureFactory : FeatureFactory<Dependencies, CounterKey>() {
-
-    // We can ask for dependencies from the parent using an interface.
-    interface Dependencies {
-        fun counterEventRouter(): CounterEventRouter
-    }
-
-    override fun Params.initialize(): Feature {
-        val counterEventRouter = dependencies.counterEventRouter()
-        // We can pass the event router to the counter formula.
-        val counterFormula = CounterFormula(counterEventRouter)
-        return Feature(CounterViewFactory()) { scope ->
-            counterFormula.runAsStateFlow(scope, input = Unit)
-        }
-    }
+val navigationStore = NavigationStore.Builder().build {
+    bind(CounterFeatureFactory())
 }
+
+val routeId = RouteId("counter-instance", CounterKey())
+navigationStore.onLifecycleEvent(RouteLifecycleEvent.Added(routeId))
+
+// Collect navigationStore.stateFlow and render state.outputs[routeId]?.renderModel.
+
+navigationStore.onVisibilityChanged(routeId, visible = true)
+// When the route leaves the navigation stack:
+navigationStore.onLifecycleEvent(RouteLifecycleEvent.Removed(routeId))
+navigationStore.dispose()
 ```
 
-To provide dependencies, the parent component needs to extend `CounterFeatureFactory.Dependencies`
-```kotlin
-class MyActivityComponent(
-    private val store: ActivityStoreContext<MyActivity>
-) : CounterFeatureFactory.Dependencies {
+A route's `Feature` remains active until its `RouteLifecycleEvent.Removed` event. Hosts can use the
+feature's `ViewFactory` to choose how to render its model, or supply their own rendering logic.
 
-    override fun counterEventRouter(): CounterEventRouter {
-        return CounterEventRouter(
-            onToastNotification = this::showToast,
-            onVictoryReached = {
-                // VictoryRouteKey implementation is left to readers imagination.
-                val key = VictoryRouteKey()
-                navigateTo(key)
-            }
-        )
-    }
+## Activity integration
 
-    private fun showToast(message: String) {
-        store.send {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun navigateTo(key: RouteKey) {
-       store.send {
-           // Sample fragment transaction
-           val fragment = FormulaFragment.newInstance(key)
-           supportFragmentManager.beginTransaction()
-               .add(R.id.activity_content, fragment, key.tag)
-               .addToBackStack(null)
-               .commit()
-       }
-    }
-}
-```
-
-To pass this component to feature factories, we need to update the configuration that lives
-within our `Application`.
+`ActivityStore` and `FormulaAndroid` provide activity lifecycle, activity-result, and activity
+injection callbacks. They do not observe or render `NavigationStore` state. The host retains the
+store and forwards route events itself.
 
 ```kotlin
 class MyApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
-
         FormulaAndroid.init(this) {
             activity(MyActivity::class) {
-                ActivityStore(
-                    fragmentStore = FragmentStore.init(MyActivityComponent(this)) {
-                        bind(CounterFeatureFactory())
-                    }
-                )
+                ActivityStore()
             }
         }
     }
 }
 ```
 
-## Managing dependencies
-Managing dependencies in Formula is very easy. In the function that instantiates the `ActivityStore` for your activity,
-you can create your activity specific dependencies or Dagger components. These objects will survive configuration changes.
-```kotlin
-class MyApp : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-
-        val appComponent: AppComponent = ...
-
-        FormulaAndroid.init(this) {
-            activity(MyActivity::class) {
-                // This component will survive configuration changes.
-                val activityComponent = appComponent.createMyActivityComponent()
-
-                store { }
-            }
-        }
-    }
-}
-```
-
-To inject the activity or create activity dependencies that don't survive configuration changes such as ones that need direct
-activity reference, you can use `configureActivity` callback.
-```kotlin
-val appComponent: AppComponent = ...
-
-FormulaAndroid.init(this) {
-    activity(MyActivity::class) {
-        // This component will survive configuration changes.
-        val activityComponent = appComponent.createMyActivityComponent()
-
-        ActivityStore(
-            configureActivity = {
-                // in this callback `this` is the instance of MyActivity
-                // so we can use it to inject dependencies
-                activityComponent.inject(this)
-
-                // Or you can use setters to provide dependencies to your activity.
-                // This dependency object won't survive configuration changes.
-                val dependency = MyActivityDependency(activity = this)
-                this.setDependency(dependency)
-            }
-        )
-    }
-}
-```
+Call `FormulaAndroid.onPreCreate(this, savedInstanceState)` before `super.onCreate()` and forward
+activity results to `FormulaAndroid.onActivityResult` after calling the superclass implementation.
+Use `ActivityStoreContext.send { ... }` for activity-bound effects and `activityResults()` or
+`activityLifecycleState()` to observe activity events.

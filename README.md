@@ -10,8 +10,8 @@ deterministic, composable, testable applications.
 [Check samples](samples)
 
 ## Android Module
-The Android module provides declarative API to connect reactive state management to Android Fragments. 
-This module has been designed for gradual adoption. You can use as much or as little of it as you like.
+The Android module provides activity lifecycle helpers and a route-oriented `NavigationStore`. The
+host application owns UI presentation and forwards route lifecycle events to the store.
 
 To learn more, see our [Integration Guide](docs/Formula-Android.md).
 
