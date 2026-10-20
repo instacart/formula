@@ -13,7 +13,7 @@ class ActivityStoreFactoryTest {
 
     class FakeActivity : FragmentActivity()
 
-    @Test fun `initialized store is live`() {
+    @Test fun `initialized manager can be disposed`() {
         val factory = ActivityStoreFactory(
             activities = {
                 activity(FakeActivity::class) {
@@ -22,8 +22,9 @@ class ActivityStoreFactoryTest {
             }
         )
 
-        val store = factory.init(mock<FakeActivity>())!!
-        assertThat(store.stateSubscription.isDisposed).isFalse()
+        val manager = factory.init(mock<FakeActivity>())
+        assertThat(manager).isNotNull()
+        manager?.dispose()
     }
 
     @Test fun `returns null if no binding for activity is found`() {

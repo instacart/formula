@@ -96,8 +96,6 @@ internal class NavigationFlowRenderView(
     fun render(state: NavigationState) {
         Utils.assertMainThread()
 
-        store.onPreRenderNavigationState?.invoke(state)
-
         navigationState = state
         updateVisibleFragments()
     }

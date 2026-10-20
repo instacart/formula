@@ -10,35 +10,36 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.Closeable
 import java.util.concurrent.Executor
 
 @RunWith(AndroidJUnit4::class)
 class StateFlowFeatureTest {
 
     @Test fun `non-async initialization`() {
-        with(StateFlowFeatureRobot()) {
-            add(StateFlowKey(initAsync = false))
-            assertHasAsyncTasks(expected = 0)
+        StateFlowFeatureRobot().use { robot ->
+            robot.add(StateFlowKey(initAsync = false))
+            robot.assertHasAsyncTasks(expected = 0)
 
-            assertValue("")
-            publishValue("new-value")
-            assertValue("new-value")
+            robot.assertValue("")
+            robot.publishValue("new-value")
+            robot.assertValue("new-value")
         }
     }
 
     @Test fun `async initialization`() = runTest {
-        with(StateFlowFeatureRobot()) {
-            add(StateFlowKey(initAsync = true))
-            assertHasAsyncTasks(expected = 1)
-            executeTasks()
+        StateFlowFeatureRobot().use { robot ->
+            robot.add(StateFlowKey(initAsync = true))
+            robot.assertHasAsyncTasks(expected = 1)
+            robot.executeTasks()
 
-            assertValue("")
-            publishValue("new-value")
-            assertValue("new-value")
+            robot.assertValue("")
+            robot.publishValue("new-value")
+            robot.assertValue("new-value")
         }
     }
 
-    private class StateFlowFeatureRobot {
+    private class StateFlowFeatureRobot : Closeable {
         private val formula = StateFlowFormula()
 
         private val tasks = mutableListOf<Runnable>()
@@ -54,8 +55,6 @@ class StateFlowFeatureTest {
                 val featureFactory = StateFlowFeatureFactory(formula)
                 bind(featureFactory)
             }
-
-        private val observer = store.state().test()
 
         fun add(key: StateFlowKey) = apply {
             store.onLifecycleEvent(key.asAddedEvent())
@@ -78,8 +77,11 @@ class StateFlowFeatureTest {
         }
 
         private fun getValue(): String {
-            val last = observer.values().last()
-            return last.outputs.values.first().renderModel as String
+            return store.stateFlow.value.outputs.values.first().renderModel as String
+        }
+
+        override fun close() {
+            store.dispose()
         }
     }
 }

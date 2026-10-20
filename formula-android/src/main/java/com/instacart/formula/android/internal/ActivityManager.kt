@@ -6,21 +6,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
-import kotlinx.coroutines.DelicateCoroutinesApi
+import com.instacart.formula.android.NavigationStore
 import kotlinx.coroutines.launch
 
 /**
  * Activity manager connects [ActivityStore] and the [Activity].
  */
-@OptIn(DelicateCoroutinesApi::class)
 internal class ActivityManager<Activity : FragmentActivity>(
     private val delegate: ActivityStoreContextImpl<Activity>,
     private val store: ActivityStore<Activity>
 ) {
 
-    internal val stateSubscription = store.navigationStore.state().subscribe { newState ->
-        delegate.navigationStateRelay.tryEmit(newState)
-    }
+    private val navigationStore = store.navigationStore ?: NavigationStore.Builder().build { }
+
     private var navigationRenderView: NavigationFlowRenderView? = null
 
     fun onPreCreate(activity: Activity) {
@@ -30,8 +28,8 @@ internal class ActivityManager<Activity : FragmentActivity>(
         // Initialize render view
         navigationRenderView = NavigationFlowRenderView(
             activity = activity,
-            store = store.navigationStore,
-            onFragmentViewStateChanged = store.navigationStore::onVisibilityChanged
+            store = navigationStore,
+            onFragmentViewStateChanged = navigationStore::onVisibilityChanged
         )
     }
 
@@ -43,7 +41,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
         with(activity) {
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    delegate.navigationState().collect {
+                    navigationStore.stateFlow.collect {
                         renderView.render(it)
                     }
                 }
@@ -80,7 +78,7 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun dispose() {
-        stateSubscription.dispose()
+        navigationStore.dispose()
         store.onCleared?.invoke()
     }
 

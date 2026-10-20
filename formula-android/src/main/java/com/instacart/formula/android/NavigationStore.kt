@@ -1,27 +1,16 @@
 package com.instacart.formula.android
 
 import androidx.annotation.MainThread
-import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.internal.FeatureComponent
 import com.instacart.formula.android.internal.Features
 import com.instacart.formula.android.internal.NavigationStoreFormula
-import com.instacart.formula.android.internal.getViewFactory
-import com.instacart.formula.android.utils.MainThreadDispatcher
-import com.instacart.formula.plugin.Dispatcher
-import com.instacart.formula.rxjava3.toObservable
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A NavigationStore is responsible for managing the state of multiple [RouteKey] instances.
  */
-class NavigationStore @PublishedApi internal constructor(
-    val environment: RouteEnvironment,
-    private val featureComponent: FeatureComponent<*>,
-    private val formula: NavigationStoreFormula,
-    internal val onPreRenderNavigationState: ((NavigationState) -> Unit)? = null,
-    private val onRouteLifecycleEvent: ((RouteLifecycleEvent) -> Unit)? = null,
-) {
+interface NavigationStore {
 
     class Builder {
         private var environment: RouteEnvironment? = null
@@ -59,7 +48,7 @@ class NavigationStore @PublishedApi internal constructor(
             features: Features<Component>
         ): NavigationStore {
             val routeEnvironment = environment ?: RouteEnvironment()
-            return NavigationStore(
+            return NavigationStoreImpl(
                 environment = routeEnvironment,
                 formula = NavigationStoreFormula(
                     environment = routeEnvironment,
@@ -71,51 +60,17 @@ class NavigationStore @PublishedApi internal constructor(
         }
     }
 
-    companion object {
-        val EMPTY = Builder().build {  }
-    }
-
-    private val features = mutableMapOf<RouteId<*>, FeatureEvent>()
+    val environment: RouteEnvironment
+    val stateFlow: StateFlow<NavigationState>
 
     @MainThread
-    fun onLifecycleEvent(event: RouteLifecycleEvent) {
-        val routeId = event.routeId
-        when (event) {
-            is RouteLifecycleEvent.Added -> {
-                if (!features.contains(routeId)) {
-                    val feature = featureComponent.init(environment, routeId)
-                    features[routeId] = feature
-
-                    formula.routeAdded(feature)
-                }
-            }
-            is RouteLifecycleEvent.Removed -> {
-                features.remove(routeId)
-                formula.routeRemoved(routeId)
-            }
-        }
-
-        onRouteLifecycleEvent?.invoke(event)
-    }
+    fun onLifecycleEvent(event: RouteLifecycleEvent)
 
     @MainThread
-    fun onVisibilityChanged(routeId: RouteId<*>, visible: Boolean) {
-        if (visible) {
-            formula.routeVisible(routeId)
-        } else {
-            formula.routeHidden(routeId)
-        }
-    }
-
-    internal fun state(): Observable<NavigationState> {
-        val config = RuntimeConfig(
-            defaultDispatcher = MainThreadDispatcher(),
-        )
-        return formula.toObservable(config)
-    }
+    fun onVisibilityChanged(routeId: RouteId<*>, visible: Boolean)
 
     @MainThread
-    fun getViewFactory(routeId: RouteId<*>): ViewFactory<Any>? {
-        return features.getViewFactory(environment, routeId)
-    }
+    fun getViewFactory(routeId: RouteId<*>): ViewFactory<Any>?
+
+    fun dispose()
 }

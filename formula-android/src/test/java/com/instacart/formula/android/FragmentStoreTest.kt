@@ -8,8 +8,8 @@ import com.instacart.formula.android.fakes.FakeComponent
 import com.instacart.formula.android.fakes.MainKey
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.testutils.android.TestViewFactory
-import io.reactivex.rxjava3.observers.TestObserver
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
@@ -19,6 +19,12 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class FragmentStoreTest {
+
+    private val stores = mutableListOf<NavigationStore>()
+
+    @After fun disposeStores() {
+        stores.forEach(NavigationStore::dispose)
+    }
 
     @Test fun `duplicate contract registration throws an exception`() {
         var exception: Throwable? = null
@@ -41,48 +47,36 @@ class FragmentStoreTest {
 
         val component = FakeComponent()
         val store = createStore(component)
-        store
-            .toStates()
-            .apply {
-                store.onLifecycleEvent(master.asAddedEvent())
-                store.onLifecycleEvent(detail.asAddedEvent())
+        assertState(store)
+        store.onLifecycleEvent(master.asAddedEvent())
+        assertState(store, master to "main-1-state")
+        store.onLifecycleEvent(detail.asAddedEvent())
+        assertState(store, master to "main-1-state", detail to "detail-1-state")
 
-                component.updateState(master, "main-update")
-                store.onLifecycleEvent(detail.asRemovedEvent())
-                store.onLifecycleEvent(master.asRemovedEvent())
-
-                component.updateState(master, "main-update-2")
-            }
-            .assertValues(
-                expectedState(),
-                expectedState(master to "main-1-state"),
-                expectedState(master to "main-1-state", detail to "detail-1-state"),
-                expectedState(master to "main-update", detail to "detail-1-state"),
-                expectedState(master to "main-update"),
-                expectedState()
-            )
+        component.updateState(master, "main-update")
+        assertState(store, master to "main-update", detail to "detail-1-state")
+        store.onLifecycleEvent(detail.asRemovedEvent())
+        assertState(store, master to "main-update")
+        store.onLifecycleEvent(master.asRemovedEvent())
+        assertState(store)
     }
 
     @Test fun `various fragments added`() {
 
         val component = FakeComponent()
         val store = createStore(component)
-        store.toStates()
-            .apply {
-                store.onLifecycleEvent(MainKey(1).asAddedEvent())
-                store.onLifecycleEvent(DetailKey(1).asAddedEvent())
-                store.onLifecycleEvent(DetailKey(2).asAddedEvent())
-            }
-            .assertValues(
-                expectedState(),
-                expectedState(MainKey(1) to "main-1-state"),
-                expectedState(MainKey(1) to "main-1-state", DetailKey(1) to "detail-1-state"),
-                expectedState(
-                    MainKey(1) to "main-1-state",
-                    DetailKey(1) to "detail-1-state",
-                    DetailKey(2) to "detail-2-state"
-                )
-            )
+        assertState(store)
+        store.onLifecycleEvent(MainKey(1).asAddedEvent())
+        assertState(store, MainKey(1) to "main-1-state")
+        store.onLifecycleEvent(DetailKey(1).asAddedEvent())
+        assertState(store, MainKey(1) to "main-1-state", DetailKey(1) to "detail-1-state")
+        store.onLifecycleEvent(DetailKey(2).asAddedEvent())
+        assertState(
+            store,
+            MainKey(1) to "main-1-state",
+            DetailKey(1) to "detail-1-state",
+            DetailKey(2) to "detail-2-state"
+        )
     }
 
     @Test fun `bind feature factory with to dependencies defined`() {
@@ -94,33 +88,22 @@ class FragmentStoreTest {
             }
         }
 
-        val store = NavigationStore.Builder().build(100) {
+        val store = track(NavigationStore.Builder().build(100) {
             bind(myFeatureFactory) {
                 "Dependency: $it"
             }
-        }
+        })
 
-        store.toStates()
-            .apply { store.onLifecycleEvent(MainKey(1).asAddedEvent()) }
-            .assertValues(
-                expectedState(),
-                expectedState(MainKey(1) to "Dependency: 100")
-            )
+        store.onLifecycleEvent(MainKey(1).asAddedEvent())
+        assertState(store, MainKey(1) to "Dependency: 100")
     }
 
     @Test fun `background feature events are moved to the main thread`() {
         val executor = Executors.newSingleThreadExecutor()
         val component = FakeComponent()
-        val store = createStore(component)
-
         val latch = CountDownLatch(1)
-
-        val updates = mutableListOf<Map<RouteKey, Any>>()
         val updateThreads = linkedSetOf<Thread>()
-        val disposable = store.state().subscribe {
-            val states = it.outputs.mapKeys { it.key.key }.mapValues { it.value.renderModel }
-            updates.add(states)
-
+        val store = createStore(component) {
             updateThreads.add(Thread.currentThread())
         }
 
@@ -147,23 +130,20 @@ class FragmentStoreTest {
 
         Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-        val expected = mapOf(
+        assertState(
+            store,
             MainKey(1) to "main-state-3",
-            DetailKey(2) to "detail-state-3"
+            DetailKey(2) to "detail-state-3",
         )
 
-        val last = updates.last()
-        assertThat(last).isEqualTo(expected)
-
-        assertThat(updateThreads).hasSize(1)
         assertThat(updateThreads).containsExactly(Thread.currentThread())
+        executor.shutdownNow()
     }
 
     @Test fun `store returns missing binding event when no feature factory is present`() {
-        val store = NavigationStore.Builder().build(FakeComponent()) {
+        val store = track(NavigationStore.Builder().build(FakeComponent()) {
             bind(TestFeatureFactory<MainKey>())
-        }
-        val observer = store.state().test()
+        })
         val routeId = RouteId(
             instanceId = "random",
             key = DetailKey(id = 100)
@@ -172,24 +152,22 @@ class FragmentStoreTest {
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
-        val lastState = observer.values().last()
-        assertThat(lastState.features[routeId]).isEqualTo(
+        assertThat(store.stateFlow.value.features[routeId]).isEqualTo(
             FeatureEvent.MissingBinding(routeId)
         )
     }
 
     @Test fun `store returns failure event when feature factory initialization throws an error`() {
         val expectedError = RuntimeException("something happened")
-        val store = NavigationStore.Builder().build(FakeComponent()) {
+        val store = track(NavigationStore.Builder().build(FakeComponent()) {
             val featureFactory = object : FeatureFactory<FakeComponent, MainKey>() {
                 override fun Params.initialize(): Feature {
                     throw expectedError
                 }
             }
             bind(featureFactory)
-        }
+        })
 
-        val observer = store.state().test()
         val routeId = RouteId(
             instanceId = "random",
             key = MainKey(id = 100)
@@ -198,8 +176,7 @@ class FragmentStoreTest {
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
-        val lastState = observer.values().last()
-        assertThat(lastState.features[routeId]).isEqualTo(
+        assertThat(store.stateFlow.value.features[routeId]).isEqualTo(
             FeatureEvent.Failure(routeId, expectedError)
         )
     }
@@ -207,7 +184,7 @@ class FragmentStoreTest {
     @Test fun `fragment store ignores events after key is removed`() {
         val stateFlow = MutableStateFlow<Any>("value")
 
-        val store = NavigationStore.Builder().build {
+        val store = track(NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -216,16 +193,15 @@ class FragmentStoreTest {
                 }
             }
             bind(featureFactory)
-        }
+        })
 
-        val observer = store.state().test()
         val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
-        // Check that initial value was emitted
-        val firstModel = observer.values().last().outputs[routeId]?.renderModel
+        // Check that initial value is present
+        val firstModel = store.stateFlow.value.outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
         // Remove fragment
@@ -237,7 +213,7 @@ class FragmentStoreTest {
         stateFlow.value = "new-value"
 
         // Output should not exist
-        val secondModel = observer.values().last().outputs[routeId]
+        val secondModel = store.stateFlow.value.outputs[routeId]
         assertThat(secondModel).isNull()
     }
 
@@ -251,7 +227,7 @@ class FragmentStoreTest {
             }
         )
 
-        val store = NavigationStore.Builder()
+        val store = track(NavigationStore.Builder()
             .setRouteEnvironment(environment)
             .build {
                 val featureFactory = object : FeatureFactory<Any, MainKey>() {
@@ -264,20 +240,16 @@ class FragmentStoreTest {
                     }
                 }
                 bind(featureFactory)
-            }
+            })
 
-        val observer = store.state().test()
         val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
         // No output should be emitted for the crashed feature
-        val model = observer.values().last().outputs[routeId]?.renderModel
+        val model = store.stateFlow.value.outputs[routeId]?.renderModel
         assertThat(model).isNull()
-
-        // Store observable didn't crash
-        observer.assertNoErrors()
 
         // Error was reported via onScreenError
         assertThat(screenErrors).hasSize(1)
@@ -287,7 +259,7 @@ class FragmentStoreTest {
 
     @Test fun `state flow feature`() {
         val stateFlow = MutableStateFlow(0)
-        val store = NavigationStore.Builder().build {
+        val store = track(NavigationStore.Builder().build {
             bind(object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(TestViewFactory()) {
@@ -295,29 +267,22 @@ class FragmentStoreTest {
                     }
                 }
             })
-        }
+        })
 
-        val observer = store.toStates()
-
-        // Add fragment key
         val key = MainKey(1)
         val routeId = RouteId("", key)
         store.onLifecycleEvent(RouteLifecycleEvent.Added(routeId = routeId))
+        assertState(store, key to 0)
 
-        stateFlow.tryEmit(1)
-        stateFlow.tryEmit(2)
-
-        observer.assertValues(
-            expectedState(),
-            expectedState(key to 0),
-            expectedState(key to 1),
-            expectedState(key to 2),
-        )
+        stateFlow.value = 1
+        assertState(store, key to 1)
+        stateFlow.value = 2
+        assertState(store, key to 2)
     }
 
     @Test fun `fragment store visible output`() {
         val stateFlow = MutableStateFlow<Any>("value")
-        val store = NavigationStore.Builder().build {
+        val store = track(NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
                 override fun Params.initialize(): Feature {
                     return Feature(
@@ -326,37 +291,35 @@ class FragmentStoreTest {
                 }
             }
             bind(featureFactory)
-        }
+        })
 
-        val observer = store.state().test()
         val routeId = RouteId("", MainKey(1))
         store.onLifecycleEvent(
             RouteLifecycleEvent.Added(routeId = routeId)
         )
 
         // No visible output yet
-        val firstModel = observer.values().last().visibleOutput()
+        val firstModel = store.stateFlow.value.visibleOutput()
         assertThat(firstModel).isNull()
 
         // Toggle visibility
         store.onVisibilityChanged(routeId, true)
 
         // Check that visible output is now present
-        val secondModel = observer.values().last().visibleOutput()
+        val secondModel = store.stateFlow.value.visibleOutput()
         assertThat(secondModel).isNotNull()
 
         // Toggle visibility again
         store.onVisibilityChanged(routeId, false)
 
         // Check that visible output is null again
-        val third = observer.values().last().visibleOutput()
+        val third = store.stateFlow.value.visibleOutput()
         assertThat(third).isNull()
     }
 
-    private fun NavigationStore.toStates(): TestObserver<Map<RouteKey, RouteOutput>> {
-        return state()
-            .map { it.outputs.mapKeys { entry -> entry.key.key } }
-            .test()
+    private fun assertState(store: NavigationStore, vararg states: Pair<RouteKey, *>) {
+        val outputs = store.stateFlow.value.outputs.mapKeys { it.key.key }
+        assertThat(outputs).isEqualTo(expectedState(*states))
     }
 
     private fun expectedState(vararg states: Pair<RouteKey, *>): Map<RouteKey, RouteOutput> {
@@ -374,11 +337,23 @@ class FragmentStoreTest {
         }
     }
 
-    fun createStore(component: FakeComponent): NavigationStore {
-        return NavigationStore.Builder().build(component) {
-            bind(TestFeatureFactory<MainKey>())
-            bind(TestFeatureFactory<DetailKey>())
-        }
+    private fun createStore(
+        component: FakeComponent,
+        onPreRenderNavigationState: ((NavigationState) -> Unit)? = null,
+    ): NavigationStore {
+        return track(
+            NavigationStore.Builder()
+                .setOnPreRenderNavigationState(onPreRenderNavigationState)
+                .build(component) {
+                    bind(TestFeatureFactory<MainKey>())
+                    bind(TestFeatureFactory<DetailKey>())
+                }
+        )
+    }
+
+    private fun track(store: NavigationStore): NavigationStore {
+        stores.add(store)
+        return store
     }
 
     private fun RouteKey.asAddedEvent() = RouteLifecycleEvent.Added(RouteId("", this))

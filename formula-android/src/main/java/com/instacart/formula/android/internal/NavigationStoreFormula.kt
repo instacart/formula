@@ -77,7 +77,7 @@ internal class NavigationStoreFormula(
                     if (event is FeatureEvent.Init) {
                         val action = StateFlowFeatureAction(
                             routeEnvironment = environment,
-                            init = event,
+                            event = event,
                         )
 
                         action.onEvent {
