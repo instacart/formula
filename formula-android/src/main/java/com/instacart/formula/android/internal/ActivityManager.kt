@@ -50,7 +50,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun dispose() {
-        store.navigationStore?.dispose()
         store.onCleared?.invoke()
     }
 }

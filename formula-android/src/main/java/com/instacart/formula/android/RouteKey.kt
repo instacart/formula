@@ -15,8 +15,5 @@ import android.os.Parcelable
  */
 interface RouteKey : Parcelable {
 
-    /**
-     * A stable identifier for this route, useful when persisting or restoring navigation state.
-     */
     val tag: String
 }

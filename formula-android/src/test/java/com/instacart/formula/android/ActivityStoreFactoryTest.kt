@@ -16,15 +16,13 @@ class ActivityStoreFactoryTest {
 
     class FakeActivity : FragmentActivity()
 
-    @Test fun `manager disposes navigation store and invokes onCleared`() {
+    @Test fun `manager invokes onCleared to dispose activity resources`() {
         val navigationStore = FakeNavigationStore()
-        var wasCleared = false
         val factory = ActivityStoreFactory(
             activities = {
                 activity(FakeActivity::class) {
                     ActivityStore(
-                        navigationStore = navigationStore,
-                        onCleared = { wasCleared = true },
+                        onCleared = navigationStore::dispose,
                     )
                 }
             }
@@ -34,7 +32,6 @@ class ActivityStoreFactoryTest {
         manager.dispose()
 
         assertThat(navigationStore.isDisposed).isTrue()
-        assertThat(wasCleared).isTrue()
     }
 
     private class FakeNavigationStore : NavigationStore {

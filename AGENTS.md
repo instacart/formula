@@ -4,7 +4,7 @@
 
 - `formula/` - Core framework (state management, actions, formulas)
 - `formula-android/` - Android activity lifecycle and NavigationStore integration
-- `formula-android-tests/` - NavigationStore API tests
+- `formula-android-tests/` - Android tests
 - `formula-test/` - Testing utilities and test formulas
 - `formula-rxjava3/` - RxJava3 interop
 - `formula-lint/` - Custom lint rules

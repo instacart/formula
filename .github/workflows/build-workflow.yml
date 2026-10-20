@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew :formula:test
       - name: Run Formula Android Unit Tests
         run: ./gradlew :formula-android:testRelease
-      - name: Run NavigationStore API Tests
+      - name: Run Formula Android Instrumentation Tests
         run: ./gradlew :formula-android-tests:testRelease
       - name: Run Formula Test Module tests
         run: ./gradlew :formula-test:test
