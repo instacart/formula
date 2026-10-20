@@ -18,12 +18,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class FragmentStoreTest {
+class NavigationStoreTest {
 
-    private val stores = mutableListOf<NavigationStore>()
+    private var store: NavigationStore? = null
 
-    @After fun disposeStores() {
-        stores.forEach(NavigationStore::dispose)
+    @After fun disposeStore() {
+        store?.dispose()
     }
 
     @Test fun `duplicate contract registration throws an exception`() {
@@ -181,7 +181,7 @@ class FragmentStoreTest {
         )
     }
 
-    @Test fun `fragment store ignores events after key is removed`() {
+    @Test fun `route ignores events after removal`() {
         val stateFlow = MutableStateFlow<Any>("value")
 
         val store = track(NavigationStore.Builder().build {
@@ -280,7 +280,7 @@ class FragmentStoreTest {
         assertState(store, key to 2)
     }
 
-    @Test fun `fragment store visible output`() {
+    @Test fun `visible output follows route visibility`() {
         val stateFlow = MutableStateFlow<Any>("value")
         val store = track(NavigationStore.Builder().build {
             val featureFactory = object : FeatureFactory<Any, MainKey>() {
@@ -352,7 +352,7 @@ class FragmentStoreTest {
     }
 
     private fun track(store: NavigationStore): NavigationStore {
-        stores.add(store)
+        this.store = store
         return store
     }
 
