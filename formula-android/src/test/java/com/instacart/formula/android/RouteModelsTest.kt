@@ -6,20 +6,20 @@ import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.fakes.MainKey
 import org.junit.Test
 
-class FragmentDataClassTest {
+class RouteModelsTest {
 
-    @Test fun fragmentId() {
-        val fragmentKey = MainKey(id = 1)
+    @Test fun routeId() {
+        val routeKey = MainKey(id = 1)
         val routeId = RouteId(
             instanceId = "instanceId",
-            key = fragmentKey
+            key = routeKey
         )
 
         assertThat(routeId.instanceId).isEqualTo("instanceId")
-        assertThat(routeId.key).isEqualTo(fragmentKey)
+        assertThat(routeId.key).isEqualTo(routeKey)
     }
 
-    @Test fun fragmentOutput() {
+    @Test fun routeOutput() {
         val key = MainKey(id = 1)
         val output = RouteOutput(
             key = key,
@@ -40,11 +40,11 @@ class FragmentDataClassTest {
         assertThat(result.data).isNull()
     }
 
-    @Test fun fragmentLifecycleEventRemoved() {
-        val fragmentKey = MainKey(id = 1)
+    @Test fun routeLifecycleEventRemoved() {
+        val routeKey = MainKey(id = 1)
         val routeId = RouteId(
             instanceId = "instanceId",
-            key = fragmentKey
+            key = routeKey
         )
 
         val event = RouteLifecycleEvent.Removed(

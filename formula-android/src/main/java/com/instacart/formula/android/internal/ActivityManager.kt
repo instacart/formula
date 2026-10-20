@@ -2,12 +2,8 @@ package com.instacart.formula.android.internal
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
-import com.instacart.formula.android.NavigationStore
-import kotlinx.coroutines.launch
 
 /**
  * Activity manager connects [ActivityStore] and the [Activity].
@@ -17,36 +13,14 @@ internal class ActivityManager<Activity : FragmentActivity>(
     private val store: ActivityStore<Activity>
 ) {
 
-    private val navigationStore = store.navigationStore ?: NavigationStore.Builder().build { }
-
-    private var navigationRenderView: NavigationFlowRenderView? = null
-
     fun onPreCreate(activity: Activity) {
         // Give store a chance to initialize the activity.
         store.configureActivity?.invoke(activity)
-
-        // Initialize render view
-        navigationRenderView = NavigationFlowRenderView(
-            activity = activity,
-            store = navigationStore,
-            onFragmentViewStateChanged = navigationStore::onVisibilityChanged
-        )
     }
 
     fun onActivityCreated(activity: Activity) {
         delegate.attachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.CREATED)
-
-        val renderView = navigationRenderView ?: throw callOnPreCreateException(activity)
-        with(activity) {
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    navigationStore.stateFlow.collect {
-                        renderView.render(it)
-                    }
-                }
-            }
-        }
     }
 
     fun onActivityStarted(activity: Activity) {
@@ -67,8 +41,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun onActivityDestroyed(activity: Activity) {
-        navigationRenderView = null
-
         delegate.detachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.DESTROYED)
     }
@@ -78,11 +50,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     }
 
     fun dispose() {
-        navigationStore.dispose()
         store.onCleared?.invoke()
-    }
-
-    private fun callOnPreCreateException(activity: FragmentActivity): IllegalStateException {
-        return IllegalStateException("please call onPreCreate before calling Activity.super.onCreate(): ${activity::class.java.simpleName}")
     }
 }

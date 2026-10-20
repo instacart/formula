@@ -4,7 +4,7 @@ import com.google.common.truth.Truth
 import com.instacart.formula.android.fakes.MainKey
 import org.junit.Test
 
-class FragmentEnvironmentTest {
+class RouteEnvironmentTest {
 
     @Test
     fun `default onError throws exception`() {

@@ -61,7 +61,7 @@ class NavigationStoreTest {
         assertState(store)
     }
 
-    @Test fun `various fragments added`() {
+    @Test fun `various routes added`() {
 
         val component = FakeComponent()
         val store = createStore(component)
@@ -204,7 +204,7 @@ class NavigationStoreTest {
         val firstModel = store.stateFlow.value.outputs[routeId]?.renderModel
         assertThat(firstModel).isEqualTo("value")
 
-        // Remove fragment
+        // Remove route
         store.onLifecycleEvent(
             RouteLifecycleEvent.Removed(routeId = routeId)
         )
@@ -359,7 +359,7 @@ class NavigationStoreTest {
     private fun RouteKey.asAddedEvent() = RouteLifecycleEvent.Added(RouteId("", this))
     private fun RouteKey.asRemovedEvent() = RouteLifecycleEvent.Removed(RouteId("", this))
 
-    class TestFeatureFactory<FragmentKeyT : RouteKey>: FeatureFactory<FakeComponent, FragmentKeyT>() {
+    class TestFeatureFactory<KeyT : RouteKey>: FeatureFactory<FakeComponent, KeyT>() {
         override fun Params.initialize(): Feature {
             return Feature(
                 viewFactory = TestViewFactory(),

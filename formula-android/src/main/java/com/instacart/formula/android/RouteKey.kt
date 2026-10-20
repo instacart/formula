@@ -1,10 +1,9 @@
 package com.instacart.formula.android
 
 import android.os.Parcelable
-import androidx.fragment.app.FragmentManager
 
 /**
- * A key is used to identify a specific [FormulaFragment] and to connect the correct [FeatureFactory].
+ * A key identifies a route and connects it to the corresponding [FeatureFactory].
  *
  * ```
  * data class TaskDetailKey(
@@ -16,8 +15,5 @@ import androidx.fragment.app.FragmentManager
  */
 interface RouteKey : Parcelable {
 
-    /**
-     * Tag is a unique identifier used to distinguish each route instance by the [FragmentManager].
-     */
     val tag: String
 }

@@ -1,5 +1,7 @@
 # Changelog
 ## [0.8.0] - TBD
+- **Breaking**: Remove `FormulaFragment` and automatic FragmentManager lifecycle/render integration. Hosts now manage presentation and forward route lifecycle events to `NavigationStore`.
+- **Breaking**: Remove `ActivityStore.navigationStore`; dispose activity-scoped stores through `ActivityStore.onCleared`.
 - **Breaking**: Remove deprecated `com.instacart.formula.android.compose.ComposeViewFactory` typealias; use `com.instacart.formula.android.ComposeViewFactory`.
 - **Breaking**: Remove `FormulaAndroid.onBackPressed` and its internal back-dispatch plumbing.
 - **Breaking**: Remove `ActivityStoreContext.isRouteStarted` and `ActivityStoreContext.isRouteResumed`.

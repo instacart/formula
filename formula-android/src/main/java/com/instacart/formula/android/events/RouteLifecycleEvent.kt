@@ -3,8 +3,8 @@ package com.instacart.formula.android.events
 import com.instacart.formula.android.RouteId
 
 /**
- * Models when a [RouteId] is attached and detached. Provides a way to indicate
- * when to initialize state stream and when to destroy it.
+ * Models when a route is added to or removed from the host's navigation state, indicating
+ * when to initialize and dispose its feature state.
  */
 sealed class RouteLifecycleEvent {
 
