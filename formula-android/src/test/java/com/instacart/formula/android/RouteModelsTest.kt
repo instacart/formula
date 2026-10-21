@@ -1,7 +1,6 @@
 package com.instacart.formula.android
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.events.RouteLifecycleEvent
 import com.instacart.formula.android.fakes.MainKey
 import org.junit.Test
@@ -27,17 +26,6 @@ class RouteModelsTest {
         )
         assertThat(output.key).isEqualTo(key)
         assertThat(output.renderModel).isEqualTo(Unit)
-    }
-
-    @Test fun activityResult() {
-        val result = ActivityResult(
-            requestCode = 0,
-            resultCode = 1,
-            data = null
-        )
-        assertThat(result.requestCode).isEqualTo(0)
-        assertThat(result.resultCode).isEqualTo(1)
-        assertThat(result.data).isNull()
     }
 
     @Test fun routeLifecycleEventRemoved() {

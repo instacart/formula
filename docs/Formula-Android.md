@@ -37,7 +37,7 @@ class MyApp : Application() {
 }
 ```
 
-Forward activity lifecycle setup and activity results from the activity:
+Forward activity setup from the activity:
 
 ```kotlin
 class MyActivity : AppCompatActivity() {
@@ -45,16 +45,11 @@ class MyActivity : AppCompatActivity() {
         FormulaAndroid.onPreCreate(this, savedInstanceState)
         super.onCreate(savedInstanceState)
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        FormulaAndroid.onActivityResult(this, requestCode, resultCode, data)
-    }
 }
 ```
 
-`ActivityStoreContext` provides activity-bound effects and events. Use `send { ... }` for effects,
-`activityResults()` for activity results, and `activityLifecycleState()` for lifecycle state.
+`ActivityStoreContext` provides activity-bound effects and lifecycle state. Use `send { ... }` for
+effects and `activityLifecycleState()` to observe lifecycle state.
 
 ## NavigationStore
 

@@ -1,12 +1,10 @@
 package com.instacart.formula
 
 import android.app.Application
-import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.instacart.formula.android.ActivityConfigurator
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.internal.ActivityStoreFactory
 import com.instacart.formula.android.internal.AppManager
 
@@ -40,14 +38,6 @@ object FormulaAndroid {
      */
     fun onPreCreate(activity: FragmentActivity, savedInstance: Bundle?) {
         appManagerOrThrow().onPreCreate(activity, savedInstance)
-    }
-
-    /**
-     * Call this method in [FragmentActivity.onActivityResult]
-     */
-    fun onActivityResult(activity: FragmentActivity, requestCode: Int, resultCode: Int, data: Intent?) {
-        val result = ActivityResult(requestCode, resultCode, data)
-        appManagerOrThrow().onActivityResult(activity, result)
     }
 
     /**

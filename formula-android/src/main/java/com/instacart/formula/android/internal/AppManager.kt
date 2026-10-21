@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import com.instacart.formula.android.events.ActivityResult
 import java.util.UUID
 
 /**
@@ -80,10 +79,6 @@ internal class AppManager(
                 clearActivityStore(key)
             }
         }
-    }
-
-    fun onActivityResult(activity: FragmentActivity, result: ActivityResult) {
-        findStore(activity)?.onActivityResult(result)
     }
 
     fun findStore(activity: FragmentActivity): ActivityManager<FragmentActivity>? {
