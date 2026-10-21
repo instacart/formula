@@ -11,7 +11,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.FormulaAndroid
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.testutils.android.TestActivity
 import com.instacart.testutils.android.TestFormulaActivity
 import com.instacart.testutils.android.TestFragmentActivity
@@ -37,17 +36,6 @@ class FormulaAndroidTest {
         } finally {
             FormulaAndroid.reset()
         }
-    }
-
-    @Test
-    fun `crashes if activity result is forwarded before initialization`() {
-        val result = runCatching {
-            FormulaAndroid.onActivityResult(TestFormulaActivity(), 1, 2, null)
-        }
-        val errorMessage = result.exceptionOrNull()?.message
-        assertThat(errorMessage).isEqualTo(
-            "Need to call FormulaAndroid.init() from your Application."
-        )
     }
 
     @Test
@@ -116,23 +104,4 @@ class FormulaAndroidTest {
         }
     }
 
-    @Test
-    fun `activity results are emitted`() {
-        withFormulaAndroid(
-            configure = {
-                activity<TestFormulaActivity> { ActivityStore() }
-            }
-        ) { interactor ->
-            val activityResultEvents = interactor
-                .selectEvents { it.activityResults().asObservable() }
-                .test()
-
-            val scenario = ActivityScenario.launch(TestFormulaActivity::class.java)
-            FormulaAndroid.onActivityResult(scenario.activity(), 1, 2, null)
-
-            activityResultEvents.assertValues(
-                ActivityResult(1, 2, null)
-            )
-        }
-    }
 }

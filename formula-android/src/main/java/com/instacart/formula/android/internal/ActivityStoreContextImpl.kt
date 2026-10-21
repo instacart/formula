@@ -2,10 +2,7 @@ package com.instacart.formula.android.internal
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStoreContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -18,12 +15,7 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
     private var hasStarted: Boolean = false
     private val lifecycleStates = MutableStateFlow(Lifecycle.State.INITIALIZED)
 
-    private val activityResultRelay = MutableSharedFlow<ActivityResult>(
-        extraBufferCapacity = Int.MAX_VALUE,
-    )
     override fun activityLifecycleState(): StateFlow<Lifecycle.State> = lifecycleStates
-
-    override fun activityResults(): Flow<ActivityResult> = activityResultRelay
 
     override fun send(effect: Activity.() -> Unit) {
         // We allow emitting effects only after activity has started
@@ -38,10 +30,6 @@ internal class ActivityStoreContextImpl<Activity : FragmentActivity> : ActivityS
 
     fun onLifecycleStateChanged(state: Lifecycle.State) {
         lifecycleStates.tryEmit(state)
-    }
-
-    fun onActivityResult(result: ActivityResult) {
-        activityResultRelay.tryEmit(result)
     }
 
     fun attachActivity(activity: Activity) {

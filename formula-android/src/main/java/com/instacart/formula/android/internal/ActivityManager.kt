@@ -2,7 +2,6 @@ package com.instacart.formula.android.internal
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
-import com.instacart.formula.android.events.ActivityResult
 import com.instacart.formula.android.ActivityStore
 
 /**
@@ -43,10 +42,6 @@ internal class ActivityManager<Activity : FragmentActivity>(
     fun onActivityDestroyed(activity: Activity) {
         delegate.detachActivity(activity)
         delegate.onLifecycleStateChanged(Lifecycle.State.DESTROYED)
-    }
-
-    fun onActivityResult(result: ActivityResult) {
-        delegate.onActivityResult(result)
     }
 
     fun dispose() {
