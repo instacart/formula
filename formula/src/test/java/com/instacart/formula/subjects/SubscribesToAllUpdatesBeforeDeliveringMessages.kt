@@ -24,21 +24,22 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-            fun ActionBuilder<Unit, Int>.registerActions() {
-                initial.onEvent {
-                    transition {
-                        incrementRelay.triggerEvent()
-                    }
-                }
-
-                incrementRelay.action().onEvent {
-                    transition(state + 1)
-                }
-            }
             registerActions()
             return Evaluation(
                 output = state,
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.registerActions() {
+            initial.onEvent {
+                transition {
+                    incrementRelay.triggerEvent()
+                }
+            }
+
+            incrementRelay.action().onEvent {
+                transition(state + 1)
+            }
         }
     }
 }

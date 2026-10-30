@@ -95,30 +95,31 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                fun ActionBuilder<Unit, Unit>.registerActions() {
-                    if (unstableActionKey.getAndIncrement() == 1) {
-                        val action = object : Action<Unit> {
-                            override fun start(
-                                scope: CoroutineScope,
-                                emitter: Action.Emitter<Unit>
-                            ): Cancelable? {
-                                return null
-                            }
-
-                            override fun key(): Any {
-                                return unstableActionKey.incrementAndGet()
-                            }
-                        }
-
-                        action.onEvent {
-                            none()
-                        }
-                    }
-                }
                 registerActions()
                 return Evaluation(
                     output = 0,
                 )
+            }
+
+            private fun ActionBuilder<Unit, Unit>.registerActions() {
+                if (unstableActionKey.getAndIncrement() == 1) {
+                    val action = object : Action<Unit> {
+                        override fun start(
+                            scope: CoroutineScope,
+                            emitter: Action.Emitter<Unit>
+                        ): Cancelable? {
+                            return null
+                        }
+
+                        override fun key(): Any {
+                            return unstableActionKey.incrementAndGet()
+                        }
+                    }
+
+                    action.onEvent {
+                        none()
+                    }
+                }
             }
         }
         val error = runCatching {

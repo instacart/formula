@@ -32,17 +32,18 @@ class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Uni
 
     override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
 
-        fun ActionBuilder<Unit, Int>.registerActions() {
-            stream.onEvent {
-                val newState = state + 1
-                transition(newState) {
-                    captured(Event(newState, it))
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = state,
         )
+    }
+
+    private fun ActionBuilder<Unit, Int>.registerActions() {
+        stream.onEvent {
+            val newState = state + 1
+            transition(newState) {
+                captured(Event(newState, it))
+            }
+        }
     }
 }

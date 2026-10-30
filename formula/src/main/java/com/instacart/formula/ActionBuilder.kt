@@ -5,15 +5,15 @@ package com.instacart.formula
  * declarations can be extracted into a private helper and called from `evaluate()`:
  *
  * ```kotlin
+ * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+ *   registerActions()
+ *   return Evaluation(output = PageOutput(...))
+ * }
+ *
  * private fun ActionBuilder<Input, State>.registerActions() {
  *   Action.onInit().onEvent {
  *     transition { analytics.trackPageInitialized() }
  *   }
- * }
- *
- * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
- *   registerActions()
- *   return Evaluation(output = PageOutput(...))
  * }
  * ```
  */

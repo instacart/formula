@@ -65,6 +65,11 @@ internal class NavigationStoreFormula(
 
     override fun initialState(input: Unit): NavigationState = NavigationState()
 
+    override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
+        registerActions()
+        return Evaluation(output = state)
+    }
+
     private fun ActionBuilder<Unit, NavigationState>.registerActions() {
         Action.fromFlow { stateChanges }.onEvent { update ->
             delegate(update)
@@ -85,10 +90,5 @@ internal class NavigationStoreFormula(
                 }
             }
         }
-    }
-
-    override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
-        registerActions()
-        return Evaluation(output = state)
     }
 }

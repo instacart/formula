@@ -70,6 +70,11 @@ open class TransitionQueueBenchmark {
 
         override fun initialState(input: Int) = 0
 
+        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
+            registerActions()
+            return Evaluation(output = state)
+        }
+
         private fun ActionBuilder<Int, Int>.registerActions() {
             if (input > 0) {
                 // Action that emits multiple events on start
@@ -77,11 +82,6 @@ open class TransitionQueueBenchmark {
                     transition(event)
                 }
             }
-        }
-
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
-            registerActions()
-            return Evaluation(output = state)
         }
     }
 

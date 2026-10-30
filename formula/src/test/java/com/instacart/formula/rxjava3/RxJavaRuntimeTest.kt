@@ -46,15 +46,16 @@ class RxJavaRuntimeTest {
             override fun initialState(input: Unit): Int = 0
 
             override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-                fun ActionBuilder<Unit, Int>.registerActions() {
-                    Action.fromFlow { flowOf(1, 2) }.onEvent {
-                        transition(it)
-                    }
-                }
                 registerActions()
                 return Evaluation(
                     output = state,
                 )
+            }
+
+            private fun ActionBuilder<Unit, Int>.registerActions() {
+                Action.fromFlow { flowOf(1, 2) }.onEvent {
+                    transition(it)
+                }
             }
         }
 

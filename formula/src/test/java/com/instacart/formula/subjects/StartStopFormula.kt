@@ -29,13 +29,6 @@ class StartStopFormula : Formula<Unit, State, Output>() {
     override fun initialState(input: Unit): State = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
-        fun ActionBuilder<Unit, State>.registerActions() {
-            if (state.listenForEvents) {
-                incrementEvents.action().onEvent {
-                    transition(state.copy(count = state.count + 1))
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = Output(
@@ -45,6 +38,14 @@ class StartStopFormula : Formula<Unit, State, Output>() {
                 stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
             )
         )
+    }
+
+    private fun ActionBuilder<Unit, State>.registerActions() {
+        if (state.listenForEvents) {
+            incrementEvents.action().onEvent {
+                transition(state.copy(count = state.count + 1))
+            }
+        }
     }
 
     private class UpdateListenFlag(val listen: Boolean): Transition<Any, State, Unit> {

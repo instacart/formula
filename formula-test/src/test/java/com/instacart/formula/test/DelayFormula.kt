@@ -17,19 +17,20 @@ class DelayFormula(
     override fun initialState(input: Unit) = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Int> {
-        fun ActionBuilder<Unit, State>.registerActions() {
-            Action.fromFlow {
-                flow {
-                    delay(delay)
-                    emit(1)
-                }
-            }.onEvent {
-                transition(state.copy(count = state.count + 1))
-            }
-        }
         registerActions()
         return Evaluation(
             output = state.count,
         )
+    }
+
+    private fun ActionBuilder<Unit, State>.registerActions() {
+        Action.fromFlow {
+            flow {
+                delay(delay)
+                emit(1)
+            }
+        }.onEvent {
+            transition(state.copy(count = state.count + 1))
+        }
     }
 }

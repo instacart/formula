@@ -33,13 +33,13 @@ import kotlin.coroutines.EmptyCoroutineContext
  * To use it within a [Formula], declare it on the [ActionBuilder] receiver and call that helper
  * from `evaluate()`:
  * ```kotlin
- * private fun ActionBuilder<Input, State>.registerAction() {
- *   action.onEvent { event -> transition() }
- * }
- *
  * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
  *   registerAction()
  *   return Evaluation(output = output)
+ * }
+ *
+ * private fun ActionBuilder<Input, State>.registerAction() {
+ *   action.onEvent { event -> transition() }
  * }
  * ```
  *

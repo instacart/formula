@@ -34,17 +34,18 @@ class DynamicStreamSubject(scope: CoroutineScope) {
         val running = mutableListOf<String>()
 
         override fun Snapshot<List<String>, Unit>.evaluate(): Evaluation<Unit> {
-            fun ActionBuilder<List<String>, Unit>.registerActions() {
-                input.forEach { key ->
-                    action(key).onEvent {
-                        none()
-                    }
-                }
-            }
             registerActions()
             return Evaluation(
                 output = Unit,
             )
+        }
+
+        private fun ActionBuilder<List<String>, Unit>.registerActions() {
+            input.forEach { key ->
+                action(key).onEvent {
+                    none()
+                }
+            }
         }
 
         private fun action(key: String): Action<Unit> {

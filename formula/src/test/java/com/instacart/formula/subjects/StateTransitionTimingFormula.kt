@@ -25,11 +25,6 @@ class StateTransitionTimingFormula
     override fun initialState(input: Unit): List<State> = emptyList()
 
     override fun Snapshot<Unit, List<State>>.evaluate(): Evaluation<Output> {
-        fun ActionBuilder<Unit, List<State>>.registerActions() {
-            relay.action().onEvent {
-                transition(state.plus(State.EXTERNAL))
-            }
-        }
         registerActions()
         return Evaluation(
             output = Output(
@@ -41,5 +36,11 @@ class StateTransitionTimingFormula
                 }
             ),
         )
+    }
+
+    private fun ActionBuilder<Unit, List<State>>.registerActions() {
+        relay.action().onEvent {
+            transition(state.plus(State.EXTERNAL))
+        }
     }
 }

@@ -45,29 +45,30 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-            fun ActionBuilder<Unit, Int>.registerActions() {
-                RxAction.fromObservable {
-                    terminateAction()
-                    Observable.empty()
-                }.onEvent { none() }
-
-                // Pending actions
-                Action.onInit().onEvent {
-                    transition(state + 1)
-                }
-
-                Action.onInit().onEvent {
-                    transition(state + 1)
-                }
-
-                Action.onInit().onEvent {
-                    transition(state + 1)
-                }
-            }
             registerActions()
             return Evaluation(
                 output = state,
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.registerActions() {
+            RxAction.fromObservable {
+                terminateAction()
+                Observable.empty()
+            }.onEvent { none() }
+
+            // Pending actions
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
+
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
+
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
         }
     }
 }
