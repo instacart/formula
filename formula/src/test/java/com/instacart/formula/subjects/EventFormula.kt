@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -31,16 +32,17 @@ class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Uni
 
     override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
 
-        return Evaluation(
-            output = state,
-            actions = context.actions {
-                stream.onEvent {
-                    val newState = state + 1
-                    transition(newState) {
-                        captured(Event(newState, it))
-                    }
+        fun ActionBuilder<Unit, Int>.registerActions() {
+            stream.onEvent {
+                val newState = state + 1
+                transition(newState) {
+                    captured(Event(newState, it))
                 }
             }
+        }
+        registerActions()
+        return Evaluation(
+            output = state,
         )
     }
 }

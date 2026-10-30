@@ -2,6 +2,7 @@ package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
@@ -33,15 +34,16 @@ class DynamicStreamSubject(scope: CoroutineScope) {
         val running = mutableListOf<String>()
 
         override fun Snapshot<List<String>, Unit>.evaluate(): Evaluation<Unit> {
-            return Evaluation(
-                output = Unit,
-                actions = context.actions {
-                    input.forEach { key ->
-                        action(key).onEvent {
-                            none()
-                        }
+            fun ActionBuilder<List<String>, Unit>.registerActions() {
+                input.forEach { key ->
+                    action(key).onEvent {
+                        none()
                     }
                 }
+            }
+            registerActions()
+            return Evaluation(
+                output = Unit,
             )
         }
 

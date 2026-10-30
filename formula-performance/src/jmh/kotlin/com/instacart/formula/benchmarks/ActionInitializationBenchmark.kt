@@ -1,14 +1,15 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
 import com.instacart.formula.test.testUnscoped
-import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.*
 
 /**
  * Benchmark for measuring action initialization performance.
@@ -66,21 +67,23 @@ open class ActionInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
+        private fun ActionBuilder<InitInput, Unit>.registerActions() {
+            // Each action gets a unique key based on generation
+            // When generation changes, all actions are NEW (not redeclared)
+            repeat(input.count) { index ->
+                Action.onData(Pair(index, input.generation)).onEvent { event ->
+                    none()
+                }
+            }
+        }
+
         override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ActionOutput> {
+            registerActions()
             return Evaluation(
                 output = ActionOutput(
                     actionCount = input.count,
                     generation = input.generation
                 ),
-                actions = context.actions {
-                    // Each action gets a unique key based on generation
-                    // When generation changes, all actions are NEW (not redeclared)
-                    repeat(input.count) { index ->
-                        Action.onData(Pair(index, input.generation)).onEvent { event ->
-                            none()
-                        }
-                    }
-                }
             )
         }
     }

@@ -70,13 +70,14 @@ class FormulaPluginTest {
             val exception = IllegalStateException("expected exception")
             val myFormula = object : StatelessFormula<Unit, Unit>() {
                 override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+                    fun ActionBuilder<Unit, Unit>.registerActions() {
+                        ErrorAction(exception).onEvent {
+                            none()
+                        }
+                    }
+                    registerActions()
                     return Evaluation(
                         output = Unit,
-                        actions = context.actions {
-                            ErrorAction(exception).onEvent {
-                                none()
-                            }
-                        }
                     )
                 }
             }

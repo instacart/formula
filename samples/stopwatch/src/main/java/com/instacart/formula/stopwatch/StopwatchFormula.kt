@@ -2,12 +2,13 @@ package com.instacart.formula.stopwatch
 
 import android.os.SystemClock
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import java.util.concurrent.TimeUnit
 
 class StopwatchFormula(
     private val elapsedSinceBoot: () -> Long = { SystemClock.elapsedRealtime() },
@@ -30,27 +31,29 @@ class StopwatchFormula(
         currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
+    private fun ActionBuilder<Unit, State>.registerTickerAction() {
+        if (state.isRunning) {
+            Action.fromFlow {
+                flow {
+                    while (true) {
+                        delay(1)
+                        emit(elapsedSinceBoot())
+                    }
+                }
+            }.onEvent { currentElapsedRealtimeMillis ->
+                transition(state.copy(currentElapsedRealtimeMillis = currentElapsedRealtimeMillis))
+            }
+        }
+    }
+
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
+        registerTickerAction()
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.elapsedTimeMillis),
                 startStopButton = startStopButton(),
                 resetButton = resetButton(),
             ),
-            actions = context.actions {
-                if (state.isRunning) {
-                    Action.fromFlow {
-                        flow {
-                            while (true) {
-                                delay(1)
-                                emit(elapsedSinceBoot())
-                            }
-                        }
-                    }.onEvent { currentElapsedRealtimeMillis ->
-                        transition(state.copy(currentElapsedRealtimeMillis = currentElapsedRealtimeMillis))
-                    }
-                }
-            },
         )
     }
 

@@ -1,6 +1,7 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
@@ -8,9 +9,9 @@ import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
 import com.instacart.formula.test.testUnscoped
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import org.openjdk.jmh.annotations.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Benchmark for testing transitionQueue behavior in FormulaManagerImpl.
@@ -69,18 +70,18 @@ open class TransitionQueueBenchmark {
 
         override fun initialState(input: Int) = 0
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
-            return Evaluation(
-                output = state,
-                actions = context.actions {
-                    if (input > 0) {
-                        // Action that emits multiple events on start
-                        MultiEmitAction(input).onEvent { event ->
-                            transition(event)
-                        }
-                    }
+        private fun ActionBuilder<Int, Int>.registerActions() {
+            if (input > 0) {
+                // Action that emits multiple events on start
+                MultiEmitAction(input).onEvent { event ->
+                    transition(event)
                 }
-            )
+            }
+        }
+
+        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
+            registerActions()
+            return Evaluation(output = state)
         }
     }
 

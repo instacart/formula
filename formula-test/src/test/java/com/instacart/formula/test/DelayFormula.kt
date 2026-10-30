@@ -1,12 +1,13 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
+import kotlin.time.Duration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import kotlin.time.Duration
 
 class DelayFormula(
     private val delay: Duration,
@@ -16,18 +17,19 @@ class DelayFormula(
     override fun initialState(input: Unit) = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Int> {
+        fun ActionBuilder<Unit, State>.registerActions() {
+            Action.fromFlow {
+                flow {
+                    delay(delay)
+                    emit(1)
+                }
+            }.onEvent {
+                transition(state.copy(count = state.count + 1))
+            }
+        }
+        registerActions()
         return Evaluation(
             output = state.count,
-            actions = context.actions {
-                Action.fromFlow {
-                    flow {
-                        delay(delay)
-                        emit(1)
-                    }
-                }.onEvent {
-                    transition(state.copy(count = state.count + 1))
-                }
-            }
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.instacart.formula.subjects
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -35,6 +36,21 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
 
         override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
             val incrementOutput = context.child(incrementFormula)
+            fun ActionBuilder<Unit, State>.registerActions() {
+                if (state.actionId > 0) {
+                    RxAction.fromObservable(state.actionId) {
+                        // Call child
+                        incrementOutput.onIncrement()
+
+                        // Emit events
+                        Observable.just(1, 1, 1)
+                    }.onEvent {
+                        val newState = state.copy(value = state.value + it)
+                        transition(newState)
+                    }
+                }
+            }
+            registerActions()
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -44,20 +60,6 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
                         transition(newState)
                     }
                 ),
-                actions = context.actions {
-                    if (state.actionId > 0) {
-                        RxAction.fromObservable(state.actionId) {
-                            // Call child
-                            incrementOutput.onIncrement()
-
-                            // Emit events
-                            Observable.just(1, 1, 1)
-                        }.onEvent {
-                            val newState = state.copy(value = state.value + it)
-                            transition(newState)
-                        }
-                    }
-                }
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.instacart.formula.subjects
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -34,18 +35,19 @@ object ChildMessageTriggersEventTransitionInParent {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<RenderModel> {
+            fun ActionBuilder<Unit, Int>.registerActions() {
+                RxAction
+                    .fromObservable { service.serviceEvents() }
+                    .onEvent {
+                        transition(state + 1)
+                    }
+            }
+            registerActions()
             return Evaluation(
                 output = RenderModel(
                     count = state,
                     child = context.child(childFormula)
                 ),
-                actions = context.actions {
-                    RxAction
-                        .fromObservable { service.serviceEvents() }
-                        .onEvent {
-                            transition(state + 1)
-                        }
-                }
             )
         }
     }

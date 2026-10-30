@@ -23,22 +23,22 @@ drive actions, and determine what the formula does.
 To report events back to the host, call the callbacks defined on input within a transition.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    return Evaluation(
-        output = ...,
-        actions = context.actions {
-            Action.launchCatching(key = input.itemId) {
-                repo.fetchItem(input.itemId)
-            }.onEvent { result ->
-                if (result.isSuccess) {
-                    transition(state.copy(item = result.getOrNull()))
-                } else {
-                    // Notify host that item was not found
-                    transition { input.onItemNotFound() }
-                }
-            }
+private fun ActionBuilder<Input, State>.fetchItem() {
+    Action.launchCatching(key = input.itemId) {
+        repo.fetchItem(input.itemId)
+    }.onEvent { result ->
+        if (result.isSuccess) {
+            transition(state.copy(item = result.getOrNull()))
+        } else {
+            // Notify host that item was not found
+            transition { input.onItemNotFound() }
         }
-    )
+    }
+}
+
+override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+    fetchItem()
+    return Evaluation(output = ...)
 }
 ```
 
