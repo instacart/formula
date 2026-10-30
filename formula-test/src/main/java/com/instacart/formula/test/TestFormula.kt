@@ -73,15 +73,11 @@ class TestFormula<Input, Output> internal constructor(
             }
         )
 
-        return Evaluation(
-            output = state.output,
-            actions = context.actions {
-                Action.onTerminate().onEvent {
-                    runningInstanceManager.onTerminate(state.uniqueIdentifier)
-                    none()
-                }
-            }
-        )
+        Action.onTerminate().onEvent {
+            runningInstanceManager.onTerminate(state.uniqueIdentifier)
+            none()
+        }
+        return Evaluation(output = state.output)
     }
 
     /**

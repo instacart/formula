@@ -59,13 +59,11 @@ class StateFlowRuntimeTest {
             override fun initialState(input: Unit): Int = 0
 
             override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+                Action.fromFlow { eventBus }.onEvent {
+                    transition(it)
+                }
                 return Evaluation(
                     output = state,
-                    actions = context.actions {
-                        Action.fromFlow { eventBus }.onEvent {
-                            transition(it)
-                        }
-                    }
                 )
             }
         }

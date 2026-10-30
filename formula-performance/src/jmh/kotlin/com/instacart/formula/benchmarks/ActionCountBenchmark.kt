@@ -1,14 +1,15 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
 import com.instacart.formula.test.test
 import com.instacart.formula.test.testUnscoped
-import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
+import org.openjdk.jmh.annotations.*
 
 /**
  * Benchmark for measuring state transition performance with varying numbers of active actions.
@@ -66,6 +67,7 @@ open class ActionCountBenchmark {
         override fun initialState(input: Int) = 0
 
         override fun Snapshot<Int, Int>.evaluate(): Evaluation<ActionOutput> {
+            keepNoopActionsActive()
             return Evaluation(
                 output = ActionOutput(
                     count = state,
@@ -74,16 +76,17 @@ open class ActionCountBenchmark {
                         transition(state + 1)
                     }
                 ),
-                actions = context.actions {
-                    // Create N registered actions (no-op actions for overhead measurement)
-                    repeat(input) { index ->
-                        Action.onData(index).onEvent { event ->
-                            // Actions don't update state, just remain registered
-                            none()
-                        }
-                    }
-                }
             )
+        }
+
+        private fun ActionBuilder<Int, Int>.keepNoopActionsActive() {
+            // Create N registered actions (no-op actions for overhead measurement)
+            repeat(input) { index ->
+                Action.onData(index).onEvent { event ->
+                    // Actions don't update state, just remain registered
+                    none()
+                }
+            }
         }
     }
 

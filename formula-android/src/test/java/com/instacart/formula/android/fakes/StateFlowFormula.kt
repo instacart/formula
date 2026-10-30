@@ -1,6 +1,7 @@
 package com.instacart.formula.android.fakes
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -21,17 +22,19 @@ class StateFlowFormula: Formula<RouteId<*>, String, String>() {
     }
 
     override fun Snapshot<RouteId<*>, String>.evaluate(): Evaluation<String> {
+        forwardMatchingEvents()
         return Evaluation(
             output = state,
-            actions = context.actions {
-                Action.fromFlow { sharedFlow }.onEvent { (instanceId, value) ->
-                    if (instanceId == input.instanceId) {
-                        transition(value)
-                    } else {
-                        none()
-                    }
-                }
-            }
         )
+    }
+
+    private fun ActionBuilder<RouteId<*>, String>.forwardMatchingEvents() {
+        Action.fromFlow { sharedFlow }.onEvent { (instanceId, value) ->
+            if (instanceId == input.instanceId) {
+                transition(value)
+            } else {
+                none()
+            }
+        }
     }
 }

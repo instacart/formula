@@ -1,6 +1,7 @@
 package com.instacart.formula.types
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -15,17 +16,19 @@ class OnInitActionFormula(private val eventNumber: Int) : StatelessFormula<OnIni
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+        runOnInitAction()
         return Evaluation(
             output = Unit,
-            actions = context.actions {
-                Action.onInit().onEvent {
-                    transition {
-                        (0 until eventNumber).forEach {
-                            input.onAction()
-                        }
-                    }
+        )
+    }
+
+    private fun ActionBuilder<Input, Unit>.runOnInitAction() {
+        Action.onInit().onEvent {
+            transition {
+                (0 until eventNumber).forEach {
+                    input.onAction()
                 }
             }
-        )
+        }
     }
 }

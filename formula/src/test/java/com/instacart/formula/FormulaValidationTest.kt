@@ -58,6 +58,7 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                // Keep one usage to protect the public FormulaContext.actions API.
                 return Evaluation(
                     output = 0,
                     context.actions {
@@ -94,29 +95,31 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+                changeActionKeyDuringValidation()
                 return Evaluation(
                     output = 0,
-                    context.actions {
-                        if (unstableActionKey.getAndIncrement() == 1) {
-                            val action = object : Action<Unit> {
-                                override fun start(
-                                    scope: CoroutineScope,
-                                    emitter: Action.Emitter<Unit>
-                                ): Cancelable? {
-                                    return null
-                                }
+                )
+            }
 
-                                override fun key(): Any {
-                                    return unstableActionKey.incrementAndGet()
-                                }
-                            }
+            private fun ActionBuilder<Unit, Unit>.changeActionKeyDuringValidation() {
+                if (unstableActionKey.getAndIncrement() == 1) {
+                    val action = object : Action<Unit> {
+                        override fun start(
+                            scope: CoroutineScope,
+                            emitter: Action.Emitter<Unit>
+                        ): Cancelable? {
+                            return null
+                        }
 
-                            action.onEvent {
-                                none()
-                            }
+                        override fun key(): Any {
+                            return unstableActionKey.incrementAndGet()
                         }
                     }
-                )
+
+                    action.onEvent {
+                        none()
+                    }
+                }
             }
         }
         val error = runCatching {

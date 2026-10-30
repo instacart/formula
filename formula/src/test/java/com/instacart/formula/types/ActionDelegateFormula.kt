@@ -25,13 +25,15 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
     override fun initialState(input: Input): Int = 0
 
     override fun Snapshot<Input, Int>.evaluate(): Evaluation<Int> {
+        runDelegatedAction()
         return Evaluation(
             output = state,
-            actions = context.actions {
-                input.delegateAction?.apply {
-                    runAction()
-                }
-            }
         )
+    }
+
+    private fun ActionBuilder<Input, Int>.runDelegatedAction() {
+        input.delegateAction?.apply {
+            runAction()
+        }
     }
 }

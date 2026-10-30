@@ -23,7 +23,7 @@ class WrongFormulaUsageDetectorTest {
 
         fun interface Transition<Input, State, Event> {
             class Result<State>()
-            
+
             open fun TransitionContext<Input, State>.toResult(event: Event): Result<State>
         }
     """.trimIndent()
@@ -44,10 +44,10 @@ class WrongFormulaUsageDetectorTest {
         class FormulaContext<Input, State> {
             open fun <Event> onEvent(transition: Transition<Input, State, Event>): (Event) -> Unit
             open fun <Event> onEvent(key: Any, transition: Transition<Input, State, Event>): (Event) -> Unit
-            open fun callback(transition: Transition<Input, State, Unit>): () -> Unit 
-            open fun callback(key: Any, transition: Transition<Input, State, Unit>): () -> Unit 
-            open fun <Event> eventCallback(transition: Transition<Input, State, Event>): (Event) -> Unit 
-            open fun <Event> eventCallback(key: Any, transition: Transition<Input, State, Event>): (Event) -> Unit 
+            open fun callback(transition: Transition<Input, State, Unit>): () -> Unit
+            open fun callback(key: Any, transition: Transition<Input, State, Unit>): () -> Unit
+            open fun <Event> eventCallback(transition: Transition<Input, State, Event>): (Event) -> Unit
+            open fun <Event> eventCallback(key: Any, transition: Transition<Input, State, Event>): (Event) -> Unit
             open fun <ChildOutput> child(child: IFormula<Unit, ChildOutput>): ChildOutput
             open fun <ChildInput, ChildOutput> child(formula: IFormula<ChildInput, ChildOutput>, input: ChildInput): ChildOutput
             open fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<BoundStream<*>>
@@ -57,7 +57,7 @@ class WrongFormulaUsageDetectorTest {
 
     private val STREAM_BUILDER_STUB = """
         package com.instacart.formula
-        
+
         class ActionBuilder<Input, State>() {
             open fun <Event> events(stream: Stream<Event>, transition: Transition<Input, State, Event>)
             open fun <Event> Stream<Event>.onEvent(transition: Transition<Input, State, Event>)
@@ -75,7 +75,7 @@ class WrongFormulaUsageDetectorTest {
 
     private val STREAM_STUB = """
         package com.instacart.formula
-        
+
         class Stream<Event> {
             companion object {
                 open fun onInit(): Stream<Unit>
@@ -138,9 +138,9 @@ class WrongFormulaUsageDetectorTest {
             |           none()
             |       }
             |   }
-            |   
+            |
             |   fun Snapshot<Unit, Unit>.anotherCallback(param: String) {
-            |       context.callback { none() } 
+            |       context.callback { none() }
             |   }
             |}""".trimMargin()
 
@@ -161,25 +161,24 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            |        return Evaluation(
-            |            output = Unit,
-            |            actions = context.actions {
-            |                Stream.onInit().onEvent {
-            |                    val callback = context.callback {
-            |                        transition {}
-            |                    }   
-            |                    none()
+            |        fun ActionBuilder<Unit, Unit>.registerStreamAction() {
+            |            Stream.onInit().onEvent {
+            |                val callback = context.callback {
+            |                    transition {}
             |                }
+            |                none()
             |            }
-            |        )
+            |        }
+            |        registerStreamAction()
+            |        return Evaluation(output = Unit)
             |    }
             |}""".trimMargin()
 
         run(kotlin(example)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:9: Error: Cannot use FormulaContext within transition context [InvalidFormulaContextUsage]
-                |                    val callback = context.callback {
-                |                                           ^
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Cannot use FormulaContext within transition context [InvalidFormulaContextUsage]
+                |                val callback = context.callback {
+                |                                       ^
                 |1 errors, 0 warnings
             """.trimMargin()
         )
@@ -203,23 +202,22 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            |        return Evaluation(
-            |            output = Unit,
-            |            actions = context.actions {
-            |                Stream.onInit().onEvent {
-            |                    DelegatedCall().illegalBehavior(context)   
-            |                    none()
-            |                }
+            |        fun ActionBuilder<Unit, Unit>.registerDelegatedAction() {
+            |            Stream.onInit().onEvent {
+            |                DelegatedCall().illegalBehavior(context)
+            |                none()
             |            }
-            |        )
+            |        }
+            |        registerDelegatedAction()
+            |        return Evaluation(output = Unit)
             |    }
             |}""".trimMargin()
 
         run(kotlin(delegatedCall), kotlin(kotlinExample)).expect(
             """
-                |src/com/instacart/formula/ExampleFormula.kt:9: Error: Using FormulaContext within transition context is not allowed. Since illegalBehavior takes FormulaContext as a parameter, you cannot use this function with transition context. [InvalidFormulaContextUsage]
-                |                    DelegatedCall().illegalBehavior(context)   
-                |                                    ~~~~~~~~~~~~~~~~~~~~~~~~
+                |src/com/instacart/formula/ExampleFormula.kt:7: Error: Using FormulaContext within transition context is not allowed. Since illegalBehavior takes FormulaContext as a parameter, you cannot use this function with transition context. [InvalidFormulaContextUsage]
+                |                DelegatedCall().illegalBehavior(context)
+                |                                ~~~~~~~~~~~~~~~~~~~~~~~~
                 |1 errors, 0 warnings
             """.trimMargin()
         )
@@ -309,7 +307,7 @@ class WrongFormulaUsageDetectorTest {
             |            context.callback {
             |                none()
             |            }
-            |            i++            
+            |            i++
             |        }
             |    }
             |}
@@ -337,7 +335,7 @@ class WrongFormulaUsageDetectorTest {
             |            context.callback {
             |                none()
             |            }
-            |            i++            
+            |            i++
             |        } while (i < 10)
             |    }
             |}
@@ -578,7 +576,7 @@ class WrongFormulaUsageDetectorTest {
             |        }
             |    }
             |}
-            |    
+            |
             |class ExampleFormula {
             |    fun Snapshot<Unit, Unit>.callback(index: Int) {
             |        context.callback {

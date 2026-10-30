@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -44,28 +45,30 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+            terminateOnActionStart()
             return Evaluation(
                 output = state,
-                actions = context.actions {
-                    RxAction.fromObservable {
-                        terminateAction()
-                        Observable.empty()
-                    }.onEvent { none() }
-
-                    // Pending actions
-                    Action.onInit().onEvent {
-                        transition(state + 1)
-                    }
-
-                    Action.onInit().onEvent {
-                        transition(state + 1)
-                    }
-
-                    Action.onInit().onEvent {
-                        transition(state + 1)
-                    }
-                }
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.terminateOnActionStart() {
+            RxAction.fromObservable {
+                terminateAction()
+                Observable.empty()
+            }.onEvent { none() }
+
+            // Pending actions
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
+
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
+
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
         }
     }
 }
