@@ -18,7 +18,7 @@ class ItemFormula : Formula<ItemFormula.Input, ItemFormula.State, ItemRenderMode
 
     override fun initialState(input: Input): State = State(quantity = 0)
 
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<ItemRenderModel> {
+    override fun Snapshot<Input, State>.evaluate(): ItemRenderModel {
         return Evaluation(
             output = ItemRenderModel(
                 name = input.itemName,

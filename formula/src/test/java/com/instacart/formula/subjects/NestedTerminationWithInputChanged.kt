@@ -19,7 +19,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
 
     val terminateFormula = TerminateFormula()
     private val passThroughFormula = object : StatelessFormula<Boolean, Unit>() {
-        override fun Snapshot<Boolean, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Boolean, Unit>.evaluate(): Unit {
             if (input) {
                 context.child(terminateFormula)
             }
@@ -35,7 +35,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
         return input
     }
 
-    override fun Snapshot<Boolean, Boolean>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Boolean, Boolean>.evaluate(): Output {
         // We use a callback to check if formula runtime is in the right state.
         context.onEvent<Unit> { none() }
         context.child(passThroughFormula, state)

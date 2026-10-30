@@ -30,7 +30,7 @@ class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Uni
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+    override fun Snapshot<Unit, Int>.evaluate(): Int {
 
         observeStreamEvents()
         return Evaluation(

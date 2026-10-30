@@ -16,7 +16,7 @@ class MixingCallbackUseWithKeyUse {
     class ParentFormula : Formula<Unit, Unit, ParentOutput>() {
         override fun initialState(input: Unit) = Unit
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<ParentOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): ParentOutput {
             return Evaluation(
                 output = ParentOutput(
                     firstCallback = context.onEvent { none() },

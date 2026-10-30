@@ -14,7 +14,7 @@ It is recreated every time `evaluate()` runs — triggered by input, state, or c
 hierarchy state changes.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Input, State>.evaluate(): Output {
     return Evaluation(
         output = CounterOutput(
             count = state.count,

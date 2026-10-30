@@ -41,7 +41,7 @@ class RootFormulaKeyTestSubject(scope: CoroutineScope) {
         // We reset formula whenever key changes.
         override fun key(input: Int): Any? = input
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Int, Int>.evaluate(): Output {
             return Evaluation(
                 output = Output(
                     value = state,

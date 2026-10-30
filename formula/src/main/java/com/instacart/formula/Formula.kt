@@ -35,11 +35,10 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
     ): State = state
 
     /**
-     * The primary purpose of evaluate is to create an [output][Evaluation.output]. A
-     * [snapshot][Snapshot] which contains current [Input], current [State] and
-     * [formula context][FormulaContext] is passed to evaluation and should be used to build
-     * the [Output]. Within this method, we can use Formula context to
-     * [compose][FormulaContext.child] child formulas, create event listeners using
+     * The primary purpose of evaluate is to create an [Output]. A [snapshot][Snapshot] which
+     * contains current [Input], current [State] and [formula context][FormulaContext] is passed to
+     * evaluation and should be used to build the [Output]. Within this method, we can use Formula
+     * context to [compose][FormulaContext.child] child formulas, create event listeners using
      * [FormulaContext.onEvent], and declare asynchronous actions through [ActionBuilder].
      *
      * Whenever [input][Input], [internal state][State] or child output changes, a new [Snapshot]
@@ -50,7 +49,7 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      * All side-effects should happen as part of event listeners, [actions][ActionBuilder], or
      * transition effects.
      */
-    abstract fun Snapshot<Input, State>.evaluate(): Evaluation<Output>
+    abstract fun Snapshot<Input, State>.evaluate(): Output
 
     /**
      * A unique identifier used to distinguish formulas of the same type. This can also

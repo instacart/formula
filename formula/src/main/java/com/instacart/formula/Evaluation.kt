@@ -1,7 +1,8 @@
 package com.instacart.formula
 
 /**
- * The result of [evaluate][Formula.evaluate] function.
+ * Legacy wrapper for formula output. [Formula.evaluate] now returns [Output] directly; this type
+ * remains available for source compatibility.
  *
  * @param Output Usually a data class returned by formula that contains data and event
  * listeners. When it is used to render UI, we call it a render model (Ex: ItemRenderModel).

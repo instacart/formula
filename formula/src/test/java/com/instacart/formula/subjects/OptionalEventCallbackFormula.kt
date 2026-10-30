@@ -20,7 +20,7 @@ class OptionalEventCallbackFormula :
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         val callback = if (state.callbackEnabled) {
             context.onEvent<Int> {
                 transition(state.copy(state = it))

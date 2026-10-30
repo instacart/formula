@@ -62,7 +62,7 @@ class TestFormula<Input, Output> internal constructor(
         )
     }
 
-    override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, State<Output>>.evaluate(): Output {
         runningInstanceManager.onEvaluate(
             uniqueIdentifier = state.uniqueIdentifier,
             input = input,

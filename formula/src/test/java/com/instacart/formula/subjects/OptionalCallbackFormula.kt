@@ -23,7 +23,7 @@ class OptionalCallbackFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         val callback = if (state.callbackEnabled) {
             context.onEventWithExecutionType<Unit>(incrementExecutionType) {
                 transition(state.copy(state = state.state + 1))

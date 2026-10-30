@@ -95,7 +95,7 @@ open class GlobalEffectQueueBenchmark {
 
         override fun initialState(input: Unit) = Unit
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<EffectOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): EffectOutput {
             return Evaluation(
                 output = EffectOutput(
                     triggerEffects = context.onEvent { effectCount: Int ->

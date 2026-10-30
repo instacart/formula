@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 class TerminateFormula : StatelessFormula<Unit, Unit>() {
     var timesTerminateCalled = 0
 
-    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Unit {
         Action.onTerminate().onEvent {
             transition { timesTerminateCalled += 1 }
         }

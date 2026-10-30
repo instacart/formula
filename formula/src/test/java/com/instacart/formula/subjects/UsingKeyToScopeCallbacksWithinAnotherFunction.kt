@@ -18,7 +18,7 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
             return Evaluation(
                 output = TestOutput(
                     first = context.key("first") {

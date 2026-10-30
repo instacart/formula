@@ -16,15 +16,15 @@ abstract class StatelessFormula<in Input, Output> : IFormula<Input, Output> {
     final override val implementation = object : Formula<Input, Unit, Output>() {
         override fun initialState(input: Input) = Unit
 
-        override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Input, Unit>.evaluate(): Output {
             return this@StatelessFormula.run { evaluate() }
         }
     }
 
     /**
-     * The primary purpose of evaluate is to create an [output][Evaluation.output]. A
-     * [snapshot][Snapshot] which contains current [Input] and [Formula context][FormulaContext] is
-     * passed to evaluation and should be used to build the [Output]. Within this method, we can use
+     * The primary purpose of evaluate is to create an [Output]. A [snapshot][Snapshot] which
+     * contains current [Input] and [Formula context][FormulaContext] is passed to evaluation and
+     * should be used to build the [Output]. Within this method, we can use
      * Formula context to [compose][FormulaContext.child] child formulas, create event listeners
      * using [FormulaContext.onEvent], and declare asynchronous actions through [ActionBuilder].
      *
@@ -36,5 +36,5 @@ abstract class StatelessFormula<in Input, Output> : IFormula<Input, Output> {
      * All side-effects should happen as part of event listeners, [actions][ActionBuilder], or
      * transition effects.
      */
-     abstract fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output>
+     abstract fun Snapshot<Input, Unit>.evaluate(): Output
 }

@@ -22,7 +22,7 @@ class IncrementFormula(
         return 0
     }
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, Int>.evaluate(): Output {
         val onIncrement = if (executionType == null) {
             context.callback {
                 transition(state + 1)

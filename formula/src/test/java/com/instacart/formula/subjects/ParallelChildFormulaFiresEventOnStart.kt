@@ -19,7 +19,7 @@ object ParallelChildFormulaFiresEventOnStart {
         val first: IncrementFormula,
         val second: OnStartActionFormula,
     ) : StatelessFormula<Unit, Int>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Int {
             val firstOutput = context.child(first)
             context.child(second, OnStartActionFormula.Input(onAction = firstOutput.onIncrement))
             return Evaluation(firstOutput.value)

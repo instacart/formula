@@ -18,7 +18,7 @@ class ItemPageFormula : StatelessFormula<Unit, ItemPageRenderModel>() {
         "Watermelon"
     )
 
-    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<ItemPageRenderModel> {
+    override fun Snapshot<Unit, Unit>.evaluate(): ItemPageRenderModel {
         val items = items.map {
             context.child(itemFormula, ItemFormula.Input(itemName = it))
         }
