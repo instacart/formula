@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
@@ -74,15 +73,11 @@ class TestFormula<Input, Output> internal constructor(
             }
         )
 
-        terminateInstanceOnFormulaTermination()
-        return Evaluation(output = state.output)
-    }
-
-    private fun ActionBuilder<Input, State<Output>>.terminateInstanceOnFormulaTermination() {
         Action.onTerminate().onEvent {
             runningInstanceManager.onTerminate(state.uniqueIdentifier)
             none()
         }
+        return Evaluation(output = state.output)
     }
 
     /**
