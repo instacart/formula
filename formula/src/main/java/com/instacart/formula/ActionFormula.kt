@@ -18,7 +18,7 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
         override fun key(input: Input): Any = input
 
         private fun ActionBuilder<Input, Output>.observeActionEvents() {
-            val executionType = this@ActionFormula.executionType()
+            val executionType = executionType()
             this@ActionFormula.action(input).onEventWithExecutionType(executionType) {
                 transition(it)
             }
