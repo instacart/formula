@@ -3,7 +3,7 @@ async operations, and responding to lifecycle. Declared within `evaluate()`, the
 manages their lifecycle: starting them when declared, cancelling them when removed.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Input, State>.evaluate(): Output {
     return Evaluation(
         output = ...,
         actions = context.actions {

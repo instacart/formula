@@ -3,7 +3,7 @@ Formula supports composition — a parent can run child formulas within `evaluat
 receiving the child's Output.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Input, State>.evaluate(): Output {
     val listOutput = context.child(itemListFormula, childInput)
     return Evaluation(
         output = Output(list = listOutput)

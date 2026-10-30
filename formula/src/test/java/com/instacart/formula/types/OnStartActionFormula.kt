@@ -17,7 +17,7 @@ class OnStartActionFormula(
         val onAction: () -> Unit,
     )
 
-    override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Input, Unit>.evaluate(): Unit {
         return Evaluation(
             output = Unit,
             actions = context.actions {

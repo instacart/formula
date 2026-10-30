@@ -33,7 +33,7 @@ object ChildMessageTriggersEventTransitionInParent {
 
         override fun initialState(input: Unit): Int = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<RenderModel> {
+        override fun Snapshot<Unit, Int>.evaluate(): RenderModel {
             return Evaluation(
                 output = RenderModel(
                     count = state,

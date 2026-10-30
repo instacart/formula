@@ -30,7 +30,7 @@ class InputChangeWhileFormulaRunningRobot(scope: TestScope, eventCount: Int) {
     ) : StatelessFormula<Int, Int>() {
         private val childFormula: OnStartActionFormula = OnStartActionFormula(eventCount)
 
-        override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Int, Unit>.evaluate(): Int {
             context.child(
                 formula = childFormula,
                 input = OnStartActionFormula.Input(

@@ -13,7 +13,7 @@ class UsingKeyToScopeChildFormula : Formula<Unit, Unit, UsingKeyToScopeChildForm
 
     override fun initialState(input: Unit) = Unit
 
-    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Output {
 
         val child1 = context.key("first") {
             context.child(childFormula, "value 1")

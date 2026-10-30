@@ -1,19 +1,16 @@
 package com.instacart.formula
 
 /**
- * Action builder is used to create a list of deferred [actions][Action] that
- * will be executed by Formula runtime after Formula evaluation finished. To
- * add your actions, use [FormulaContext.actions] within [Formula.evaluate]
- * and call [onEvent].
+ * Action builder registers [actions][Action] during formula evaluation. Use
+ * [FormulaContext.actions] within [Formula.evaluate] and call [onEvent].
  *
  * ```
- * Evaluation(
- *   actions = context.actions {
- *     Action.onInit().onEvent {
- *       transition { analytics.trackPageInitialized() }
- *     }
+ * context.actions {
+ *   Action.onInit().onEvent {
+ *     transition { analytics.trackPageInitialized() }
  *   }
- * )
+ * }
+ * return PageOutput(...)
  * ```
  */
 interface ActionBuilder<out Input, State> {
@@ -27,9 +24,8 @@ interface ActionBuilder<out Input, State> {
     val state: State
 
     /**
-     * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
-     * when it is initially added and cleaned up when it is not returned
-     * as part of [Evaluation].
+     * Registers an [Action] during formula evaluation. The action is initialized when first
+     * registered and cleaned up when it is no longer registered.
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
@@ -40,9 +36,8 @@ interface ActionBuilder<out Input, State> {
     )
 
     /**
-     * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
-     * when it is initially added and cleaned up when it is not returned
-     * as part of [Evaluation].
+     * Registers an [Action] during formula evaluation. The action is initialized when first
+     * registered and cleaned up when it is no longer registered.
      * Example:
      * ```
      * Action.onInit().onEvent {
@@ -57,9 +52,8 @@ interface ActionBuilder<out Input, State> {
     )
 
     /**
-     * Adds an [Action] as part of this [Evaluation]. [Action] will be initialized
-     * when it is initially added and cleaned up when it is not returned
-     * as part of [Evaluation].
+     * Registers an [Action] during formula evaluation. The action is initialized when first
+     * registered and cleaned up when it is no longer registered.
      *
      * Example:
      * ```

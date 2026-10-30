@@ -20,7 +20,7 @@ class StateFlowFormula: Formula<RouteId<*>, String, String>() {
         return ""
     }
 
-    override fun Snapshot<RouteId<*>, String>.evaluate(): Evaluation<String> {
+    override fun Snapshot<RouteId<*>, String>.evaluate(): String {
         return Evaluation(
             output = state,
             actions = context.actions {

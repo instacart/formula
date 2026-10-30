@@ -14,7 +14,7 @@ class OnInitActionFormula(private val eventNumber: Int) : StatelessFormula<OnIni
         val onAction: () -> Unit,
     )
 
-    override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Input, Unit>.evaluate(): Unit {
         return Evaluation(
             output = Unit,
             actions = context.actions {

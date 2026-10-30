@@ -64,7 +64,7 @@ internal class NavigationStoreFormula(
 
     override fun initialState(input: Unit): NavigationState = NavigationState()
 
-    override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
+    override fun Snapshot<Unit, NavigationState>.evaluate(): NavigationState {
         return Evaluation(
             output = state,
             actions = context.actions {

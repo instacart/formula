@@ -68,7 +68,7 @@ class CountingInspectorTest {
     }
 
     class MyFormula : StatelessFormula<Unit, Unit>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Unit {
             return Evaluation(Unit)
         }
     }

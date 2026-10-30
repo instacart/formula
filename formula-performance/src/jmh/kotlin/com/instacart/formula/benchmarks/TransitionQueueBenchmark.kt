@@ -69,7 +69,7 @@ open class TransitionQueueBenchmark {
 
         override fun initialState(input: Int) = 0
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Int, Int>.evaluate(): Int {
             return Evaluation(
                 output = state,
                 actions = context.actions {

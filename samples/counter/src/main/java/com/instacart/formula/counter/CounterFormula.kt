@@ -8,7 +8,7 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<CounterRenderModel> {
+    override fun Snapshot<Unit, Int>.evaluate(): CounterRenderModel {
         return Evaluation(
             output = CounterRenderModel(
                 count = "Count: $state",

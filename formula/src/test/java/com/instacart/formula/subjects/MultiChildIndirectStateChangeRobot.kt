@@ -32,7 +32,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
 
         override fun initialState(input: Input): State = State()
 
-        override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Input, State>.evaluate(): Output {
             return Evaluation(
                 output = Output(
                     value = state.value,
@@ -74,7 +74,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
 
         override fun initialState(input: Unit): State = State()
 
-        override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Unit, State>.evaluate(): Output {
             val next = context.callback {
                 val newState = state.copy(actionId = state.actionId + 1)
                 transition(newState)

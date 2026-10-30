@@ -78,7 +78,7 @@ open class TransitionBenchmark {
 
         override fun initialState(input: Unit) = Unit
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TransitionOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): TransitionOutput {
             val output = context.child(childFormula)
             return Evaluation(output)
         }
@@ -90,7 +90,7 @@ open class TransitionBenchmark {
     private class LeafFormula : Formula<Unit, Int, TransitionOutput>() {
         override fun initialState(input: Unit) = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<TransitionOutput> {
+        override fun Snapshot<Unit, Int>.evaluate(): TransitionOutput {
             return Evaluation(
                 output = TransitionOutput(
                     count = state,

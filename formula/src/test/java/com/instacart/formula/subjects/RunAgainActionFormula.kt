@@ -39,7 +39,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
         return State()
     }
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 actionExecuted = state.actionExecuted,

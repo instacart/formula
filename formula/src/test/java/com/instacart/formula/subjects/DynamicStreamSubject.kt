@@ -32,7 +32,7 @@ class DynamicStreamSubject(scope: CoroutineScope) {
     class TestFormula : StatelessFormula<List<String>, Unit>() {
         val running = mutableListOf<String>()
 
-        override fun Snapshot<List<String>, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<List<String>, Unit>.evaluate(): Unit {
             return Evaluation(
                 output = Unit,
                 actions = context.actions {

@@ -65,7 +65,7 @@ open class CallbackInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<CallbackOutput> {
+        override fun Snapshot<InitInput, Unit>.evaluate(): CallbackOutput {
             // Each callback gets a unique key based on generation
             // When generation changes, all callbacks are NEW (not redeclared)
             val callbacks = List(input.count) { index ->

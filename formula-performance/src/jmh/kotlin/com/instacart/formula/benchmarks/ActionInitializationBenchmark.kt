@@ -66,7 +66,7 @@ open class ActionInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ActionOutput> {
+        override fun Snapshot<InitInput, Unit>.evaluate(): ActionOutput {
             return Evaluation(
                 output = ActionOutput(
                     actionCount = input.count,

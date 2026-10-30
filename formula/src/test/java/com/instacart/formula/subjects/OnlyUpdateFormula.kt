@@ -9,7 +9,7 @@ class OnlyUpdateFormula<Input>(
     private val build: ActionBuilder<*, Unit>.(Input) -> Unit
 ) : StatelessFormula<Input, Unit>() {
 
-    override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Input, Unit>.evaluate(): Unit {
         return Evaluation(
             output = Unit,
             actions = context.actions {

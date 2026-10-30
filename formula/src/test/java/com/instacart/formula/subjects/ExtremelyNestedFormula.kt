@@ -9,7 +9,7 @@ object ExtremelyNestedFormula {
     class TestFormula(private val childFormula: Formula<Unit, *, Int>?) : Formula<Unit, Int, Int>() {
         override fun initialState(input: Unit): Int = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Unit, Int>.evaluate(): Int {
             val childValue = if (childFormula != null) {
                 context.child(childFormula)
             } else {

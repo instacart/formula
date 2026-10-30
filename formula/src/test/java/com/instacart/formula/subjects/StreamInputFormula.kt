@@ -10,7 +10,7 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
 
     private val onDataActionFormula = OnDataActionFormula()
 
-    override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Int, Unit>.evaluate(): Unit {
         context.child(
             formula = onDataActionFormula,
             input = OnDataActionFormula.Input(

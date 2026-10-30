@@ -32,14 +32,13 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * To use it within a [Formula]:
  * ```
- * Evaluation(
- *   actions = context.actions {
- *     action.onEvent { event ->
- *       transition()
- *     }
+ * context.actions {
+ *   action.onEvent { event ->
+ *     transition()
  *   }
- * )
- * ``
+ * }
+ * return output
+ * ```
  *
  * @param Event A type of event used to notify [Formula].
  */
@@ -184,10 +183,10 @@ interface Action<Event> {
     }
 
     /**
-     * Formula runtime calls this method to initialize an [Action] the first time it is returned
-     * by the [evaluation][Evaluation]. We use [key] to identify unique actions and Formula
-     * runtime keeps running the action until:
-     * - This action is not returned in [Evaluation.actions]
+     * Formula runtime initializes an [Action] the first time it is registered during formula
+     * evaluation. We use [key] to identify unique actions and Formula runtime keeps running the
+     * action until:
+     * - This action is no longer registered during evaluation
      * - The [key] of an action changes
      * - Formula is terminated
      *

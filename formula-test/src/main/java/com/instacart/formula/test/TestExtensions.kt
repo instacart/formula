@@ -29,7 +29,7 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
             return state
         }
 
-        override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Input, State>.evaluate(): Output {
             return Evaluation(output = output())
         }
     }

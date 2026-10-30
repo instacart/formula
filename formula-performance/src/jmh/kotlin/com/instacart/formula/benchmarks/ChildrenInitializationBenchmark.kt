@@ -65,7 +65,7 @@ open class ChildrenInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ParentOutput> {
+        override fun Snapshot<InitInput, Unit>.evaluate(): ParentOutput {
             // Each child gets a unique input/key based on generation
             // When generation changes, all children are NEW (not reused)
             val childOutputs = List(input.count) { index ->
@@ -97,7 +97,7 @@ open class ChildrenInitializationBenchmark {
 
         override fun key(input: ChildInput): Any = Pair(input.id, input.generation)
 
-        override fun Snapshot<ChildInput, Unit>.evaluate(): Evaluation<ChildOutput> {
+        override fun Snapshot<ChildInput, Unit>.evaluate(): ChildOutput {
             return Evaluation(
                 output = ChildOutput(
                     id = input.id,

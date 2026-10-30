@@ -23,7 +23,7 @@ drive actions, and determine what the formula does.
 To report events back to the host, call the callbacks defined on input within a transition.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Input, State>.evaluate(): Output {
     return Evaluation(
         output = ...,
         actions = context.actions {

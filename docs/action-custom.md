@@ -37,7 +37,7 @@ class MyFormula(
     private val getNetworkStatusAction: GetNetworkStatusAction,
 ): Formula<Input, State, Output> {
 
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, State>.evaluate(): Output {
         return Evaluation(
             actions = context.actions {
                 getNetworkStatusAction.onEvent { status ->

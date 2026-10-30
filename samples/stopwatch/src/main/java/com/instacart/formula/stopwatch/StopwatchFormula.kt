@@ -30,7 +30,7 @@ class StopwatchFormula(
         currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
+    override fun Snapshot<Unit, State>.evaluate(): StopwatchRenderModel {
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.elapsedTimeMillis),

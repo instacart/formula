@@ -28,7 +28,7 @@ object ChildActionFiresParentEventOnStart {
             runChild = runChildOnStart,
         )
 
-        override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Unit, State>.evaluate(): Output {
             if (state.runChild) {
                 val listener = context.onEvent<Int> {
                     val newState = state.copy(value = state.value + it)
@@ -50,7 +50,7 @@ object ChildActionFiresParentEventOnStart {
     }
 
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
-        override fun Snapshot<Listener<Int>, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Listener<Int>, Unit>.evaluate(): Unit {
             return Evaluation(
                 output = Unit,
                 actions = context.actions {

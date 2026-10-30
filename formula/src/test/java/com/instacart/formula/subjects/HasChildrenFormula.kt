@@ -45,7 +45,7 @@ class HasChildrenFormula<ChildInput, ChildOutput>(
 
     override fun initialState(input: Int): Unit = Unit
 
-    override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Output<ChildOutput>> {
+    override fun Snapshot<Int, Unit>.evaluate(): Output<ChildOutput> {
         val childOutputs = (0 until childCount).mapNotNull { index ->
             context.key(index) {
                 val childParams = ChildParams(index = index, run = input)

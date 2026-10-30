@@ -12,7 +12,7 @@ class CounterFormula : Formula<Unit, CounterFormula.State, CounterOutput>() {
 
     override fun initialState(input: Unit) = State(count = 0)
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<CounterOutput> {
+    override fun Snapshot<Unit, State>.evaluate(): CounterOutput {
         return Evaluation(
             output = CounterOutput(
                 count = state.count,

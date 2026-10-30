@@ -11,7 +11,7 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output>() {
 
     override fun initialState(input: Unit) = Unit
 
-    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Output {
 
         val callback = context.key("first level") {
             context.key("second level") {

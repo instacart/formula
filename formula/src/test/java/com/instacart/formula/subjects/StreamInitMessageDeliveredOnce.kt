@@ -13,7 +13,7 @@ object StreamInitMessageDeliveredOnce {
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var timesInitializedCalled = 0
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Unit {
 
             return Evaluation(
                 output = Unit,

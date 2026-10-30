@@ -15,7 +15,7 @@ class DelayFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Int> {
+    override fun Snapshot<Unit, State>.evaluate(): Int {
         return Evaluation(
             output = state.count,
             actions = context.actions {

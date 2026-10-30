@@ -9,7 +9,7 @@ import org.junit.Test
 class RxJavaRuntimeTest {
     @Test fun `toFlow without an input`() {
         val formula = object : StatelessFormula<Unit, String>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<String> {
+            override fun Snapshot<Unit, Unit>.evaluate(): String {
                 return Evaluation(
                     output = "value",
                 )
@@ -23,7 +23,7 @@ class RxJavaRuntimeTest {
 
     @Test fun `toFlow with a single input`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
+            override fun Snapshot<String, Unit>.evaluate(): String {
                 return Evaluation(
                     output = input,
                 )
@@ -38,7 +38,7 @@ class RxJavaRuntimeTest {
     @Test fun `toFlow with input observable`() {
         val relay = PublishRelay.create<String>()
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
+            override fun Snapshot<String, Unit>.evaluate(): String {
                 return Evaluation(
                     output = input,
                 )

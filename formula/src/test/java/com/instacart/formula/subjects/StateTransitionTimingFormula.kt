@@ -23,7 +23,7 @@ class StateTransitionTimingFormula
 
     override fun initialState(input: Unit): List<State> = emptyList()
 
-    override fun Snapshot<Unit, List<State>>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, List<State>>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 events = state,

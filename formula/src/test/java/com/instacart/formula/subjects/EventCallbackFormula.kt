@@ -16,7 +16,7 @@ class EventCallbackFormula(
 
     override fun initialState(input: Unit): String = ""
 
-    override fun Snapshot<Unit, String>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, String>.evaluate(): Output {
         val changeState: (String) -> Unit = if (executionType == null) {
             context.onEvent { newState ->
                 transition(newState)

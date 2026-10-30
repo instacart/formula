@@ -22,7 +22,7 @@ class NestedCallbackCallRobot(scope: CoroutineScope) {
 
         override fun initialState(input: Unit): Int = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Unit, Int>.evaluate(): Output {
             val next = context.callback {
                 transition(state + 1)
             }

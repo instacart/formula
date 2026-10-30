@@ -19,7 +19,7 @@ class TaskListFormula(
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
     }
 
-    override fun Snapshot<Input, TaskListState>.evaluate(): Evaluation<TaskListRenderModel> {
+    override fun Snapshot<Input, TaskListState>.evaluate(): TaskListRenderModel {
         val items = taskList(state).map { task ->
             context.key(task.id) {
                 TaskItemRenderModel(

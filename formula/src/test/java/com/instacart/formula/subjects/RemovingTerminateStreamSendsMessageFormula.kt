@@ -11,7 +11,7 @@ class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerm
         val onTerminate: (() -> Unit)? = null
     )
 
-    override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Input, Unit>.evaluate(): Unit {
         return Evaluation(
             output = Unit,
             actions = context.actions {
