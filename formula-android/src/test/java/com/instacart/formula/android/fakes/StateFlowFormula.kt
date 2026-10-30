@@ -1,7 +1,6 @@
 package com.instacart.formula.android.fakes
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.RouteId

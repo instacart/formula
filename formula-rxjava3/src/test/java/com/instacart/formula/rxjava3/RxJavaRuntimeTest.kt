@@ -1,6 +1,5 @@
 package com.instacart.formula.rxjava3
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.jakewharton.rxrelay3.PublishRelay

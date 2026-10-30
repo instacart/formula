@@ -3,7 +3,6 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 

@@ -2,7 +2,6 @@ package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
 import com.instacart.formula.Cancelable
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver

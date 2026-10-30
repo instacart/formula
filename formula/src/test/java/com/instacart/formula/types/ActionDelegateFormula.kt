@@ -1,7 +1,6 @@
 package com.instacart.formula.types
 
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 

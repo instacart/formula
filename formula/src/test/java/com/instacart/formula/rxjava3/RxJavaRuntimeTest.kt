@@ -3,7 +3,6 @@ package com.instacart.formula.rxjava3
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.Snapshot
