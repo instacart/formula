@@ -29,7 +29,7 @@ class StartStopFormula : Formula<Unit, State, Output>() {
     override fun initialState(input: Unit): State = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
-        registerActions()
+        listenForIncrementEvents()
         return Evaluation(
             output = Output(
                 state = state.count,
@@ -40,7 +40,7 @@ class StartStopFormula : Formula<Unit, State, Output>() {
         )
     }
 
-    private fun ActionBuilder<Unit, State>.registerActions() {
+    private fun ActionBuilder<Unit, State>.listenForIncrementEvents() {
         if (state.listenForEvents) {
             incrementEvents.action().onEvent {
                 transition(state.copy(count = state.count + 1))

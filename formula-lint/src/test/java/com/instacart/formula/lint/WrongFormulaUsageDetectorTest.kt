@@ -161,7 +161,7 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            |        fun ActionBuilder<Unit, Unit>.registerActions() {
+            |        fun ActionBuilder<Unit, Unit>.registerStreamAction() {
             |            Stream.onInit().onEvent {
             |                val callback = context.callback {
             |                    transition {}
@@ -169,7 +169,7 @@ class WrongFormulaUsageDetectorTest {
             |                none()
             |            }
             |        }
-            |        registerActions()
+            |        registerStreamAction()
             |        return Evaluation(output = Unit)
             |    }
             |}""".trimMargin()
@@ -202,13 +202,13 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            |        fun ActionBuilder<Unit, Unit>.registerActions() {
+            |        fun ActionBuilder<Unit, Unit>.registerDelegatedAction() {
             |            Stream.onInit().onEvent {
             |                DelegatedCall().illegalBehavior(context)
             |                none()
             |            }
             |        }
-            |        registerActions()
+            |        registerDelegatedAction()
             |        return Evaluation(output = Unit)
             |    }
             |}""".trimMargin()

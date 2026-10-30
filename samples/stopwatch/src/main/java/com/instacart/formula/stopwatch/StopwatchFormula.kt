@@ -32,7 +32,7 @@ class StopwatchFormula(
     )
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
-        registerTickerAction()
+        updateElapsedTime()
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.elapsedTimeMillis),
@@ -42,7 +42,7 @@ class StopwatchFormula(
         )
     }
 
-    private fun ActionBuilder<Unit, State>.registerTickerAction() {
+    private fun ActionBuilder<Unit, State>.updateElapsedTime() {
         if (state.isRunning) {
             Action.fromFlow {
                 flow {

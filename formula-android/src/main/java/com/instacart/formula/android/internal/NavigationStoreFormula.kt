@@ -66,15 +66,18 @@ internal class NavigationStoreFormula(
     override fun initialState(input: Unit): NavigationState = NavigationState()
 
     override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
-        registerActions()
+        observeStateChanges()
+        runFeatures()
         return Evaluation(output = state)
     }
 
-    private fun ActionBuilder<Unit, NavigationState>.registerActions() {
+    private fun ActionBuilder<Unit, NavigationState>.observeStateChanges() {
         Action.fromFlow { stateChanges }.onEvent { update ->
             delegate(update)
         }
+    }
 
+    private fun ActionBuilder<Unit, NavigationState>.runFeatures() {
         state.features.entries.forEach { entry ->
             val event = entry.value
             if (event is FeatureEvent.Init) {

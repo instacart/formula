@@ -10,13 +10,13 @@ class OnlyUpdateFormula<Input>(
 ) : StatelessFormula<Input, Unit>() {
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        registerActions()
+        buildAction()
         return Evaluation(
             output = Unit,
         )
     }
 
-    private fun ActionBuilder<Input, Unit>.registerActions() {
+    private fun ActionBuilder<Input, Unit>.buildAction() {
         build(this, input)
     }
 }

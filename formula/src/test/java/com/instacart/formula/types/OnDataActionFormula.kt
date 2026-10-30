@@ -21,13 +21,13 @@ class OnDataActionFormula(
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        registerActions()
+        forwardDataToInput()
         return Evaluation(
             output = Unit,
         )
     }
 
-    private fun ActionBuilder<Input, Unit>.registerActions() {
+    private fun ActionBuilder<Input, Unit>.forwardDataToInput() {
         Action.onData(input.data).onEventWithExecutionType(executionType) {
             transition { input.onData(it) }
         }

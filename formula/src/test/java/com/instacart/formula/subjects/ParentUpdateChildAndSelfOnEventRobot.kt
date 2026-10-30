@@ -36,7 +36,7 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
 
         override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
             val incrementOutput = context.child(incrementFormula)
-            registerActions(incrementOutput)
+            triggerChildAndUpdateParent(incrementOutput)
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -49,7 +49,7 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
             )
         }
 
-        private fun ActionBuilder<Unit, State>.registerActions(incrementOutput: IncrementFormula.Output) {
+        private fun ActionBuilder<Unit, State>.triggerChildAndUpdateParent(incrementOutput: IncrementFormula.Output) {
             if (state.actionId > 0) {
                 RxAction.fromObservable(state.actionId) {
                     // Call child

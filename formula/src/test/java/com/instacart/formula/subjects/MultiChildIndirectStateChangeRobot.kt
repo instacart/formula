@@ -34,7 +34,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
         override fun initialState(input: Input): State = State()
 
         override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-            registerActions()
+            sendEventsToParent()
             return Evaluation(
                 output = Output(
                     value = state.value,
@@ -46,7 +46,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
             )
         }
 
-        private fun ActionBuilder<Input, State>.registerActions() {
+        private fun ActionBuilder<Input, State>.sendEventsToParent() {
             if (state.actionId > 0) {
                 RxAction.fromObservable(state.actionId) {
                     input.preAction()
@@ -94,7 +94,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                 )
             }
 
-            registerActions(secondChild)
+            triggerChildAndUpdateParent(secondChild)
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -108,7 +108,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
             )
         }
 
-        private fun ActionBuilder<Unit, State>.registerActions(secondChild: Child.Output) {
+        private fun ActionBuilder<Unit, State>.triggerChildAndUpdateParent(secondChild: Child.Output) {
             if (state.actionId > 0) {
                 RxAction.fromObservable(state.actionId) {
                     // Call child

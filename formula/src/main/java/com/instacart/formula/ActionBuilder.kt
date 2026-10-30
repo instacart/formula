@@ -6,11 +6,11 @@ package com.instacart.formula
  *
  * ```kotlin
  * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
- *   registerActions()
+ *   trackPageInitialization()
  *   return Evaluation(output = PageOutput(...))
  * }
  *
- * private fun ActionBuilder<Input, State>.registerActions() {
+ * private fun ActionBuilder<Input, State>.trackPageInitialization() {
  *   Action.onInit().onEvent {
  *     transition { analytics.trackPageInitialized() }
  *   }

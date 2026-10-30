@@ -68,7 +68,7 @@ open class ActionInitializationBenchmark {
         override fun initialState(input: InitInput) = Unit
 
         override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ActionOutput> {
-            registerActions()
+            startGenerationActions()
             return Evaluation(
                 output = ActionOutput(
                     actionCount = input.count,
@@ -77,7 +77,7 @@ open class ActionInitializationBenchmark {
             )
         }
 
-        private fun ActionBuilder<InitInput, Unit>.registerActions() {
+        private fun ActionBuilder<InitInput, Unit>.startGenerationActions() {
             // Each action gets a unique key based on generation
             // When generation changes, all actions are NEW (not redeclared)
             repeat(input.count) { index ->

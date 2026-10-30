@@ -17,13 +17,13 @@ class DelayFormula(
     override fun initialState(input: Unit) = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Int> {
-        registerActions()
+        emitTimerTicks()
         return Evaluation(
             output = state.count,
         )
     }
 
-    private fun ActionBuilder<Unit, State>.registerActions() {
+    private fun ActionBuilder<Unit, State>.emitTimerTicks() {
         Action.fromFlow {
             flow {
                 delay(delay)

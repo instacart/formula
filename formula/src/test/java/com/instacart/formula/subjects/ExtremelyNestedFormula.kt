@@ -17,13 +17,13 @@ object ExtremelyNestedFormula {
                 0
             }
 
-            registerActions()
+            incrementOnInitialization()
             return Evaluation(
                 output = state + childValue,
             )
         }
 
-        private fun ActionBuilder<Unit, Int>.registerActions() {
+        private fun ActionBuilder<Unit, Int>.incrementOnInitialization() {
             Action.onInit().onEvent {
                 transition(state + 1)
             }

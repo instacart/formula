@@ -67,7 +67,7 @@ open class ActionCountBenchmark {
         override fun initialState(input: Int) = 0
 
         override fun Snapshot<Int, Int>.evaluate(): Evaluation<ActionOutput> {
-            registerActions()
+            keepNoopActionsActive()
             return Evaluation(
                 output = ActionOutput(
                     count = state,
@@ -79,7 +79,7 @@ open class ActionCountBenchmark {
             )
         }
 
-        private fun ActionBuilder<Int, Int>.registerActions() {
+        private fun ActionBuilder<Int, Int>.keepNoopActionsActive() {
             // Create N registered actions (no-op actions for overhead measurement)
             repeat(input) { index ->
                 Action.onData(index).onEvent { event ->

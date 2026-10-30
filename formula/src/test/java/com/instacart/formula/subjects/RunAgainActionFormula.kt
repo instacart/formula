@@ -41,7 +41,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
     }
 
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
-        registerActions()
+        runActionAndTransition()
         return Evaluation(
             output = Output(
                 actionExecuted = state.actionExecuted,
@@ -74,7 +74,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
         )
     }
 
-    private fun ActionBuilder<Unit, State>.registerActions() {
+    private fun ActionBuilder<Unit, State>.runActionAndTransition() {
         state.action.onEvent {
             val newState = state.copy(
                 actionExecuted = state.actionExecuted.inc()

@@ -95,13 +95,13 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                registerActions()
+                changeActionKeyDuringValidation()
                 return Evaluation(
                     output = 0,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.changeActionKeyDuringValidation() {
                 if (unstableActionKey.getAndIncrement() == 1) {
                     val action = object : Action<Unit> {
                         override fun start(

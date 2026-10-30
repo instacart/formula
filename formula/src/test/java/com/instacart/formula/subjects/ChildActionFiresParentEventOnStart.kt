@@ -52,13 +52,13 @@ object ChildActionFiresParentEventOnStart {
 
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
         override fun Snapshot<Listener<Int>, Unit>.evaluate(): Evaluation<Unit> {
-            registerActions()
+            forwardValuesToParent()
             return Evaluation(
                 output = Unit,
             )
         }
 
-        private fun ActionBuilder<Listener<Int>, Unit>.registerActions() {
+        private fun ActionBuilder<Listener<Int>, Unit>.forwardValuesToParent() {
             RxAction.fromObservable {
                 for (value in values) {
                     input(value)

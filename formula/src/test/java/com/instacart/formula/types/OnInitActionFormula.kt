@@ -16,13 +16,13 @@ class OnInitActionFormula(private val eventNumber: Int) : StatelessFormula<OnIni
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        registerActions()
+        runOnInitAction()
         return Evaluation(
             output = Unit,
         )
     }
 
-    private fun ActionBuilder<Input, Unit>.registerActions() {
+    private fun ActionBuilder<Input, Unit>.runOnInitAction() {
         Action.onInit().onEvent {
             transition {
                 (0 until eventNumber).forEach {

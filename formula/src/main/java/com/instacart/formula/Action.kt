@@ -34,11 +34,11 @@ import kotlin.coroutines.EmptyCoroutineContext
  * from `evaluate()`:
  * ```kotlin
  * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
- *   registerAction()
+ *   observeActionEvents()
  *   return Evaluation(output = output)
  * }
  *
- * private fun ActionBuilder<Input, State>.registerAction() {
+ * private fun ActionBuilder<Input, State>.observeActionEvents() {
  *   action.onEvent { event -> transition() }
  * }
  * ```
