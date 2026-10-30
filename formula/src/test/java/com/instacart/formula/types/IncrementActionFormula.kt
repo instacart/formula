@@ -16,13 +16,13 @@ class IncrementActionFormula(
     }
 
     override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-        registerActions()
+        incrementOnAction()
         return Evaluation(
             output = state,
         )
     }
 
-    private fun ActionBuilder<Unit, Int>.registerActions() {
+    private fun ActionBuilder<Unit, Int>.incrementOnAction() {
         incrementRelay.action().onEventWithExecutionType(executionType) {
             transition(state + 1)
         }

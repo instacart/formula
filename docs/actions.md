@@ -4,11 +4,11 @@ manages their lifecycle: starting them when declared, cancelling them when remov
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    registerActions()
+    observeUserChanges()
     return Evaluation(output = ...)
 }
 
-private fun ActionBuilder<Input, State>.registerActions() {
+private fun ActionBuilder<Input, State>.observeUserChanges() {
     Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
         transition(state.copy(user = user))
     }

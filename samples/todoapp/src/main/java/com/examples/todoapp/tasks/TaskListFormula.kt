@@ -45,7 +45,7 @@ class TaskListFormula(
             }
         }
 
-        registerTasksAction()
+        observeTasks()
         return Evaluation(
             output = TaskListRenderModel(
                 items = items,
@@ -54,7 +54,7 @@ class TaskListFormula(
         )
     }
 
-    private fun ActionBuilder<Input, TaskListState>.registerTasksAction() {
+    private fun ActionBuilder<Input, TaskListState>.observeTasks() {
         Action.fromFlow { repo.tasks() }.onEvent {
             transition(state.copy(taskState = it))
         }

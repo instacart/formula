@@ -19,13 +19,13 @@ class OnStartActionFormula(
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        registerActions()
+        emitEventsOnStart()
         return Evaluation(
             output = Unit,
         )
     }
 
-    private fun ActionBuilder<Input, Unit>.registerActions() {
+    private fun ActionBuilder<Input, Unit>.emitEventsOnStart() {
         RxAction.fromObservable {
             val events = 0 until eventNumber
             for (event in events) {

@@ -74,11 +74,11 @@ class TestFormula<Input, Output> internal constructor(
             }
         )
 
-        registerTerminationAction()
+        terminateInstanceOnFormulaTermination()
         return Evaluation(output = state.output)
     }
 
-    private fun ActionBuilder<Input, State<Output>>.registerTerminationAction() {
+    private fun ActionBuilder<Input, State<Output>>.terminateInstanceOnFormulaTermination() {
         Action.onTerminate().onEvent {
             runningInstanceManager.onTerminate(state.uniqueIdentifier)
             none()

@@ -11,13 +11,13 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
         override fun initialState(input: Input) = initialValue(input)
 
         override fun Snapshot<Input, Output>.evaluate(): Evaluation<Output> {
-            registerAction()
+            observeActionEvents()
             return Evaluation(output = state)
         }
 
         override fun key(input: Input): Any = input
 
-        private fun ActionBuilder<Input, Output>.registerAction() {
+        private fun ActionBuilder<Input, Output>.observeActionEvents() {
             val executionType = this@ActionFormula.executionType()
             this@ActionFormula.action(input).onEventWithExecutionType(executionType) {
                 transition(it)

@@ -32,7 +32,7 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
     }
 
     override fun Snapshot<String, State>.evaluate(): Evaluation<Output> {
-        registerActions()
+        deliverPendingEventAfterDelay()
         return Evaluation(
             output = Output(
                 sleepEvents = state.sleepEvents,
@@ -47,7 +47,7 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
         )
     }
 
-    private fun ActionBuilder<String, State>.registerActions() {
+    private fun ActionBuilder<String, State>.deliverPendingEventAfterDelay() {
         state.pendingEvent?.let {
             Action.onData(it).onEvent { event ->
                 // Using sleep to control multi-threaded events

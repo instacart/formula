@@ -71,11 +71,11 @@ open class TransitionQueueBenchmark {
         override fun initialState(input: Int) = 0
 
         override fun Snapshot<Int, Int>.evaluate(): Evaluation<Int> {
-            registerActions()
+            emitMultipleEventsOnStart()
             return Evaluation(output = state)
         }
 
-        private fun ActionBuilder<Int, Int>.registerActions() {
+        private fun ActionBuilder<Int, Int>.emitMultipleEventsOnStart() {
             if (input > 0) {
                 // Action that emits multiple events on start
                 MultiEmitAction(input).onEvent { event ->

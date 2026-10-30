@@ -32,7 +32,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
     override fun initialState(input: Input): State = State()
 
     override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-        registerActions()
+        deliverPendingInputEvent()
         return Evaluation(
             output = Output(
                 triggerEvent = context.onEvent {
@@ -45,7 +45,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
         )
     }
 
-    private fun ActionBuilder<Input, State>.registerActions() {
+    private fun ActionBuilder<Input, State>.deliverPendingInputEvent() {
         // Formula will run `Stream.onData()` before `input.onEvent` is called above.
         val pending = state.pending
         if (pending) {

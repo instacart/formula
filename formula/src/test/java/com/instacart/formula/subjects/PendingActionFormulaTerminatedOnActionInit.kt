@@ -45,13 +45,13 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-            registerActions()
+            terminateOnActionStart()
             return Evaluation(
                 output = state,
             )
         }
 
-        private fun ActionBuilder<Unit, Int>.registerActions() {
+        private fun ActionBuilder<Unit, Int>.terminateOnActionStart() {
             RxAction.fromObservable {
                 terminateAction()
                 Observable.empty()

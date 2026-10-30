@@ -16,13 +16,13 @@ object StreamInitMessageDeliveredOnce {
 
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
 
-            registerActions()
+            countInitializations()
             return Evaluation(
                 output = Unit,
             )
         }
 
-        private fun ActionBuilder<Unit, Unit>.registerActions() {
+        private fun ActionBuilder<Unit, Unit>.countInitializations() {
             Action.onInit().onEvent {
                 transition { timesInitializedCalled += 1 }
             }

@@ -35,7 +35,7 @@ object ChildMessageTriggersEventTransitionInParent {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<RenderModel> {
-            registerActions()
+            observeServiceEvents()
             return Evaluation(
                 output = RenderModel(
                     count = state,
@@ -44,7 +44,7 @@ object ChildMessageTriggersEventTransitionInParent {
             )
         }
 
-        private fun ActionBuilder<Unit, Int>.registerActions() {
+        private fun ActionBuilder<Unit, Int>.observeServiceEvents() {
             RxAction
                 .fromObservable { service.serviceEvents() }
                 .onEvent {

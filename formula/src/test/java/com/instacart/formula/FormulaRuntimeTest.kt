@@ -229,13 +229,13 @@ class FormulaRuntimeTest {
             }
 
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                registerActions()
+                notifyOnTerminationAndRestart()
                 return Evaluation(
                     output = input,
                 )
             }
 
-            private fun ActionBuilder<Int, Unit>.registerActions() {
+            private fun ActionBuilder<Int, Unit>.notifyOnTerminationAndRestart() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -269,13 +269,13 @@ class FormulaRuntimeTest {
         var observer: TestFormulaObserver<Int, *, *>? = null
         val root = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                registerActions()
+                disposeOnInitialization()
                 return Evaluation(
                     output = input,
                 )
             }
 
-            private fun ActionBuilder<Int, Unit>.registerActions() {
+            private fun ActionBuilder<Int, Unit>.disposeOnInitialization() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -308,13 +308,13 @@ class FormulaRuntimeTest {
         var observer: TestFormulaObserver<Int, *, *>? = null
         val root = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                registerActions()
+                disposeOnEffect()
                 return Evaluation(
                     output = input,
                 )
             }
 
-            private fun ActionBuilder<Int, Unit>.registerActions() {
+            private fun ActionBuilder<Int, Unit>.disposeOnEffect() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -698,7 +698,7 @@ class FormulaRuntimeTest {
                 } else {
                     context.callback { none() }
                 }
-                registerActions()
+                disableListenerBeforeProcessing()
                 return Evaluation(
                     output = Output(
                         value = state.value,
@@ -707,7 +707,7 @@ class FormulaRuntimeTest {
                 )
             }
 
-            private fun ActionBuilder<Unit, State>.registerActions() {
+            private fun ActionBuilder<Unit, State>.disableListenerBeforeProcessing() {
                 disableListenerRelay.action().onEvent {
                     val listener = state.copy(listenerEnabled = false)
                     transition(listener)
@@ -1295,13 +1295,13 @@ class FormulaRuntimeTest {
                 override fun initialState(input: Int): Unit = Unit
 
                 override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                    registerActions()
+                    throwDuringActionInitialization()
                     return Evaluation(
                         output = input,
                     )
                 }
 
-                private fun ActionBuilder<Int, Unit>.registerActions() {
+                private fun ActionBuilder<Int, Unit>.throwDuringActionInitialization() {
                     RxAction.fromObservable<Unit> {
                         throw RuntimeException("Test exception")
                     }.onEvent {
@@ -1339,13 +1339,13 @@ class FormulaRuntimeTest {
                 override fun initialState(input: Int): Unit = Unit
 
                 override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                    registerActions()
+                    throwDuringActionTermination()
                     return Evaluation(
                         output = input,
                     )
                 }
 
-                private fun ActionBuilder<Int, Unit>.registerActions() {
+                private fun ActionBuilder<Int, Unit>.throwDuringActionTermination() {
                     if (input == 0) {
                         action.onEvent { none() }
                     }
@@ -1373,13 +1373,13 @@ class FormulaRuntimeTest {
                 override fun initialState(input: Unit): Int = 0
 
                 override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-                    registerActions()
+                    throwDuringEffect()
                     return Evaluation(
                         output = state,
                     )
                 }
 
-                private fun ActionBuilder<Unit, Int>.registerActions() {
+                private fun ActionBuilder<Unit, Int>.throwDuringEffect() {
                     Action.fromFlow { events }.onEvent {
                         transition(it) {
                             throw IllegalStateException("Test exception $it")
@@ -1505,13 +1505,13 @@ class FormulaRuntimeTest {
         val relay = FlowRelay()
         val childFormula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                notifyParentOnTermination()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.notifyParentOnTermination() {
                 Action.onTerminate().onEvent {
                     relay.triggerEvent()
                     none()
@@ -1526,13 +1526,13 @@ class FormulaRuntimeTest {
                 if (input) {
                     context.child(childFormula)
                 }
-                registerActions()
+                incrementOnParentAction()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Boolean, Int>.registerActions() {
+            private fun ActionBuilder<Boolean, Int>.incrementOnParentAction() {
                 relay.action().onEvent {
                     transition(state + 1)
                 }
@@ -1555,13 +1555,13 @@ class FormulaRuntimeTest {
 
         val childFormula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                terminateParentOnChildTermination()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.terminateParentOnChildTermination() {
                 Action.onTerminate().onEvent {
                     terminate()
                     none()
@@ -1633,13 +1633,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Boolean): Int = 0
 
             override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
-                registerActions()
+                emitFromTerminatedAction()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Boolean, Int>.registerActions() {
+            private fun ActionBuilder<Boolean, Int>.emitFromTerminatedAction() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun start(
@@ -1676,13 +1676,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Boolean): Int = 0
 
             override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
-                registerActions()
+                transitionOnActionTermination()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Boolean, Int>.registerActions() {
+            private fun ActionBuilder<Boolean, Int>.transitionOnActionTermination() {
                 newRelay.action().onEvent {
                     transition(state + 1)
                 }
@@ -1723,13 +1723,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Boolean): Int = 0
 
             override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
-                registerActions()
+                terminateDuringActionTermination()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Boolean, Int>.registerActions() {
+            private fun ActionBuilder<Boolean, Int>.terminateDuringActionTermination() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun start(
@@ -1766,13 +1766,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Boolean): Int = 0
 
             override fun Snapshot<Boolean, Int>.evaluate(): Evaluation<Int> {
-                registerActions()
+                emitAfterFullTermination()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Boolean, Int>.registerActions() {
+            private fun ActionBuilder<Boolean, Int>.emitAfterFullTermination() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun key(): Any? = null
@@ -1820,13 +1820,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Unit): Boolean = true
 
             override fun Snapshot<Unit, Boolean>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                emitOnInitBeforeRemoval()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Boolean>.registerActions() {
+            private fun ActionBuilder<Unit, Boolean>.emitOnInitBeforeRemoval() {
                 Action.onInit().onEvent {
                     firstActionEventCount += 1
 
@@ -1954,13 +1954,13 @@ class FormulaRuntimeTest {
         val childFormula =
             object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
                 override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Evaluation<Int> {
-                    registerActions()
+                    throwForChildAction()
                     return Evaluation(
                         output = input.index,
                     )
                 }
 
-                private fun ActionBuilder<HasChildrenFormula.ChildParamsInput<*>, Unit>.registerActions() {
+                private fun ActionBuilder<HasChildrenFormula.ChildParamsInput<*>, Unit>.throwForChildAction() {
                     Action.onInit().onEvent {
                         if (input.index == 1) throw RuntimeException()
                         transition(Unit) {}
@@ -2238,13 +2238,13 @@ class FormulaRuntimeTest {
 
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                dispatchOnMain()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.dispatchOnMain() {
                 Action.onInit().onEvent {
                     transition(Effect.Main) {
                         // main-effect
@@ -2265,13 +2265,13 @@ class FormulaRuntimeTest {
 
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                dispatchOnBackground()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.dispatchOnBackground() {
                 Action.onInit().onEvent {
                     transition(Effect.Background) {
                         // main-effect
@@ -2292,13 +2292,13 @@ class FormulaRuntimeTest {
 
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-                registerActions()
+                dispatchCombinedTransition()
                 return Evaluation(
                     output = Unit,
                 )
             }
 
-            private fun ActionBuilder<Unit, Unit>.registerActions() {
+            private fun ActionBuilder<Unit, Unit>.dispatchCombinedTransition() {
                 Action.onInit().onEvent {
                     // Combined effect
                     val mainTransition = transition(Effect.Main) {
@@ -2384,13 +2384,13 @@ class FormulaRuntimeTest {
             override fun initialState(input: Unit): Int = 0
 
             override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-                registerActions()
+                runBackgroundAction()
                 return Evaluation(
                     output = state,
                 )
             }
 
-            private fun ActionBuilder<Unit, Int>.registerActions() {
+            private fun ActionBuilder<Unit, Int>.runBackgroundAction() {
                 relay.action().onEventWithExecutionType(Transition.Background) {
                     transition(state + 1)
                 }
@@ -2506,13 +2506,13 @@ class FormulaRuntimeTest {
                         context.child(childFormula, input)
                     }
                 }
-                registerActions()
+                batchStateUpdates()
                 return Evaluation(
                     output = state + sum,
                 )
             }
 
-            private fun ActionBuilder<Unit, Int>.registerActions() {
+            private fun ActionBuilder<Unit, Int>.batchStateUpdates() {
                 sleepRelay.action().onEvent {
                     Thread.sleep(500)
                     transition(state + 1)
