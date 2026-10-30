@@ -44,6 +44,13 @@ interface ActionBuilder<out Input, State> {
      * Adds an [Action] during formula evaluation. The runtime initializes it when first added and
      * cleans it up when it is no longer declared.
      *
+     * Example:
+     * ```kotlin
+     * Action.onInit().onEvent {
+     *   transition { /* side effect */ }
+     * }
+     * ```
+     *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
     fun <Event> Action<Event>.onEvent(
@@ -53,6 +60,13 @@ interface ActionBuilder<out Input, State> {
     /**
      * Adds an [Action] during formula evaluation. The runtime initializes it when first added and
      * cleans it up when it is no longer declared.
+     *
+     * Example:
+     * ```kotlin
+     * Action.onInit().onEventWithExecutionType(Transition.Background) {
+     *   transition { /* side effect */ }
+     * }
+     * ```
      *
      * @param executionType Defines the execution model for this event such as threading and timing.
      * @param transition A function that is invoked when [Action] emits an [Event].
