@@ -1,5 +1,6 @@
 package com.instacart.formula.subjects
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -33,6 +34,20 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
         override fun initialState(input: Input): State = State()
 
         override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+            fun ActionBuilder<Input, State>.registerActions() {
+                if (state.actionId > 0) {
+                    RxAction.fromObservable(state.actionId) {
+                        input.preAction()
+
+                        // Increment two times
+                        Observable.just(1, 1)
+                    }.onEvent {
+                        val newState = state.copy(value = state.value + it)
+                        transition(newState)
+                    }
+                }
+            }
+            registerActions()
             return Evaluation(
                 output = Output(
                     value = state.value,
@@ -41,19 +56,6 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                         transition(newState)
                     }
                 ),
-                actions = context.actions {
-                    if (state.actionId > 0) {
-                        RxAction.fromObservable(state.actionId) {
-                            input.preAction()
-
-                            // Increment two times
-                            Observable.just(1, 1)
-                        }.onEvent {
-                            val newState = state.copy(value = state.value + it)
-                            transition(newState)
-                        }
-                    }
-                }
             )
         }
     }
@@ -91,6 +93,21 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                 )
             }
 
+            fun ActionBuilder<Unit, State>.registerActions() {
+                if (state.actionId > 0) {
+                    RxAction.fromObservable(state.actionId) {
+                        // Call child
+                        secondChild.onChildAction()
+
+                        // Emit events
+                        Observable.just(1, 1, 1)
+                    }.onEvent {
+                        val newState = state.copy(value = state.value + it)
+                        transition(newState)
+                    }
+                }
+            }
+            registerActions()
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -101,20 +118,6 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                         }
                     }
                 ),
-                actions = context.actions {
-                    if (state.actionId > 0) {
-                        RxAction.fromObservable(state.actionId) {
-                            // Call child
-                            secondChild.onChildAction()
-
-                            // Emit events
-                            Observable.just(1, 1, 1)
-                        }.onEvent {
-                            val newState = state.copy(value = state.value + it)
-                            transition(newState)
-                        }
-                    }
-                }
             )
         }
     }

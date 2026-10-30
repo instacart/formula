@@ -30,16 +30,18 @@ import kotlin.coroutines.EmptyCoroutineContext
  * val action = RxAction.fromObservable { Observable.just(1, 2, 3) }
  * ```
  *
- * To use it within a [Formula]:
+ * To use it within a [Formula], declare it on the [ActionBuilder] receiver and call that helper
+ * from `evaluate()`:
+ * ```kotlin
+ * private fun ActionBuilder<Input, State>.registerAction() {
+ *   action.onEvent { event -> transition() }
+ * }
+ *
+ * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+ *   registerAction()
+ *   return Evaluation(output = output)
+ * }
  * ```
- * Evaluation(
- *   actions = context.actions {
- *     action.onEvent { event ->
- *       transition()
- *     }
- *   }
- * )
- * ``
  *
  * @param Event A type of event used to notify [Formula].
  */
@@ -184,10 +186,9 @@ interface Action<Event> {
     }
 
     /**
-     * Formula runtime calls this method to initialize an [Action] the first time it is returned
-     * by the [evaluation][Evaluation]. We use [key] to identify unique actions and Formula
-     * runtime keeps running the action until:
-     * - This action is not returned in [Evaluation.actions]
+     * Formula runtime initializes an [Action] the first time it is declared during evaluation.
+     * We use [key] to identify unique actions and Formula runtime keeps running the action until:
+     * - This action is no longer declared during evaluation
      * - The [key] of an action changes
      * - Formula is terminated
      *

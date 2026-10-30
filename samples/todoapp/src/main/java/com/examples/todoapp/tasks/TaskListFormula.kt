@@ -3,6 +3,7 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -17,6 +18,12 @@ class TaskListFormula(
 
     override fun initialState(input: Input): TaskListState {
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
+    }
+
+    private fun ActionBuilder<Input, TaskListState>.registerTasksAction() {
+        Action.fromFlow { repo.tasks() }.onEvent {
+            transition(state.copy(taskState = it))
+        }
     }
 
     override fun Snapshot<Input, TaskListState>.evaluate(): Evaluation<TaskListRenderModel> {
@@ -44,12 +51,8 @@ class TaskListFormula(
             }
         }
 
+        registerTasksAction()
         return Evaluation(
-            actions = context.actions {
-                Action.fromFlow { repo.tasks() }.onEvent {
-                    transition(state.copy(taskState = it))
-                }
-            },
             output = TaskListRenderModel(
                 items = items,
                 filterOptions = filterOptions()

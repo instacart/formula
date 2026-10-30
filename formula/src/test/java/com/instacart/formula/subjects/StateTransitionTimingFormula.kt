@@ -1,5 +1,6 @@
 package com.instacart.formula.subjects
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
@@ -24,6 +25,12 @@ class StateTransitionTimingFormula
     override fun initialState(input: Unit): List<State> = emptyList()
 
     override fun Snapshot<Unit, List<State>>.evaluate(): Evaluation<Output> {
+        fun ActionBuilder<Unit, List<State>>.registerActions() {
+            relay.action().onEvent {
+                transition(state.plus(State.EXTERNAL))
+            }
+        }
+        registerActions()
         return Evaluation(
             output = Output(
                 events = state,
@@ -33,11 +40,6 @@ class StateTransitionTimingFormula
                     }
                 }
             ),
-            actions = context.actions {
-                relay.action().onEvent {
-                    transition(state.plus(State.EXTERNAL))
-                }
-            }
         )
     }
 }

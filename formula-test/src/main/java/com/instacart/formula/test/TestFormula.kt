@@ -1,6 +1,7 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
@@ -62,6 +63,13 @@ class TestFormula<Input, Output> internal constructor(
         )
     }
 
+    private fun ActionBuilder<Input, State<Output>>.registerTerminationAction() {
+        Action.onTerminate().onEvent {
+            runningInstanceManager.onTerminate(state.uniqueIdentifier)
+            none()
+        }
+    }
+
     override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
         runningInstanceManager.onEvaluate(
             uniqueIdentifier = state.uniqueIdentifier,
@@ -73,15 +81,8 @@ class TestFormula<Input, Output> internal constructor(
             }
         )
 
-        return Evaluation(
-            output = state.output,
-            actions = context.actions {
-                Action.onTerminate().onEvent {
-                    runningInstanceManager.onTerminate(state.uniqueIdentifier)
-                    none()
-                }
-            }
-        )
+        registerTerminationAction()
+        return Evaluation(output = state.output)
     }
 
     /**

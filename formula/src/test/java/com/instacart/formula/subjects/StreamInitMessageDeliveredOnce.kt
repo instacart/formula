@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -15,13 +16,14 @@ object StreamInitMessageDeliveredOnce {
 
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
 
+            fun ActionBuilder<Unit, Unit>.registerActions() {
+                Action.onInit().onEvent {
+                    transition { timesInitializedCalled += 1 }
+                }
+            }
+            registerActions()
             return Evaluation(
                 output = Unit,
-                actions = context.actions {
-                    Action.onInit().onEvent {
-                        transition { timesInitializedCalled += 1 }
-                    }
-                }
             )
         }
     }
