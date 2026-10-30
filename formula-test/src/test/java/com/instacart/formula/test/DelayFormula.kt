@@ -2,7 +2,6 @@ package com.instacart.formula.test
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlin.time.Duration
@@ -16,7 +15,7 @@ class DelayFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Int> {
+    override fun Snapshot<Unit, State>.evaluate(): Int {
         emitTimerTicks()
         return Evaluation(
             output = state.count,

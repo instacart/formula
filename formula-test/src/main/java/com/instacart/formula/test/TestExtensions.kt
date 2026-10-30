@@ -1,6 +1,5 @@
 package com.instacart.formula.test
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula

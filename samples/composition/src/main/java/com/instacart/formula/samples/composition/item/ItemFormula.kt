@@ -1,6 +1,5 @@
 package com.instacart.formula.samples.composition.item
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlin.math.max

@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot

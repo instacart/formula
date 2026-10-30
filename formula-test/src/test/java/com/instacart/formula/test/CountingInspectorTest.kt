@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.google.common.truth.Truth
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import org.junit.Test

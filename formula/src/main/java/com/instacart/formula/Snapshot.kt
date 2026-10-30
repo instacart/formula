@@ -25,13 +25,9 @@ interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
     val context: FormulaContext<Input, State>
 
     /**
-     * Compatibility helper for formulas migrating from the [Evaluation] wrapper. The [actions]
-     * parameter remains for source compatibility; actions are registered through
-     * [FormulaContext.actions] during evaluation. The formula now returns [output] directly.
+     * Compatibility helper for formulas migrating from the legacy `Evaluation(...)` call syntax.
+     * Actions are declared through [ActionBuilder] during evaluation; the formula returns [output]
+     * directly.
      */
-    @Suppress("UNUSED_PARAMETER")
-    fun <Output> Evaluation(
-        output: Output,
-        actions: Set<DeferredAction<*>> = emptySet(),
-    ): Output = output
+    fun <Output> Evaluation(output: Output): Output = output
 }

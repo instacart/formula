@@ -1,6 +1,5 @@
 package com.instacart.formula.samples.composition
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.samples.composition.item.ItemFormula

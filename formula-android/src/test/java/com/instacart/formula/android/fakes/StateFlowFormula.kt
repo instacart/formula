@@ -2,7 +2,6 @@ package com.instacart.formula.android.fakes
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.android.RouteId
@@ -21,7 +20,7 @@ class StateFlowFormula: Formula<RouteId<*>, String, String>() {
         return ""
     }
 
-    override fun Snapshot<RouteId<*>, String>.evaluate(): Evaluation<String> {
+    override fun Snapshot<RouteId<*>, String>.evaluate(): String {
         forwardMatchingEvents()
         return Evaluation(
             output = state,

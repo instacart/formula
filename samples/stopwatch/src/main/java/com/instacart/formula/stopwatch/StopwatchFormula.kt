@@ -3,7 +3,6 @@ package com.instacart.formula.stopwatch
 import android.os.SystemClock
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import java.util.concurrent.TimeUnit
@@ -31,7 +30,7 @@ class StopwatchFormula(
         currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
+    override fun Snapshot<Unit, State>.evaluate(): StopwatchRenderModel {
         updateElapsedTime()
         return Evaluation(
             output = StopwatchRenderModel(

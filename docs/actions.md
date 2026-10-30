@@ -4,7 +4,7 @@ async operations, and responding to lifecycle. Declare them through `ActionBuild
 manages action lifecycles, starting them when declared and cancelling them when removed.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Input, State>.evaluate(): Output {
     observeUserChanges()
     return Evaluation(output = ...)
 }

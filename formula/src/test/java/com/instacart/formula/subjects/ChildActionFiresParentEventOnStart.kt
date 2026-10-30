@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -29,7 +28,7 @@ object ChildActionFiresParentEventOnStart {
             runChild = runChildOnStart,
         )
 
-        override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Unit, State>.evaluate(): Output {
             if (state.runChild) {
                 val listener = context.onEvent<Int> {
                     val newState = state.copy(value = state.value + it)
@@ -51,7 +50,7 @@ object ChildActionFiresParentEventOnStart {
     }
 
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
-        override fun Snapshot<Listener<Int>, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Listener<Int>, Unit>.evaluate(): Unit {
             forwardValuesToParent()
             return Evaluation(
                 output = Unit,
