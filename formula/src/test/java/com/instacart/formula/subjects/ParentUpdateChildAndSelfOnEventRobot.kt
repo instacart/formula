@@ -36,21 +36,7 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
 
         override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
             val incrementOutput = context.child(incrementFormula)
-            fun ActionBuilder<Unit, State>.registerActions() {
-                if (state.actionId > 0) {
-                    RxAction.fromObservable(state.actionId) {
-                        // Call child
-                        incrementOutput.onIncrement()
-
-                        // Emit events
-                        Observable.just(1, 1, 1)
-                    }.onEvent {
-                        val newState = state.copy(value = state.value + it)
-                        transition(newState)
-                    }
-                }
-            }
-            registerActions()
+            registerActions(incrementOutput)
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -61,6 +47,21 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
                     }
                 ),
             )
+        }
+
+        private fun ActionBuilder<Unit, State>.registerActions(incrementOutput: IncrementFormula.Output) {
+            if (state.actionId > 0) {
+                RxAction.fromObservable(state.actionId) {
+                    // Call child
+                    incrementOutput.onIncrement()
+
+                    // Emit events
+                    Observable.just(1, 1, 1)
+                }.onEvent {
+                    val newState = state.copy(value = state.value + it)
+                    transition(newState)
+                }
+            }
         }
     }
 }

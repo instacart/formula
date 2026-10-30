@@ -16,15 +16,16 @@ object StreamInitMessageDeliveredOnce {
 
         override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
 
-            fun ActionBuilder<Unit, Unit>.registerActions() {
-                Action.onInit().onEvent {
-                    transition { timesInitializedCalled += 1 }
-                }
-            }
             registerActions()
             return Evaluation(
                 output = Unit,
             )
+        }
+
+        private fun ActionBuilder<Unit, Unit>.registerActions() {
+            Action.onInit().onEvent {
+                transition { timesInitializedCalled += 1 }
+            }
         }
     }
 }

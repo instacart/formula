@@ -34,19 +34,6 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
         override fun initialState(input: Input): State = State()
 
         override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-            fun ActionBuilder<Input, State>.registerActions() {
-                if (state.actionId > 0) {
-                    RxAction.fromObservable(state.actionId) {
-                        input.preAction()
-
-                        // Increment two times
-                        Observable.just(1, 1)
-                    }.onEvent {
-                        val newState = state.copy(value = state.value + it)
-                        transition(newState)
-                    }
-                }
-            }
             registerActions()
             return Evaluation(
                 output = Output(
@@ -57,6 +44,20 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                     }
                 ),
             )
+        }
+
+        private fun ActionBuilder<Input, State>.registerActions() {
+            if (state.actionId > 0) {
+                RxAction.fromObservable(state.actionId) {
+                    input.preAction()
+
+                    // Increment two times
+                    Observable.just(1, 1)
+                }.onEvent {
+                    val newState = state.copy(value = state.value + it)
+                    transition(newState)
+                }
+            }
         }
     }
 
@@ -93,21 +94,7 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                 )
             }
 
-            fun ActionBuilder<Unit, State>.registerActions() {
-                if (state.actionId > 0) {
-                    RxAction.fromObservable(state.actionId) {
-                        // Call child
-                        secondChild.onChildAction()
-
-                        // Emit events
-                        Observable.just(1, 1, 1)
-                    }.onEvent {
-                        val newState = state.copy(value = state.value + it)
-                        transition(newState)
-                    }
-                }
-            }
-            registerActions()
+            registerActions(secondChild)
             return Evaluation(
                 output = Output(
                     parentValue = state.value,
@@ -119,6 +106,21 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
                     }
                 ),
             )
+        }
+
+        private fun ActionBuilder<Unit, State>.registerActions(secondChild: Child.Output) {
+            if (state.actionId > 0) {
+                RxAction.fromObservable(state.actionId) {
+                    // Call child
+                    secondChild.onChildAction()
+
+                    // Emit events
+                    Observable.just(1, 1, 1)
+                }.onEvent {
+                    val newState = state.copy(value = state.value + it)
+                    transition(newState)
+                }
+            }
         }
     }
 }

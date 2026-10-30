@@ -35,13 +35,6 @@ object ChildMessageTriggersEventTransitionInParent {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<RenderModel> {
-            fun ActionBuilder<Unit, Int>.registerActions() {
-                RxAction
-                    .fromObservable { service.serviceEvents() }
-                    .onEvent {
-                        transition(state + 1)
-                    }
-            }
             registerActions()
             return Evaluation(
                 output = RenderModel(
@@ -49,6 +42,14 @@ object ChildMessageTriggersEventTransitionInParent {
                     child = context.child(childFormula)
                 ),
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.registerActions() {
+            RxAction
+                .fromObservable { service.serviceEvents() }
+                .onEvent {
+                    transition(state + 1)
+                }
         }
     }
 }

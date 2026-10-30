@@ -3,15 +3,15 @@ async operations, and responding to lifecycle. Declared within `evaluate()`, the
 manages their lifecycle: starting them when declared, cancelling them when removed.
 
 ```kotlin
+override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+    registerActions()
+    return Evaluation(output = ...)
+}
+
 private fun ActionBuilder<Input, State>.registerActions() {
     Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
         transition(state.copy(user = user))
     }
-}
-
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    registerActions()
-    return Evaluation(output = ...)
 }
 ```
 

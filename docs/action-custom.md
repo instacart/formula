@@ -37,16 +37,16 @@ class MyFormula(
     private val getNetworkStatusAction: GetNetworkStatusAction,
 ): Formula<Input, State, Output> {
 
+    override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+        registerNetworkStatusAction()
+        return Evaluation(output = ...)
+    }
+
     private fun ActionBuilder<Input, State>.registerNetworkStatusAction() {
         getNetworkStatusAction.onEvent { status ->
             val newState = state.copy(isOnline = status.isOnline)
             transition(newState)
         }
-    }
-
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-        registerNetworkStatusAction()
-        return Evaluation(output = ...)
     }
 }
 ```

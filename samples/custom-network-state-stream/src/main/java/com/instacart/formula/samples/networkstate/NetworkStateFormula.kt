@@ -13,12 +13,6 @@ class NetworkStateFormula(
 
     override fun initialState(input: Unit): State = State()
 
-    private fun ActionBuilder<Unit, State>.registerNetworkStateAction() {
-        networkStateStream.onEvent {
-            transition(state.copy(isOnline = it.isOnline))
-        }
-    }
-
     override fun Snapshot<Unit, State>.evaluate(): Evaluation<NetworkStateRenderModel> {
         registerNetworkStateAction()
         val isConnected = if (state.isOnline) "CONNECTED" else "OFFLINE"
@@ -27,5 +21,11 @@ class NetworkStateFormula(
                 status = "Network state: $isConnected"
             ),
         )
+    }
+
+    private fun ActionBuilder<Unit, State>.registerNetworkStateAction() {
+        networkStateStream.onEvent {
+            transition(state.copy(isOnline = it.isOnline))
+        }
     }
 }

@@ -32,20 +32,6 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
     }
 
     override fun Snapshot<String, State>.evaluate(): Evaluation<Output> {
-        fun ActionBuilder<String, State>.registerActions() {
-            state.pendingEvent?.let {
-                Action.onData(it).onEvent { event ->
-                    // Using sleep to control multi-threaded events
-                    Thread.sleep(event.duration)
-                    val events = state.sleepEvents
-                    val newState = state.copy(
-                        sleepEvents = events + event,
-                        pendingEvent = null,
-                    )
-                    transition(newState)
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = Output(
@@ -59,5 +45,20 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
                 }
             ),
         )
+    }
+
+    private fun ActionBuilder<String, State>.registerActions() {
+        state.pendingEvent?.let {
+            Action.onData(it).onEvent { event ->
+                // Using sleep to control multi-threaded events
+                Thread.sleep(event.duration)
+                val events = state.sleepEvents
+                val newState = state.copy(
+                    sleepEvents = events + event,
+                    pendingEvent = null,
+                )
+                transition(newState)
+            }
+        }
     }
 }

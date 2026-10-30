@@ -67,16 +67,6 @@ open class ActionInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        private fun ActionBuilder<InitInput, Unit>.registerActions() {
-            // Each action gets a unique key based on generation
-            // When generation changes, all actions are NEW (not redeclared)
-            repeat(input.count) { index ->
-                Action.onData(Pair(index, input.generation)).onEvent { event ->
-                    none()
-                }
-            }
-        }
-
         override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ActionOutput> {
             registerActions()
             return Evaluation(
@@ -85,6 +75,16 @@ open class ActionInitializationBenchmark {
                     generation = input.generation
                 ),
             )
+        }
+
+        private fun ActionBuilder<InitInput, Unit>.registerActions() {
+            // Each action gets a unique key based on generation
+            // When generation changes, all actions are NEW (not redeclared)
+            repeat(input.count) { index ->
+                Action.onData(Pair(index, input.generation)).onEvent { event ->
+                    none()
+                }
+            }
         }
     }
 

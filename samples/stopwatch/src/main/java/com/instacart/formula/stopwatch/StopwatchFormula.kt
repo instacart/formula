@@ -31,6 +31,17 @@ class StopwatchFormula(
         currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
+    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
+        registerTickerAction()
+        return Evaluation(
+            output = StopwatchRenderModel(
+                timePassed = formatTimePassed(state.elapsedTimeMillis),
+                startStopButton = startStopButton(),
+                resetButton = resetButton(),
+            ),
+        )
+    }
+
     private fun ActionBuilder<Unit, State>.registerTickerAction() {
         if (state.isRunning) {
             Action.fromFlow {
@@ -44,17 +55,6 @@ class StopwatchFormula(
                 transition(state.copy(currentElapsedRealtimeMillis = currentElapsedRealtimeMillis))
             }
         }
-    }
-
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
-        registerTickerAction()
-        return Evaluation(
-            output = StopwatchRenderModel(
-                timePassed = formatTimePassed(state.elapsedTimeMillis),
-                startStopButton = startStopButton(),
-                resetButton = resetButton(),
-            ),
-        )
     }
 
     private fun formatTimePassed(timePassedInMillis: Long): String {

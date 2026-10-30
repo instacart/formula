@@ -22,18 +22,19 @@ class StateFlowFormula: Formula<RouteId<*>, String, String>() {
     }
 
     override fun Snapshot<RouteId<*>, String>.evaluate(): Evaluation<String> {
-        fun ActionBuilder<RouteId<*>, String>.registerActions() {
-            Action.fromFlow { sharedFlow }.onEvent { (instanceId, value) ->
-                if (instanceId == input.instanceId) {
-                    transition(value)
-                } else {
-                    none()
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = state,
         )
+    }
+
+    private fun ActionBuilder<RouteId<*>, String>.registerActions() {
+        Action.fromFlow { sharedFlow }.onEvent { (instanceId, value) ->
+            if (instanceId == input.instanceId) {
+                transition(value)
+            } else {
+                none()
+            }
+        }
     }
 }

@@ -20,12 +20,6 @@ class TaskListFormula(
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
     }
 
-    private fun ActionBuilder<Input, TaskListState>.registerTasksAction() {
-        Action.fromFlow { repo.tasks() }.onEvent {
-            transition(state.copy(taskState = it))
-        }
-    }
-
     override fun Snapshot<Input, TaskListState>.evaluate(): Evaluation<TaskListRenderModel> {
         val items = taskList(state).map { task ->
             context.key(task.id) {
@@ -58,6 +52,12 @@ class TaskListFormula(
                 filterOptions = filterOptions()
             )
         )
+    }
+
+    private fun ActionBuilder<Input, TaskListState>.registerTasksAction() {
+        Action.fromFlow { repo.tasks() }.onEvent {
+            transition(state.copy(taskState = it))
+        }
     }
 
     private fun taskList(state: TaskListState): List<Task> {

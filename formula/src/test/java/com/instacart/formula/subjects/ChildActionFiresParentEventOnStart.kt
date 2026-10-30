@@ -52,18 +52,19 @@ object ChildActionFiresParentEventOnStart {
 
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
         override fun Snapshot<Listener<Int>, Unit>.evaluate(): Evaluation<Unit> {
-            fun ActionBuilder<Listener<Int>, Unit>.registerActions() {
-                RxAction.fromObservable {
-                    for (value in values) {
-                        input(value)
-                    }
-                    Observable.empty()
-                }.onEvent { none() }
-            }
             registerActions()
             return Evaluation(
                 output = Unit,
             )
+        }
+
+        private fun ActionBuilder<Listener<Int>, Unit>.registerActions() {
+            RxAction.fromObservable {
+                for (value in values) {
+                    input(value)
+                }
+                Observable.empty()
+            }.onEvent { none() }
         }
     }
 }

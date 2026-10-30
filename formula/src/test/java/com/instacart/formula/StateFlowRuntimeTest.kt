@@ -59,15 +59,16 @@ class StateFlowRuntimeTest {
             override fun initialState(input: Unit): Int = 0
 
             override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
-                fun ActionBuilder<Unit, Int>.registerActions() {
-                    Action.fromFlow { eventBus }.onEvent {
-                        transition(it)
-                    }
-                }
                 registerActions()
                 return Evaluation(
                     output = state,
                 )
+            }
+
+            private fun ActionBuilder<Unit, Int>.registerActions() {
+                Action.fromFlow { eventBus }.onEvent {
+                    transition(it)
+                }
             }
         }
 

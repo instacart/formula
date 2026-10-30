@@ -17,15 +17,16 @@ object ExtremelyNestedFormula {
                 0
             }
 
-            fun ActionBuilder<Unit, Int>.registerActions() {
-                Action.onInit().onEvent {
-                    transition(state + 1)
-                }
-            }
             registerActions()
             return Evaluation(
                 output = state + childValue,
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.registerActions() {
+            Action.onInit().onEvent {
+                transition(state + 1)
+            }
         }
     }
 

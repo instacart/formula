@@ -32,18 +32,6 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
     override fun initialState(input: Input): State = State()
 
     override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-        fun ActionBuilder<Input, State>.registerActions() {
-            // Formula will run `Stream.onData()` before `input.onEvent` is called above.
-            val pending = state.pending
-            if (pending) {
-                Action.onData(pending).onEvent {
-                    val (updated, eventId) = state.nextId()
-                    transition(updated.copy(pending = false)) {
-                        input.onEvent(Event(eventId))
-                    }
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = Output(
@@ -55,5 +43,18 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
                 }
             ),
         )
+    }
+
+    private fun ActionBuilder<Input, State>.registerActions() {
+        // Formula will run `Stream.onData()` before `input.onEvent` is called above.
+        val pending = state.pending
+        if (pending) {
+            Action.onData(pending).onEvent {
+                val (updated, eventId) = state.nextId()
+                transition(updated.copy(pending = false)) {
+                    input.onEvent(Event(eventId))
+                }
+            }
+        }
     }
 }

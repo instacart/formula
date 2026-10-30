@@ -23,6 +23,11 @@ drive actions, and determine what the formula does.
 To report events back to the host, call the callbacks defined on input within a transition.
 
 ```kotlin
+override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+    fetchItem()
+    return Evaluation(output = ...)
+}
+
 private fun ActionBuilder<Input, State>.fetchItem() {
     Action.launchCatching(key = input.itemId) {
         repo.fetchItem(input.itemId)
@@ -34,11 +39,6 @@ private fun ActionBuilder<Input, State>.fetchItem() {
             transition { input.onItemNotFound() }
         }
     }
-}
-
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    fetchItem()
-    return Evaluation(output = ...)
 }
 ```
 

@@ -24,17 +24,18 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
     private val repo = Repo()
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        fun ActionBuilder<Input, Unit>.registerActions() {
-            val fetchItem = RxAction.fromObservable(key = input.itemId) {
-                repo.fetchItem(input.itemId)
-            }
-            fetchItem.onEvent() {
-                transition { input.onItem(it) }
-            }
-        }
         registerActions()
         return Evaluation(
             output = Unit,
         )
+    }
+
+    private fun ActionBuilder<Input, Unit>.registerActions() {
+        val fetchItem = RxAction.fromObservable(key = input.itemId) {
+            repo.fetchItem(input.itemId)
+        }
+        fetchItem.onEvent() {
+            transition { input.onItem(it) }
+        }
     }
 }

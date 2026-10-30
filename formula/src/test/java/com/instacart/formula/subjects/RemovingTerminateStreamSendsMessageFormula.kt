@@ -13,17 +13,18 @@ class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerm
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
-        fun ActionBuilder<Input, Unit>.registerActions() {
-            val onTerminate = input.onTerminate
-            if (onTerminate != null) {
-                Action.onTerminate().onEvent {
-                    transition(onTerminate)
-                }
-            }
-        }
         registerActions()
         return Evaluation(
             output = Unit,
         )
+    }
+
+    private fun ActionBuilder<Input, Unit>.registerActions() {
+        val onTerminate = input.onTerminate
+        if (onTerminate != null) {
+            Action.onTerminate().onEvent {
+                transition(onTerminate)
+            }
+        }
     }
 }

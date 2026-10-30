@@ -63,13 +63,6 @@ class TestFormula<Input, Output> internal constructor(
         )
     }
 
-    private fun ActionBuilder<Input, State<Output>>.registerTerminationAction() {
-        Action.onTerminate().onEvent {
-            runningInstanceManager.onTerminate(state.uniqueIdentifier)
-            none()
-        }
-    }
-
     override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
         runningInstanceManager.onEvaluate(
             uniqueIdentifier = state.uniqueIdentifier,
@@ -83,6 +76,13 @@ class TestFormula<Input, Output> internal constructor(
 
         registerTerminationAction()
         return Evaluation(output = state.output)
+    }
+
+    private fun ActionBuilder<Input, State<Output>>.registerTerminationAction() {
+        Action.onTerminate().onEvent {
+            runningInstanceManager.onTerminate(state.uniqueIdentifier)
+            none()
+        }
     }
 
     /**
