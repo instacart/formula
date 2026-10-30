@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -16,7 +15,7 @@ object DuplicateListenerKeysHandledByIndexing {
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
             val keys = listOf(1, 2, 1, 1, 1)
             return Evaluation(
                 output = TestOutput(

@@ -68,7 +68,7 @@ class WrongFormulaUsageDetectorTest {
         package com.instacart.formula
 
         class StatelessFormula<Input, Output> {
-            open fun Snapshot<Input, Unit>.evaluate(): Evaluation<Output>
+            open fun Snapshot<Input, Unit>.evaluate(): Output
             open fun key(input: Input): Any? = null
         }
     """.trimIndent()
@@ -160,7 +160,7 @@ class WrongFormulaUsageDetectorTest {
             |package com.instacart.formula
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
-            |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+            |   override fun Snapshot<Unit, Unit>.evaluate(): Unit {
             |        return Evaluation(
             |            output = Unit,
             |            actions = context.actions {
@@ -202,7 +202,7 @@ class WrongFormulaUsageDetectorTest {
             |package com.instacart.formula
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
-            |   override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+            |   override fun Snapshot<Unit, Unit>.evaluate(): Unit {
             |        return Evaluation(
             |            output = Unit,
             |            actions = context.actions {

@@ -3,7 +3,6 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -19,7 +18,7 @@ class TaskListFormula(
         return TaskListState(taskState = emptyList(), filterType = TasksFilterType.ALL_TASKS)
     }
 
-    override fun Snapshot<Input, TaskListState>.evaluate(): Evaluation<TaskListRenderModel> {
+    override fun Snapshot<Input, TaskListState>.evaluate(): TaskListRenderModel {
         val items = taskList(state).map { task ->
             context.key(task.id) {
                 TaskItemRenderModel(

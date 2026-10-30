@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -41,7 +40,7 @@ class RootFormulaKeyTestSubject(scope: CoroutineScope) {
         // We reset formula whenever key changes.
         override fun key(input: Int): Any? = input
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Int, Int>.evaluate(): Output {
             return Evaluation(
                 output = Output(
                     value = state,

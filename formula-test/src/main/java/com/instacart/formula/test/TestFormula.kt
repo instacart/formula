@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
@@ -62,7 +61,7 @@ class TestFormula<Input, Output> internal constructor(
         )
     }
 
-    override fun Snapshot<Input, State<Output>>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, State<Output>>.evaluate(): Output {
         runningInstanceManager.onEvaluate(
             uniqueIdentifier = state.uniqueIdentifier,
             input = input,

@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.subjects.ChildErrorAfterToggleFormula.Output
@@ -16,7 +15,7 @@ class ChildErrorAfterToggleFormula: Formula<HasChildrenFormula.ChildParamsInput<
 
     override fun initialState(input: HasChildrenFormula.ChildParamsInput<()-> Unit>) = State()
 
-    override fun Snapshot<HasChildrenFormula.ChildParamsInput<()-> Unit>, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<HasChildrenFormula.ChildParamsInput<()-> Unit>, State>.evaluate(): Output {
         if (state.throwError) throw RuntimeException()
         return Evaluation(
             output = Output(

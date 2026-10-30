@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -22,7 +21,7 @@ class DynamicParentFormula(
 
     override fun initialState(input: Unit): State = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 children = state.childKeys.map {

@@ -1,7 +1,6 @@
 package com.instacart.formula.runtime
 
 import com.instacart.formula.Effect
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
@@ -125,29 +124,27 @@ internal class FormulaManagerImpl<Input, State, Output>(
      * and can emit the last produced [Output].
      */
     override fun run(input: Input): Output {
-        var result: Evaluation<Output>? = null
         isRunning = true
         try {
             var firstRun = true
-            while (result == null) {
+            while (true) {
                 val lastFrame = frame
                 val evaluationId = globalEvaluationId
-                val evaluation = if (firstRun) {
+                val output = if (firstRun) {
                     firstRun = false
                     evaluation(input, evaluationId)
                 } else if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
                     evaluation(input, evaluationId)
                 } else {
-                    lastFrame.evaluation
+                    lastFrame.output
                 }
 
                 if (postEvaluation(evaluationId)) {
                     continue
                 }
 
-                result = evaluation
+                return output
             }
-            return result.output
         } catch (e: Throwable) {
             if (e is ValidationException) {
                 throw e
@@ -172,7 +169,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Creates the current [Output] and prepares the next frame that will need to be processed.
      */
-    private fun evaluation(input: Input, evaluationId: Long): Evaluation<Output> {
+    private fun evaluation(input: Input, evaluationId: Long): Output {
         val lastFrame = frame
         if (lastFrame == null && isValidationEnabled) {
             throw ValidationException("Formula should already have run at least once before the validation mode.")
@@ -190,9 +187,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
             val prevInput = lastFrame.input
             val hasInputChanged = prevInput != input
             if (!isValidationEnabled && lastFrame.associatedEvaluationId == evaluationId && !hasInputChanged) {
-                val evaluation = lastFrame.evaluation
-                inspector?.onEvaluateFinished(formulaType, evaluation.output, evaluated = false)
-                return evaluation
+                val output = lastFrame.output
+                inspector?.onEvaluateFinished(formulaType, output, evaluated = false)
+                return output
             }
 
             if (hasInputChanged) {
@@ -215,9 +212,9 @@ internal class FormulaManagerImpl<Input, State, Output>(
         val result = formula.evaluate(snapshot)
 
         if (isValidationEnabled) {
-            val oldOutput = lastFrame?.evaluation?.output
-            if (oldOutput != result.output) {
-                throw ValidationException("$formulaType - output changed during identical re-evaluation - old: $oldOutput, new: ${result.output}")
+            val oldOutput = lastFrame?.output
+            if (oldOutput != result) {
+                throw ValidationException("$formulaType - output changed during identical re-evaluation - old: $oldOutput, new: $result")
             }
         }
 
@@ -227,10 +224,10 @@ internal class FormulaManagerImpl<Input, State, Output>(
         this.frame = newFrame
         snapshot.onEvaluationFinished()
         if (!isValidationEnabled) {
-            inspector?.onEvaluateFinished(formulaType, newFrame.evaluation.output, evaluated = true)
+            inspector?.onEvaluateFinished(formulaType, newFrame.output, evaluated = true)
         }
 
-        return newFrame.evaluation
+        return newFrame.output
     }
 
     fun <ChildInput, ChildOutput> child(
@@ -357,7 +354,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
     }
 
     override fun lastOutput(): Output? {
-        return frame?.evaluation?.output
+        return frame?.output
     }
 
     /**
@@ -393,7 +390,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
     private fun Formula<Input, State, Output>.evaluate(
         snapshot: Snapshot<Input, State>
-    ): Evaluation<Output> {
+    ): Output {
         return snapshot.run { evaluate() }
     }
 }

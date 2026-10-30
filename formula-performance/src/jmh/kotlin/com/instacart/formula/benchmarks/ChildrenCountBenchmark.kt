@@ -1,6 +1,5 @@
 package com.instacart.formula.benchmarks
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -64,7 +63,7 @@ open class ChildrenCountBenchmark {
 
         override fun initialState(input: Int) = 0
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<ParentOutput> {
+        override fun Snapshot<Int, Int>.evaluate(): ParentOutput {
             // Create N children
             val childOutputs = List(input) { index ->
                 context.child(
@@ -94,7 +93,7 @@ open class ChildrenCountBenchmark {
 
         override fun key(input: ChildInput): Any = input.id
 
-        override fun Snapshot<ChildInput, Unit>.evaluate(): Evaluation<ChildOutput> {
+        override fun Snapshot<ChildInput, Unit>.evaluate(): ChildOutput {
             return Evaluation(
                 output = ChildOutput(id = input.id)
             )

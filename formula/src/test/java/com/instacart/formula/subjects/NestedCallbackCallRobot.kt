@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +21,7 @@ class NestedCallbackCallRobot(scope: CoroutineScope) {
 
         override fun initialState(input: Unit): Int = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
+        override fun Snapshot<Unit, Int>.evaluate(): Output {
             val next = context.callback {
                 transition(state + 1)
             }

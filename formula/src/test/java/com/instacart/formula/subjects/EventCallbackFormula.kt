@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -16,7 +15,7 @@ class EventCallbackFormula(
 
     override fun initialState(input: Unit): String = ""
 
-    override fun Snapshot<Unit, String>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, String>.evaluate(): Output {
         val changeState: (String) -> Unit = if (executionType == null) {
             context.onEvent { newState ->
                 transition(newState)

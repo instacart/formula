@@ -12,14 +12,14 @@ class FormulaValidationTest {
     @Test
     fun `input changed during re-evaluation will throw validation error`() = runTest {
         val childFormula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
                 return Evaluation(output = input)
             }
         }
 
         val parentFormula = object : StatelessFormula<Unit, Int>() {
             val unstableInput = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 return Evaluation(
                     output = context.child(childFormula, unstableInput.incrementAndGet())
                 )
@@ -39,7 +39,7 @@ class FormulaValidationTest {
     fun `output changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableOutput = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 return Evaluation(
                     output = unstableOutput.incrementAndGet()
                 )
@@ -57,7 +57,7 @@ class FormulaValidationTest {
     fun `action key changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 return Evaluation(
                     output = 0,
                     context.actions {
@@ -93,7 +93,7 @@ class FormulaValidationTest {
     fun `action removed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 return Evaluation(
                     output = 0,
                     context.actions {

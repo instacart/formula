@@ -1,7 +1,6 @@
 package com.instacart.formula.android.internal
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -64,7 +63,7 @@ internal class NavigationStoreFormula(
 
     override fun initialState(input: Unit): NavigationState = NavigationState()
 
-    override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
+    override fun Snapshot<Unit, NavigationState>.evaluate(): NavigationState {
         return Evaluation(
             output = state,
             actions = context.actions {

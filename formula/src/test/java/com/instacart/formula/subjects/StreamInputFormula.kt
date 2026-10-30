@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.types.OnDataActionFormula
@@ -10,7 +9,7 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
 
     private val onDataActionFormula = OnDataActionFormula()
 
-    override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Unit> {
+    override fun Snapshot<Int, Unit>.evaluate(): Unit {
         context.child(
             formula = onDataActionFormula,
             input = OnDataActionFormula.Input(

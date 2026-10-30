@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -17,7 +16,7 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>
 
     override fun initialState(input: Input): Int = 0
 
-    override fun Snapshot<Input, Int>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, Int>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 state = state,

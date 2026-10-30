@@ -17,7 +17,7 @@ class RememberRuntimeTest {
     fun `remember returns same value across re-evaluations`() = runTest {
         val counter = AtomicInteger(0)
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
                 return Evaluation(
                     output = context.remember { counter.incrementAndGet() }
                 )
@@ -42,7 +42,7 @@ class RememberRuntimeTest {
     fun `remember value is cleaned up when not requested`() = runTest {
         val counter = AtomicInteger(0)
         val formula = object : StatelessFormula<Boolean, OptionalValue>() {
-            override fun Snapshot<Boolean, Unit>.evaluate(): Evaluation<OptionalValue> {
+            override fun Snapshot<Boolean, Unit>.evaluate(): OptionalValue {
                 val value = if (input) {
                     context.remember { counter.incrementAndGet() }
                 } else {
@@ -65,7 +65,7 @@ class RememberRuntimeTest {
     fun `multiple remember calls return distinct stable values`() = runTest {
         val counter = AtomicInteger(0)
         val formula = object : StatelessFormula<Int, List<Int>>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<List<Int>> {
+            override fun Snapshot<Int, Unit>.evaluate(): List<Int> {
                 val values = listOf(
                     context.remember { counter.incrementAndGet() },
                     context.remember { counter.incrementAndGet() },
@@ -116,7 +116,7 @@ class RememberRuntimeTest {
     fun `remember with shared call site disambiguated by scope`() = runTest {
         val counter = AtomicInteger(0)
         val formula = object : StatelessFormula<Int, List<Int>>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<List<Int>> {
+            override fun Snapshot<Int, Unit>.evaluate(): List<Int> {
                 val a = context.key("scope-a") { doRemember(context, counter) }
                 val b = context.key("scope-b") { doRemember(context, counter) }
                 return Evaluation(output = listOf(a, b))
@@ -181,7 +181,7 @@ private class KeyRememberFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 value = context.remember(key = state.key) { counter.incrementAndGet() },
@@ -210,7 +210,7 @@ private class DynamicRememberFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         val values = state.keys.associate { key ->
             key to context.key(key) { context.remember { counter.incrementAndGet() } }
         }

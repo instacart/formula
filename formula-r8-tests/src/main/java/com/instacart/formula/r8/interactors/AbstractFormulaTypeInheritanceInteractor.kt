@@ -1,7 +1,6 @@
 package com.instacart.formula.r8.interactors
 
 import com.google.common.truth.Truth
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.r8.fixtures.AbstractClassInheritanceFormulas
@@ -19,7 +18,7 @@ import kotlinx.coroutines.test.TestScope
 class AbstractFormulaTypeInheritanceInteractor(testScope: TestScope) {
     private val formula = object : StatelessFormula<Unit, Int>() {
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Int {
             val one = context.child(AbstractClassInheritanceFormulas.One())
             val two = context.child(AbstractClassInheritanceFormulas.Two())
 

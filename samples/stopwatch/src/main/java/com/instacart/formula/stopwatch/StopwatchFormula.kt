@@ -2,7 +2,6 @@ package com.instacart.formula.stopwatch
 
 import android.os.SystemClock
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlinx.coroutines.delay
@@ -30,7 +29,7 @@ class StopwatchFormula(
         currentElapsedRealtimeMillis = elapsedSinceBoot(),
     )
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<StopwatchRenderModel> {
+    override fun Snapshot<Unit, State>.evaluate(): StopwatchRenderModel {
         return Evaluation(
             output = StopwatchRenderModel(
                 timePassed = formatTimePassed(state.elapsedTimeMillis),

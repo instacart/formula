@@ -1,6 +1,5 @@
 package com.instacart.formula.types
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -15,7 +14,7 @@ class OnEventFormula<Input>(
 
     override fun initialState(input: Input): Int = 0
 
-    override fun Snapshot<Input, Int>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, Int>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 state = state,

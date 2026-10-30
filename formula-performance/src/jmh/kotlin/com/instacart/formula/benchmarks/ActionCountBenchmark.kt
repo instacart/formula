@@ -1,7 +1,6 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -65,7 +64,7 @@ open class ActionCountBenchmark {
 
         override fun initialState(input: Int) = 0
 
-        override fun Snapshot<Int, Int>.evaluate(): Evaluation<ActionOutput> {
+        override fun Snapshot<Int, Int>.evaluate(): ActionOutput {
             return Evaluation(
                 output = ActionOutput(
                     count = state,

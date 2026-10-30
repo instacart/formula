@@ -1,6 +1,5 @@
 package com.instacart.formula.types
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -22,7 +21,7 @@ class IncrementFormula(
         return 0
     }
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, Int>.evaluate(): Output {
         val onIncrement = if (executionType == null) {
             context.callback {
                 transition(state + 1)

@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -30,7 +29,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
 
     override fun initialState(input: Input): State = State()
 
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Input, State>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 triggerEvent = context.onEvent {

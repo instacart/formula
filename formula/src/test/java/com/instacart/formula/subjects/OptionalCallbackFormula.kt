@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -23,7 +22,7 @@ class OptionalCallbackFormula(
 
     override fun initialState(input: Unit) = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         val callback = if (state.callbackEnabled) {
             context.onEventWithExecutionType<Unit>(incrementExecutionType) {
                 transition(state.copy(state = state.state + 1))

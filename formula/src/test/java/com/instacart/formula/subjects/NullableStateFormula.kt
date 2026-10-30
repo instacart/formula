@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -13,7 +12,7 @@ class NullableStateFormula : Formula<Unit, String?, NullableStateFormula.Output>
 
     override fun initialState(input: Unit): String? = null
 
-    override fun Snapshot<Unit, String?>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, String?>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 state = state,

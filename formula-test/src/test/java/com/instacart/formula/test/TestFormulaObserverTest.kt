@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.google.common.truth.Truth
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import kotlinx.coroutines.test.runTest
@@ -11,7 +10,7 @@ class TestFormulaObserverTest {
 
     @Test fun `assertOutput passes if count matches`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
                 return Evaluation(input)
             }
         }
@@ -26,7 +25,7 @@ class TestFormulaObserverTest {
 
     @Test fun `assertOutput throws exception if count does not match`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
                 return Evaluation(input)
             }
         }
@@ -44,7 +43,7 @@ class TestFormulaObserverTest {
 
     @Test fun `output throws error if formula is not running`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
                 return Evaluation(input)
             }
         }

@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -11,7 +10,7 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output>() {
 
     override fun initialState(input: Unit) = Unit
 
-    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, Unit>.evaluate(): Output {
 
         val callback = context.key("first level") {
             context.key("second level") {

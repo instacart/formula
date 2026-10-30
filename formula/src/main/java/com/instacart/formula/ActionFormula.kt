@@ -10,16 +10,14 @@ abstract class ActionFormula<Input : Any, Output : Any> : IFormula<Input, Output
     final override val implementation: Formula<Input, Output, Output> = object : Formula<Input, Output, Output>() {
         override fun initialState(input: Input) = initialValue(input)
 
-        override fun Snapshot<Input, Output>.evaluate(): Evaluation<Output> {
-            return Evaluation(
-                output = state,
-                actions = context.actions {
-                    val executionType = executionType()
-                    action(input).onEventWithExecutionType(executionType) {
-                        transition(it)
-                    }
+        override fun Snapshot<Input, Output>.evaluate(): Output {
+            context.actions {
+                val executionType = executionType()
+                action(input).onEventWithExecutionType(executionType) {
+                    transition(it)
                 }
-            )
+            }
+            return state
         }
 
         override fun key(input: Input): Any = input

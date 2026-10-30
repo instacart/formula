@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -30,7 +29,7 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
         return State()
     }
 
-    override fun Snapshot<String, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<String, State>.evaluate(): Output {
         return Evaluation(
             output = Output(
                 sleepEvents = state.sleepEvents,

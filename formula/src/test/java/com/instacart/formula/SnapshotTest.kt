@@ -11,7 +11,7 @@ class SnapshotTest {
     fun `using snapshot outside of evaluation will throw an exception`() = runTest {
         // Note: you should never expose snapshot like this! This is only to simplify testing
         val formula = object : StatelessFormula<Unit, Snapshot<Unit, Unit>>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Snapshot<Unit, Unit>> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Snapshot<Unit, Unit> {
                 return Evaluation(this)
             }
         }

@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.TestFormulaObserver
@@ -30,7 +29,7 @@ class InputChangeWhileFormulaRunningRobot(scope: TestScope, eventCount: Int) {
     ) : StatelessFormula<Int, Int>() {
         private val childFormula: OnStartActionFormula = OnStartActionFormula(eventCount)
 
-        override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Int, Unit>.evaluate(): Int {
             context.child(
                 formula = childFormula,
                 input = OnStartActionFormula.Input(
