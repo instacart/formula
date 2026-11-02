@@ -40,8 +40,7 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      * [formula context][FormulaContext] is passed to evaluation and should be used to build
      * the [Output]. Within this method, we can use Formula context to
      * [compose][FormulaContext.child] child formulas, create event listeners using
-     * [FormulaContext.onEvent], and [respond][FormulaContext.actions] to arbitrary asynchronous
-     * events.
+     * [FormulaContext.onEvent], and declare asynchronous actions through [ActionBuilder].
      *
      * Whenever [input][Input], [internal state][State] or child output changes, a new [Snapshot]
      * will be created and [evaluate] will be called again.

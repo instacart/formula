@@ -42,8 +42,8 @@
 - Keying: Uses factory class (positional memoization) + optional key.
 
 **Actions:**
-- Declarative async operations. Declared in `context.actions { }` block within Evaluation.
-- Actions run when returned in Evaluation, cancelled when not returned or key changes.
+- Declare actions during `evaluate()` through `ActionBuilder`; `Snapshot` implements this interface. Inline simple declarations in `evaluate()` and extract groups into private `ActionBuilder` helpers when useful.
+- The runtime keeps actions active while they are declared and cancels them when omitted or when their key changes.
 - Common: `Action.onInit()`, `Action.onData(value)`, `Action.onTerminate()`, `Action.fromFlow { }`, `Action.launch { }`.
 - Attach handler: `action.onEvent { event -> transition() }`.
 - Actions identified by key + call site (positional memoization).
@@ -133,16 +133,12 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
 **With Actions:**
 ```kotlin
 override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
-    return Evaluation(
-        output = /* output */,
-        actions = context.actions {
-            if (state.isRunning) {
-                Action.fromFlow { ticker() }.onEvent {
-                    transition(state.copy(time = state.time + 1))
-                }
-            }
+    if (state.isRunning) {
+        Action.fromFlow { ticker() }.onEvent {
+            transition(state.copy(time = state.time + 1))
         }
-    )
+    }
+    return Evaluation(output = /* output */)
 }
 ```
 
