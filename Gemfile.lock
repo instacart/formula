@@ -78,21 +78,9 @@ GEM
       uri (>= 0.11.1)
     net-protocol (0.4.0)
       timeout
-    nokogiri (1.19.4-aarch64-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.4-aarch64-linux-musl)
-      racc (~> 1.4)
-    nokogiri (1.19.4-arm-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.4-arm-linux-musl)
-      racc (~> 1.4)
     nokogiri (1.19.4-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.19.4-x86_64-darwin)
-      racc (~> 1.4)
     nokogiri (1.19.4-x86_64-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.4-x86_64-linux-musl)
       racc (~> 1.4)
     nokogiri-happymapper (0.10.1)
       nokogiri (~> 1.5)
@@ -124,15 +112,9 @@ GEM
     uri (1.1.2)
 
 PLATFORMS
-  aarch64-linux-gnu
-  aarch64-linux-musl
-  arm-linux-gnu
-  arm-linux-musl
   arm64-darwin
-  x86_64-darwin
   x86_64-linux
   x86_64-linux-gnu
-  x86_64-linux-musl
 
 DEPENDENCIES
   danger
