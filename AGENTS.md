@@ -44,7 +44,6 @@
 **Actions:**
 - Declare actions during `evaluate()` through `ActionBuilder`; `Snapshot` implements this interface. Inline simple declarations in `evaluate()` and extract groups into private `ActionBuilder` helpers when useful.
 - The runtime keeps actions active while they are declared and cancels them when omitted or when their key changes.
-- `FormulaContext.actions` remains public API, but `ActionBuilder` is the preferred declaration style.
 - Common: `Action.onInit()`, `Action.onData(value)`, `Action.onTerminate()`, `Action.fromFlow { }`, `Action.launch { }`.
 - Attach handler: `action.onEvent { event -> transition() }`.
 - Actions identified by key + call site (positional memoization).

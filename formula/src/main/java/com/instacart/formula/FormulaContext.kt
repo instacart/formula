@@ -6,8 +6,8 @@ import com.instacart.formula.remember.RememberFactory
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] function to [compose][child]
- * child formulas, handle events [FormulaContext.onEvent], and [respond][FormulaContext.actions]
- * to arbitrary asynchronous events.
+ * child formulas, handle events [FormulaContext.onEvent], and declare asynchronous actions through
+ * [ActionBuilder].
  */
 abstract class FormulaContext<out Input, State> internal constructor(
     internal val lifecycleCache: LifecycleCache,
@@ -142,7 +142,7 @@ abstract class FormulaContext<out Input, State> internal constructor(
     ): ChildOutput?
 
     /**
-     * Builds a list of deferred actions that will be executed by Formula runtime.
+     * Collects deferred actions to be executed by Formula runtime.
      */
     abstract fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>>
 

@@ -26,8 +26,7 @@ abstract class StatelessFormula<in Input, Output> : IFormula<Input, Output> {
      * [snapshot][Snapshot] which contains current [Input] and [Formula context][FormulaContext] is
      * passed to evaluation and should be used to build the [Output]. Within this method, we can use
      * Formula context to [compose][FormulaContext.child] child formulas, create event listeners
-     * using [FormulaContext.onEvent], and [respond][FormulaContext.actions] to arbitrary
-     * asynchronous events.
+     * using [FormulaContext.onEvent], and declare asynchronous actions through [ActionBuilder].
      *
      * Whenever [input][Input] or child output changes, a new [Snapshot] will be created and
      * [evaluate] will be called again.
