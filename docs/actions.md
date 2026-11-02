@@ -4,15 +4,14 @@ manages their lifecycle: starting them when declared, cancelling them when remov
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    return Evaluation(
-        output = ...,
-        actions = context.actions {
-            // actions are declared here
-            Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
-                transition(state.copy(user = user))
-            }
-        }
-    )
+    observeUserChanges()
+    return Evaluation(output = ...)
+}
+
+private fun ActionBuilder<Input, State>.observeUserChanges() {
+    Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
+        transition(state.copy(user = user))
+    }
 }
 ```
 

@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
@@ -31,6 +32,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
     override fun initialState(input: Input): State = State()
 
     override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+        deliverPendingInputEvent()
         return Evaluation(
             output = Output(
                 triggerEvent = context.onEvent {
@@ -40,18 +42,19 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
                     }
                 }
             ),
-            actions = context.actions {
-                // Formula will run `Stream.onData()` before `input.onEvent` is called above.
-                val pending = state.pending
-                if (pending) {
-                    Action.onData(pending).onEvent {
-                        val (updated, eventId) = state.nextId()
-                        transition(updated.copy(pending = false)) {
-                            input.onEvent(Event(eventId))
-                        }
-                    }
+        )
+    }
+
+    private fun ActionBuilder<Input, State>.deliverPendingInputEvent() {
+        // Formula will run `Stream.onData()` before `input.onEvent` is called above.
+        val pending = state.pending
+        if (pending) {
+            Action.onData(pending).onEvent {
+                val (updated, eventId) = state.nextId()
+                transition(updated.copy(pending = false)) {
+                    input.onEvent(Event(eventId))
                 }
             }
-        )
+        }
     }
 }

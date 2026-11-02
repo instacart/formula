@@ -1,5 +1,6 @@
 package com.instacart.formula.types
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -18,19 +19,21 @@ class OnStartActionFormula(
     )
 
     override fun Snapshot<Input, Unit>.evaluate(): Evaluation<Unit> {
+        emitEventsOnStart()
         return Evaluation(
             output = Unit,
-            actions = context.actions {
-                RxAction.fromObservable {
-                    val events = 0 until eventNumber
-                    for (event in events) {
-                        input.onAction()
-                    }
-                    Observable.empty()
-                }.onEvent {
-                    none()
-                }
-            }
         )
+    }
+
+    private fun ActionBuilder<Input, Unit>.emitEventsOnStart() {
+        RxAction.fromObservable {
+            val events = 0 until eventNumber
+            for (event in events) {
+                input.onAction()
+            }
+            Observable.empty()
+        }.onEvent {
+            none()
+        }
     }
 }

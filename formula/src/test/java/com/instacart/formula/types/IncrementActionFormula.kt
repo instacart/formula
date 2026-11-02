@@ -1,5 +1,6 @@
 package com.instacart.formula.types
 
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -15,13 +16,15 @@ class IncrementActionFormula(
     }
 
     override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+        incrementOnAction()
         return Evaluation(
             output = state,
-            actions = context.actions {
-                incrementRelay.action().onEventWithExecutionType(executionType) {
-                    transition(state + 1)
-                }
-            }
         )
+    }
+
+    private fun ActionBuilder<Unit, Int>.incrementOnAction() {
+        incrementRelay.action().onEventWithExecutionType(executionType) {
+            transition(state + 1)
+        }
     }
 }

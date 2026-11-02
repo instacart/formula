@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
@@ -51,17 +52,19 @@ object ChildActionFiresParentEventOnStart {
 
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
         override fun Snapshot<Listener<Int>, Unit>.evaluate(): Evaluation<Unit> {
+            forwardValuesToParent()
             return Evaluation(
                 output = Unit,
-                actions = context.actions {
-                    RxAction.fromObservable {
-                        for (value in values) {
-                            input(value)
-                        }
-                        Observable.empty()
-                    }.onEvent { none() }
-                }
             )
+        }
+
+        private fun ActionBuilder<Listener<Int>, Unit>.forwardValuesToParent() {
+            RxAction.fromObservable {
+                for (value in values) {
+                    input(value)
+                }
+                Observable.empty()
+            }.onEvent { none() }
         }
     }
 }

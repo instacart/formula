@@ -1,6 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -23,20 +24,22 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
         override fun initialState(input: Unit): Int = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+            observeAllUpdates()
             return Evaluation(
                 output = state,
-                actions = context.actions {
-                    initial.onEvent {
-                        transition {
-                            incrementRelay.triggerEvent()
-                        }
-                    }
-
-                    incrementRelay.action().onEvent {
-                        transition(state + 1)
-                    }
-                }
             )
+        }
+
+        private fun ActionBuilder<Unit, Int>.observeAllUpdates() {
+            initial.onEvent {
+                transition {
+                    incrementRelay.triggerEvent()
+                }
+            }
+
+            incrementRelay.action().onEvent {
+                transition(state + 1)
+            }
         }
     }
 }

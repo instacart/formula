@@ -1,13 +1,14 @@
 package com.instacart.formula.android.internal
 
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
 import com.instacart.formula.android.FeatureEvent
-import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.NavigationState
+import com.instacart.formula.android.RouteEnvironment
 import com.instacart.formula.android.RouteId
 import com.instacart.formula.android.RouteOutput
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -65,29 +66,32 @@ internal class NavigationStoreFormula(
     override fun initialState(input: Unit): NavigationState = NavigationState()
 
     override fun Snapshot<Unit, NavigationState>.evaluate(): Evaluation<NavigationState> {
-        return Evaluation(
-            output = state,
-            actions = context.actions {
-                Action.fromFlow { stateChanges }.onEvent { update ->
-                    delegate(update)
-                }
+        observeStateChanges()
+        runFeatures()
+        return Evaluation(output = state)
+    }
 
-                state.features.entries.forEach { entry ->
-                    val event = entry.value
-                    if (event is FeatureEvent.Init) {
-                        val action = StateFlowFeatureAction(
-                            routeEnvironment = environment,
-                            event = event,
-                        )
+    private fun ActionBuilder<Unit, NavigationState>.observeStateChanges() {
+        Action.fromFlow { stateChanges }.onEvent { update ->
+            delegate(update)
+        }
+    }
 
-                        action.onEvent {
-                            val routeId = event.id
-                            val keyState = RouteOutput(routeId.key, it)
-                            transition(state.copy(outputs = state.outputs.plus(routeId to keyState)))
-                        }
-                    }
+    private fun ActionBuilder<Unit, NavigationState>.runFeatures() {
+        state.features.entries.forEach { entry ->
+            val event = entry.value
+            if (event is FeatureEvent.Init) {
+                val action = StateFlowFeatureAction(
+                    routeEnvironment = environment,
+                    event = event,
+                )
+
+                action.onEvent {
+                    val routeId = event.id
+                    val keyState = RouteOutput(routeId.key, it)
+                    transition(state.copy(outputs = state.outputs.plus(routeId to keyState)))
                 }
             }
-        )
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Action
+import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -44,17 +45,19 @@ class TaskListFormula(
             }
         }
 
+        observeTasks()
         return Evaluation(
-            actions = context.actions {
-                Action.fromFlow { repo.tasks() }.onEvent {
-                    transition(state.copy(taskState = it))
-                }
-            },
             output = TaskListRenderModel(
                 items = items,
                 filterOptions = filterOptions()
             )
         )
+    }
+
+    private fun ActionBuilder<Input, TaskListState>.observeTasks() {
+        Action.fromFlow { repo.tasks() }.onEvent {
+            transition(state.copy(taskState = it))
+        }
     }
 
     private fun taskList(state: TaskListState): List<Task> {
