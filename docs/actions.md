@@ -1,6 +1,7 @@
 Actions perform work and emit events back to the formula — observing streams, running
-async operations, and responding to lifecycle. Declared within `evaluate()`, the runtime
-manages their lifecycle: starting them when declared, cancelling them when removed.
+async operations, and responding to lifecycle. Declare them through `ActionBuilder` on the
+`Snapshot` receiver in `evaluate()`; `Evaluation` contains only the formula output. The runtime
+manages action lifecycles, starting them when declared and cancelling them when removed.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {

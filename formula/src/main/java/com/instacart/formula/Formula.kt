@@ -47,7 +47,8 @@ abstract class Formula<in Input, State, out Output> : IFormula<Input, Output> {
      *
      * ### Warning
      * Do not access mutable state or emit side-effects as part of [evaluate] function.
-     * All side-effects should happen as part of event listeners or [actions][Evaluation.actions].
+     * All side-effects should happen as part of event listeners, [actions][ActionBuilder], or
+     * transition effects.
      */
     abstract fun Snapshot<Input, State>.evaluate(): Evaluation<Output>
 
