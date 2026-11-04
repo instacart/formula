@@ -58,28 +58,22 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                // Keep one usage to protect the public FormulaContext.actions API.
-                return Evaluation(
-                    output = 0,
-                    context.actions {
-                        val action = object : Action<Unit> {
-                            override fun start(
-                                scope: CoroutineScope,
-                                emitter: Action.Emitter<Unit>
-                            ): Cancelable? {
-                                return null
-                            }
-
-                            override fun key(): Any {
-                                return unstableActionKey.incrementAndGet()
-                            }
-                        }
-
-                        action.onEvent {
-                            none()
-                        }
+                val action = object : Action<Unit> {
+                    override fun start(
+                        scope: CoroutineScope,
+                        emitter: Action.Emitter<Unit>
+                    ): Cancelable? {
+                        return null
                     }
-                )
+
+                    override fun key(): Any {
+                        return unstableActionKey.incrementAndGet()
+                    }
+                }
+                action.onEvent {
+                    none()
+                }
+                return Evaluation(output = 0)
             }
         }
         val error = runCatching {

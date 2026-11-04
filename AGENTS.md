@@ -21,7 +21,7 @@
 
 **Evaluate:**
 - Pure function called on Input/State/Child changes. Receives `Snapshot<Input, State>` with current values and `FormulaContext`.
-- Returns `Evaluation<Output>` containing output and optional actions.
+- Returns `Evaluation<Output>` containing output. Actions are declared during evaluation through `ActionBuilder`.
 - Must be side-effect free. Side effects only in event listeners or transition effects.
 
 **Transitions:**
@@ -84,16 +84,17 @@
 - `Formula<Input, State, Output>` - Base stateful formula class
 - `StatelessFormula<Input, Output>` - Formula without internal state
 - `ActionFormula<Input, Output>` - Converts Action to Formula
-- `FormulaContext` - Provides composition and action APIs
+- `FormulaContext` - Provides composition and event-listener APIs
+- `ActionBuilder` - Declares asynchronous actions during evaluation
 - `Action` - Represents asynchronous side effects
 - `Transition` - Represents state changes
-- `Evaluation` - Contains output and optional actions
+- `Evaluation` - Contains formula output
 - `Snapshot` - Contains current Input, State, and FormulaContext
 - `FormulaRuntime` - Entry point for starting formulas
 - `Listener<Event>` - Function type for event handlers: `(Event) -> Unit`
 - `TransitionContext` - Provides utilities for creating Transition.Result
 - `Effect` - Side-effect executed after state changes
-- `DeferredAction` - Action combined with event listener returned in Evaluation
+- `DeferredAction` - Action combined with an event listener for runtime lifecycle management
 
 **Android:**
 - `NavigationStore` - Manages route feature state and emits navigation state

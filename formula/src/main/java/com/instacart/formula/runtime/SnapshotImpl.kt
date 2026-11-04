@@ -4,7 +4,6 @@ import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
-import com.instacart.formula.DeferredAction
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -44,12 +43,6 @@ internal class SnapshotImpl<Input, State>(
     // ==========================================================================
     // FormulaContext
     // ==========================================================================
-
-    override fun actions(init: ActionBuilder<Input, State>.() -> Unit): Set<DeferredAction<*>> {
-        ensureEvaluationNotFinished()
-        init()
-        return emptySet()
-    }
 
     override fun <ChildInput, ChildOutput> child(
         formula: IFormula<ChildInput, ChildOutput>,

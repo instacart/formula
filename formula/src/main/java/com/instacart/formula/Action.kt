@@ -12,9 +12,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * A deferred action returned by [evaluation][Formula.evaluate] that will run for any new unique
- * value of [key] and will be be cleaned up if [key] changes or if [Action] is
- * left out of evaluation.
+ * An asynchronous operation declared during [formula evaluation][Formula.evaluate]. It runs for
+ * each new unique [key] and is cleaned up if [key] changes or the [Action] is left out of
+ * evaluation.
  *
  * Action can produce and send [events][Event] back to the [Formula] instance. It
  * can be used to subscribe to RxJava observables, Kotlin Flows, event buses, or any
