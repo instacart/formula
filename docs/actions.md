@@ -1,6 +1,7 @@
 Actions perform work and emit events back to the formula — observing streams, running
 async operations, and responding to lifecycle. Declare them through `ActionBuilder` on the
-`Snapshot` receiver in `evaluate()`; `Evaluation` contains only the formula output. The runtime
+`Snapshot` receiver in `evaluate()`; `Evaluation(output = ...)` remains as a compatibility
+helper that returns the output directly. The runtime
 manages action lifecycles, starting them when declared and cancelling them when removed.
 
 ```kotlin
