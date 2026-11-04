@@ -16,7 +16,6 @@ import com.instacart.formula.lifecycle.LifecycleScheduler
 import com.instacart.formula.lifecycle.ValidationException
 import com.instacart.formula.plugin.ChildAlreadyUsedException
 import com.instacart.formula.plugin.FormulaError
-import java.util.LinkedList
 
 /**
  * Responsible for keeping track of formula's state, running actions, and child formulas. The
@@ -35,6 +34,14 @@ internal class FormulaManagerImpl<Input, State, Output>(
     ActionDelegate,
     EffectDelegate,
     LifecycleComponent {
+
+    private companion object {
+        // Most evaluations queue at most a handful of deferred transitions in flight.
+        private const val INITIAL_TRANSITION_QUEUE_CAPACITY = 4
+        // After a drain, replace the deque if we observed a burst this large. Long-lived
+        // formulas would otherwise pin the high-water capacity for their entire lifetime.
+        private const val TRANSITION_QUEUE_SHRINK_THRESHOLD = 32
+    }
 
     private val lifecycleCache = LifecycleCacheImpl(this)
     private var state: State = formula.initialState(initialInput)
@@ -67,9 +74,13 @@ internal class FormulaManagerImpl<Input, State, Output>(
     /**
      * Pending transition queue which will be populated and executed within [run] function
      * while [isRunning] is true. If [isRunning] is false, we will pass the transitions
-     * to [ManagerDelegate].
+     * to [ManagerDelegate]. Replaced with a fresh deque after a drain that observed a burst
+     * exceeding [TRANSITION_QUEUE_SHRINK_THRESHOLD] — [ArrayDeque] never shrinks its backing
+     * array on its own, so the deque would otherwise stay pinned at the peak size for the
+     * life of this formula manager.
      */
-    private val transitionQueue = LinkedList<DeferredTransition<*, *, *>>()
+    private var transitionQueue = ArrayDeque<DeferredTransition<*, *, *>>(INITIAL_TRANSITION_QUEUE_CAPACITY)
+    private var transitionQueuePeakSize = 0
 
     fun canUpdatesContinue(evaluationId: Long): Boolean {
         return !isEvaluationNeeded(evaluationId) && transitionQueue.isEmpty()
@@ -307,7 +318,7 @@ internal class FormulaManagerImpl<Input, State, Output>(
 
         // Execute deferred transitions
         while (transitionQueue.isNotEmpty()) {
-            transitionQueue.pollFirst().execute()
+            transitionQueue.removeFirst().execute()
         }
 
         inspector?.onFormulaFinished(formulaType)
@@ -317,17 +328,23 @@ internal class FormulaManagerImpl<Input, State, Output>(
         if (terminated) {
             transition.execute()
         } else if (isRunning) {
-            transitionQueue.addLast(transition)
+            enqueueTransition(transition)
         } else {
             val lastFrame = frame
             if (lastFrame == null || isEvaluationNeeded(lastFrame.associatedEvaluationId)) {
                 // Since evaluation is already needed, we can wait for it to happen and
                 // then we'll execute the transition.
-                transitionQueue.addLast(transition)
+                enqueueTransition(transition)
             } else {
                 transition.execute()
             }
         }
+    }
+
+    private fun enqueueTransition(transition: DeferredTransition<*, *, *>) {
+        transitionQueue.addLast(transition)
+        val size = transitionQueue.size
+        if (size > transitionQueuePeakSize) transitionQueuePeakSize = size
     }
 
     override fun onPostTransition(effects: List<Effect>, evaluate: Boolean) {
@@ -381,13 +398,18 @@ internal class FormulaManagerImpl<Input, State, Output>(
      */
     private fun handleTransitionQueue(evaluationId: Long): Boolean {
         while (transitionQueue.isNotEmpty()) {
-            val event = transitionQueue.pollFirst()
+            val event = transitionQueue.removeFirst()
             event.execute()
             if (isEvaluationNeeded(evaluationId)) {
                 return true
             }
         }
-
+        // Queue drained without forcing re-evaluation — safe point to reclaim the backing array
+        // if a burst pushed us past the shrink threshold.
+        if (transitionQueuePeakSize > TRANSITION_QUEUE_SHRINK_THRESHOLD) {
+            transitionQueue = ArrayDeque(INITIAL_TRANSITION_QUEUE_CAPACITY)
+        }
+        transitionQueuePeakSize = 0
         return false
     }
 
