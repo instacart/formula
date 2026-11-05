@@ -3,7 +3,6 @@ package com.instacart.formula.rxjava3
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.RuntimeConfig
 import com.instacart.formula.Snapshot
@@ -44,13 +43,11 @@ class RxJavaRuntimeTest {
         val formula = object : Formula<Unit, Int, Int>() {
             override fun initialState(input: Unit): Int = 0
 
-            override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Int>.evaluate(): Int {
                 Action.fromFlow { flowOf(1, 2) }.onEvent {
                     transition(it)
                 }
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
         }
 

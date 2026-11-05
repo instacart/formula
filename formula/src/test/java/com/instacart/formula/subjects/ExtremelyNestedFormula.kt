@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -10,7 +9,7 @@ object ExtremelyNestedFormula {
     class TestFormula(private val childFormula: Formula<Unit, *, Int>?) : Formula<Unit, Int, Int>() {
         override fun initialState(input: Unit): Int = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+        override fun Snapshot<Unit, Int>.evaluate(): Int {
             val childValue = if (childFormula != null) {
                 context.child(childFormula)
             } else {
@@ -18,9 +17,7 @@ object ExtremelyNestedFormula {
             }
 
             incrementOnInitialization()
-            return Evaluation(
-                output = state + childValue,
-            )
+            return state + childValue
         }
 
         private fun ActionBuilder<Unit, Int>.incrementOnInitialization() {

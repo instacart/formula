@@ -3,7 +3,6 @@ package com.instacart.formula.subjects
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
 import com.instacart.formula.DelegateAction
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -40,37 +39,35 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
         return State()
     }
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         runActionAndTransition()
-        return Evaluation(
-            output = Output(
-                actionExecuted = state.actionExecuted,
-                nullableActionExecuted = state.nullableActionExecuted,
-                customActionExecuted = state.customActionExecuted,
-                runNullableActionAgain = context.onEvent {
-                    val newState = state.copy(
-                        nullableAction = Action
-                            .onData(Unit)
-                            .cancelPrevious(state.nullableAction)
+        return Output(
+            actionExecuted = state.actionExecuted,
+            nullableActionExecuted = state.nullableActionExecuted,
+            customActionExecuted = state.customActionExecuted,
+            runNullableActionAgain = context.onEvent {
+                val newState = state.copy(
+                    nullableAction = Action
+                        .onData(Unit)
+                        .cancelPrevious(state.nullableAction)
+                )
+                transition(newState)
+            },
+            runActionAgain = context.onEvent {
+                val newState = state.copy(
+                    action = state.action.runAgain()
+                )
+                transition(newState)
+            },
+            runCustomAction = context.onEvent {
+                val newState = state.copy(
+                    customAction = CustomAction(
+                        actionNumber = state.customActionExecuted.inc(),
+                        action = Action.onData(Unit).cancelPrevious(state.customAction),
                     )
-                    transition(newState)
-                },
-                runActionAgain = context.onEvent {
-                    val newState = state.copy(
-                        action = state.action.runAgain()
-                    )
-                    transition(newState)
-                },
-                runCustomAction = context.onEvent {
-                    val newState = state.copy(
-                        customAction = CustomAction(
-                            actionNumber = state.customActionExecuted.inc(),
-                            action = Action.onData(Unit).cancelPrevious(state.customAction),
-                        )
-                    )
-                    transition(newState)
-                },
-            ),
+                )
+                transition(newState)
+            },
         )
     }
 

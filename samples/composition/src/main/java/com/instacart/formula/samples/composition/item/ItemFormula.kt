@@ -1,6 +1,5 @@
 package com.instacart.formula.samples.composition.item
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlin.math.max
@@ -18,20 +17,18 @@ class ItemFormula : Formula<ItemFormula.Input, ItemFormula.State, ItemRenderMode
 
     override fun initialState(input: Input): State = State(quantity = 0)
 
-    override fun Snapshot<Input, State>.evaluate(): Evaluation<ItemRenderModel> {
-        return Evaluation(
-            output = ItemRenderModel(
-                name = input.itemName,
-                displayQuantity = "${state.quantity}",
-                isDecrementEnabled = state.quantity > 0,
-                onDecrement = context.onEvent {
-                    val newQuantity = max(0, state.quantity - 1)
-                    transition(state.copy(quantity = newQuantity))
-                },
-                onIncrement = context.onEvent {
-                    transition(state.copy(quantity = state.quantity + 1))
-                }
-            )
+    override fun Snapshot<Input, State>.evaluate(): ItemRenderModel {
+        return ItemRenderModel(
+            name = input.itemName,
+            displayQuantity = "${state.quantity}",
+            isDecrementEnabled = state.quantity > 0,
+            onDecrement = context.onEvent {
+                val newQuantity = max(0, state.quantity - 1)
+                transition(state.copy(quantity = newQuantity))
+            },
+            onIncrement = context.onEvent {
+                transition(state.copy(quantity = state.quantity + 1))
+            }
         )
     }
 }

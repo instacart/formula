@@ -12,8 +12,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with unit input and no config`() {
         val formula = object : StatelessFormula<Unit, String>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation("output")
+            override fun Snapshot<Unit, Unit>.evaluate(): String {
+                return "output"
             }
         }
 
@@ -27,8 +27,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with unit input and config`() {
         val formula = object : StatelessFormula<Unit, String>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation("output")
+            override fun Snapshot<Unit, Unit>.evaluate(): String {
+                return "output"
             }
         }
 
@@ -44,8 +44,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with input value and no config`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation(input)
+            override fun Snapshot<String, Unit>.evaluate(): String {
+                return input
             }
         }
 
@@ -59,8 +59,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with input value and config`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation(input)
+            override fun Snapshot<String, Unit>.evaluate(): String {
+                return input
             }
         }
 
@@ -76,8 +76,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with input flow and no config`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation(input)
+            override fun Snapshot<String, Unit>.evaluate(): String {
+                return input
             }
         }
 
@@ -92,8 +92,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with input flow and config`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation(input)
+            override fun Snapshot<String, Unit>.evaluate(): String {
+                return input
             }
         }
 
@@ -113,8 +113,8 @@ class FlowRuntimeTest {
     @Test
     fun `toFlow with input flow with duplicate values`() {
         val formula = object : StatelessFormula<String, String>() {
-            override fun Snapshot<String, Unit>.evaluate(): Evaluation<String> {
-                return Evaluation(input)
+            override fun Snapshot<String, Unit>.evaluate(): String {
+                return input
             }
         }
 

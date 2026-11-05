@@ -73,26 +73,23 @@ class CounterFormula : Formula<Unit, CounterState, CounterOutput>() {
         return CounterState(count = 0)
     }
 
-    override fun Snapshot<Unit, CounterState>.evaluate(): Evaluation<CounterOutput> {
+    override fun Snapshot<Unit, CounterState>.evaluate(): CounterOutput {
         val count = state.count
-        return Evaluation(
-            output = CounterOutput(
-                count = "Count: $count",
-                onDecrement = context.onEvent {
-                    transition(state.copy(count = count - 1))
-                },
-                onIncrement = context.onEvent {
-                    transition(state.copy(count = count + 1))
-                }
-            )
+        return CounterOutput(
+            count = "Count: $count",
+            onDecrement = context.onEvent {
+                transition(state.copy(count = count - 1))
+            },
+            onIncrement = context.onEvent {
+                transition(state.copy(count = count + 1))
+            }
         )
     }
 }
 ```
 
 The most important part is the `Formula.evaluate` function. It gives us the current `State` and expects an
-`Evaluation<Output>` back. Any time we transition to a new state, evaluate is called again and new Output
-is created.
+`Output` back. Any time we transition to a new state, evaluate is called again and new Output is created.
 
 There is also a special object called `FormulaContext` being passed. Formula Context allows us to respond to events by
 declaring transitions. We use `context.onEvent` for both `onIncrement` and `onDecrement`. Let's look at one of these

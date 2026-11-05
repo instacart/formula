@@ -33,9 +33,9 @@ import kotlin.coroutines.EmptyCoroutineContext
  * To use it within a [Formula], declare it on the [ActionBuilder] receiver and call that helper
  * from `evaluate()`:
  * ```kotlin
- * override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
+ * override fun Snapshot<Input, State>.evaluate(): Output {
  *   observeActionEvents()
- *   return Evaluation(output = output)
+ *   return output
  * }
  *
  * private fun ActionBuilder<Input, State>.observeActionEvents() {

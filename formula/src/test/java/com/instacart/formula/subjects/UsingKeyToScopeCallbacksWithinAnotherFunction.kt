@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -18,16 +17,14 @@ object UsingKeyToScopeCallbacksWithinAnotherFunction {
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
-            return Evaluation(
-                output = TestOutput(
-                    first = context.key("first") {
-                        createChild()
-                    },
-                    second = context.key("second") {
-                        createChild()
-                    }
-                )
+        override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
+            return TestOutput(
+                first = context.key("first") {
+                    createChild()
+                },
+                second = context.key("second") {
+                    createChild()
+                }
             )
         }
 

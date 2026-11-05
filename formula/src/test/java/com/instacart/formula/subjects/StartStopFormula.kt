@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -28,15 +27,13 @@ class StartStopFormula : Formula<Unit, State, Output>() {
 
     override fun initialState(input: Unit): State = State()
 
-    override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<Unit, State>.evaluate(): Output {
         listenForIncrementEvents()
-        return Evaluation(
-            output = Output(
-                state = state.count,
-                // We need to specify keys since `UpdateListenFlag` type is used two times.
-                startListening = context.onEvent("start", UpdateListenFlag(listen = true)),
-                stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
-            )
+        return Output(
+            state = state.count,
+            // We need to specify keys since `UpdateListenFlag` type is used two times.
+            startListening = context.onEvent("start", UpdateListenFlag(listen = true)),
+            stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
         )
     }
 

@@ -12,17 +12,15 @@ class FormulaValidationTest {
     @Test
     fun `input changed during re-evaluation will throw validation error`() = runTest {
         val childFormula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(output = input)
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
+                return input
             }
         }
 
         val parentFormula = object : StatelessFormula<Unit, Int>() {
             val unstableInput = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = context.child(childFormula, unstableInput.incrementAndGet())
-                )
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
+                return context.child(childFormula, unstableInput.incrementAndGet())
             }
         }
 
@@ -39,10 +37,8 @@ class FormulaValidationTest {
     fun `output changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableOutput = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = unstableOutput.incrementAndGet()
-                )
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
+                return unstableOutput.incrementAndGet()
             }
         }
         val error = runCatching {
@@ -57,7 +53,7 @@ class FormulaValidationTest {
     fun `action key changed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 val action = object : Action<Unit> {
                     override fun start(
                         scope: CoroutineScope,
@@ -73,7 +69,7 @@ class FormulaValidationTest {
                 action.onEvent {
                     none()
                 }
-                return Evaluation(output = 0)
+                return 0
             }
         }
         val error = runCatching {
@@ -88,11 +84,9 @@ class FormulaValidationTest {
     fun `action removed during re-evaluation will throw validation error`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableActionKey = AtomicInteger(0)
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 changeActionKeyDuringValidation()
-                return Evaluation(
-                    output = 0,
-                )
+                return 0
             }
 
             private fun ActionBuilder<Unit, Unit>.changeActionKeyDuringValidation() {

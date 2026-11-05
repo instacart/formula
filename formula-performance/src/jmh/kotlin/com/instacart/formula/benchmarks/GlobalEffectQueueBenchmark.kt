@@ -1,6 +1,5 @@
 package com.instacart.formula.benchmarks
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -95,25 +94,23 @@ open class GlobalEffectQueueBenchmark {
 
         override fun initialState(input: Unit) = Unit
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<EffectOutput> {
-            return Evaluation(
-                output = EffectOutput(
-                    triggerEffects = context.onEvent { effectCount: Int ->
-                        // Start with no-op transition
-                        var result: Transition.Result<Unit> = none()
+        override fun Snapshot<Unit, Unit>.evaluate(): EffectOutput {
+            return EffectOutput(
+                triggerEffects = context.onEvent { effectCount: Int ->
+                    // Start with no-op transition
+                    var result: Transition.Result<Unit> = none()
 
-                        // Chain effects using andThen
-                        for (i in 1..effectCount) {
-                            result = result.andThen {
-                                transition {
-                                    effectCounter.incrementAndGet()
-                                }
+                    // Chain effects using andThen
+                    for (i in 1..effectCount) {
+                        result = result.andThen {
+                            transition {
+                                effectCounter.incrementAndGet()
                             }
                         }
-
-                        result
                     }
-                )
+
+                    result
+                }
             )
         }
     }

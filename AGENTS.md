@@ -21,7 +21,7 @@
 
 **Evaluate:**
 - Pure function called on Input/State/Child changes. Receives `Snapshot<Input, State>` with current values and `FormulaContext`.
-- Returns `Evaluation<Output>` containing output. Actions are declared during evaluation through `ActionBuilder`.
+- Returns `Output` directly. Actions are declared during evaluation through `ActionBuilder`.
 - Must be side-effect free. Side effects only in event listeners or transition effects.
 
 **Transitions:**
@@ -88,7 +88,6 @@
 - `ActionBuilder` - Declares asynchronous actions during evaluation
 - `Action` - Represents asynchronous side effects
 - `Transition` - Represents state changes
-- `Evaluation` - Contains formula output
 - `Snapshot` - Contains current Input, State, and FormulaContext
 - `FormulaRuntime` - Entry point for starting formulas
 - `Listener<Event>` - Function type for event handlers: `(Event) -> Unit`
@@ -120,12 +119,10 @@
 class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
     override fun initialState(input: Unit) = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<CounterRenderModel> {
-        return Evaluation(
-            output = CounterRenderModel(
-                count = state,
-                onIncrement = context.onEvent { transition(state + 1) }
-            )
+    override fun Snapshot<Unit, Int>.evaluate(): CounterRenderModel {
+        return CounterRenderModel(
+            count = state,
+            onIncrement = context.onEvent { transition(state + 1) }
         )
     }
 }
@@ -133,13 +130,13 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
 
 **With Actions:**
 ```kotlin
-override fun Snapshot<Unit, State>.evaluate(): Evaluation<Output> {
+override fun Snapshot<Unit, State>.evaluate(): Output {
     if (state.isRunning) {
         Action.fromFlow { ticker() }.onEvent {
             transition(state.copy(time = state.time + 1))
         }
     }
-    return Evaluation(output = /* output */)
+    return /* output */
 }
 ```
 

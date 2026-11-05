@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -15,13 +14,11 @@ class SideEffectFormula(
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output> {
-        return Evaluation(
-            output = Output(
-                triggerSideEffect = context.onEvent {
-                    transition { onSideEffect() }
-                }
-            )
+    override fun Snapshot<Unit, Int>.evaluate(): Output {
+        return Output(
+            triggerSideEffect = context.onEvent {
+                transition { onSideEffect() }
+            }
         )
     }
 }

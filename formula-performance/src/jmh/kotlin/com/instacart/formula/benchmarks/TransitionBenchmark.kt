@@ -1,6 +1,5 @@
 package com.instacart.formula.benchmarks
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.IFormula
 import com.instacart.formula.Snapshot
@@ -78,9 +77,9 @@ open class TransitionBenchmark {
 
         override fun initialState(input: Unit) = Unit
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TransitionOutput> {
+        override fun Snapshot<Unit, Unit>.evaluate(): TransitionOutput {
             val output = context.child(childFormula)
-            return Evaluation(output)
+            return output
         }
     }
 
@@ -90,14 +89,12 @@ open class TransitionBenchmark {
     private class LeafFormula : Formula<Unit, Int, TransitionOutput>() {
         override fun initialState(input: Unit) = 0
 
-        override fun Snapshot<Unit, Int>.evaluate(): Evaluation<TransitionOutput> {
-            return Evaluation(
-                output = TransitionOutput(
-                    count = state,
-                    onIncrement = context.callback {
-                        transition(state + 1)
-                    }
-                )
+        override fun Snapshot<Unit, Int>.evaluate(): TransitionOutput {
+            return TransitionOutput(
+                count = state,
+                onIncrement = context.callback {
+                    transition(state + 1)
+                }
             )
         }
     }

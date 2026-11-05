@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -31,19 +30,17 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
         return State()
     }
 
-    override fun Snapshot<String, State>.evaluate(): Evaluation<Output> {
+    override fun Snapshot<String, State>.evaluate(): Output {
         deliverPendingEventAfterDelay()
-        return Evaluation(
-            output = Output(
-                sleepEvents = state.sleepEvents,
-                onSleep = context.onEvent {
-                    val newEvent = SleepEvent(
-                        duration = it,
-                        threadName = Thread.currentThread().name,
-                    )
-                    transition(state.copy(pendingEvent = newEvent))
-                }
-            ),
+        return Output(
+            sleepEvents = state.sleepEvents,
+            onSleep = context.onEvent {
+                val newEvent = SleepEvent(
+                    duration = it,
+                    threadName = Thread.currentThread().name,
+                )
+                transition(state.copy(pendingEvent = newEvent))
+            }
         )
     }
 

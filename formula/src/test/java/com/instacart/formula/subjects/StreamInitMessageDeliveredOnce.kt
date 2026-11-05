@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.test
@@ -14,12 +13,10 @@ object StreamInitMessageDeliveredOnce {
     class TestFormula : StatelessFormula<Unit, Unit>() {
         var timesInitializedCalled = 0
 
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+        override fun Snapshot<Unit, Unit>.evaluate(): Unit {
 
             countInitializations()
-            return Evaluation(
-                output = Unit,
-            )
+            return Unit
         }
 
         private fun ActionBuilder<Unit, Unit>.countInitializations() {

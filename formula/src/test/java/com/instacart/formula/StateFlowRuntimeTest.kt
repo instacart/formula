@@ -21,10 +21,8 @@ class StateFlowRuntimeTest {
 
     @Test fun `formula with no input`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = 1,
-                )
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
+                return 1
             }
         }
 
@@ -36,10 +34,8 @@ class StateFlowRuntimeTest {
 
     @Test fun `formula with input`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
-            override fun Snapshot<Int, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = input,
-                )
+            override fun Snapshot<Int, Unit>.evaluate(): Int {
+                return input
             }
         }
 
@@ -58,13 +54,11 @@ class StateFlowRuntimeTest {
         val formula = object : Formula<Unit, Int, Int>() {
             override fun initialState(input: Unit): Int = 0
 
-            override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Int>.evaluate(): Int {
                 Action.fromFlow { eventBus }.onEvent {
                     transition(it)
                 }
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
         }
 
@@ -103,7 +97,7 @@ class StateFlowRuntimeTest {
 
     @Test fun `error in initial evaluation throws an exception`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 throw IllegalStateException("Error in evaluation")
             }
         }
@@ -116,10 +110,8 @@ class StateFlowRuntimeTest {
 
     @Test fun `throws an exception if coroutine scope does not contain a job`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                return Evaluation(
-                    output = 1,
-                )
+            override fun Snapshot<Unit, Unit>.evaluate(): Int {
+                return 1
             }
         }
 
@@ -137,10 +129,8 @@ class StateFlowRuntimeTest {
         withPlugin(TestPlugin(defaultDispatcher = blockingDispatcher)) {
             runTest {
                 val formula = object : StatelessFormula<Unit, Int>() {
-                    override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Int> {
-                        return Evaluation(
-                            output = 1,
-                        )
+                    override fun Snapshot<Unit, Unit>.evaluate(): Int {
+                        return 1
                     }
                 }
 
@@ -155,7 +145,7 @@ class StateFlowRuntimeTest {
     @Test fun `formula runAsStateFlow errors is propagated to global error handler`() = runTest {
         val error = IllegalStateException("something went wrong")
         val formula = object : StatelessFormula<Unit, Unit>() {
-            override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
+            override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 throw error
             }
         }

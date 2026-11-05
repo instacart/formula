@@ -14,17 +14,15 @@ It is recreated every time `evaluate()` runs — triggered by input, state, or c
 hierarchy state changes.
 
 ```kotlin
-override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-    return Evaluation(
-        output = CounterOutput(
-            count = state.count,
-            onIncrement = context.onEvent {
-                transition(state.copy(count = state.count + 1))
-            },
-            onDecrement = context.onEvent {
-                transition(state.copy(count = state.count - 1))
-            }
-        )
+override fun Snapshot<Input, State>.evaluate(): Output {
+    return CounterOutput(
+        count = state.count,
+        onIncrement = context.onEvent {
+            transition(state.copy(count = state.count + 1))
+        },
+        onDecrement = context.onEvent {
+            transition(state.copy(count = state.count - 1))
+        }
     )
 }
 ```

@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestEventCallback
@@ -30,12 +29,10 @@ class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Uni
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Int> {
+    override fun Snapshot<Unit, Int>.evaluate(): Int {
 
         observeStreamEvents()
-        return Evaluation(
-            output = state,
-        )
+        return state
     }
 
     private fun ActionBuilder<Unit, Int>.observeStreamEvents() {

@@ -2,7 +2,6 @@ package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -67,13 +66,11 @@ open class ActionInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ActionOutput> {
+        override fun Snapshot<InitInput, Unit>.evaluate(): ActionOutput {
             startGenerationActions()
-            return Evaluation(
-                output = ActionOutput(
-                    actionCount = input.count,
-                    generation = input.generation
-                ),
+            return ActionOutput(
+                actionCount = input.count,
+                generation = input.generation
             )
         }
 

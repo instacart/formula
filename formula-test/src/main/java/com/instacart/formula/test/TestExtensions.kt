@@ -1,6 +1,5 @@
 package com.instacart.formula.test
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
@@ -29,8 +28,8 @@ fun <Input : Any, State : Any, Output : Any> withSnapshot(
             return state
         }
 
-        override fun Snapshot<Input, State>.evaluate(): Evaluation<Output> {
-            return Evaluation(output = output())
+        override fun Snapshot<Input, State>.evaluate(): Output {
+            return output()
         }
     }
 

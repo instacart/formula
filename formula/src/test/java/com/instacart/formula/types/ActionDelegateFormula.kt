@@ -1,7 +1,6 @@
 package com.instacart.formula.types
 
 import com.instacart.formula.ActionBuilder
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -24,11 +23,9 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
 
     override fun initialState(input: Input): Int = 0
 
-    override fun Snapshot<Input, Int>.evaluate(): Evaluation<Int> {
+    override fun Snapshot<Input, Int>.evaluate(): Int {
         runDelegatedAction()
-        return Evaluation(
-            output = state,
-        )
+        return state
     }
 
     private fun ActionBuilder<Input, Int>.runDelegatedAction() {

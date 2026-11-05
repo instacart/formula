@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
@@ -26,12 +25,10 @@ class HasChildFormula<ChildInput, ChildOutput>(
 
     override fun initialState(input: Unit): Int = 0
 
-    override fun Snapshot<Unit, Int>.evaluate(): Evaluation<Output<ChildOutput>> {
-        return Evaluation(
-            output = Output(
-                state = state,
-                child = context.child(child, createChildInput(context, state))
-            )
+    override fun Snapshot<Unit, Int>.evaluate(): Output<ChildOutput> {
+        return Output(
+            state = state,
+            child = context.child(child, createChildInput(context, state))
         )
     }
 }

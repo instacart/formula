@@ -1,6 +1,5 @@
 package com.instacart.formula.benchmarks
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -65,7 +64,7 @@ open class ChildrenInitializationBenchmark {
 
         override fun initialState(input: InitInput) = Unit
 
-        override fun Snapshot<InitInput, Unit>.evaluate(): Evaluation<ParentOutput> {
+        override fun Snapshot<InitInput, Unit>.evaluate(): ParentOutput {
             // Each child gets a unique input/key based on generation
             // When generation changes, all children are NEW (not reused)
             val childOutputs = List(input.count) { index ->
@@ -78,11 +77,9 @@ open class ChildrenInitializationBenchmark {
                 )
             }
 
-            return Evaluation(
-                output = ParentOutput(
-                    childCount = childOutputs.size,
-                    generation = input.generation
-                )
+            return ParentOutput(
+                childCount = childOutputs.size,
+                generation = input.generation
             )
         }
     }
@@ -97,12 +94,10 @@ open class ChildrenInitializationBenchmark {
 
         override fun key(input: ChildInput): Any = Pair(input.id, input.generation)
 
-        override fun Snapshot<ChildInput, Unit>.evaluate(): Evaluation<ChildOutput> {
-            return Evaluation(
-                output = ChildOutput(
-                    id = input.id,
-                    generation = input.generation
-                )
+        override fun Snapshot<ChildInput, Unit>.evaluate(): ChildOutput {
+            return ChildOutput(
+                id = input.id,
+                generation = input.generation
             )
         }
     }

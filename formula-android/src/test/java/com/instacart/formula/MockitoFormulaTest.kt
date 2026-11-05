@@ -25,8 +25,8 @@ class MockitoFormulaTest {
     }
 
     class MyFormula : StatelessFormula<Unit, Unit>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            return Evaluation(Unit)
+        override fun Snapshot<Unit, Unit>.evaluate(): Unit {
+            return Unit
         }
     }
 
@@ -39,8 +39,8 @@ class MockitoFormulaTest {
     }
 
     class ReplacementFormula : StatelessFormula<Unit, Unit>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<Unit> {
-            return Evaluation(Unit)
+        override fun Snapshot<Unit, Unit>.evaluate(): Unit {
+            return Unit
         }
     }
 }

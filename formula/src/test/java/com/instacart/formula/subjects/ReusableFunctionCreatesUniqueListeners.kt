@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.Evaluation
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -17,12 +16,10 @@ object ReusableFunctionCreatesUniqueListeners {
     )
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
-        override fun Snapshot<Unit, Unit>.evaluate(): Evaluation<TestOutput> {
-            return Evaluation(
-                output = TestOutput(
-                    firstListener = createDefaultCallback(),
-                    secondListener = createDefaultCallback()
-                )
+        override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
+            return TestOutput(
+                firstListener = createDefaultCallback(),
+                secondListener = createDefaultCallback()
             )
         }
 
