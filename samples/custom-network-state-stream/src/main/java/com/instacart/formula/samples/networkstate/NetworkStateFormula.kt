@@ -16,10 +16,8 @@ class NetworkStateFormula(
             transition(state.copy(isOnline = it.isOnline))
         }
         val isConnected = if (state.isOnline) "CONNECTED" else "OFFLINE"
-        return Evaluation(
-            output = NetworkStateRenderModel(
-                status = "Network state: $isConnected"
-            ),
+        return NetworkStateRenderModel(
+            status = "Network state: $isConnected"
         )
     }
 

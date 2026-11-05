@@ -37,9 +37,7 @@ class InputChangeWhileFormulaRunningRobot(scope: TestScope, eventCount: Int) {
                 )
             )
 
-            return Evaluation(
-                output = input,
-            )
+            return input
         }
     }
 }

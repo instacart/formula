@@ -21,9 +21,7 @@ class OnDataActionFormula(
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         forwardDataToInput()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.forwardDataToInput() {

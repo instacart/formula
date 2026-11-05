@@ -5,8 +5,6 @@ import com.instacart.formula.StatelessFormula
 
 class InputIdentityFormula<Input : Any> : StatelessFormula<Input, Input>() {
     override fun Snapshot<Input, Unit>.evaluate(): Input {
-        return Evaluation(
-            output = input,
-        )
+        return input
     }
 }

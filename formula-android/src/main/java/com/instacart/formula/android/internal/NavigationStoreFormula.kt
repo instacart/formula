@@ -67,7 +67,7 @@ internal class NavigationStoreFormula(
     override fun Snapshot<Unit, NavigationState>.evaluate(): NavigationState {
         observeStateChanges()
         runFeatures()
-        return Evaluation(output = state)
+        return state
     }
 
     private fun ActionBuilder<Unit, NavigationState>.observeStateChanges() {

@@ -71,7 +71,7 @@ open class TransitionQueueBenchmark {
 
         override fun Snapshot<Int, Int>.evaluate(): Int {
             emitMultipleEventsOnStart()
-            return Evaluation(output = state)
+            return state
         }
 
         private fun ActionBuilder<Int, Int>.emitMultipleEventsOnStart() {

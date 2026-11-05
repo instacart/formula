@@ -10,9 +10,7 @@ class OnlyUpdateFormula<Input>(
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         buildAction()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.buildAction() {

@@ -76,7 +76,7 @@ class TestFormula<Input, Output> internal constructor(
             runningInstanceManager.onTerminate(state.uniqueIdentifier)
             none()
         }
-        return Evaluation(output = state.output)
+        return state.output
     }
 
     /**

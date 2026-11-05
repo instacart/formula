@@ -16,12 +16,10 @@ object UniqueListenersWithinLoop {
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
         override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
-            return Evaluation(
-                output = TestOutput(
-                    listeners = (0..5).map {
-                        context.onEvent { none() }
-                    }
-                )
+            return TestOutput(
+                listeners = (0..5).map {
+                    context.onEvent { none() }
+                }
             )
         }
     }

@@ -13,9 +13,7 @@ class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerm
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         notifyOnTerminate()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.notifyOnTerminate() {

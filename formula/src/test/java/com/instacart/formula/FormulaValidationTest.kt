@@ -13,16 +13,14 @@ class FormulaValidationTest {
     fun `input changed during re-evaluation will throw validation error`() = runTest {
         val childFormula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(output = input)
+                return input
             }
         }
 
         val parentFormula = object : StatelessFormula<Unit, Int>() {
             val unstableInput = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = context.child(childFormula, unstableInput.incrementAndGet())
-                )
+                return context.child(childFormula, unstableInput.incrementAndGet())
             }
         }
 
@@ -40,9 +38,7 @@ class FormulaValidationTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             val unstableOutput = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = unstableOutput.incrementAndGet()
-                )
+                return unstableOutput.incrementAndGet()
             }
         }
         val error = runCatching {
@@ -73,7 +69,7 @@ class FormulaValidationTest {
                 action.onEvent {
                     none()
                 }
-                return Evaluation(output = 0)
+                return 0
             }
         }
         val error = runCatching {
@@ -90,9 +86,7 @@ class FormulaValidationTest {
             val unstableActionKey = AtomicInteger(0)
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 changeActionKeyDuringValidation()
-                return Evaluation(
-                    output = 0,
-                )
+                return 0
             }
 
             private fun ActionBuilder<Unit, Unit>.changeActionKeyDuringValidation() {

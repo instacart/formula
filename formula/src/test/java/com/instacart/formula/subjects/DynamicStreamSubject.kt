@@ -34,9 +34,7 @@ class DynamicStreamSubject(scope: CoroutineScope) {
 
         override fun Snapshot<List<String>, Unit>.evaluate(): Unit {
             observeInputActions()
-            return Evaluation(
-                output = Unit,
-            )
+            return Unit
         }
 
         private fun ActionBuilder<List<String>, Unit>.observeInputActions() {

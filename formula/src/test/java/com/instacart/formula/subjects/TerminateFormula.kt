@@ -15,9 +15,7 @@ class TerminateFormula : StatelessFormula<Unit, Unit>() {
             transition { timesTerminateCalled += 1 }
         }
 
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     // TODO: maybe at some point I will make this a generic function.

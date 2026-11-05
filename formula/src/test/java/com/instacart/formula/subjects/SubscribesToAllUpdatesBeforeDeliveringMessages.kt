@@ -24,9 +24,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
 
         override fun Snapshot<Unit, Int>.evaluate(): Int {
             observeAllUpdates()
-            return Evaluation(
-                output = state,
-            )
+            return state
         }
 
         private fun ActionBuilder<Unit, Int>.observeAllUpdates() {

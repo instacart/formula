@@ -1,13 +1,12 @@
 Actions perform work and emit events back to the formula — observing streams, running
 async operations, and responding to lifecycle. Declare them through `ActionBuilder` on the
-`Snapshot` receiver in `evaluate()`; `Evaluation(output = ...)` remains as a compatibility
-helper that returns the output directly. The runtime
-manages action lifecycles, starting them when declared and cancelling them when removed.
+`Snapshot` receiver in `evaluate()`. The runtime manages action lifecycles, starting them when
+declared and cancelling them when removed.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Output {
     observeUserChanges()
-    return Evaluation(output = ...)
+    return ...
 }
 
 private fun ActionBuilder<Input, State>.observeUserChanges() {

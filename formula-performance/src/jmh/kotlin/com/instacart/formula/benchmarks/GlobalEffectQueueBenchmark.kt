@@ -95,24 +95,22 @@ open class GlobalEffectQueueBenchmark {
         override fun initialState(input: Unit) = Unit
 
         override fun Snapshot<Unit, Unit>.evaluate(): EffectOutput {
-            return Evaluation(
-                output = EffectOutput(
-                    triggerEffects = context.onEvent { effectCount: Int ->
-                        // Start with no-op transition
-                        var result: Transition.Result<Unit> = none()
+            return EffectOutput(
+                triggerEffects = context.onEvent { effectCount: Int ->
+                    // Start with no-op transition
+                    var result: Transition.Result<Unit> = none()
 
-                        // Chain effects using andThen
-                        for (i in 1..effectCount) {
-                            result = result.andThen {
-                                transition {
-                                    effectCounter.incrementAndGet()
-                                }
+                    // Chain effects using andThen
+                    for (i in 1..effectCount) {
+                        result = result.andThen {
+                            transition {
+                                effectCounter.incrementAndGet()
                             }
                         }
-
-                        result
                     }
-                )
+
+                    result
+                }
             )
         }
     }

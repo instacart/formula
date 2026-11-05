@@ -25,11 +25,9 @@ class EventCallbackFormula(
                 transition(newState)
             }
         }
-        return Evaluation(
-            output = Output(
-                state = state,
-                changeState = changeState,
-            )
+        return Output(
+            state = state,
+            changeState = changeState,
         )
     }
 }

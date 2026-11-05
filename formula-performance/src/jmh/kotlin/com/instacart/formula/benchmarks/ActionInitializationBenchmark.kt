@@ -68,11 +68,9 @@ open class ActionInitializationBenchmark {
 
         override fun Snapshot<InitInput, Unit>.evaluate(): ActionOutput {
             startGenerationActions()
-            return Evaluation(
-                output = ActionOutput(
-                    actionCount = input.count,
-                    generation = input.generation
-                ),
+            return ActionOutput(
+                actionCount = input.count,
+                generation = input.generation
             )
         }
 

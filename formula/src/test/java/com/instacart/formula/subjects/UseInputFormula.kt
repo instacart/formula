@@ -12,6 +12,6 @@ class UseInputFormula<Type> : Formula<Type, Type, Type>() {
     }
 
     override fun Snapshot<Type, Type>.evaluate(): Type {
-        return Evaluation(output = state)
+        return state
     }
 }

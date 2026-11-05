@@ -32,12 +32,10 @@ class StopwatchFormula(
 
     override fun Snapshot<Unit, State>.evaluate(): StopwatchRenderModel {
         updateElapsedTime()
-        return Evaluation(
-            output = StopwatchRenderModel(
-                timePassed = formatTimePassed(state.elapsedTimeMillis),
-                startStopButton = startStopButton(),
-                resetButton = resetButton(),
-            ),
+        return StopwatchRenderModel(
+            timePassed = formatTimePassed(state.elapsedTimeMillis),
+            startStopButton = startStopButton(),
+            resetButton = resetButton(),
         )
     }
 

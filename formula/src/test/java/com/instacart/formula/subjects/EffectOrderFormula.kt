@@ -32,15 +32,13 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
 
     override fun Snapshot<Input, State>.evaluate(): Output {
         deliverPendingInputEvent()
-        return Evaluation(
-            output = Output(
-                triggerEvent = context.onEvent {
-                    val (updated, eventId) = state.nextId()
-                    transition(updated.copy(pending = true)) {
-                        input.onEvent(Event(eventId))
-                    }
+        return Output(
+            triggerEvent = context.onEvent {
+                val (updated, eventId) = state.nextId()
+                transition(updated.copy(pending = true)) {
+                    input.onEvent(Event(eventId))
                 }
-            ),
+            }
         )
     }
 

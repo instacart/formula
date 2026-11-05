@@ -8,16 +8,14 @@ class CounterFormula : Formula<Unit, Int, CounterRenderModel>() {
     override fun initialState(input: Unit): Int = 0
 
     override fun Snapshot<Unit, Int>.evaluate(): CounterRenderModel {
-        return Evaluation(
-            output = CounterRenderModel(
-                count = "Count: $state",
-                onDecrement = context.onEvent {
-                    transition(state - 1)
-                },
-                onIncrement = context.onEvent {
-                    transition(state + 1)
-                }
-            )
+        return CounterRenderModel(
+            count = "Count: $state",
+            onDecrement = context.onEvent {
+                transition(state - 1)
+            },
+            onIncrement = context.onEvent {
+                transition(state + 1)
+            }
         )
     }
 }

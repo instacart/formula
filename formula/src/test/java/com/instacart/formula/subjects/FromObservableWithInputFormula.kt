@@ -24,9 +24,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         fetchItem()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.fetchItem() {

@@ -35,11 +35,9 @@ object ChildMessageTriggersEventTransitionInParent {
 
         override fun Snapshot<Unit, Int>.evaluate(): RenderModel {
             observeServiceEvents()
-            return Evaluation(
-                output = RenderModel(
-                    count = state,
-                    child = context.child(childFormula)
-                ),
+            return RenderModel(
+                count = state,
+                child = context.child(childFormula)
             )
         }
 

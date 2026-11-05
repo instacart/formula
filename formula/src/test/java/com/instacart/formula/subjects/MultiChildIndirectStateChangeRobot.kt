@@ -34,14 +34,12 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
 
         override fun Snapshot<Input, State>.evaluate(): Output {
             sendEventsToParent()
-            return Evaluation(
-                output = Output(
-                    value = state.value,
-                    onChildAction = context.callback {
-                        val newState = state.copy(actionId = state.actionId + 1)
-                        transition(newState)
-                    }
-                ),
+            return Output(
+                value = state.value,
+                onChildAction = context.callback {
+                    val newState = state.copy(actionId = state.actionId + 1)
+                    transition(newState)
+                }
             )
         }
 
@@ -94,16 +92,14 @@ class MultiChildIndirectStateChangeRobot(scope: CoroutineScope) {
             }
 
             triggerChildAndUpdateParent(secondChild)
-            return Evaluation(
-                output = Output(
-                    parentValue = state.value,
-                    childValue = secondChild.value,
-                    onAction = context.callback {
-                        transition {
-                            next()
-                        }
+            return Output(
+                parentValue = state.value,
+                childValue = secondChild.value,
+                onAction = context.callback {
+                    transition {
+                        next()
                     }
-                ),
+                }
             )
         }
 

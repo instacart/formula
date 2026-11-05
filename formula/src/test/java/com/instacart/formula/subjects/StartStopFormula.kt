@@ -29,13 +29,11 @@ class StartStopFormula : Formula<Unit, State, Output>() {
 
     override fun Snapshot<Unit, State>.evaluate(): Output {
         listenForIncrementEvents()
-        return Evaluation(
-            output = Output(
-                state = state.count,
-                // We need to specify keys since `UpdateListenFlag` type is used two times.
-                startListening = context.onEvent("start", UpdateListenFlag(listen = true)),
-                stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
-            )
+        return Output(
+            state = state.count,
+            // We need to specify keys since `UpdateListenFlag` type is used two times.
+            startListening = context.onEvent("start", UpdateListenFlag(listen = true)),
+            stopListening = context.onEvent("stop", UpdateListenFlag(listen = false)),
         )
     }
 

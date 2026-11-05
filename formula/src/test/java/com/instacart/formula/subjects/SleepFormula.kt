@@ -32,17 +32,15 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
 
     override fun Snapshot<String, State>.evaluate(): Output {
         deliverPendingEventAfterDelay()
-        return Evaluation(
-            output = Output(
-                sleepEvents = state.sleepEvents,
-                onSleep = context.onEvent {
-                    val newEvent = SleepEvent(
-                        duration = it,
-                        threadName = Thread.currentThread().name,
-                    )
-                    transition(state.copy(pendingEvent = newEvent))
-                }
-            ),
+        return Output(
+            sleepEvents = state.sleepEvents,
+            onSleep = context.onEvent {
+                val newEvent = SleepEvent(
+                    duration = it,
+                    threadName = Thread.currentThread().name,
+                )
+                transition(state.copy(pendingEvent = newEvent))
+            }
         )
     }
 

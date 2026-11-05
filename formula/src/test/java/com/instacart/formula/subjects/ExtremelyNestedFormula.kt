@@ -17,9 +17,7 @@ object ExtremelyNestedFormula {
             }
 
             incrementOnInitialization()
-            return Evaluation(
-                output = state + childValue,
-            )
+            return state + childValue
         }
 
         private fun ActionBuilder<Unit, Int>.incrementOnInitialization() {

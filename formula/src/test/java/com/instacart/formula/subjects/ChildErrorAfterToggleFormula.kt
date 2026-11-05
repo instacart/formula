@@ -17,15 +17,13 @@ class ChildErrorAfterToggleFormula: Formula<HasChildrenFormula.ChildParamsInput<
 
     override fun Snapshot<HasChildrenFormula.ChildParamsInput<()-> Unit>, State>.evaluate(): Output {
         if (state.throwError) throw RuntimeException()
-        return Evaluation(
-            output = Output(
-                errorToggle = context.callback() {
-                    transition(state.copy(throwError = !state.throwError))
-                },
-                listener = context.callback {
-                    transition { input.value() }
-                }
-            ),
+        return Output(
+            errorToggle = context.callback() {
+                transition(state.copy(throwError = !state.throwError))
+            },
+            listener = context.callback {
+                transition { input.value() }
+            }
         )
     }
 }

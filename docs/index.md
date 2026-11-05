@@ -75,16 +75,14 @@ class CounterFormula : Formula<Unit, CounterState, CounterOutput>() {
 
     override fun Snapshot<Unit, CounterState>.evaluate(): CounterOutput {
         val count = state.count
-        return Evaluation(
-            output = CounterOutput(
-                count = "Count: $count",
-                onDecrement = context.onEvent {
-                    transition(state.copy(count = count - 1))
-                },
-                onIncrement = context.onEvent {
-                    transition(state.copy(count = count + 1))
-                }
-            )
+        return CounterOutput(
+            count = "Count: $count",
+            onDecrement = context.onEvent {
+                transition(state.copy(count = count - 1))
+            },
+            onIncrement = context.onEvent {
+                transition(state.copy(count = count + 1))
+            }
         )
     }
 }

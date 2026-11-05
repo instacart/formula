@@ -67,14 +67,12 @@ open class ActionCountBenchmark {
 
         override fun Snapshot<Int, Int>.evaluate(): ActionOutput {
             keepNoopActionsActive()
-            return Evaluation(
-                output = ActionOutput(
-                    count = state,
-                    actionCount = input,
-                    onIncrement = context.callback {
-                        transition(state + 1)
-                    }
-                ),
+            return ActionOutput(
+                count = state,
+                actionCount = input,
+                onIncrement = context.callback {
+                    transition(state + 1)
+                }
             )
         }
 

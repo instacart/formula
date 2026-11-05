@@ -22,7 +22,7 @@ class AbstractFormulaTypeInheritanceInteractor(testScope: TestScope) {
             val one = context.child(AbstractClassInheritanceFormulas.One())
             val two = context.child(AbstractClassInheritanceFormulas.Two())
 
-            return Evaluation(one + two)
+            return one + two
         }
     }
 

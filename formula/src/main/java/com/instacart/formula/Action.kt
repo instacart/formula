@@ -35,7 +35,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * ```kotlin
  * override fun Snapshot<Input, State>.evaluate(): Output {
  *   observeActionEvents()
- *   return Evaluation(output = output)
+ *   return output
  * }
  *
  * private fun ActionBuilder<Input, State>.observeActionEvents() {

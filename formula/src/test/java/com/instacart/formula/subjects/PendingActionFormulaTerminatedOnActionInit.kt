@@ -34,7 +34,7 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
     class ParentFormula(val actionFormula: ActionFormula): StatelessFormula<Unit, Int>() {
         override fun Snapshot<Unit, Unit>.evaluate(): Int {
             val output = context.child(actionFormula)
-            return Evaluation(output)
+            return output
         }
     }
 
@@ -45,9 +45,7 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
 
         override fun Snapshot<Unit, Int>.evaluate(): Int {
             terminateOnActionStart()
-            return Evaluation(
-                output = state,
-            )
+            return state
         }
 
         private fun ActionBuilder<Unit, Int>.terminateOnActionStart() {

@@ -45,11 +45,9 @@ class TaskListFormula(
         }
 
         observeTasks()
-        return Evaluation(
-            output = TaskListRenderModel(
-                items = items,
-                filterOptions = filterOptions()
-            )
+        return TaskListRenderModel(
+            items = items,
+            filterOptions = filterOptions()
         )
     }
 

@@ -7,7 +7,7 @@ package com.instacart.formula
  * ```kotlin
  * override fun Snapshot<Input, State>.evaluate(): Output {
  *   trackPageInitialization()
- *   return Evaluation(output = PageOutput(...))
+ *   return PageOutput(...)
  * }
  *
  * private fun ActionBuilder<Input, State>.trackPageInitialization() {

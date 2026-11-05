@@ -28,14 +28,12 @@ class OptionalEventCallbackFormula :
             null
         }
 
-        return Evaluation(
-            output = Output(
-                state = state.state,
-                listener = callback,
-                toggleListener = context.onEvent {
-                    transition(state.copy(callbackEnabled = !state.callbackEnabled))
-                }
-            )
+        return Output(
+            state = state.state,
+            listener = callback,
+            toggleListener = context.onEvent {
+                transition(state.copy(callbackEnabled = !state.callbackEnabled))
+            }
         )
     }
 }

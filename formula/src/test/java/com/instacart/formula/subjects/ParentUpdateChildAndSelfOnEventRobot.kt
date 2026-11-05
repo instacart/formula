@@ -36,15 +36,13 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
         override fun Snapshot<Unit, State>.evaluate(): Output {
             val incrementOutput = context.child(incrementFormula)
             triggerChildAndUpdateParent(incrementOutput)
-            return Evaluation(
-                output = Output(
-                    parentValue = state.value,
-                    childValue = incrementOutput.value,
-                    onAction = context.callback {
-                        val newState = state.copy(actionId = state.actionId + 1)
-                        transition(newState)
-                    }
-                ),
+            return Output(
+                parentValue = state.value,
+                childValue = incrementOutput.value,
+                onAction = context.callback {
+                    val newState = state.copy(actionId = state.actionId + 1)
+                    transition(newState)
+                }
             )
         }
 

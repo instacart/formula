@@ -41,35 +41,33 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
 
     override fun Snapshot<Unit, State>.evaluate(): Output {
         runActionAndTransition()
-        return Evaluation(
-            output = Output(
-                actionExecuted = state.actionExecuted,
-                nullableActionExecuted = state.nullableActionExecuted,
-                customActionExecuted = state.customActionExecuted,
-                runNullableActionAgain = context.onEvent {
-                    val newState = state.copy(
-                        nullableAction = Action
-                            .onData(Unit)
-                            .cancelPrevious(state.nullableAction)
+        return Output(
+            actionExecuted = state.actionExecuted,
+            nullableActionExecuted = state.nullableActionExecuted,
+            customActionExecuted = state.customActionExecuted,
+            runNullableActionAgain = context.onEvent {
+                val newState = state.copy(
+                    nullableAction = Action
+                        .onData(Unit)
+                        .cancelPrevious(state.nullableAction)
+                )
+                transition(newState)
+            },
+            runActionAgain = context.onEvent {
+                val newState = state.copy(
+                    action = state.action.runAgain()
+                )
+                transition(newState)
+            },
+            runCustomAction = context.onEvent {
+                val newState = state.copy(
+                    customAction = CustomAction(
+                        actionNumber = state.customActionExecuted.inc(),
+                        action = Action.onData(Unit).cancelPrevious(state.customAction),
                     )
-                    transition(newState)
-                },
-                runActionAgain = context.onEvent {
-                    val newState = state.copy(
-                        action = state.action.runAgain()
-                    )
-                    transition(newState)
-                },
-                runCustomAction = context.onEvent {
-                    val newState = state.copy(
-                        customAction = CustomAction(
-                            actionNumber = state.customActionExecuted.inc(),
-                            action = Action.onData(Unit).cancelPrevious(state.customAction),
-                        )
-                    )
-                    transition(newState)
-                },
-            ),
+                )
+                transition(newState)
+            },
         )
     }
 

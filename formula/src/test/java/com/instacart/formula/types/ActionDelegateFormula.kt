@@ -25,9 +25,7 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
 
     override fun Snapshot<Input, Int>.evaluate(): Int {
         runDelegatedAction()
-        return Evaluation(
-            output = state,
-        )
+        return state
     }
 
     private fun ActionBuilder<Input, Int>.runDelegatedAction() {

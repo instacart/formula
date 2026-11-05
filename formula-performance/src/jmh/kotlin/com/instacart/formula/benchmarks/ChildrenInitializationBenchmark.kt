@@ -77,11 +77,9 @@ open class ChildrenInitializationBenchmark {
                 )
             }
 
-            return Evaluation(
-                output = ParentOutput(
-                    childCount = childOutputs.size,
-                    generation = input.generation
-                )
+            return ParentOutput(
+                childCount = childOutputs.size,
+                generation = input.generation
             )
         }
     }
@@ -97,11 +95,9 @@ open class ChildrenInitializationBenchmark {
         override fun key(input: ChildInput): Any = Pair(input.id, input.generation)
 
         override fun Snapshot<ChildInput, Unit>.evaluate(): ChildOutput {
-            return Evaluation(
-                output = ChildOutput(
-                    id = input.id,
-                    generation = input.generation
-                )
+            return ChildOutput(
+                id = input.id,
+                generation = input.generation
             )
         }
     }

@@ -35,6 +35,6 @@ class KeyUsingListFormula :
             }
         }
 
-        return Evaluation(output = Output(items))
+        return Output(items)
     }
 }

@@ -13,13 +13,11 @@ class CounterFormula : Formula<Unit, CounterFormula.State, CounterOutput>() {
     override fun initialState(input: Unit) = State(count = 0)
 
     override fun Snapshot<Unit, State>.evaluate(): CounterOutput {
-        return Evaluation(
-            output = CounterOutput(
-                count = state.count,
-                onIncrement = context.onEvent {
-                    transition(state.copy(count = state.count + 1))
-                },
-            )
+        return CounterOutput(
+            count = state.count,
+            onIncrement = context.onEvent {
+                transition(state.copy(count = state.count + 1))
+            },
         )
     }
 }

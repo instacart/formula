@@ -41,13 +41,11 @@ class RootFormulaKeyTestSubject(scope: CoroutineScope) {
         override fun key(input: Int): Any? = input
 
         override fun Snapshot<Int, Int>.evaluate(): Output {
-            return Evaluation(
-                output = Output(
-                    value = state,
-                    increment = context.onEvent {
-                        transition(state + 1)
-                    }
-                )
+            return Output(
+                value = state,
+                increment = context.onEvent {
+                    transition(state + 1)
+                }
             )
         }
     }

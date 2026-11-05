@@ -170,7 +170,7 @@ class WrongFormulaUsageDetectorTest {
             |            }
             |        }
             |        registerStreamAction()
-            |        return Evaluation(output = Unit)
+            |        return Unit
             |    }
             |}""".trimMargin()
 
@@ -209,7 +209,7 @@ class WrongFormulaUsageDetectorTest {
             |            }
             |        }
             |        registerDelegatedAction()
-            |        return Evaluation(output = Unit)
+            |        return Unit
             |    }
             |}""".trimMargin()
 

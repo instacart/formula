@@ -73,11 +73,9 @@ open class CallbackInitializationBenchmark {
                 }
             }
 
-            return Evaluation(
-                output = CallbackOutput(
-                    callbacks = callbacks,
-                    generation = input.generation
-                )
+            return CallbackOutput(
+                callbacks = callbacks,
+                generation = input.generation
             )
         }
     }

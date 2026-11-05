@@ -19,9 +19,7 @@ class OnStartActionFormula(
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         emitEventsOnStart()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.emitEventsOnStart() {

@@ -22,6 +22,6 @@ class StreamInputFormula : StatelessFormula<Int, Unit>()  {
             )
         )
 
-        return Evaluation(output = Unit)
+        return Unit
     }
 }

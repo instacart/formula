@@ -17,12 +17,10 @@ object DuplicateListenerKeysHandledByIndexing {
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
         override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
             val keys = listOf(1, 2, 1, 1, 1)
-            return Evaluation(
-                output = TestOutput(
-                    listeners = keys.map { key ->
-                        context.onEvent(key) { none() }
-                    }
-                )
+            return TestOutput(
+                listeners = keys.map { key ->
+                    context.onEvent(key) { none() }
+                }
             )
         }
     }

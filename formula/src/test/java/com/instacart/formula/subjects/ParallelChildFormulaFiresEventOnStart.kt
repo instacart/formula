@@ -21,7 +21,7 @@ object ParallelChildFormulaFiresEventOnStart {
         override fun Snapshot<Unit, Unit>.evaluate(): Int {
             val firstOutput = context.child(first)
             context.child(second, OnStartActionFormula.Input(onAction = firstOutput.onIncrement))
-            return Evaluation(firstOutput.value)
+            return firstOutput.value
         }
     }
 }

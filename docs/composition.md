@@ -5,9 +5,7 @@ receiving the child's Output.
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Output {
     val listOutput = context.child(itemListFormula, childInput)
-    return Evaluation(
-        output = Output(list = listOutput)
-    )
+    return Output(list = listOutput)
 }
 ```
 

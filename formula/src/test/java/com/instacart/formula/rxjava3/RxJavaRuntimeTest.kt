@@ -47,9 +47,7 @@ class RxJavaRuntimeTest {
                 Action.fromFlow { flowOf(1, 2) }.onEvent {
                     transition(it)
                 }
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
         }
 

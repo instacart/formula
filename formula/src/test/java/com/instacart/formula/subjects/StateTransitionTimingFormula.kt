@@ -25,15 +25,13 @@ class StateTransitionTimingFormula
 
     override fun Snapshot<Unit, List<State>>.evaluate(): Output {
         forwardExternalTransitions()
-        return Evaluation(
-            output = Output(
-                events = state,
-                onStateTransition = context.onEvent {
-                    transition(state.plus(State.INTERNAL)) {
-                        relay.triggerEvent()
-                    }
+        return Output(
+            events = state,
+            onStateTransition = context.onEvent {
+                transition(state.plus(State.INTERNAL)) {
+                    relay.triggerEvent()
                 }
-            ),
+            }
         )
     }
 

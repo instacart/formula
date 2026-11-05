@@ -37,14 +37,12 @@ object ChildActionFiresParentEventOnStart {
                 context.child(child, listener)
             }
 
-            return Evaluation(
-                output = Output(
-                    value = state.value,
-                    showChild = context.onEvent {
-                        val newState = state.copy(runChild = it)
-                        transition(newState)
-                    }
-                ),
+            return Output(
+                value = state.value,
+                showChild = context.onEvent {
+                    val newState = state.copy(runChild = it)
+                    transition(newState)
+                }
             )
         }
     }
@@ -52,9 +50,7 @@ object ChildActionFiresParentEventOnStart {
     class Child(val values: List<Int>) : StatelessFormula<Listener<Int>, Unit>() {
         override fun Snapshot<Listener<Int>, Unit>.evaluate(): Unit {
             forwardValuesToParent()
-            return Evaluation(
-                output = Unit,
-            )
+            return Unit
         }
 
         private fun ActionBuilder<Listener<Int>, Unit>.forwardValuesToParent() {

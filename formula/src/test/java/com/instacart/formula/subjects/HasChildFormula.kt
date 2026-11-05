@@ -26,11 +26,9 @@ class HasChildFormula<ChildInput, ChildOutput>(
     override fun initialState(input: Unit): Int = 0
 
     override fun Snapshot<Unit, Int>.evaluate(): Output<ChildOutput> {
-        return Evaluation(
-            output = Output(
-                state = state,
-                child = context.child(child, createChildInput(context, state))
-            )
+        return Output(
+            state = state,
+            child = context.child(child, createChildInput(context, state))
         )
     }
 }

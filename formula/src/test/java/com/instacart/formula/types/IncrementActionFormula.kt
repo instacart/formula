@@ -16,9 +16,7 @@ class IncrementActionFormula(
 
     override fun Snapshot<Unit, Int>.evaluate(): Int {
         incrementOnAction()
-        return Evaluation(
-            output = state,
-        )
+        return state
     }
 
     private fun ActionBuilder<Unit, Int>.incrementOnAction() {

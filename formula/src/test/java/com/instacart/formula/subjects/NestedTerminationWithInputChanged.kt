@@ -22,9 +22,7 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
             if (input) {
                 context.child(terminateFormula)
             }
-            return Evaluation(
-                output = Unit
-            )
+            return Unit
         }
     }
 
@@ -39,8 +37,6 @@ class NestedTerminationWithInputChanged: Formula<Boolean, Boolean, Output>() {
         context.onEvent<Unit> { none() }
         context.child(passThroughFormula, state)
 
-        return Evaluation(
-            output = Output
-        )
+        return Output
     }
 }

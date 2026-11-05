@@ -13,13 +13,11 @@ class NullableStateFormula : Formula<Unit, String?, NullableStateFormula.Output>
     override fun initialState(input: Unit): String? = null
 
     override fun Snapshot<Unit, String?>.evaluate(): Output {
-        return Evaluation(
-            output = Output(
-                state = state,
-                updateState = context.onEvent<String?> {
-                    transition(it)
-                }
-            )
+        return Output(
+            state = state,
+            updateState = context.onEvent<String?> {
+                transition(it)
+            }
         )
     }
 }

@@ -23,11 +23,4 @@ interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
      * used after evaluation has finished.
      */
     val context: FormulaContext<Input, State>
-
-    /**
-     * Compatibility helper for formulas migrating from the legacy `Evaluation(...)` call syntax.
-     * Actions are declared through [ActionBuilder] during evaluation; the formula returns [output]
-     * directly.
-     */
-    fun <Output> Evaluation(output: Output): Output = output
 }

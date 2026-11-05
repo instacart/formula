@@ -17,11 +17,9 @@ object ReusableFunctionCreatesUniqueListeners {
 
     class TestFormula : StatelessFormula<Unit, TestOutput>() {
         override fun Snapshot<Unit, Unit>.evaluate(): TestOutput {
-            return Evaluation(
-                output = TestOutput(
-                    firstListener = createDefaultCallback(),
-                    secondListener = createDefaultCallback()
-                )
+            return TestOutput(
+                firstListener = createDefaultCallback(),
+                secondListener = createDefaultCallback()
             )
         }
 

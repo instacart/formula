@@ -15,16 +15,14 @@ hierarchy state changes.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Output {
-    return Evaluation(
-        output = CounterOutput(
-            count = state.count,
-            onIncrement = context.onEvent {
-                transition(state.copy(count = state.count + 1))
-            },
-            onDecrement = context.onEvent {
-                transition(state.copy(count = state.count - 1))
-            }
-        )
+    return CounterOutput(
+        count = state.count,
+        onIncrement = context.onEvent {
+            transition(state.copy(count = state.count + 1))
+        },
+        onDecrement = context.onEvent {
+            transition(state.copy(count = state.count - 1))
+        }
     )
 }
 ```

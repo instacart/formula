@@ -39,7 +39,7 @@ class MyFormula(
 
     override fun Snapshot<Input, State>.evaluate(): Output {
         observeNetworkStatus()
-        return Evaluation(output = ...)
+        return ...
     }
 
     private fun ActionBuilder<Input, State>.observeNetworkStatus() {

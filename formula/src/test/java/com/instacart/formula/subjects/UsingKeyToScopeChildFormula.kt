@@ -22,8 +22,6 @@ class UsingKeyToScopeChildFormula : Formula<Unit, Unit, UsingKeyToScopeChildForm
             context.child(childFormula, "value 2")
         }
 
-        return Evaluation(
-            output = Output(listOf(child1, child2))
-        )
+        return Output(listOf(child1, child2))
     }
 }

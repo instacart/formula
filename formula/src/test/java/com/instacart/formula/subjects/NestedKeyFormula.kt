@@ -20,8 +20,6 @@ class NestedKeyFormula : Formula<Unit, Unit, NestedKeyFormula.Output>() {
             }
         }
 
-        return Evaluation(
-            output = Output(callback)
-        )
+        return Output(callback)
     }
 }

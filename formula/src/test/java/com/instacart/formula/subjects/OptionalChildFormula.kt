@@ -34,13 +34,11 @@ class OptionalChildFormula<ChildInput, ChildOutput>(
             null
         }
 
-        return Evaluation(
-            output = Output(
-                child = childOutput,
-                toggleChild = context.onEvent {
-                    transition(state.copy(showChild = !state.showChild))
-                }
-            )
+        return Output(
+            child = childOutput,
+            toggleChild = context.onEvent {
+                transition(state.copy(showChild = !state.showChild))
+            }
         )
     }
 }

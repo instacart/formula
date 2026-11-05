@@ -22,9 +22,7 @@ class StateFlowRuntimeTest {
     @Test fun `formula with no input`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = 1,
-                )
+                return 1
             }
         }
 
@@ -37,9 +35,7 @@ class StateFlowRuntimeTest {
     @Test fun `formula with input`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
         }
 
@@ -62,9 +58,7 @@ class StateFlowRuntimeTest {
                 Action.fromFlow { eventBus }.onEvent {
                     transition(it)
                 }
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
         }
 
@@ -117,9 +111,7 @@ class StateFlowRuntimeTest {
     @Test fun `throws an exception if coroutine scope does not contain a job`() = runTest {
         val formula = object : StatelessFormula<Unit, Int>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = 1,
-                )
+                return 1
             }
         }
 
@@ -138,9 +130,7 @@ class StateFlowRuntimeTest {
             runTest {
                 val formula = object : StatelessFormula<Unit, Int>() {
                     override fun Snapshot<Unit, Unit>.evaluate(): Int {
-                        return Evaluation(
-                            output = 1,
-                        )
+                        return 1
                     }
                 }
 

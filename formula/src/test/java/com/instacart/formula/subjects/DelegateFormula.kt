@@ -17,11 +17,9 @@ class DelegateFormula<Type>(
     override fun initialState(input: Unit): Type = initialValue
 
     override fun Snapshot<Unit, Type>.evaluate(): Output<Type> {
-        return Evaluation(
-            output = Output(
-                childValue = context.child(childFormula, state),
-                changeChildInput = context.onEvent<Type> { name -> transition(name) }
-            )
+        return Output(
+            childValue = context.child(childFormula, state),
+            changeChildInput = context.onEvent<Type> { name -> transition(name) }
         )
     }
 }

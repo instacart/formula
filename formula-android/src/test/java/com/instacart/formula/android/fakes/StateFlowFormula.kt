@@ -22,9 +22,7 @@ class StateFlowFormula: Formula<RouteId<*>, String, String>() {
 
     override fun Snapshot<RouteId<*>, String>.evaluate(): String {
         forwardMatchingEvents()
-        return Evaluation(
-            output = state,
-        )
+        return state
     }
 
     private fun ActionBuilder<RouteId<*>, String>.forwardMatchingEvents() {

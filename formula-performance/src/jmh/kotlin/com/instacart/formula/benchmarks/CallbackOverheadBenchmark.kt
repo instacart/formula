@@ -78,12 +78,10 @@ open class CallbackOverheadBenchmark {
                 }
             }
 
-            return Evaluation(
-                output = CallbackOutput(
-                    count = state,
-                    onIncrement = onIncrement,
-                    generalCallbacks = generalCallbacks
-                )
+            return CallbackOutput(
+                count = state,
+                onIncrement = onIncrement,
+                generalCallbacks = generalCallbacks
             )
         }
     }

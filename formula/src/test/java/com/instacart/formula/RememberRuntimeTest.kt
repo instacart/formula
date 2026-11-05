@@ -18,9 +18,7 @@ class RememberRuntimeTest {
         val counter = AtomicInteger(0)
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = context.remember { counter.incrementAndGet() }
-                )
+                return context.remember { counter.incrementAndGet() }
             }
         }
 
@@ -48,7 +46,7 @@ class RememberRuntimeTest {
                 } else {
                     null
                 }
-                return Evaluation(output = OptionalValue(value))
+                return OptionalValue(value)
             }
         }
 
@@ -70,7 +68,7 @@ class RememberRuntimeTest {
                     context.remember { counter.incrementAndGet() },
                     context.remember { counter.incrementAndGet() },
                 )
-                return Evaluation(output = values)
+                return values
             }
         }
 
@@ -119,7 +117,7 @@ class RememberRuntimeTest {
             override fun Snapshot<Int, Unit>.evaluate(): List<Int> {
                 val a = context.key("scope-a") { doRemember(context, counter) }
                 val b = context.key("scope-b") { doRemember(context, counter) }
-                return Evaluation(output = listOf(a, b))
+                return listOf(a, b)
             }
         }
 
@@ -182,16 +180,14 @@ private class KeyRememberFormula(
     override fun initialState(input: Unit) = State()
 
     override fun Snapshot<Unit, State>.evaluate(): Output {
-        return Evaluation(
-            output = Output(
-                value = context.remember(key = state.key) { counter.incrementAndGet() },
-                changeKey = context.onEvent {
-                    transition(state.copy(key = it))
-                },
-                incrementVersion = context.onEvent {
-                    transition(state.copy(version = state.version + 1))
-                },
-            )
+        return Output(
+            value = context.remember(key = state.key) { counter.incrementAndGet() },
+            changeKey = context.onEvent {
+                transition(state.copy(key = it))
+            },
+            incrementVersion = context.onEvent {
+                transition(state.copy(version = state.version + 1))
+            },
         )
     }
 }
@@ -215,16 +211,14 @@ private class DynamicRememberFormula(
             key to context.key(key) { context.remember { counter.incrementAndGet() } }
         }
 
-        return Evaluation(
-            output = Output(
-                values = values,
-                addKey = context.onEvent {
-                    transition(state.copy(keys = state.keys + it))
-                },
-                removeKey = context.onEvent {
-                    transition(state.copy(keys = state.keys - it))
-                },
-            )
+        return Output(
+            values = values,
+            addKey = context.onEvent {
+                transition(state.copy(keys = state.keys + it))
+            },
+            removeKey = context.onEvent {
+                transition(state.copy(keys = state.keys - it))
+            },
         )
     }
 }

@@ -25,15 +25,13 @@ class NestedCallbackCallRobot(scope: CoroutineScope) {
             val next = context.callback {
                 transition(state + 1)
             }
-            return Evaluation(
-                output = Output(
-                    value = state,
-                    onAction = context.callback {
-                        transition {
-                            next()
-                        }
+            return Output(
+                value = state,
+                onAction = context.callback {
+                    transition {
+                        next()
                     }
-                )
+                }
             )
         }
     }

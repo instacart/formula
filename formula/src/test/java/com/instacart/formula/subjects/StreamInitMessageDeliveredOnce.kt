@@ -16,9 +16,7 @@ object StreamInitMessageDeliveredOnce {
         override fun Snapshot<Unit, Unit>.evaluate(): Unit {
 
             countInitializations()
-            return Evaluation(
-                output = Unit,
-            )
+            return Unit
         }
 
         private fun ActionBuilder<Unit, Unit>.countInitializations() {

@@ -5,6 +5,6 @@ import com.instacart.formula.StatelessFormula
 
 class EmptyFormula: StatelessFormula<Unit, Unit>() {
     override fun Snapshot<Unit, Unit>.evaluate(): Unit {
-        return Evaluation(output = Unit)
+        return Unit
     }
 }

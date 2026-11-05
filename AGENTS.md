@@ -22,7 +22,6 @@
 **Evaluate:**
 - Pure function called on Input/State/Child changes. Receives `Snapshot<Input, State>` with current values and `FormulaContext`.
 - Returns `Output` directly. Actions are declared during evaluation through `ActionBuilder`.
-- `Snapshot.Evaluation(output)` is a compatibility helper for the former wrapper-call syntax.
 - Must be side-effect free. Side effects only in event listeners or transition effects.
 
 **Transitions:**
@@ -89,7 +88,6 @@
 - `ActionBuilder` - Declares asynchronous actions during evaluation
 - `Action` - Represents asynchronous side effects
 - `Transition` - Represents state changes
-- `Snapshot.Evaluation(output)` - Compatibility helper that returns output directly
 - `Snapshot` - Contains current Input, State, and FormulaContext
 - `FormulaRuntime` - Entry point for starting formulas
 - `Listener<Event>` - Function type for event handlers: `(Event) -> Unit`

@@ -15,12 +15,10 @@ class SideEffectFormula(
     override fun initialState(input: Unit): Int = 0
 
     override fun Snapshot<Unit, Int>.evaluate(): Output {
-        return Evaluation(
-            output = Output(
-                triggerSideEffect = context.onEvent {
-                    transition { onSideEffect() }
-                }
-            )
+        return Output(
+            triggerSideEffect = context.onEvent {
+                transition { onSideEffect() }
+            }
         )
     }
 }

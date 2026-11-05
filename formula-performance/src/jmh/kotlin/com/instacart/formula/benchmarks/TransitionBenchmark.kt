@@ -79,7 +79,7 @@ open class TransitionBenchmark {
 
         override fun Snapshot<Unit, Unit>.evaluate(): TransitionOutput {
             val output = context.child(childFormula)
-            return Evaluation(output)
+            return output
         }
     }
 
@@ -90,13 +90,11 @@ open class TransitionBenchmark {
         override fun initialState(input: Unit) = 0
 
         override fun Snapshot<Unit, Int>.evaluate(): TransitionOutput {
-            return Evaluation(
-                output = TransitionOutput(
-                    count = state,
-                    onIncrement = context.callback {
-                        transition(state + 1)
-                    }
-                )
+            return TransitionOutput(
+                count = state,
+                onIncrement = context.callback {
+                    transition(state + 1)
+                }
             )
         }
     }

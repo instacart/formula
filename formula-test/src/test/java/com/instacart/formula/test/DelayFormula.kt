@@ -17,9 +17,7 @@ class DelayFormula(
 
     override fun Snapshot<Unit, State>.evaluate(): Int {
         emitTimerTicks()
-        return Evaluation(
-            output = state.count,
-        )
+        return state.count
     }
 
     private fun ActionBuilder<Unit, State>.emitTimerTicks() {

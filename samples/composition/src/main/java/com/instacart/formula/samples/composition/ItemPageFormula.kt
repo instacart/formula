@@ -21,11 +21,9 @@ class ItemPageFormula : StatelessFormula<Unit, ItemPageRenderModel>() {
         val items = items.map {
             context.child(itemFormula, ItemFormula.Input(itemName = it))
         }
-        return Evaluation(
-            output = ItemPageRenderModel(
-                title = "Items",
-                items = items
-            )
+        return ItemPageRenderModel(
+            title = "Items",
+            items = items
         )
     }
 }

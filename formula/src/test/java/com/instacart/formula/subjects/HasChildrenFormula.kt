@@ -52,11 +52,9 @@ class HasChildrenFormula<ChildInput, ChildOutput>(
                 context.childOrNull(child, childInput)
             }
         }
-        return Evaluation(
-            output = Output(
-                run = input,
-                childOutputs = childOutputs,
-            )
+        return Output(
+            run = input,
+            childOutputs = childOutputs,
         )
     }
 }

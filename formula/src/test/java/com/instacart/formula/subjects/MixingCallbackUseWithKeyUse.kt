@@ -16,14 +16,12 @@ class MixingCallbackUseWithKeyUse {
         override fun initialState(input: Unit) = Unit
 
         override fun Snapshot<Unit, Unit>.evaluate(): ParentOutput {
-            return Evaluation(
-                output = ParentOutput(
-                    firstCallback = context.onEvent { none() },
-                    secondCallback = context.key("scoped") {
-                        context.onEvent { none() }
-                    },
-                    thirdCallback = context.onEvent { none() }
-                )
+            return ParentOutput(
+                firstCallback = context.onEvent { none() },
+                secondCallback = context.key("scoped") {
+                    context.onEvent { none() }
+                },
+                thirdCallback = context.onEvent { none() }
             )
         }
     }

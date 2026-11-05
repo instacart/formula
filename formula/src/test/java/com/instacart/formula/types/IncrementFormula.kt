@@ -32,11 +32,9 @@ class IncrementFormula(
             }
         }
 
-        return Evaluation(
-            output = Output(
-                value = state,
-                onIncrement = onIncrement,
-            )
+        return Output(
+            value = state,
+            onIncrement = onIncrement,
         )
     }
 }

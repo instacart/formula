@@ -17,21 +17,19 @@ class MessageFormula : Formula<MessageFormula.Input, Int, MessageFormula.Output>
     override fun initialState(input: Input): Int = 0
 
     override fun Snapshot<Input, Int>.evaluate(): Output {
-        return Evaluation(
-            output = Output(
-                state = state,
-                triggerMessage = context.onEvent {
-                    transition {
-                        input.messageHandler(state)
-                    }
-                },
-                incrementAndMessage = context.onEvent {
-                    val newState = state + 1
-                    transition(newState) {
-                        input.messageHandler(newState)
-                    }
+        return Output(
+            state = state,
+            triggerMessage = context.onEvent {
+                transition {
+                    input.messageHandler(state)
                 }
-            )
+            },
+            incrementAndMessage = context.onEvent {
+                val newState = state + 1
+                transition(newState) {
+                    input.messageHandler(newState)
+                }
+            }
         )
     }
 }

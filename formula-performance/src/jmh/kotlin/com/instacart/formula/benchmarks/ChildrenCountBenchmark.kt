@@ -72,14 +72,12 @@ open class ChildrenCountBenchmark {
                 )
             }
 
-            return Evaluation(
-                output = ParentOutput(
-                    count = state,
-                    childCount = childOutputs.size,
-                    onIncrement = context.callback {
-                        transition(state + 1)
-                    }
-                )
+            return ParentOutput(
+                count = state,
+                childCount = childOutputs.size,
+                onIncrement = context.callback {
+                    transition(state + 1)
+                }
             )
         }
     }
@@ -94,9 +92,7 @@ open class ChildrenCountBenchmark {
         override fun key(input: ChildInput): Any = input.id
 
         override fun Snapshot<ChildInput, Unit>.evaluate(): ChildOutput {
-            return Evaluation(
-                output = ChildOutput(id = input.id)
-            )
+            return ChildOutput(id = input.id)
         }
     }
 

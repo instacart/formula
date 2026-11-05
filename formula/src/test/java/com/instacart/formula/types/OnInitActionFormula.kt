@@ -16,9 +16,7 @@ class OnInitActionFormula(private val eventNumber: Int) : StatelessFormula<OnIni
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
         runOnInitAction()
-        return Evaluation(
-            output = Unit,
-        )
+        return Unit
     }
 
     private fun ActionBuilder<Input, Unit>.runOnInitAction() {

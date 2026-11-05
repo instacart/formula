@@ -177,7 +177,7 @@ class FormulaRuntimeTest {
     fun `input change triggers an evaluation`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(output = input)
+                return input
             }
         }
 
@@ -194,7 +194,7 @@ class FormulaRuntimeTest {
     fun `input change is ignored if value is the same as last value`() = runTest {
         val formula = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(output = input)
+                return input
             }
         }
 
@@ -230,9 +230,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Int, Unit>.evaluate(): Int {
                 notifyOnTerminationAndRestart()
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
 
             private fun ActionBuilder<Int, Unit>.notifyOnTerminationAndRestart() {
@@ -270,9 +268,7 @@ class FormulaRuntimeTest {
         val root = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
                 disposeOnInitialization()
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
 
             private fun ActionBuilder<Int, Unit>.disposeOnInitialization() {
@@ -309,9 +305,7 @@ class FormulaRuntimeTest {
         val root = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
                 disposeOnEffect()
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
 
             private fun ActionBuilder<Int, Unit>.disposeOnEffect() {
@@ -699,11 +693,9 @@ class FormulaRuntimeTest {
                     context.callback { none() }
                 }
                 disableListenerBeforeProcessing()
-                return Evaluation(
-                    output = Output(
-                        value = state.value,
-                        increment = increment
-                    ),
+                return Output(
+                    value = state.value,
+                    increment = increment
                 )
             }
 
@@ -824,9 +816,7 @@ class FormulaRuntimeTest {
             override fun key(input: Int): Any = input
 
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = 1
-                )
+                return 1
             }
         }
 
@@ -835,7 +825,7 @@ class FormulaRuntimeTest {
                 val childCount = listOf(1, 1, 2, 1, 1).sumOf { key ->
                     context.child(childFormula, key)
                 }
-                return Evaluation(childCount)
+                return childCount
             }
         }
 
@@ -1296,9 +1286,7 @@ class FormulaRuntimeTest {
 
                 override fun Snapshot<Int, Unit>.evaluate(): Int {
                     throwDuringActionInitialization()
-                    return Evaluation(
-                        output = input,
-                    )
+                    return input
                 }
 
                 private fun ActionBuilder<Int, Unit>.throwDuringActionInitialization() {
@@ -1340,9 +1328,7 @@ class FormulaRuntimeTest {
 
                 override fun Snapshot<Int, Unit>.evaluate(): Int {
                     throwDuringActionTermination()
-                    return Evaluation(
-                        output = input,
-                    )
+                    return input
                 }
 
                 private fun ActionBuilder<Int, Unit>.throwDuringActionTermination() {
@@ -1374,9 +1360,7 @@ class FormulaRuntimeTest {
 
                 override fun Snapshot<Unit, Int>.evaluate(): Int {
                     throwDuringEffect()
-                    return Evaluation(
-                        output = state,
-                    )
+                    return state
                 }
 
                 private fun ActionBuilder<Unit, Int>.throwDuringEffect() {
@@ -1506,9 +1490,7 @@ class FormulaRuntimeTest {
         val childFormula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 notifyParentOnTermination()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Unit>.notifyParentOnTermination() {
@@ -1527,9 +1509,7 @@ class FormulaRuntimeTest {
                     context.child(childFormula)
                 }
                 incrementOnParentAction()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Boolean, Int>.incrementOnParentAction() {
@@ -1556,9 +1536,7 @@ class FormulaRuntimeTest {
         val childFormula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 terminateParentOnChildTermination()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Unit>.terminateParentOnChildTermination() {
@@ -1573,9 +1551,9 @@ class FormulaRuntimeTest {
             override fun Snapshot<Boolean, Unit>.evaluate(): Int {
                 return if (input) {
                     context.child(childFormula)
-                    Evaluation(1)
+                    1
                 } else {
-                    Evaluation(0)
+                    0
                 }
             }
         }
@@ -1598,7 +1576,7 @@ class FormulaRuntimeTest {
                 (0 until 10).forEach {
                     context.child(terminateFormula.id(it))
                 }
-                return Evaluation(Unit)
+                return Unit
             }
         }
         formula.test(this).input(Unit).dispose()
@@ -1634,9 +1612,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Boolean, Int>.evaluate(): Int {
                 emitFromTerminatedAction()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Boolean, Int>.emitFromTerminatedAction() {
@@ -1677,9 +1653,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Boolean, Int>.evaluate(): Int {
                 transitionOnActionTermination()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Boolean, Int>.transitionOnActionTermination() {
@@ -1724,9 +1698,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Boolean, Int>.evaluate(): Int {
                 terminateDuringActionTermination()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Boolean, Int>.terminateDuringActionTermination() {
@@ -1767,9 +1739,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Boolean, Int>.evaluate(): Int {
                 emitAfterFullTermination()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Boolean, Int>.emitAfterFullTermination() {
@@ -1821,9 +1791,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Unit, Boolean>.evaluate(): Unit {
                 emitOnInitBeforeRemoval()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Boolean>.emitOnInitBeforeRemoval() {
@@ -1875,7 +1843,7 @@ class FormulaRuntimeTest {
         val parent = object : StatelessFormula<Unit, Int>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Int {
                 val value = context.child(child)
-                return Evaluation(output = value)
+                return value
             }
         }
 
@@ -1890,16 +1858,14 @@ class FormulaRuntimeTest {
         val child = object : StatelessFormula<Int, Int>() {
             override fun Snapshot<Int, Unit>.evaluate(): Int {
                 if (input == 1) throw IllegalStateException("evaluation error")
-                return Evaluation(output = input)
+                return input
             }
         }
 
         val parent = object : StatelessFormula<Int, Pair<Int, Int>>() {
             override fun Snapshot<Int, Unit>.evaluate(): Pair<Int, Int> {
                 val childValue = context.child(child, input)
-                return Evaluation(
-                    output = Pair(input, childValue)
-                )
+                return Pair(input, childValue)
             }
         }
 
@@ -1936,7 +1902,7 @@ class FormulaRuntimeTest {
             object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
                 override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Int {
                     if (input.index == 1) throw RuntimeException()
-                    return Evaluation(output = input.index)
+                    return input.index
                 }
             }
         val formula = HasChildrenFormula(childCount = 3, childFormula)
@@ -1955,9 +1921,7 @@ class FormulaRuntimeTest {
             object : StatelessFormula<HasChildrenFormula.ChildParamsInput<*>, Int>() {
                 override fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.evaluate(): Int {
                     throwForChildAction()
-                    return Evaluation(
-                        output = input.index,
-                    )
+                    return input.index
                 }
 
                 private fun ActionBuilder<HasChildrenFormula.ChildParamsInput<*>, Unit>.throwForChildAction() {
@@ -2184,9 +2148,7 @@ class FormulaRuntimeTest {
         val formula = object : StatelessFormula<Int, Int>() {
             val delegate = InputIdentityFormula<Int>()
             override fun Snapshot<Int, Unit>.evaluate(): Int {
-                return Evaluation(
-                    output = context.child(delegate, input)
-                )
+                return context.child(delegate, input)
             }
         }
         val subject = formula.test(this, inspector = localInspector).input(0)
@@ -2239,9 +2201,7 @@ class FormulaRuntimeTest {
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 dispatchOnMain()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Unit>.dispatchOnMain() {
@@ -2266,9 +2226,7 @@ class FormulaRuntimeTest {
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 dispatchOnBackground()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Unit>.dispatchOnBackground() {
@@ -2293,9 +2251,7 @@ class FormulaRuntimeTest {
         val formula = object : StatelessFormula<Unit, Unit>() {
             override fun Snapshot<Unit, Unit>.evaluate(): Unit {
                 dispatchCombinedTransition()
-                return Evaluation(
-                    output = Unit,
-                )
+                return Unit
             }
 
             private fun ActionBuilder<Unit, Unit>.dispatchCombinedTransition() {
@@ -2385,9 +2341,7 @@ class FormulaRuntimeTest {
 
             override fun Snapshot<Unit, Int>.evaluate(): Int {
                 runBackgroundAction()
-                return Evaluation(
-                    output = state,
-                )
+                return state
             }
 
             private fun ActionBuilder<Unit, Int>.runBackgroundAction() {
@@ -2424,9 +2378,7 @@ class FormulaRuntimeTest {
                         context.child(childFormula, input)
                     }
                 }
-                return Evaluation(
-                    output = sum,
-                )
+                return sum
             }
         }
 
@@ -2467,9 +2419,7 @@ class FormulaRuntimeTest {
                         context.child(childFormula, input)
                     }
                 }
-                return Evaluation(
-                    output = sum,
-                )
+                return sum
             }
         }
 
@@ -2507,9 +2457,7 @@ class FormulaRuntimeTest {
                     }
                 }
                 batchStateUpdates()
-                return Evaluation(
-                    output = state + sum,
-                )
+                return state + sum
             }
 
             private fun ActionBuilder<Unit, Int>.batchStateUpdates() {
@@ -2571,9 +2519,7 @@ class FormulaRuntimeTest {
                         context.child(childFormula, input)
                     }
                 }
-                return Evaluation(
-                    output = sum,
-                )
+                return sum
             }
         }
 

@@ -9,9 +9,7 @@ class RxJavaRuntimeTest {
     @Test fun `toFlow without an input`() {
         val formula = object : StatelessFormula<Unit, String>() {
             override fun Snapshot<Unit, Unit>.evaluate(): String {
-                return Evaluation(
-                    output = "value",
-                )
+                return "value"
             }
         }
 
@@ -23,9 +21,7 @@ class RxJavaRuntimeTest {
     @Test fun `toFlow with a single input`() {
         val formula = object : StatelessFormula<String, String>() {
             override fun Snapshot<String, Unit>.evaluate(): String {
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
         }
 
@@ -38,9 +34,7 @@ class RxJavaRuntimeTest {
         val relay = PublishRelay.create<String>()
         val formula = object : StatelessFormula<String, String>() {
             override fun Snapshot<String, Unit>.evaluate(): String {
-                return Evaluation(
-                    output = input,
-                )
+                return input
             }
         }
         val observer = formula.toObservable(relay).test()
