@@ -4,6 +4,7 @@ package com.instacart.formula
  * Use [Snapshot] as the receiver when declaring actions during formula evaluation. Action
  * declarations can be extracted into a private helper on [Snapshot] and called from `evaluate()`.
  */
+@Deprecated("Use Snapshot as the receiver for action declarations.")
 interface ActionBuilder<out Input, State> {
     /**
      * Current input associated with the Formula evaluation.

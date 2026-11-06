@@ -6,6 +6,7 @@ package com.instacart.formula
  * is a state change within the Formula hierarchy, a new snapshot will be generated and
  * [Formula.evaluate] will be called again.
  */
+@Suppress("DEPRECATION")
 interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
 
     /**
