@@ -1,11 +1,10 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 
 class OnlyUpdateFormula<Input>(
-    private val build: ActionBuilder<*, Unit>.(Input) -> Unit
+    private val build: Snapshot<*, Unit>.(Input) -> Unit
 ) : StatelessFormula<Input, Unit>() {
 
     override fun Snapshot<Input, Unit>.evaluate(): Unit {
@@ -13,7 +12,7 @@ class OnlyUpdateFormula<Input>(
         return Unit
     }
 
-    private fun ActionBuilder<Input, Unit>.buildAction() {
+    private fun Snapshot<Input, Unit>.buildAction() {
         build(this, input)
     }
 }

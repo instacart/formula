@@ -1,7 +1,6 @@
 package com.instacart.formula.android.internal
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -70,13 +69,13 @@ internal class NavigationStoreFormula(
         return state
     }
 
-    private fun ActionBuilder<Unit, NavigationState>.observeStateChanges() {
+    private fun Snapshot<Unit, NavigationState>.observeStateChanges() {
         Action.fromFlow { stateChanges }.onEvent { update ->
             delegate(update)
         }
     }
 
-    private fun ActionBuilder<Unit, NavigationState>.runFeatures() {
+    private fun Snapshot<Unit, NavigationState>.runFeatures() {
         state.features.entries.forEach { entry ->
             val event = entry.value
             if (event is FeatureEvent.Init) {

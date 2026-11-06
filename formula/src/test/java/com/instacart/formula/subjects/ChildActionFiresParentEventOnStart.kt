@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -53,7 +52,7 @@ object ChildActionFiresParentEventOnStart {
             return Unit
         }
 
-        private fun ActionBuilder<Listener<Int>, Unit>.forwardValuesToParent() {
+        private fun Snapshot<Listener<Int>, Unit>.forwardValuesToParent() {
             RxAction.fromObservable {
                 for (value in values) {
                     input(value)

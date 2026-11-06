@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
@@ -46,7 +45,7 @@ class ParentUpdateChildAndSelfOnEventRobot(scope: CoroutineScope) {
             )
         }
 
-        private fun ActionBuilder<Unit, State>.triggerChildAndUpdateParent(incrementOutput: IncrementFormula.Output) {
+        private fun Snapshot<Unit, State>.triggerChildAndUpdateParent(incrementOutput: IncrementFormula.Output) {
             if (state.actionId > 0) {
                 RxAction.fromObservable(state.actionId) {
                     // Call child

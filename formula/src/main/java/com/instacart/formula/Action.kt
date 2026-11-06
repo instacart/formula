@@ -30,7 +30,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * val action = RxAction.fromObservable { Observable.just(1, 2, 3) }
  * ```
  *
- * To use it within a [Formula], declare it on the [ActionBuilder] receiver and call that helper
+ * To use it within a [Formula], declare it on the [Snapshot] receiver and call that helper
  * from `evaluate()`:
  * ```kotlin
  * override fun Snapshot<Input, State>.evaluate(): Output {
@@ -38,7 +38,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *   return output
  * }
  *
- * private fun ActionBuilder<Input, State>.observeActionEvents() {
+ * private fun Snapshot<Input, State>.observeActionEvents() {
  *   action.onEvent { event -> transition() }
  * }
  * ```

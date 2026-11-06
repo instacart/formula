@@ -1,7 +1,6 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -74,7 +73,7 @@ open class ActionInitializationBenchmark {
             )
         }
 
-        private fun ActionBuilder<InitInput, Unit>.startGenerationActions() {
+        private fun Snapshot<InitInput, Unit>.startGenerationActions() {
             // Each action gets a unique key based on generation
             // When generation changes, all actions are NEW (not redeclared)
             repeat(input.count) { index ->

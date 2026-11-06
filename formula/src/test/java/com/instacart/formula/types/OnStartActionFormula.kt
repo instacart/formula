@@ -1,6 +1,5 @@
 package com.instacart.formula.types
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.rxjava3.RxAction
@@ -22,7 +21,7 @@ class OnStartActionFormula(
         return Unit
     }
 
-    private fun ActionBuilder<Input, Unit>.emitEventsOnStart() {
+    private fun Snapshot<Input, Unit>.emitEventsOnStart() {
         RxAction.fromObservable {
             val events = 0 until eventNumber
             for (event in events) {

@@ -89,7 +89,7 @@ class FormulaValidationTest {
                 return 0
             }
 
-            private fun ActionBuilder<Unit, Unit>.changeActionKeyDuringValidation() {
+            private fun Snapshot<Unit, Unit>.changeActionKeyDuringValidation() {
                 if (unstableActionKey.getAndIncrement() == 1) {
                     val action = object : Action<Unit> {
                         override fun start(

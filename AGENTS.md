@@ -21,7 +21,7 @@
 
 **Evaluate:**
 - Pure function called on Input/State/Child changes. Receives `Snapshot<Input, State>` with current values and `FormulaContext`.
-- Returns `Output` directly. Actions are declared during evaluation through `ActionBuilder`.
+- Returns `Output` directly. Actions are declared during evaluation through `Snapshot`.
 - Must be side-effect free. Side effects only in event listeners or transition effects.
 
 **Transitions:**
@@ -42,7 +42,7 @@
 - Keying: Uses factory class (positional memoization) + optional key.
 
 **Actions:**
-- Declare actions during `evaluate()` through `ActionBuilder`; `Snapshot` implements this interface. Inline simple declarations in `evaluate()` and extract groups into private `ActionBuilder` helpers when useful.
+- Declare actions on the `Snapshot` receiver during `evaluate()`. Inline simple declarations and extract groups into private `Snapshot` extension helpers when useful.
 - The runtime keeps actions active while they are declared and cancels them when omitted or when their key changes.
 - Common: `Action.onInit()`, `Action.onData(value)`, `Action.onTerminate()`, `Action.fromFlow { }`, `Action.launch { }`.
 - Attach handler: `action.onEvent { event -> transition() }`.
@@ -85,10 +85,9 @@
 - `StatelessFormula<Input, Output>` - Formula without internal state
 - `ActionFormula<Input, Output>` - Converts Action to Formula
 - `FormulaContext` - Provides composition and event-listener APIs
-- `ActionBuilder` - Declares asynchronous actions during evaluation
 - `Action` - Represents asynchronous side effects
 - `Transition` - Represents state changes
-- `Snapshot` - Contains current Input, State, and FormulaContext
+- `Snapshot` - Contains current Input, State, FormulaContext, and action-declaration APIs
 - `FormulaRuntime` - Entry point for starting formulas
 - `Listener<Event>` - Function type for event handlers: `(Event) -> Unit`
 - `TransitionContext` - Provides utilities for creating Transition.Result

@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.FlowRelay
@@ -27,7 +26,7 @@ object SubscribesToAllUpdatesBeforeDeliveringMessages {
             return state
         }
 
-        private fun ActionBuilder<Unit, Int>.observeAllUpdates() {
+        private fun Snapshot<Unit, Int>.observeAllUpdates() {
             initial.onEvent {
                 transition {
                     incrementRelay.triggerEvent()

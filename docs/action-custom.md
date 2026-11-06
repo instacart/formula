@@ -42,7 +42,7 @@ class MyFormula(
         return ...
     }
 
-    private fun ActionBuilder<Input, State>.observeNetworkStatus() {
+    private fun Snapshot<Input, State>.observeNetworkStatus() {
         getNetworkStatusAction.onEvent { status ->
             val newState = state.copy(isOnline = status.isOnline)
             transition(newState)

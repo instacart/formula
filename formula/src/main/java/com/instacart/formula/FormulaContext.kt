@@ -6,8 +6,7 @@ import com.instacart.formula.remember.RememberFactory
 
 /**
  * Provides functionality within [evaluate][Formula.evaluate] to [compose][child] child formulas
- * and create event listeners. The [Snapshot] receiver also implements [ActionBuilder] for declaring
- * asynchronous actions.
+ * and create event listeners. Action declarations are also available on the [Snapshot] receiver.
  */
 abstract class FormulaContext<out Input, State> internal constructor(
     internal val lifecycleCache: LifecycleCache,

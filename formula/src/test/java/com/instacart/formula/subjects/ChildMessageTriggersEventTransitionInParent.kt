@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.rxjava3.RxAction
@@ -41,7 +40,7 @@ object ChildMessageTriggersEventTransitionInParent {
             )
         }
 
-        private fun ActionBuilder<Unit, Int>.observeServiceEvents() {
+        private fun Snapshot<Unit, Int>.observeServiceEvents() {
             RxAction
                 .fromObservable { service.serviceEvents() }
                 .onEvent {

@@ -3,7 +3,6 @@ package com.examples.todoapp.tasks
 import com.examples.todoapp.data.Task
 import com.examples.todoapp.data.TaskRepo
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -51,7 +50,7 @@ class TaskListFormula(
         )
     }
 
-    private fun ActionBuilder<Input, TaskListState>.observeTasks() {
+    private fun Snapshot<Input, TaskListState>.observeTasks() {
         Action.fromFlow { repo.tasks() }.onEvent {
             transition(state.copy(taskState = it))
         }

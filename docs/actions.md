@@ -1,7 +1,7 @@
 Actions perform work and emit events back to the formula — observing streams, running
-async operations, and responding to lifecycle. Declare them through `ActionBuilder` on the
-`Snapshot` receiver in `evaluate()`. The runtime manages action lifecycles, starting them when
-declared and cancelling them when removed.
+async operations, and responding to lifecycle. Declare them on the `Snapshot` receiver in
+`evaluate()`. The runtime manages action lifecycles, starting them when declared and cancelling
+them when removed.
 
 ```kotlin
 override fun Snapshot<Input, State>.evaluate(): Output {
@@ -9,7 +9,7 @@ override fun Snapshot<Input, State>.evaluate(): Output {
     return ...
 }
 
-private fun ActionBuilder<Input, State>.observeUserChanges() {
+private fun Snapshot<Input, State>.observeUserChanges() {
     Action.fromFlow { repository.observeUser(userId) }.onEvent { user ->
         transition(state.copy(user = user))
     }

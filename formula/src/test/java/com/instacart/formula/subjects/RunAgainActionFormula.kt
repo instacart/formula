@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.DelegateAction
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
@@ -71,7 +70,7 @@ class RunAgainActionFormula : Formula<Unit, State, Output>() {
         )
     }
 
-    private fun ActionBuilder<Unit, State>.runActionAndTransition() {
+    private fun Snapshot<Unit, State>.runActionAndTransition() {
         state.action.onEvent {
             val newState = state.copy(
                 actionExecuted = state.actionExecuted.inc()

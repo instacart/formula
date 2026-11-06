@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 
@@ -16,7 +15,7 @@ class RemovingTerminateStreamSendsMessageFormula : StatelessFormula<RemovingTerm
         return Unit
     }
 
-    private fun ActionBuilder<Input, Unit>.notifyOnTerminate() {
+    private fun Snapshot<Input, Unit>.notifyOnTerminate() {
         val onTerminate = input.onTerminate
         if (onTerminate != null) {
             Action.onTerminate().onEvent {

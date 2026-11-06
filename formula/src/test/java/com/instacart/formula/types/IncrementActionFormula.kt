@@ -1,6 +1,5 @@
 package com.instacart.formula.types
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.Transition
@@ -19,7 +18,7 @@ class IncrementActionFormula(
         return state
     }
 
-    private fun ActionBuilder<Unit, Int>.incrementOnAction() {
+    private fun Snapshot<Unit, Int>.incrementOnAction() {
         incrementRelay.action().onEventWithExecutionType(executionType) {
             transition(state + 1)
         }
