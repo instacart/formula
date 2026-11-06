@@ -1,6 +1,5 @@
 package com.instacart.formula.types
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -13,7 +12,7 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
      * Allows us to define a custom action.
      */
     fun interface DelegateAction {
-        fun ActionBuilder<Input, Int>.runAction()
+        fun Snapshot<Input, Int>.runAction()
     }
 
     data class Input(
@@ -28,7 +27,7 @@ class ActionDelegateFormula : Formula<ActionDelegateFormula.Input, Int, Int>() {
         return state
     }
 
-    private fun ActionBuilder<Input, Int>.runDelegatedAction() {
+    private fun Snapshot<Input, Int>.runDelegatedAction() {
         input.delegateAction?.apply {
             runAction()
         }

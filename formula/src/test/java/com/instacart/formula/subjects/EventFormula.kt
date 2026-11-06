@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestEventCallback
@@ -35,7 +34,7 @@ class EventFormula<EventT : Any>(private val events: List<EventT>) : Formula<Uni
         return state
     }
 
-    private fun ActionBuilder<Unit, Int>.observeStreamEvents() {
+    private fun Snapshot<Unit, Int>.observeStreamEvents() {
         stream.onEvent {
             val newState = state + 1
             transition(newState) {

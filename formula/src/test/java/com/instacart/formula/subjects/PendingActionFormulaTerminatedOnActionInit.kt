@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -48,7 +47,7 @@ class PendingActionFormulaTerminatedOnActionInit(scope: CoroutineScope) {
             return state
         }
 
-        private fun ActionBuilder<Unit, Int>.terminateOnActionStart() {
+        private fun Snapshot<Unit, Int>.terminateOnActionStart() {
             RxAction.fromObservable {
                 terminateAction()
                 Observable.empty()

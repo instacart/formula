@@ -1,7 +1,7 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
+import com.instacart.formula.Snapshot
 import com.instacart.formula.types.ActionDelegateFormula
 
 object CombinedParentAndChildStateChange {
@@ -19,7 +19,7 @@ object CombinedParentAndChildStateChange {
     }
 
     private object UpdateStateAction : ActionDelegateFormula.DelegateAction {
-        override fun ActionBuilder<ActionDelegateFormula.Input, Int>.runAction() {
+        override fun Snapshot<ActionDelegateFormula.Input, Int>.runAction() {
             Action.onInit().onEvent {
                 transition(state + 1) {
                     input.onAction()

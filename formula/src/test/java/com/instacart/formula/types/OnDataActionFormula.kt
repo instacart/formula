@@ -1,7 +1,6 @@
 package com.instacart.formula.types
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.Transition
@@ -24,7 +23,7 @@ class OnDataActionFormula(
         return Unit
     }
 
-    private fun ActionBuilder<Input, Unit>.forwardDataToInput() {
+    private fun Snapshot<Input, Unit>.forwardDataToInput() {
         Action.onData(input.data).onEventWithExecutionType(executionType) {
             transition { input.onData(it) }
         }

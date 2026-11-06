@@ -1,7 +1,6 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import com.instacart.formula.test.TestFormulaObserver
@@ -76,7 +75,7 @@ open class ActionCountBenchmark {
             )
         }
 
-        private fun ActionBuilder<Int, Int>.keepNoopActionsActive() {
+        private fun Snapshot<Int, Int>.keepNoopActionsActive() {
             // Create N registered actions (no-op actions for overhead measurement)
             repeat(input) { index ->
                 Action.onData(index).onEvent { event ->

@@ -2,7 +2,6 @@ package com.instacart.formula.stopwatch
 
 import android.os.SystemClock
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import java.util.concurrent.TimeUnit
@@ -39,7 +38,7 @@ class StopwatchFormula(
         )
     }
 
-    private fun ActionBuilder<Unit, State>.updateElapsedTime() {
+    private fun Snapshot<Unit, State>.updateElapsedTime() {
         if (state.isRunning) {
             Action.fromFlow {
                 flow {

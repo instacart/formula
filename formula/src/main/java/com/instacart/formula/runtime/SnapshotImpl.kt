@@ -1,7 +1,6 @@
 package com.instacart.formula.runtime
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.FormulaContext
 import com.instacart.formula.IFormula
 import com.instacart.formula.Listener
@@ -121,7 +120,7 @@ internal class SnapshotImpl<Input, State>(
     }
 
     // ==========================================================================
-    // ActionBuilder
+    // Snapshot
     // ==========================================================================
 
     override fun <Event> events(

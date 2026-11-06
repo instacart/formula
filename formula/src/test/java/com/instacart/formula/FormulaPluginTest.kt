@@ -74,7 +74,7 @@ class FormulaPluginTest {
                     return Unit
                 }
 
-                private fun ActionBuilder<Unit, Unit>.dispatchErrorAction() {
+                private fun Snapshot<Unit, Unit>.dispatchErrorAction() {
                     ErrorAction(exception).onEvent {
                         none()
                     }

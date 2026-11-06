@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -35,7 +34,7 @@ class StateTransitionTimingFormula
         )
     }
 
-    private fun ActionBuilder<Unit, List<State>>.forwardExternalTransitions() {
+    private fun Snapshot<Unit, List<State>>.forwardExternalTransitions() {
         relay.action().onEvent {
             transition(state.plus(State.EXTERNAL))
         }

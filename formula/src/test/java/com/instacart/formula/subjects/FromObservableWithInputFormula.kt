@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.rxjava3.RxAction
@@ -27,7 +26,7 @@ class FromObservableWithInputFormula : StatelessFormula<FromObservableWithInputF
         return Unit
     }
 
-    private fun ActionBuilder<Input, Unit>.fetchItem() {
+    private fun Snapshot<Input, Unit>.fetchItem() {
         val fetchItem = RxAction.fromObservable(key = input.itemId) {
             repo.fetchItem(input.itemId)
         }

@@ -233,7 +233,7 @@ class FormulaRuntimeTest {
                 return input
             }
 
-            private fun ActionBuilder<Int, Unit>.notifyOnTerminationAndRestart() {
+            private fun Snapshot<Int, Unit>.notifyOnTerminationAndRestart() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -271,7 +271,7 @@ class FormulaRuntimeTest {
                 return input
             }
 
-            private fun ActionBuilder<Int, Unit>.disposeOnInitialization() {
+            private fun Snapshot<Int, Unit>.disposeOnInitialization() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -308,7 +308,7 @@ class FormulaRuntimeTest {
                 return input
             }
 
-            private fun ActionBuilder<Int, Unit>.disposeOnEffect() {
+            private fun Snapshot<Int, Unit>.disposeOnEffect() {
                 Action.onTerminate().onEvent {
                     transition {
                         terminationCallback.invoke(input)
@@ -699,7 +699,7 @@ class FormulaRuntimeTest {
                 )
             }
 
-            private fun ActionBuilder<Unit, State>.disableListenerBeforeProcessing() {
+            private fun Snapshot<Unit, State>.disableListenerBeforeProcessing() {
                 disableListenerRelay.action().onEvent {
                     val listener = state.copy(listenerEnabled = false)
                     transition(listener)
@@ -1289,7 +1289,7 @@ class FormulaRuntimeTest {
                     return input
                 }
 
-                private fun ActionBuilder<Int, Unit>.throwDuringActionInitialization() {
+                private fun Snapshot<Int, Unit>.throwDuringActionInitialization() {
                     RxAction.fromObservable<Unit> {
                         throw RuntimeException("Test exception")
                     }.onEvent {
@@ -1331,7 +1331,7 @@ class FormulaRuntimeTest {
                     return input
                 }
 
-                private fun ActionBuilder<Int, Unit>.throwDuringActionTermination() {
+                private fun Snapshot<Int, Unit>.throwDuringActionTermination() {
                     if (input == 0) {
                         action.onEvent { none() }
                     }
@@ -1363,7 +1363,7 @@ class FormulaRuntimeTest {
                     return state
                 }
 
-                private fun ActionBuilder<Unit, Int>.throwDuringEffect() {
+                private fun Snapshot<Unit, Int>.throwDuringEffect() {
                     Action.fromFlow { events }.onEvent {
                         transition(it) {
                             throw IllegalStateException("Test exception $it")
@@ -1493,7 +1493,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Unit>.notifyParentOnTermination() {
+            private fun Snapshot<Unit, Unit>.notifyParentOnTermination() {
                 Action.onTerminate().onEvent {
                     relay.triggerEvent()
                     none()
@@ -1512,7 +1512,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Boolean, Int>.incrementOnParentAction() {
+            private fun Snapshot<Boolean, Int>.incrementOnParentAction() {
                 relay.action().onEvent {
                     transition(state + 1)
                 }
@@ -1539,7 +1539,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Unit>.terminateParentOnChildTermination() {
+            private fun Snapshot<Unit, Unit>.terminateParentOnChildTermination() {
                 Action.onTerminate().onEvent {
                     terminate()
                     none()
@@ -1615,7 +1615,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Boolean, Int>.emitFromTerminatedAction() {
+            private fun Snapshot<Boolean, Int>.emitFromTerminatedAction() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun start(
@@ -1656,7 +1656,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Boolean, Int>.transitionOnActionTermination() {
+            private fun Snapshot<Boolean, Int>.transitionOnActionTermination() {
                 newRelay.action().onEvent {
                     transition(state + 1)
                 }
@@ -1701,7 +1701,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Boolean, Int>.terminateDuringActionTermination() {
+            private fun Snapshot<Boolean, Int>.terminateDuringActionTermination() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun start(
@@ -1742,7 +1742,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Boolean, Int>.emitAfterFullTermination() {
+            private fun Snapshot<Boolean, Int>.emitAfterFullTermination() {
                 if (input) {
                     val action = object : Action<Unit> {
                         override fun key(): Any? = null
@@ -1794,7 +1794,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Boolean>.emitOnInitBeforeRemoval() {
+            private fun Snapshot<Unit, Boolean>.emitOnInitBeforeRemoval() {
                 Action.onInit().onEvent {
                     firstActionEventCount += 1
 
@@ -1924,7 +1924,7 @@ class FormulaRuntimeTest {
                     return input.index
                 }
 
-                private fun ActionBuilder<HasChildrenFormula.ChildParamsInput<*>, Unit>.throwForChildAction() {
+                private fun Snapshot<HasChildrenFormula.ChildParamsInput<*>, Unit>.throwForChildAction() {
                     Action.onInit().onEvent {
                         if (input.index == 1) throw RuntimeException()
                         transition(Unit) {}
@@ -2204,7 +2204,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Unit>.dispatchOnMain() {
+            private fun Snapshot<Unit, Unit>.dispatchOnMain() {
                 Action.onInit().onEvent {
                     transition(Effect.Main) {
                         // main-effect
@@ -2229,7 +2229,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Unit>.dispatchOnBackground() {
+            private fun Snapshot<Unit, Unit>.dispatchOnBackground() {
                 Action.onInit().onEvent {
                     transition(Effect.Background) {
                         // main-effect
@@ -2254,7 +2254,7 @@ class FormulaRuntimeTest {
                 return Unit
             }
 
-            private fun ActionBuilder<Unit, Unit>.dispatchCombinedTransition() {
+            private fun Snapshot<Unit, Unit>.dispatchCombinedTransition() {
                 Action.onInit().onEvent {
                     // Combined effect
                     val mainTransition = transition(Effect.Main) {
@@ -2344,7 +2344,7 @@ class FormulaRuntimeTest {
                 return state
             }
 
-            private fun ActionBuilder<Unit, Int>.runBackgroundAction() {
+            private fun Snapshot<Unit, Int>.runBackgroundAction() {
                 relay.action().onEventWithExecutionType(Transition.Background) {
                     transition(state + 1)
                 }
@@ -2460,7 +2460,7 @@ class FormulaRuntimeTest {
                 return state + sum
             }
 
-            private fun ActionBuilder<Unit, Int>.batchStateUpdates() {
+            private fun Snapshot<Unit, Int>.batchStateUpdates() {
                 sleepRelay.action().onEvent {
                     Thread.sleep(500)
                     transition(state + 1)

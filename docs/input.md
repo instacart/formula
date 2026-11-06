@@ -28,7 +28,7 @@ override fun Snapshot<Input, State>.evaluate(): Output {
     return ...
 }
 
-private fun ActionBuilder<Input, State>.fetchItem() {
+private fun Snapshot<Input, State>.fetchItem() {
     Action.launchCatching(key = input.itemId) {
         repo.fetchItem(input.itemId)
     }.onEvent { result ->

@@ -1,7 +1,6 @@
 package com.instacart.formula.test
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 import kotlin.time.Duration
@@ -20,7 +19,7 @@ class DelayFormula(
         return state.count
     }
 
-    private fun ActionBuilder<Unit, State>.emitTimerTicks() {
+    private fun Snapshot<Unit, State>.emitTimerTicks() {
         Action.fromFlow {
             flow {
                 delay(delay)

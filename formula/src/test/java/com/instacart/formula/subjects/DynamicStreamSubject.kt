@@ -2,7 +2,6 @@ package com.instacart.formula.subjects
 
 import com.google.common.truth.Truth.assertThat
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
@@ -37,7 +36,7 @@ class DynamicStreamSubject(scope: CoroutineScope) {
             return Unit
         }
 
-        private fun ActionBuilder<List<String>, Unit>.observeInputActions() {
+        private fun Snapshot<List<String>, Unit>.observeInputActions() {
             input.forEach { key ->
                 action(key).onEvent {
                     none()

@@ -1,22 +1,10 @@
 package com.instacart.formula
 
 /**
- * Builds actions during formula evaluation. Since [Snapshot] implements [ActionBuilder], action
- * declarations can be extracted into a private helper and called from `evaluate()`:
- *
- * ```kotlin
- * override fun Snapshot<Input, State>.evaluate(): Output {
- *   trackPageInitialization()
- *   return PageOutput(...)
- * }
- *
- * private fun ActionBuilder<Input, State>.trackPageInitialization() {
- *   Action.onInit().onEvent {
- *     transition { analytics.trackPageInitialized() }
- *   }
- * }
- * ```
+ * Use [Snapshot] as the receiver when declaring actions during formula evaluation. Action
+ * declarations can be extracted into a private helper on [Snapshot] and called from `evaluate()`.
  */
+@Deprecated("Use Snapshot as the receiver for action declarations.")
 interface ActionBuilder<out Input, State> {
     /**
      * Current input associated with the Formula evaluation.

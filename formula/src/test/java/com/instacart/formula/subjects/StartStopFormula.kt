@@ -1,6 +1,5 @@
 package com.instacart.formula.subjects
 
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -37,7 +36,7 @@ class StartStopFormula : Formula<Unit, State, Output>() {
         )
     }
 
-    private fun ActionBuilder<Unit, State>.listenForIncrementEvents() {
+    private fun Snapshot<Unit, State>.listenForIncrementEvents() {
         if (state.listenForEvents) {
             incrementEvents.action().onEvent {
                 transition(state.copy(count = state.count + 1))

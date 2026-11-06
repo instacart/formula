@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Snapshot
 import com.instacart.formula.StatelessFormula
 import com.instacart.formula.test.test
@@ -19,7 +18,7 @@ object StreamInitMessageDeliveredOnce {
             return Unit
         }
 
-        private fun ActionBuilder<Unit, Unit>.countInitializations() {
+        private fun Snapshot<Unit, Unit>.countInitializations() {
             Action.onInit().onEvent {
                 transition { timesInitializedCalled += 1 }
             }

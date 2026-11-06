@@ -1,7 +1,6 @@
 package com.instacart.formula.benchmarks
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Cancelable
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
@@ -74,7 +73,7 @@ open class TransitionQueueBenchmark {
             return state
         }
 
-        private fun ActionBuilder<Int, Int>.emitMultipleEventsOnStart() {
+        private fun Snapshot<Int, Int>.emitMultipleEventsOnStart() {
             if (input > 0) {
                 // Action that emits multiple events on start
                 MultiEmitAction(input).onEvent { event ->

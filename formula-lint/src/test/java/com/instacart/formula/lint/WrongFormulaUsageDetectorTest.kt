@@ -35,6 +35,8 @@ class WrongFormulaUsageDetectorTest {
             val input: Input
             val state: State
             val context: FormulaContext<Input, State>
+            fun <Event> events(stream: Stream<Event>, transition: Transition<Input, State, Event>)
+            fun <Event> Stream<Event>.onEvent(transition: Transition<Input, State, Event>)
         }
     """.trimIndent()
 
@@ -50,17 +52,7 @@ class WrongFormulaUsageDetectorTest {
             open fun <Event> eventCallback(key: Any, transition: Transition<Input, State, Event>): (Event) -> Unit
             open fun <ChildOutput> child(child: IFormula<Unit, ChildOutput>): ChildOutput
             open fun <ChildInput, ChildOutput> child(formula: IFormula<ChildInput, ChildOutput>, input: ChildInput): ChildOutput
-            open fun actions(init: ActionBuilder<Input, State>.() -> Unit): List<BoundStream<*>>
             open fun <Value> key(key: Any, create: () -> Value): Value
-        }
-    """.trimIndent()
-
-    private val STREAM_BUILDER_STUB = """
-        package com.instacart.formula
-
-        class ActionBuilder<Input, State>() {
-            open fun <Event> events(stream: Stream<Event>, transition: Transition<Input, State, Event>)
-            open fun <Event> Stream<Event>.onEvent(transition: Transition<Input, State, Event>)
         }
     """.trimIndent()
 
@@ -88,7 +80,6 @@ class WrongFormulaUsageDetectorTest {
             kotlin(TRANSITION_CONTEXT_STUB),
             kotlin(TRANSITION_STUB),
             kotlin(STREAM_STUB),
-            kotlin(STREAM_BUILDER_STUB),
             kotlin(FORMULA_CONTEXT_STUB),
             kotlin(SNAPSHOT_STUB),
             kotlin(STATELESS_FORMULA_STUB)
@@ -161,7 +152,7 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Unit {
-            |        fun ActionBuilder<Unit, Unit>.registerStreamAction() {
+            |        fun Snapshot<Unit, Unit>.registerStreamAction() {
             |            Stream.onInit().onEvent {
             |                val callback = context.callback {
             |                    transition {}
@@ -202,7 +193,7 @@ class WrongFormulaUsageDetectorTest {
             |
             |class ExampleFormula : StatelessFormula<Unit, Unit>() {
             |   override fun Snapshot<Unit, Unit>.evaluate(): Unit {
-            |        fun ActionBuilder<Unit, Unit>.registerDelegatedAction() {
+            |        fun Snapshot<Unit, Unit>.registerDelegatedAction() {
             |            Stream.onInit().onEvent {
             |                DelegatedCall().illegalBehavior(context)
             |                none()

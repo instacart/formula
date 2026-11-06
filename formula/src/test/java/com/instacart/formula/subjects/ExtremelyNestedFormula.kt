@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -20,7 +19,7 @@ object ExtremelyNestedFormula {
             return state + childValue
         }
 
-        private fun ActionBuilder<Unit, Int>.incrementOnInitialization() {
+        private fun Snapshot<Unit, Int>.incrementOnInitialization() {
             Action.onInit().onEvent {
                 transition(state + 1)
             }

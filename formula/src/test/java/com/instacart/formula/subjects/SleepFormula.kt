@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Snapshot
 
@@ -44,7 +43,7 @@ class SleepFormula : Formula<String, SleepFormula.State, SleepFormula.Output>() 
         )
     }
 
-    private fun ActionBuilder<String, State>.deliverPendingEventAfterDelay() {
+    private fun Snapshot<String, State>.deliverPendingEventAfterDelay() {
         state.pendingEvent?.let {
             Action.onData(it).onEvent { event ->
                 // Using sleep to control multi-threaded events

@@ -1,7 +1,6 @@
 package com.instacart.formula.subjects
 
 import com.instacart.formula.Action
-import com.instacart.formula.ActionBuilder
 import com.instacart.formula.Formula
 import com.instacart.formula.Listener
 import com.instacart.formula.Snapshot
@@ -42,7 +41,7 @@ class EffectOrderFormula : Formula<EffectOrderFormula.Input, EffectOrderFormula.
         )
     }
 
-    private fun ActionBuilder<Input, State>.deliverPendingInputEvent() {
+    private fun Snapshot<Input, State>.deliverPendingInputEvent() {
         // Formula will run `Stream.onData()` before `input.onEvent` is called above.
         val pending = state.pending
         if (pending) {
