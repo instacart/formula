@@ -6,18 +6,17 @@ package com.instacart.formula
  * is a state change within the Formula hierarchy, a new snapshot will be generated and
  * [Formula.evaluate] will be called again.
  */
-@Suppress("DEPRECATION")
-interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
+interface Snapshot<out Input, State> {
 
     /**
      * The current Formula input value passed by the parent.
      */
-    override val input: Input
+    val input: Input
 
     /**
      * The current Formula state value.
      */
-    override val state: State
+    val state: State
 
     /**
      * Context is a short-lived object associated with the current evaluation. It should not be
@@ -31,7 +30,7 @@ interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    override fun <Event> events(
+    fun <Event> events(
         action: Action<Event>,
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
@@ -50,7 +49,7 @@ interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
      *
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    override fun <Event> Action<Event>.onEvent(
+    fun <Event> Action<Event>.onEvent(
         transition: Transition<Input, State, Event>,
     )
 
@@ -68,7 +67,7 @@ interface Snapshot<out Input, State> : ActionBuilder<Input, State> {
      * @param executionType Defines the execution model for this event such as threading and timing.
      * @param transition A function that is invoked when [Action] emits an [Event].
      */
-    override fun <Event> Action<Event>.onEventWithExecutionType(
+    fun <Event> Action<Event>.onEventWithExecutionType(
         executionType: Transition.ExecutionType?,
         transition: Transition<Input, State, Event>,
     )
